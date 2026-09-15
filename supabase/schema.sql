@@ -93,3 +93,14 @@ values ('after-90-core', '90+ / CORE', 'after-90-core', 'LIVE', 'v2.0', 100,
   '[]'::jsonb,
   '/assets/jersey-black.webp')
 on conflict (id) do nothing;
+
+insert into public.products (id, handle, title, subtitle, description, price, compare_at, status, badge, type, template_id, image, color, artwork_lock, personalization, inventory)
+values
+  ('after-90', 'after-90', 'AFTER 90', 'The minutes nobody forgets.', 'The minutes nobody forgets.', 89, 110, 'PUBLISHED', 'NEW DROP', 'READY TO SHIP', 'after-90-core', '/assets/jersey-black.webp', 'Black', 100, '[]'::jsonb, 38),
+  ('chalk-lines', 'chalk-lines', 'CHALK LINES', 'Every move leaves a mark.', 'Every move leaves a mark.', 92, null, 'DRAFT', 'BEST SELLER', 'READY TO SHIP', 'after-90-core', '/assets/jersey-white.webp', 'White', 100, '[]'::jsonb, 14),
+  ('home-end', 'home-end', 'HOME END', 'A ground. A voice. A lifetime.', 'A ground. A voice. A lifetime.', 95, null, 'PUBLISHED', 'LOW STOCK', 'READY TO SHIP', 'after-90-core', '/assets/jersey-oxblood.webp', 'Oxblood', 100, '[]'::jsonb, 7),
+  ('under-lights', 'under-lights', 'UNDER LIGHTS', 'Made for games that finish late.', 'Made for games that finish late.', 86, null, 'PUBLISHED', 'READY TO SHIP', 'READY TO SHIP', 'after-90-core', '/assets/editorial-player.webp', 'Black', 100, '[]'::jsonb, 24),
+  ('the-whistle', 'the-whistle', 'THE WHISTLE', 'Before the noise begins.', 'Before the noise begins.', 99, 120, 'ARCHIVED', 'PRE-ORDER', 'READY TO SHIP', 'after-90-core', '/assets/hero-tunnel.webp', 'Black', 100, '[]'::jsonb, 0),
+  ('touchline', 'touchline', 'TOUCHLINE 04', 'Designed from the view beside the pitch.', 'Designed from the view beside the pitch.', 109, null, 'PUBLISHED', 'CUSTOMIZABLE', 'PERSONALIZED', 'touchline-04', '/assets/jersey-white.webp', 'White', 70,
+    '["NAME + NUMBER", "TEAM / CITY", "YEAR", "COLOUR", "OPTIONAL PHOTO"]'::jsonb, 16)
+on conflict (id) do nothing;
