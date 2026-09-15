@@ -25,8 +25,11 @@ npm run preview
 - `/studio?product=:id` — optional prompt-based AI edit workspace. It always starts from the selected listing's main image.
 - `/vault` — archive for sold-out drops.
 - `/admin` — control-room dashboard for catalog health, deployment pulse and recent activity.
+- `/admin/theme` — storefront Theme Studio with page selection, live desktop/mobile preview, editable copy, global design tokens and ordered section blocks.
+- `/admin/theme/menus` — main/footer navigation builder with link types, visibility, ordering and responsive preview.
+- `/admin/collections` — collection editor for content, merchandising order and product assignment.
 - `/admin/catalog` — searchable product catalog with publish state, stock, price and template linkage.
-- `/admin/products/:id` — product editor with live preview, publishing, price/stock, SEO-ready fields and personalization policy.
+- `/admin/products/:id` — product editor with live preview, publishing, price/stock, options, SKU-level variations and personalization policy.
 - `/admin/templates` — template builder where locked artwork layers and the allowed personalization slots are managed separately.
 - `/admin/settings` — Supabase, GitHub and Vercel connection status plus safe environment setup notes.
 
@@ -43,7 +46,7 @@ The five original campaign/product images were generated with the built-in image
 ## Supabase, GitHub and Vercel handoff
 
 1. Create a Supabase project and run [`supabase/schema.sql`](<D:/APP Dự Án/custom pod/supabase/schema.sql>) in the SQL editor.
-2. Copy [`.env.example`](<D:/APP Dự Án/custom pod/.env.example>) to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The admin UI uses preview data until both variables exist, then reads/writes `products` and `templates` through the Supabase adapter.
+2. Copy [`.env.example`](<D:/APP Dự Án/custom pod/.env.example>) to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The admin UI uses preview data until both variables exist, then reads the isolated `pod_*` tables through the Supabase adapter. Admin writes remain protected by the `app_metadata.role = 'admin'` policy.
 3. Push this folder to GitHub. The included [`.github/workflows/ci.yml`](<D:/APP Dự Án/custom pod/.github/workflows/ci.yml>) runs `npm ci` and `npm run build` on every push and pull request to `main`.
 4. Import the GitHub repository into Vercel. `vercel.json` configures the Vite build and SPA rewrite so `/admin/*`, `/custom`, `/studio` and `/product/*` work on refresh. Add the same two `VITE_SUPABASE_*` variables in Vercel Project Settings before deploying.
 

@@ -34,7 +34,7 @@ export default async function handler(request, response) {
         front: supabase.storage.from(bucket).getPublicUrl(`${renderId}/front.png`).data.publicUrl,
         back: supabase.storage.from(bucket).getPublicUrl(`${renderId}/back.png`).data.publicUrl
       }
-      await supabase.from('render_jobs').upsert({ id:renderId, template_id:template.id, template_version:template.version, payload, status:'COMPLETED', front_url:files.front, back_url:files.back, completed_at:new Date().toISOString() })
+      await supabase.from('pod_render_jobs').upsert({ id:renderId, template_id:template.id, template_version:template.version, payload, status:'COMPLETED', front_url:files.front, back_url:files.back, completed_at:new Date().toISOString() })
     }
     return json(response, 200, { renderId, templateId:template.id, templateVersion:template.version, payload, ...files })
   } catch (error) {

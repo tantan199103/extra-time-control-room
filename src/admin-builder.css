@@ -1,0 +1,6 @@
+.admin-preview-hero > h3 { white-space: pre-line; }
+.admin-theme-toolbar__actions button:focus-visible,
+.admin-theme-page-list button:focus-visible,
+.admin-block-select:focus-visible,
+.admin-menu-item input:focus-visible,
+.admin-assignment-list button:focus-visible { outline: 2px solid var(--admin-signal); outline-offset: 2px; }
