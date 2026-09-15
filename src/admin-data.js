@@ -1,4 +1,5 @@
 import { products as storefrontProducts } from './data'
+import { storyTemplates, universalSlots } from './template-engine'
 
 export const personalizationDefaults = ['NAME + NUMBER', 'TEAM / CITY', 'YEAR', 'COLOUR', 'OPTIONAL PHOTO']
 
@@ -6,7 +7,8 @@ export const adminProducts = storefrontProducts.map((product, index) => ({
   ...product,
   status: index === 1 ? 'DRAFT' : index === 4 ? 'ARCHIVED' : 'PUBLISHED',
   type: index === 5 ? 'PERSONALIZED' : 'READY TO SHIP',
-  template: index === 5 ? 'TOUCHLINE / DESIGN 001' : '90+ / CORE',
+  template: index === 5 ? 'MY LEGACY' : '90+ / CORE',
+  templateId: index === 5 ? 'legacy-v1' : 'after-90-core',
   sku: `ET-${String(index + 1).padStart(3, '0')}`,
   inventory: index === 4 ? 0 : [38, 14, 7, 24, 0, 16][index],
   updatedAt: ['Today, 09:42', 'Yesterday, 16:18', 'Sep 12, 2026', 'Sep 10, 2026', 'Aug 28, 2026', 'Aug 26, 2026'][index],
@@ -14,44 +16,27 @@ export const adminProducts = storefrontProducts.map((product, index) => ({
   artworkLock: index === 5 ? 70 : 100
 }))
 
-export const adminTemplates = [
-  {
-    id: 'touchline-04',
-    name: 'TOUCHLINE / DESIGN 001',
-    slug: 'touchline-04',
-    status: 'LIVE',
-    version: 'v1.4',
-    lockPercent: 70,
-    cover: '/assets/jersey-white.webp',
-    description: 'A fixed football memory system with a small personal layer.',
-    locked: ['TYPOGRAPHY', 'COMPOSITION', 'TEXTURE', 'EFFECTS', 'HIERARCHY'],
-    editable: personalizationDefaults
-  },
-  {
-    id: 'after-90-core',
-    name: '90+ / CORE',
-    slug: 'after-90-core',
-    status: 'LIVE',
-    version: 'v2.0',
-    lockPercent: 100,
-    cover: '/assets/jersey-black.webp',
-    description: 'The locked collection system for ready-to-ship drops.',
-    locked: ['TYPOGRAPHY', 'COMPOSITION', 'TEXTURE', 'EFFECTS', 'HIERARCHY'],
-    editable: []
-  },
-  {
-    id: 'archive-white',
-    name: 'ARCHIVE / CHALK',
-    slug: 'archive-white',
-    status: 'DRAFT',
-    version: 'v0.8',
-    lockPercent: 80,
-    cover: '/assets/editorial-player.webp',
-    description: 'A softer archive template for the next small-batch story.',
-    locked: ['TYPOGRAPHY', 'COMPOSITION', 'TEXTURE', 'EFFECTS'],
-    editable: ['NAME + NUMBER', 'YEAR', 'OPTIONAL PHOTO']
-  }
-]
+const templateCovers = {
+  'venom-v1':'/assets/jersey-black.webp',
+  'hometown-v1':'/assets/hero-tunnel.webp',
+  'legacy-v1':'/assets/jersey-white.webp',
+  'underdog-v1':'/assets/editorial-player.webp',
+  'king-v1':'/assets/jersey-oxblood.webp'
+}
+
+export const adminTemplates = storyTemplates.map(template => ({
+  id: template.id,
+  name: template.name,
+  slug: template.id,
+  status: template.status === 'LIVE' ? 'LIVE' : 'DRAFT',
+  version: template.version,
+  lockPercent: template.artworkLock,
+  cover: templateCovers[template.id] || '/assets/jersey-black.webp',
+  description: template.strapline,
+  locked: ['TYPOGRAPHY','COMPOSITION','TEXTURE','EFFECTS','HIERARCHY'],
+  editable: template.fields.map(fieldId => universalSlots[fieldId]?.label?.toUpperCase()).filter(Boolean),
+  templateDefinition: template
+}))
 
 export const adminActivity = [
   { action: 'Published', item: 'AFTER 90', detail: 'Black / Core', time: 'Today, 09:42', tone: 'live' },

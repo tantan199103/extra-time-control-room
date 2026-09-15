@@ -47,3 +47,5 @@ The five original campaign/product images were generated with the built-in image
 The current production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). It is running in preview-data mode until Supabase environment variables are added.
 
 The workspace now has a local Git history and CI workflow. No GitHub remote is configured yet, so add the destination repository URL and push `main` to enable GitHub ↔ Vercel continuous deployment.
+
+For the product-builder rationale and payload contract, read [`docs/template-engine.md`](<D:/APP Dự Án/custom pod/docs/template-engine.md>).

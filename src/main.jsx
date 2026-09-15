@@ -23,6 +23,7 @@ import { products, searchGroups, storyPoints } from './data'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
+const StoryBuilder = lazy(() => import('./StoryBuilder'))
 
 const money = value => `$${value.toFixed(0)}`
 
@@ -557,7 +558,7 @@ function App() {
   let page
   if (path === '/') page = <Home onAdd={addToCart}/>
   else if (path === '/shop') page = <Shop onAdd={addToCart}/>
-  else if (path === '/custom') page = <CustomLab onAdd={addToCart}/>
+  else if (path === '/custom') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening story builder…</p></div>}><StoryBuilder onAdd={addToCart}/></Suspense>
   else if (path === '/vault') page = <VaultPage/>
   else if (path.startsWith('/product/')) {
     const product = products.find(item => item.id === path.split('/').pop()) || products[0]

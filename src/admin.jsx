@@ -110,7 +110,7 @@ function Field({ label, value, onChange, type = 'text', hint, placeholder }) {
 
 function AdminProductEditor({ products: rows, templates, onSaved }) {
   const id = window.location.pathname.split('/').pop()
-  const sourceProduct = rows.find(product => product.id === id) || rows[0]
+  const sourceProduct = rows.find(product => product.id === id) || (id === 'new' ? { id:'new-product', name:'UNTITLED DROP', story:'A new story waiting for a point of view.', meta:'New product · Draft', price:89, compareAt:'', badge:'NEW DROP', rating:0, reviews:0, color:'Black', image:'/assets/jersey-black.webp', status:'DRAFT', type:'READY TO SHIP', template:'VENOM', sku:'ET-NEW', inventory:0, updatedAt:'Not saved', personalization:[], artworkLock:74 } : rows[0])
   const [draft, setDraft] = useState(() => ({ ...sourceProduct, title: sourceProduct.title || sourceProduct.name, handle: sourceProduct.handle || sourceProduct.id, description: sourceProduct.description || sourceProduct.story, compareAt: sourceProduct.compareAt || '' }))
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState('')
@@ -156,7 +156,7 @@ export default function AdminApp() {
     setSource(productResult.source === 'supabase' && templateResult.source === 'supabase' ? 'supabase' : 'preview')
   }
   useEffect(() => { const onPop = () => setPath(window.location.pathname); window.addEventListener('popstate', onPop); load(); return () => window.removeEventListener('popstate', onPop) }, [])
-  const saveProduct = product => setProductRows(current => current.map(item => item.id === product.id ? product : item))
+  const saveProduct = product => setProductRows(current => current.some(item => item.id === product.id) ? current.map(item => item.id === product.id ? product : item) : [...current, product])
   const saveTemplate = (template, silent = false) => { setTemplateRows(current => current.map(item => item.id === template.id ? template : item)); return template }
   const isEditor = path.startsWith('/admin/products/')
   const active = isEditor ? 'catalog' : path === '/admin/catalog' ? 'catalog' : path === '/admin/templates' ? 'templates' : path === '/admin/settings' ? 'settings' : 'overview'
