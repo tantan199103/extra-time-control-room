@@ -1,7 +1,7 @@
 import { products as storefrontProducts } from './data'
 import { storyTemplates, universalSlots } from './template-engine'
 
-export const personalizationDefaults = ['NAME + NUMBER', 'TEAM / CITY', 'YEAR', 'COLOUR', 'OPTIONAL PHOTO']
+export const personalizationDefaults = ['NAME + NUMBER', 'TEAM / CITY', 'YEAR', 'COLOUR']
 
 export const adminProducts = storefrontProducts.map((product, index) => ({
   ...product,

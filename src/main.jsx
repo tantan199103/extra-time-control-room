@@ -7,23 +7,21 @@ import {
   Check,
   ChevronDown,
   CircleUserRound,
-  Copy,
   Heart,
-  Lock,
   Menu,
   Minus,
   Plus,
   Search,
   ShoppingBag,
   SlidersHorizontal,
-  Sparkles,
   X
 } from 'lucide-react'
 import { products, searchGroups, storyPoints } from './data'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
-const StoryBuilder = lazy(() => import('./StoryBuilder'))
+const SimpleCustomize = lazy(() => import('./SimpleCustomize'))
+const AiStudio = lazy(() => import('./AiStudio'))
 
 const money = value => `$${value.toFixed(0)}`
 
@@ -180,7 +178,7 @@ function CartDrawer({ open, onClose, cart, updateQty }) {
             <div className="cart-items">
               {cart.map(item => <div className="cart-item" key={`${item.product.id}-${item.size}`}>
                 <img src={item.product.image} alt="" />
-                <div><h3>{item.product.name}</h3><p>Size {item.size}</p><div className="qty"><button onClick={() => updateQty(item, -1)}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)}><Plus size={14} /></button></div></div>
+                <div><h3>{item.product.name}</h3><p>Size {item.size}</p>{item.product.customization && <div className="cart-item__custom"><span>{Object.entries(item.product.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key === 'teamCity' ? 'Team / city' : key}: ${value}`).join(' · ') || 'Custom request'}</span>{item.product.customization.note && <small>Note: {item.product.customization.note}</small>}{item.product.customization.aiPreview && <small>AI direction attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)}><Plus size={14} /></button></div></div>
                 <strong>{money(item.product.price * item.qty)}</strong>
               </div>)}
             </div>
@@ -444,7 +442,7 @@ function ProductPage({ product, onAdd }) {
           <div className="pdp__price"><strong>{money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</div>
           <div className="option-block"><div><span>COLOUR</span><strong>{selectedColor}</strong></div><div className="swatches"><button className={`black ${selectedColor === 'Black' ? 'is-active' : ''}`} aria-label="Black" onClick={() => setSelectedColor('Black')}/><button className={`chalk ${selectedColor === 'White' ? 'is-active' : ''}`} aria-label="Chalk" onClick={() => setSelectedColor('White')}/><button className={`oxblood ${selectedColor === 'Oxblood' ? 'is-active' : ''}`} aria-label="Oxblood" onClick={() => setSelectedColor('Oxblood')}/></div></div>
           <div className="option-block"><div><span>SIZE</span><button onClick={() => setFinder(true)}>FIND MY SIZE</button></div><div className="sizes">{['XS','S','M','L','XL','XXL'].map(item => <button className={size === item ? 'is-active' : ''} onClick={() => setSize(item)} key={item}>{item}</button>)}</div><p className="model-size">Model is 180 cm / 74 kg and wears M.</p></div>
-          <button className="pdp__personalize" onClick={() => navigate('/custom')}><span><small>MAKE IT YOURS</small><strong>ADD NAME + NUMBER</strong><em>Artwork stays fixed. Your details make the difference.</em></span><ArrowRight size={18}/></button>
+          <button className="pdp__personalize" onClick={() => navigate(`/custom?product=${product.id}`)}><span><small>MAKE IT YOURS</small><strong>CUSTOMIZE THIS LISTING</strong><em>Enter the details you want changed. The artwork stays fixed.</em></span><ArrowRight size={18}/></button>
           <button className="pdp__add" onClick={add}>{size ? `ADD TO BAG — ${money(product.price)}` : 'SELECT SIZE TO ADD'}</button>
           <div className="pdp__promises"><span><Check size={16}/> Ships in 48 hours</span><span><Check size={16}/> 14-day returns</span><span><Check size={16}/> Secure checkout</span></div>
           <details><summary>THE PRODUCT <Plus/></summary><p>Heavyweight recycled knit, engineered for everyday wear. Original artwork with embroidered details and a ribbed collar.</p></details>
@@ -459,67 +457,6 @@ function ProductPage({ product, onAdd }) {
       <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onAdd={onAdd}/>
       <SizeFinder open={finder} onClose={() => setFinder(false)} onRecommend={setSize}/>
       <div className="mobile-sticky-atc"><span><strong>{money(product.price)}</strong>{size || 'Select size'}</span><button onClick={add}>{size ? 'ADD TO BAG' : 'CHOOSE SIZE'}</button></div>
-    </main>
-  )
-}
-
-function CustomLab({ onAdd }) {
-  const [state, setState] = useState(() => {
-    const params = new URLSearchParams(location.search)
-    return {
-      base: params.get('base') ? `#${params.get('base')}` : '#111111',
-      accent: params.get('accent') ? `#${params.get('accent')}` : '#F8F04A',
-      name: (params.get('name') || 'TAN').slice(0, 12).toUpperCase(),
-      number: (params.get('number') || '07').replace(/\D/g, '').slice(0, 2),
-      teamCity: (params.get('team') || 'SAIGON').slice(0, 14).toUpperCase(),
-      year: (params.get('year') || '2026').replace(/\D/g, '').slice(0, 4),
-      photoUrl: '',
-      size: 'M',
-      view: 'back'
-    }
-  })
-  const [saved, setSaved] = useState(false)
-  const update = (key, value) => setState(current => ({ ...current, [key]: value }))
-  const [personalizeOpen, setPersonalizeOpen] = useState(true)
-  const fileRef = useRef(null)
-  const colors = [['#111111','#F8F04A','NIGHT / FLOODLIGHT'],['#F1F0E9','#111111','CHALK / INK'],['#711E25','#F8F04A','OXBLOOD / SIGNAL']]
-  const share = async () => {
-    const params = new URLSearchParams({ name: state.name, number: state.number, team: state.teamCity, year: state.year, base: state.base.slice(1), accent: state.accent.slice(1) })
-    const url = `${location.origin}/custom?${params.toString()}`
-    try { await navigator.clipboard.writeText(url); setSaved(true); setTimeout(() => setSaved(false), 2200) } catch { setSaved(true) }
-  }
-  const handlePhoto = event => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => update('photoUrl', reader.result)
-    reader.readAsDataURL(file)
-  }
-  const customProduct = { ...products[5], name: `${state.name || 'YOUR'} · ${state.number || '00'}`, price: 109 }
-  return (
-    <main className="lab-page">
-      <section className="lab">
-        <div className="lab__preview">
-          <div className="lab__preview-head"><span>CUSTOM LAB / DESIGN 001</span><span>ARTWORK LOCKED <Lock size={12}/></span></div>
-          <div className="lab__canvas-grid" />
-          <div className="lab__measure lab__measure--v"><span>600 MM</span></div><div className="lab__measure lab__measure--h"><span>520 MM</span></div>
-          <JerseySvg {...state}/>
-          <div className="lab__view"><button className={state.view === 'front' ? 'is-active' : ''} onClick={() => update('view','front')}>FRONT</button><button className={state.view === 'back' ? 'is-active' : ''} onClick={() => update('view','back')}>BACK</button></div>
-          <div className="lab__lock-note"><Lock size={13}/> 70% DESIGN SYSTEM LOCKED</div>
-        </div>
-        <aside className="lab__controls">
-          <div className="lab__title"><span><Sparkles size={16}/> CUSTOM LAB / DESIGNER EDITION</span><h1>MAKE IT<br />PERSONAL.</h1><p>The artwork is the point of view.<br />You add the memory.</p><div className="lab-ratio"><span><b style={{width:'70%'}}/>70% artwork</span><span><b style={{width:'30%'}}/>30% your details</span></div></div>
-          <div className="lab-option lab-option--locked"><div className="lab-option__head"><span>01</span><h2>ARTWORK SYSTEM</h2><Lock size={15}/></div><p>Composition, typography, texture, effects and hierarchy are locked by the designer. Every jersey keeps the same visual signature.</p><button onClick={() => setPersonalizeOpen(value => !value)}>{personalizeOpen ? 'HIDE PERSONALIZATION' : 'EDIT PERSONALIZATION'}<ChevronDown size={15} className={personalizeOpen ? 'rotate' : ''}/></button></div>
-          {personalizeOpen && <div className="lab-personalization"><div className="lab-option"><div className="lab-option__head"><span>02</span><h2>NAME + NUMBER</h2></div><label>NAME<input maxLength="12" value={state.name} onChange={event => update('name', event.target.value.toUpperCase().replace(/[^A-Z ]/g,''))} placeholder="YOUR NAME"/></label><label>NUMBER<input maxLength="2" inputMode="numeric" value={state.number} onChange={event => update('number', event.target.value.replace(/\D/g,''))} placeholder="00"/></label></div>
-          <div className="lab-option"><div className="lab-option__head"><span>03</span><h2>TEAM / CITY</h2></div><input aria-label="Team or city" className="lab-wide-input" maxLength="14" value={state.teamCity} onChange={event => update('teamCity', event.target.value.toUpperCase().replace(/[^A-Z0-9 /-]/g,''))} placeholder="TEAM OR CITY"/><div className="lab-suggestions">{['SAIGON','LONDON','HOME END','YOUR TEAM'].map(item => <button className={state.teamCity === item ? 'is-active' : ''} key={item} onClick={() => update('teamCity', item)}>{item}</button>)}</div></div>
-          <div className="lab-option"><div className="lab-option__head"><span>04</span><h2>YEAR</h2></div><div className="year-picker">{['1998','2010','2026','YOUR YEAR'].map(item => <button className={state.year === item ? 'is-active' : ''} key={item} onClick={() => update('year', item === 'YOUR YEAR' ? '' : item)}>{item}</button>)}</div>{state.year === '' && <input aria-label="Year" className="lab-wide-input" maxLength="4" inputMode="numeric" value={state.year} onChange={event => update('year', event.target.value.replace(/\D/g,''))} placeholder="YYYY"/>}</div>
-          <div className="lab-option"><div className="lab-option__head"><span>05</span><h2>COLOUR</h2></div><div className="lab-colors">{colors.map(([base,accent,label]) => <button key={base} className={state.base === base ? 'is-active' : ''} onClick={() => setState(current => ({...current, base, accent}))}><i style={{background:base}}><b style={{background:accent}}/></i><span>{label}</span><Check size={16}/></button>)}</div></div>
-          <div className="lab-option"><div className="lab-option__head"><span>06</span><h2>OPTIONAL PHOTO</h2><span className="optional">OPTIONAL</span></div><input ref={fileRef} onChange={handlePhoto} type="file" accept="image/*" hidden/><button className={`photo-upload ${state.photoUrl ? 'has-photo' : ''}`} onClick={() => fileRef.current?.click()}>{state.photoUrl ? <><img src={state.photoUrl} alt="Uploaded personal reference"/><span>REPLACE PHOTO</span></> : <><Plus size={16}/><span>ADD A SMALL PERSONAL REFERENCE</span></>}</button><p className="field-help">One image, cropped into the fixed artwork frame. We never change the layout.</p></div>
-          <div className="lab-option"><div className="lab-option__head"><span>07</span><h2>SIZE TO ORDER</h2></div><div className="sizes">{['XS','S','M','L','XL','XXL'].map(item => <button className={state.size === item ? 'is-active' : ''} onClick={() => update('size', item)} key={item}>{item}</button>)}</div></div></div>}
-          <div className="lab__summary"><div><span>DESIGNER EDITION / {state.name || 'YOUR NAME'} {state.number || '00'}</span><strong>$109</strong></div><button onClick={() => onAdd(customProduct, state.size)}>ADD TO BAG</button><button className="lab__share" onClick={share}>{saved ? <><Check/> LINK COPIED</> : <><Copy/> SHARE DESIGN</>}</button><p>Artwork locked · Personalization preview · Ships in 7–10 days</p></div>
-        </aside>
-      </section>
-      <section className="custom-story"><p>YOUR LEGACY / SAVED IN THE DETAILS</p><h2>{state.name || 'YOUR NAME'}<br /><span>{state.number || '00'}</span></h2><p>Made for your moment.<br />Nobody else's.</p></section>
     </main>
   )
 }
@@ -558,7 +495,8 @@ function App() {
   let page
   if (path === '/') page = <Home onAdd={addToCart}/>
   else if (path === '/shop') page = <Shop onAdd={addToCart}/>
-  else if (path === '/custom') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening story builder…</p></div>}><StoryBuilder onAdd={addToCart}/></Suspense>
+  else if (path === '/custom') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening custom form…</p></div>}><SimpleCustomize onAdd={addToCart}/></Suspense>
+  else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio /></Suspense>
   else if (path === '/vault') page = <VaultPage/>
   else if (path.startsWith('/product/')) {
     const product = products.find(item => item.id === path.split('/').pop()) || products[0]

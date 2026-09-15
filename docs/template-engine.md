@@ -1,8 +1,14 @@
 # Extra Time Template Engine
 
-## Why this model
+## Customer boundary
 
-The storefront is a premium product configurator, not a general design tool. A customer chooses a story system and supplies a small amount of meaning; the designer keeps control of the visual signature. This is why there is no drag, resize, rotate or free-form typography UI.
+The storefront is a premium custom-order intake flow, not a general design tool. The customer selects a listing and supplies only the text fields that listing allows, plus an optional note. There is no customer-facing canvas, drag, resize, rotate, layer panel or free-form typography UI.
+
+The legacy deterministic renderer still contains an internal \`C17\` photo slot for backwards-compatible template definitions, but the current customer form and Admin defaults do not expose image upload.
+
+`src/data.js` defines the allowed `customFields` for every listing. `/custom?product=:id` renders only those fields and saves the selected listing ID, listing image, values, note and size with the cart request.
+
+If the customer explicitly chooses **Edit with AI**, `/studio?product=:id` opens a separate prompt workspace. The server resolves the listing again instead of trusting a browser-supplied image URL, downloads the listing's exact main image and sends it as the only edit reference. Suggestions are derived from the same `customFields`; the prompt may also describe a larger new direction.
 
 ## Runtime contract
 
@@ -48,16 +54,18 @@ The universal slots are internal engine IDs (C01–C17). The customer only sees 
 
 ## Rendering boundary
 
-The browser uses an SVG data URL for an instant preview. The order payload contains `templateId`, `templateVersion`, values, derived city data and the requested output dimensions. `api/render-artwork.js` validates that payload, rebuilds front/back artwork at `3000 × 3600`, and returns PNGs. When Supabase server variables exist, it also uploads the two masters to the `artwork` bucket and records a `render_jobs` row.
+The current customer form does not render artwork. It records structured intent for review. The optional AI route returns a visual preview grounded in the listing image; it does not create a production print master.
+
+The internal deterministic renderer remains available for approved template orders. `api/render-artwork.js` validates its payload, rebuilds front/back artwork at `3000 × 3600`, and returns PNGs. When Supabase server variables exist, it can upload masters to the `artwork` bucket and record a `render_jobs` row.
 
 This separation is intentional:
 
 - The deterministic engine owns text accuracy, geometry, safe zones and production files.
-- A future AI mockup service may use the master artwork to create model/lifestyle images, but it must never be the source of truth for print artwork.
+- The AI image edit is a customer direction and approval aid, never the source of truth for print artwork.
 
 ## Admin controls
 
-The Template Builder exposes the same contract to the operator: locked layers, editable slots, artwork ratio, version note and preview in the customer lab. A future JSON editor can write the `definition` JSONB column in `templates` and append an immutable row to `template_versions` before publishing.
+The Template Builder remains an operator tool for locked layers, editable slots, artwork ratio and version notes. Admin can decide which fields a listing exposes, while the customer only sees the short request form.
 
 ## Supabase model
 

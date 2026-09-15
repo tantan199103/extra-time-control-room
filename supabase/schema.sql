@@ -180,7 +180,7 @@ insert into public.templates (id, name, slug, status, version, artwork_lock_perc
 values ('touchline-04', 'TOUCHLINE / DESIGN 001', 'touchline-04', 'LIVE', 'v1.4', 70,
   'A fixed football memory system with a small personal layer.',
   '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb,
-  '["NAME + NUMBER", "TEAM / CITY", "YEAR", "COLOUR", "OPTIONAL PHOTO"]'::jsonb,
+  '["NAME + NUMBER", "TEAM / CITY", "YEAR", "COLOUR"]'::jsonb,
   '/assets/jersey-white.webp')
 on conflict (id) do nothing;
 
@@ -196,11 +196,11 @@ on conflict (id) do nothing;
 
 insert into public.templates (id, name, slug, status, version, artwork_lock_percent, description, locked_layers, editable_slots, cover_image)
 values
-  ('venom-v1', 'VENOM', 'venom-v1', 'LIVE', '1.2.0', 74, 'Pressure becomes identity.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "MOTTO", "ACCENT_COLOR", "METAL_ACCENT", "OPTIONAL_PHOTO"]'::jsonb, '/assets/jersey-black.webp'),
-  ('hometown-v1', 'HOMETOWN HERO', 'hometown-v1', 'LIVE', '1.0.0', 70, 'Your city already knows the rest.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CITY", "YEAR", "OPTIONAL_PHOTO"]'::jsonb, '/assets/hero-tunnel.webp'),
-  ('legacy-v1', 'MY LEGACY', 'legacy-v1', 'LIVE', '1.1.0', 68, 'A career written into the garment.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CITY", "YEAR", "MILESTONE_1", "MILESTONE_2", "MILESTONE_3", "MOTTO", "ACCENT_COLOR", "OPTIONAL_PHOTO"]'::jsonb, '/assets/jersey-white.webp'),
-  ('underdog-v1', 'UNDERDOG', 'underdog-v1', 'DRAFT', '1.0.0', 76, 'Nothing given. Everything carried.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "YEAR", "MOTTO", "ACCENT_COLOR", "OPTIONAL_PHOTO"]'::jsonb, '/assets/editorial-player.webp'),
-  ('king-v1', 'THE KING', 'king-v1', 'DRAFT', '1.0.0', 72, 'Earn the mark. Keep the years.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CREST", "CHAMPIONSHIP_YEARS", "METAL_ACCENT", "OPTIONAL_PHOTO"]'::jsonb, '/assets/jersey-oxblood.webp')
+  ('venom-v1', 'VENOM', 'venom-v1', 'LIVE', '1.2.0', 74, 'Pressure becomes identity.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "MOTTO", "ACCENT_COLOR", "METAL_ACCENT"]'::jsonb, '/assets/jersey-black.webp'),
+  ('hometown-v1', 'HOMETOWN HERO', 'hometown-v1', 'LIVE', '1.0.0', 70, 'Your city already knows the rest.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CITY", "YEAR"]'::jsonb, '/assets/hero-tunnel.webp'),
+  ('legacy-v1', 'MY LEGACY', 'legacy-v1', 'LIVE', '1.1.0', 68, 'A career written into the garment.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CITY", "YEAR", "MILESTONE_1", "MILESTONE_2", "MILESTONE_3", "MOTTO", "ACCENT_COLOR"]'::jsonb, '/assets/jersey-white.webp'),
+  ('underdog-v1', 'UNDERDOG', 'underdog-v1', 'DRAFT', '1.0.0', 76, 'Nothing given. Everything carried.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "YEAR", "MOTTO", "ACCENT_COLOR"]'::jsonb, '/assets/editorial-player.webp'),
+  ('king-v1', 'THE KING', 'king-v1', 'DRAFT', '1.0.0', 72, 'Earn the mark. Keep the years.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CREST", "CHAMPIONSHIP_YEARS", "METAL_ACCENT"]'::jsonb, '/assets/jersey-oxblood.webp')
 on conflict (id) do nothing;
 
 update public.templates set definition = jsonb_build_object('templateId', id, 'version', version, 'artworkLock', artwork_lock_percent, 'lockedLayers', locked_layers, 'editableSlots', editable_slots) where definition = '{}'::jsonb;
@@ -219,7 +219,7 @@ values
   ('under-lights', 'under-lights', 'UNDER LIGHTS', 'Made for games that finish late.', 'Made for games that finish late.', 86, null, 'PUBLISHED', 'READY TO SHIP', 'READY TO SHIP', 'after-90-core', '/assets/editorial-player.webp', 'Black', 100, '[]'::jsonb, 24),
   ('the-whistle', 'the-whistle', 'THE WHISTLE', 'Before the noise begins.', 'Before the noise begins.', 99, 120, 'ARCHIVED', 'PRE-ORDER', 'READY TO SHIP', 'after-90-core', '/assets/hero-tunnel.webp', 'Black', 100, '[]'::jsonb, 0),
   ('touchline', 'touchline', 'TOUCHLINE 04', 'Designed from the view beside the pitch.', 'Designed from the view beside the pitch.', 109, null, 'PUBLISHED', 'CUSTOMIZABLE', 'PERSONALIZED', 'legacy-v1', '/assets/jersey-white.webp', 'White', 70,
-    '["NAME + NUMBER", "TEAM / CITY", "YEAR", "COLOUR", "OPTIONAL PHOTO"]'::jsonb, 16)
+    '["NAME + NUMBER", "TEAM / CITY", "YEAR", "COLOUR"]'::jsonb, 16)
 on conflict (id) do nothing;
 
 insert into public.city_presets (id, city, region, code, coordinates, palette, icons, signature)

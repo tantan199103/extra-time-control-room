@@ -2,6 +2,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "functions": { "api/render-artwork.js": { "maxDuration": 30 } },
+  "functions": {
+    "api/render-artwork.js": { "maxDuration": 30 },
+    "api/ai-preview.js": { "maxDuration": 60 }
+  },
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

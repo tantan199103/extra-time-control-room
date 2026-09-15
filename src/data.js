@@ -11,7 +11,8 @@ export const products = [
     reviews: 428,
     color: 'Black',
     image: '/assets/jersey-black.webp',
-    alt: 'Black After 90 memory jersey'
+    alt: 'Black After 90 memory jersey',
+    customFields: ['name', 'number']
   },
   {
     id: 'chalk-lines',
@@ -25,7 +26,8 @@ export const products = [
     reviews: 316,
     color: 'White',
     image: '/assets/jersey-white.webp',
-    alt: 'White Chalk Lines football jersey'
+    alt: 'White Chalk Lines football jersey',
+    customFields: ['name', 'number']
   },
   {
     id: 'home-end',
@@ -39,7 +41,8 @@ export const products = [
     reviews: 201,
     color: 'Oxblood',
     image: '/assets/jersey-oxblood.webp',
-    alt: 'Oxblood Home End football jersey'
+    alt: 'Oxblood Home End football jersey',
+    customFields: ['name', 'number', 'teamCity']
   },
   {
     id: 'under-lights',
@@ -53,7 +56,8 @@ export const products = [
     reviews: 164,
     color: 'Black',
     image: '/assets/editorial-player.webp',
-    alt: 'Footballer wearing the Under Lights jersey'
+    alt: 'Footballer wearing the Under Lights jersey',
+    customFields: ['name', 'number', 'teamCity']
   },
   {
     id: 'the-whistle',
@@ -67,7 +71,8 @@ export const products = [
     reviews: 87,
     color: 'Black',
     image: '/assets/hero-tunnel.webp',
-    alt: 'Footballer walking from a tunnel toward the pitch'
+    alt: 'Footballer walking from a tunnel toward the pitch',
+    customFields: ['name', 'number']
   },
   {
     id: 'touchline',
@@ -81,7 +86,8 @@ export const products = [
     reviews: 122,
     color: 'White',
     image: '/assets/jersey-white.webp',
-    alt: 'Touchline custom white jersey'
+    alt: 'Touchline custom white jersey',
+    customFields: ['name', 'number', 'teamCity', 'year', 'color']
   }
 ]
 
