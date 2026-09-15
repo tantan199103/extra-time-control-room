@@ -170,9 +170,9 @@ export default function AdminApp() {
   useEffect(() => { const onPop = () => setPath(window.location.pathname); window.addEventListener('popstate', onPop); load(); return () => window.removeEventListener('popstate', onPop) }, [])
   const saveProduct = product => setProductRows(current => current.some(item => item.id === product.id) ? current.map(item => item.id === product.id ? product : item) : [...current, product])
   const saveTemplate = (template, silent = false) => { setTemplateRows(current => current.map(item => item.id === template.id ? template : item)); return template }
-  const persistTheme = async theme => { setThemeDraft(theme); await saveAdminTheme(theme) }
-  const persistMenus = async menus => { setMenuRows(menus); await saveAdminMenus(menus) }
-  const persistCollections = async collections => { setCollectionRows(collections); await saveAdminCollections(collections) }
+  const persistTheme = async theme => { setThemeDraft(theme); return saveAdminTheme(theme) }
+  const persistMenus = async menus => { setMenuRows(menus); return saveAdminMenus(menus) }
+  const persistCollections = async collections => { setCollectionRows(collections); return saveAdminCollections(collections) }
   const isEditor = path.startsWith('/admin/products/')
   const active = isEditor || path === '/admin/catalog' ? 'catalog' : path.startsWith('/admin/theme/menus') ? 'menus' : path.startsWith('/admin/theme') ? 'theme' : path.startsWith('/admin/collections') ? 'collections' : path === '/admin/templates' ? 'templates' : path === '/admin/settings' ? 'settings' : 'overview'
   let page = <AdminOverview/>
