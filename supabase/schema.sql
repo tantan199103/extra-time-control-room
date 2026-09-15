@@ -133,6 +133,18 @@ alter table public.customization_orders enable row level security;
 alter table public.render_jobs enable row level security;
 
 -- Admin writes require app_metadata.role = 'admin'. Public storefront reads only published products.
+drop policy if exists "public can read published products" on public.products;
+drop policy if exists "admins can manage products" on public.products;
+drop policy if exists "public can read live templates" on public.templates;
+drop policy if exists "admins can manage templates" on public.templates;
+drop policy if exists "admins can manage settings" on public.store_settings;
+drop policy if exists "public can read city presets" on public.city_presets;
+drop policy if exists "admins can manage city presets" on public.city_presets;
+drop policy if exists "admins can read template versions" on public.template_versions;
+drop policy if exists "admins can manage template versions" on public.template_versions;
+drop policy if exists "customers can create customization orders" on public.customization_orders;
+drop policy if exists "admins can manage customization orders" on public.customization_orders;
+drop policy if exists "admins can read render jobs" on public.render_jobs;
 create policy "public can read published products" on public.products
   for select using (status = 'PUBLISHED');
 create policy "admins can manage products" on public.products
@@ -189,6 +201,14 @@ values
   ('legacy-v1', 'MY LEGACY', 'legacy-v1', 'LIVE', '1.1.0', 68, 'A career written into the garment.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CITY", "YEAR", "MILESTONE_1", "MILESTONE_2", "MILESTONE_3", "MOTTO", "ACCENT_COLOR"]'::jsonb, '/assets/jersey-white.webp'),
   ('underdog-v1', 'UNDERDOG', 'underdog-v1', 'DRAFT', '1.0.0', 76, 'Nothing given. Everything carried.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "YEAR", "MOTTO", "ACCENT_COLOR"]'::jsonb, '/assets/editorial-player.webp'),
   ('king-v1', 'THE KING', 'king-v1', 'DRAFT', '1.0.0', 72, 'Earn the mark. Keep the years.', '["TYPOGRAPHY", "COMPOSITION", "TEXTURE", "EFFECTS", "HIERARCHY"]'::jsonb, '["BACK_NAME", "BACK_NUMBER", "CREST", "CHAMPIONSHIP_YEARS", "METAL_ACCENT"]'::jsonb, '/assets/jersey-oxblood.webp')
+on conflict (id) do nothing;
+
+update public.templates set definition = jsonb_build_object('templateId', id, 'version', version, 'artworkLock', artwork_lock_percent, 'lockedLayers', locked_layers, 'editableSlots', editable_slots) where definition = '{}'::jsonb;
+
+insert into public.template_versions (id, template_id, version, definition, changelog)
+select id || '-' || version, id, version, definition, 'Initial template definition'
+from public.templates
+where definition <> '{}'::jsonb
 on conflict (id) do nothing;
 
 insert into public.products (id, handle, title, subtitle, description, price, compare_at, status, badge, type, template_id, image, color, artwork_lock, personalization, inventory)
