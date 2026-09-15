@@ -22,7 +22,7 @@ front + back artwork
 
 Every template carries a version, artwork lock percentage, field list, palettes, fixed signature and normalized slot boxes. Normalized coordinates keep the composition stable at mobile preview size and production size.
 
-The universal slots are internal engine IDs. The customer only sees friendly labels:
+The universal slots are internal engine IDs (C01–C17). The customer only sees friendly labels:
 
 | Internal | Customer label | Source |
 | --- | --- | --- |
@@ -35,6 +35,8 @@ The universal slots are internal engine IDs. The customer only sees friendly lab
 | C12–C13 | Accent / metal colour | curated swatches |
 | C14 | Your year | typed |
 | C15 | Neck symbol | curated select |
+| C16 | Championship years | typed, template-specific |
+| C17 | Optional photo | one fixed crop, optional upload |
 
 ## Current story systems
 

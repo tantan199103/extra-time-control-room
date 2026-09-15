@@ -32,7 +32,8 @@ const slots = {
   secondary: { id:'C13', label:'Metal accent', key:'metal', type:'swatch', group:'colors' },
   year: { id:'C14', label:'Your year', key:'year', type:'year', view:'front', x:.5, y:.78, width:.18, height:.045, maxChars:4, group:'roots', placeholder:'1992' },
   neckIcon: { id:'C15', label:'Neck symbol', key:'neckIcon', type:'select', view:'back', x:.5, y:.15, width:.08, height:.05, group:'identity', options:['SNAKE','PALM','CROWN','STAR'] },
-  championshipYears: { id:'C16', label:'Championship years', key:'championshipYears', type:'text', view:'front', x:.5, y:.68, width:.42, height:.045, maxChars:22, group:'journey', placeholder:'2018 / 2021 / 2024' }
+  championshipYears: { id:'C16', label:'Championship years', key:'championshipYears', type:'text', view:'front', x:.5, y:.68, width:.42, height:.045, maxChars:22, group:'journey', placeholder:'2018 / 2021 / 2024' },
+  optionalPhoto: { id:'C17', label:'Optional photo', key:'photoUrl', type:'photo', view:'front', x:.73, y:.42, width:.12, height:.12, group:'identity' }
 }
 
 export const storyTemplates = [
@@ -45,18 +46,18 @@ export const storyTemplates = [
       { id:'blue', label:'Electric Blue', primary:'#277DFF', secondary:'#D1D1CB' },
       { id:'toxic', label:'Toxic Green', primary:'#B6EE35', secondary:'#77776F' }
     ],
-    fields:['backName','backNumber','motto','accent','secondary'],
+    fields:['backName','backNumber','motto','accent','secondary','optionalPhoto'],
     defaults:{ name:'TAN', number:'23', motto:'RELENTLESS', paletteId:'purple', metal:'gold', cityId:'saigon-vn', year:'2026', crest:'V', neckIcon:'SNAKE' },
     layers:baseLayers,
-    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, motto:slots.motto }
+    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, motto:slots.motto, optionalPhoto:slots.optionalPhoto }
   },
   {
     id:'hometown-v1', version:'1.0.0', name:'HOMETOWN HERO', strapline:'Your city already knows the rest.', status:'LIVE', artworkLock:70,
     base:'#151515', accent:'#FF6534', secondary:'#20D9D8', pattern:'city', signature:'RAISED HERE / REMEMBERED EVERYWHERE',
-    palettes:[], fields:['backName','backNumber','city','year'],
+    palettes:[], fields:['backName','backNumber','city','year','optionalPhoto'],
     defaults:{ name:'TAN', number:'23', cityId:'miami-fl', year:'1992', motto:'RAISED HERE', crest:'TT', neckIcon:'PALM' },
     layers:baseLayers,
-    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, city:slots.city, cityCode:slots.cityCode, coordinates:slots.coordinates, year:slots.year }
+    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, city:slots.city, cityCode:slots.cityCode, coordinates:slots.coordinates, year:slots.year, optionalPhoto:slots.optionalPhoto }
   },
   {
     id:'legacy-v1', version:'1.1.0', name:'MY LEGACY', strapline:'A career written into the garment.', status:'LIVE', artworkLock:68,
@@ -66,28 +67,28 @@ export const storyTemplates = [
       { id:'oxblood', label:'Oxblood / Chalk', primary:'#711E25', secondary:'#EEECE2' },
       { id:'night', label:'Night / Floodlight', primary:'#F8F04A', secondary:'#A8A8A1' }
     ],
-    fields:['backName','backNumber','city','year','milestone1','milestone2','milestone3','motto','accent'],
+    fields:['backName','backNumber','city','year','milestone1','milestone2','milestone3','motto','accent','optionalPhoto'],
     defaults:{ name:'TAN', number:'23', cityId:'saigon-vn', year:'1992', milestone1:'2021 CHAMPION', milestone2:'2023 MVP', milestone3:'2024 CAPTAIN', motto:'NEVER FOLD', paletteId:'chalk', crest:'TT', neckIcon:'STAR' },
     layers:baseLayers,
-    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, city:slots.city, cityCode:slots.cityCode, coordinates:slots.coordinates, year:slots.year, milestone1:slots.milestone1, milestone2:slots.milestone2, milestone3:slots.milestone3, motto:slots.motto }
+    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, city:slots.city, cityCode:slots.cityCode, coordinates:slots.coordinates, year:slots.year, milestone1:slots.milestone1, milestone2:slots.milestone2, milestone3:slots.milestone3, motto:slots.motto, optionalPhoto:slots.optionalPhoto }
   },
   {
     id:'underdog-v1', version:'1.0.0', name:'UNDERDOG', strapline:'Nothing given. Everything carried.', status:'DRAFT', artworkLock:76,
     base:'#252522', accent:'#F8F04A', secondary:'#E9E7DF', pattern:'stripes', signature:'BUILT WITHOUT PERMISSION',
     palettes:[{ id:'floodlight', label:'Floodlight', primary:'#F8F04A', secondary:'#E9E7DF' },{ id:'orange', label:'Training Orange', primary:'#F45B27', secondary:'#E9E7DF' }],
-    fields:['backName','backNumber','year','motto','accent'],
+    fields:['backName','backNumber','year','motto','accent','optionalPhoto'],
     defaults:{ name:'TAN', number:'23', cityId:'saigon-vn', year:'2026', motto:'NO EXCUSES', paletteId:'floodlight', crest:'U', neckIcon:'STAR' },
     layers:baseLayers,
-    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, year:slots.year, motto:slots.motto }
+    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, year:slots.year, motto:slots.motto, optionalPhoto:slots.optionalPhoto }
   },
   {
     id:'king-v1', version:'1.0.0', name:'THE KING', strapline:'Earn the mark. Keep the years.', status:'DRAFT', artworkLock:72,
     base:'#15120D', accent:'#D7B65C', secondary:'#F1EADB', pattern:'crown', signature:'RULE THE EXTRA MINUTES',
     palettes:[{ id:'gold', label:'Antique Gold', primary:'#D7B65C', secondary:'#F1EADB' },{ id:'silver', label:'Silver', primary:'#BFC2C4', secondary:'#F1EADB' }],
-    fields:['backName','backNumber','crest','championshipYears','accent'],
+    fields:['backName','backNumber','crest','championshipYears','accent','optionalPhoto'],
     defaults:{ name:'TAN', number:'10', crest:'TT', championshipYears:'2018 / 2021 / 2024', paletteId:'gold', cityId:'saigon-vn', year:'2026', motto:'THE KING', neckIcon:'CROWN' },
     layers:baseLayers,
-    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, crest:slots.crest, championshipYears:slots.championshipYears }
+    slots:{ backName:slots.backName, backNumber:slots.backNumber, frontNumber:slots.frontNumber, crest:slots.crest, championshipYears:slots.championshipYears, optionalPhoto:slots.optionalPhoto }
   }
 ]
 
@@ -102,6 +103,11 @@ export const fieldGroups = [
 const escapeXml = value => String(value ?? '').replace(/[<>&"']/g, character => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[character]))
 const cleanText = (value, maxChars = 40) => String(value ?? '').toUpperCase().replace(/[^A-ZÀ-Ỹ0-9 &/.'-]/g, '').slice(0, maxChars)
 const cleanNumber = value => String(value ?? '').replace(/\D/g, '').slice(0, 2)
+const cleanPhoto = value => {
+  const photo = String(value || '')
+  if (photo.length > 2500000) return ''
+  return /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(photo) ? photo : ''
+}
 
 export function getTemplate(templateId) {
   return storyTemplates.find(template => template.id === templateId) || storyTemplates[0]
@@ -124,6 +130,7 @@ export function resolveCustomization(templateInput, input = {}) {
     ...values,
     name,
     number,
+    photoUrl:cleanPhoto(values.photoUrl),
     crest:cleanText(values.crest || name.split(' ').map(part => part[0]).join('').slice(0,2), 2),
     year:String(values.year || '').replace(/\D/g,'').slice(0,4),
     motto:cleanText(values.motto, 18),
@@ -187,12 +194,15 @@ export function renderTemplateSvg(templateInput, input = {}, view = 'back', opti
   const width = options.width || 1000
   const height = options.height || 1200
   const numberScale = data.number.length === 1 ? 1.08 : 1
+  const photoMarkup = view === 'front' && data.photoUrl && template.slots.optionalPhoto
+    ? `<g><image href="${escapeXml(data.photoUrl)}" x="660" y="420" width="120" height="120" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo-frame)"/><rect x="660" y="420" width="120" height="120" rx="10" fill="none" stroke="${data.primary}" stroke-width="5"/><path d="M660 460h120M700 420v120" stroke="#fff" stroke-width="2" opacity=".16"/></g>`
+    : ''
   const custom = view === 'back'
     ? `${textAt(slots.backName,data.name,{fill:'#F4F3EE'})}${textAt(slots.backNumber,data.number,{size:330*numberScale,fill:'#F4F3EE',stroke:data.primary,strokeWidth:10,spacing:-12})}${template.slots.city ? textAt(slots.city,data.city,{size:46,fill:data.secondary,spacing:5}) : ''}${template.slots.coordinates ? textAt(slots.coordinates,data.coordinates,{size:19,fill:'#B7B6AF',spacing:2}) : ''}${template.slots.motto ? textAt(slots.motto,data.motto,{size:28,fill:data.primary,spacing:4}) : ''}`
-    : `${textAt(slots.frontNumber,data.number,{size:130*numberScale,fill:'#F4F3EE',stroke:data.primary,strokeWidth:6,spacing:-4})}${textAt({x:.5,y:.22,width:.45,minFont:25,maxFont:34},template.name,{fill:data.primary,spacing:5})}${template.slots.crest ? `<g><path d="M300 275h105v105H300z" fill="none" stroke="${data.secondary}" stroke-width="5"/>${textAt(slots.crest,data.crest,{size:43,fill:data.secondary})}</g>` : ''}${template.slots.cityCode ? textAt(slots.cityCode,data.cityCode,{size:48,fill:data.secondary}) : ''}${template.slots.year ? textAt(slots.year,data.year,{size:34,fill:data.primary,spacing:5}) : ''}${template.slots.championshipYears ? textAt(slots.championshipYears,data.championshipYears,{size:25,fill:data.secondary,spacing:3}) : ''}${['milestone1','milestone2','milestone3'].filter(key => template.slots[key]).map(key => textAt(slots[key],data[key],{size:20,fill:'#F4F3EE',spacing:1})).join('')}`
+    : `${photoMarkup}${textAt(slots.frontNumber,data.number,{size:130*numberScale,fill:'#F4F3EE',stroke:data.primary,strokeWidth:6,spacing:-4})}${textAt({x:.5,y:.22,width:.45,minFont:25,maxFont:34},template.name,{fill:data.primary,spacing:5})}${template.slots.crest ? `<g><path d="M300 275h105v105H300z" fill="none" stroke="${data.secondary}" stroke-width="5"/>${textAt(slots.crest,data.crest,{size:43,fill:data.secondary})}</g>` : ''}${template.slots.cityCode ? textAt(slots.cityCode,data.cityCode,{size:48,fill:data.secondary}) : ''}${template.slots.year ? textAt(slots.year,data.year,{size:34,fill:data.primary,spacing:5}) : ''}${template.slots.championshipYears ? textAt(slots.championshipYears,data.championshipYears,{size:25,fill:data.secondary,spacing:3}) : ''}${['milestone1','milestone2','milestone3'].filter(key => template.slots[key]).map(key => textAt(slots[key],data[key],{size:20,fill:'#F4F3EE',spacing:1})).join('')}`
   const surface = template.base === '#EEECE2' ? '#171715' : '#F4F3EE'
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 1000 1200" role="img" aria-label="${escapeXml(template.name)} ${view} jersey for ${escapeXml(data.name)} ${escapeXml(data.number)}">
-  <defs><clipPath id="shirt"><path d="${shirtPath}"/></clipPath><linearGradient id="shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient><pattern id="grain" width="13" height="13" patternUnits="userSpaceOnUse"><path d="M0 2h13M2 0v13" stroke="#fff" stroke-width=".7" opacity=".1"/></pattern></defs>
+  <defs><clipPath id="shirt"><path d="${shirtPath}"/></clipPath><clipPath id="photo-frame"><rect x="660" y="420" width="120" height="120" rx="10"/></clipPath><linearGradient id="shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient><pattern id="grain" width="13" height="13" patternUnits="userSpaceOnUse"><path d="M0 2h13M2 0v13" stroke="#fff" stroke-width=".7" opacity=".1"/></pattern></defs>
   <rect width="1000" height="1200" fill="#DCDAD2"/>
   <g clip-path="url(#shirt)"><rect width="1000" height="1200" fill="${template.base}"/><g>${patternMarkup(template,data.primary,data.secondary)}</g><g>${custom}</g><path d="M355 120c35 69 91 101 145 101s110-32 145-101" fill="none" stroke="${surface}" stroke-width="25"/><path d="M645 127c62 230 47 570 95 924" fill="none" stroke="${data.primary}" stroke-width="11"/><text x="500" y="1050" text-anchor="middle" fill="${data.secondary}" font-family="Arial" font-weight="700" font-size="17" letter-spacing="5">${escapeXml(template.signature)}</text><rect width="1000" height="1200" fill="url(#grain)"/><rect width="1000" height="1200" fill="url(#shade)"/></g>
   <path d="${shirtPath}" fill="none" stroke="${surface}" stroke-width="6"/><path d="M62 328l112 151m764-151L826 479M260 425v626m480-626v626" fill="none" stroke="${surface}" stroke-width="5" opacity=".72"/>
