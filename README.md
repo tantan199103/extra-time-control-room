@@ -44,4 +44,6 @@ The five original campaign/product images were generated with the built-in image
 3. Push this folder to GitHub. The included [`.github/workflows/ci.yml`](<D:/APP Dự Án/custom pod/.github/workflows/ci.yml>) runs `npm ci` and `npm run build` on every push and pull request to `main`.
 4. Import the GitHub repository into Vercel. `vercel.json` configures the Vite build and SPA rewrite so `/admin/*`, `/custom` and `/product/*` work on refresh. Add the same two `VITE_SUPABASE_*` variables in Vercel Project Settings before deploying.
 
-The current environment does not contain a GitHub token or Vercel deployment token, so the repository/configuration handoff is prepared locally without attempting to publish to an external account.
+The current production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). It is running in preview-data mode until Supabase environment variables are added.
+
+The workspace now has a local Git history and CI workflow. No GitHub remote is configured yet, so add the destination repository URL and push `main` to enable GitHub ↔ Vercel continuous deployment.
