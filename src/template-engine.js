@@ -40,6 +40,7 @@ export const storyTemplates = [
   {
     id:'venom-v1', version:'1.2.0', name:'VENOM', strapline:'Pressure becomes identity.', status:'LIVE', artworkLock:74,
     base:'#101012', accent:'#8B5CF6', secondary:'#C2A46D', pattern:'venom', signature:'VENOM / STRIKE AFTER DARK',
+    mockup:{ front:'/assets/venom-mockup-front.webp', back:'/assets/venom-mockup-back.webp', source:'photoreal-base-v1' },
     palettes:[
       { id:'purple', label:'Venom Purple', primary:'#8B5CF6', secondary:'#C2A46D' },
       { id:'red', label:'Signal Red', primary:'#D43C32', secondary:'#B7B0A3' },

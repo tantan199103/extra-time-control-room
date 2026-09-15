@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { ArrowRight, Check, ChevronDown, Lock, MapPin, Plus, ShieldCheck, Sparkles, X } from 'lucide-react'
-import { buildCustomizationPayload, cityPresets, fieldGroups, getCity, getTemplate, renderTemplateSvg, resolveCustomization, storyTemplates, svgDataUrl, universalSlots, validateCustomization } from './template-engine'
+import { buildCustomizationPayload, cityPresets, fieldGroups, fitTextSize, getCity, getTemplate, renderTemplateSvg, resolveCustomization, storyTemplates, svgDataUrl, universalSlots, validateCustomization } from './template-engine'
 import { requestArtworkRender } from './lib/supabase'
 import { fetchRuntimeTemplates } from './lib/supabase'
 
@@ -8,6 +8,29 @@ function ArtworkPreview({ template, values, view, showGuides = false }) {
   const src = useMemo(() => svgDataUrl(renderTemplateSvg(template, values, view, { showGuides })), [template, values, view, showGuides])
   const data = resolveCustomization(template, values)
   return <img src={src} alt={`${template.name} ${view} preview for ${data.name} ${data.number}`}/>
+}
+
+function RealMockupPreview({ template, values, view }) {
+  const data = resolveCustomization(template, values)
+  const isFront = view === 'front'
+  const image = isFront ? template.mockup.front : template.mockup.back
+  const nameSize = fitTextSize(data.name, universalSlots.backName, 1.25)
+  const photo = data.photoUrl
+  return <div className="engine-real-mockup">
+    <img src={image} alt={`${template.name} ${view} photographic mockup for ${data.name} ${data.number}`}/>
+    <svg className="engine-real-mockup__overlay" viewBox="0 0 1086 1448" aria-hidden="true">
+      <defs><clipPath id="real-photo-frame"><rect x="854" y="900" width="112" height="112" rx="8"/></clipPath></defs>
+      {isFront ? <>
+        <text x="543" y="535" textAnchor="middle" dominantBaseline="middle" fill="#c7cbd0" stroke="#c2a46d" strokeWidth="14" paintOrder="stroke" fontFamily="'Barlow Condensed',Arial Narrow,sans-serif" fontWeight="800" fontSize="220" letterSpacing="-10">{data.number}</text>
+        <text x="543" y="535" textAnchor="middle" dominantBaseline="middle" fill="#aeb4bc" stroke={data.primary} strokeWidth="7" paintOrder="stroke" fontFamily="'Barlow Condensed',Arial Narrow,sans-serif" fontWeight="800" fontSize="220" letterSpacing="-10">{data.number}</text>
+      </> : <>
+        <text x="543" y="335" textAnchor="middle" dominantBaseline="middle" fill="#e7d6bf" stroke="#c2a46d" strokeWidth="6" paintOrder="stroke" fontFamily="'Barlow Condensed',Arial Narrow,sans-serif" fontWeight="800" fontSize={nameSize} letterSpacing="4">{data.name}</text>
+        <text x="543" y="617" textAnchor="middle" dominantBaseline="middle" fill="#b8bdc2" stroke="#c2a46d" strokeWidth="15" paintOrder="stroke" fontFamily="'Barlow Condensed',Arial Narrow,sans-serif" fontWeight="800" fontSize="282" letterSpacing="-12">{data.number}</text>
+        <text x="543" y="617" textAnchor="middle" dominantBaseline="middle" fill="#aeb4bc" stroke={data.primary} strokeWidth="7" paintOrder="stroke" fontFamily="'Barlow Condensed',Arial Narrow,sans-serif" fontWeight="800" fontSize="282" letterSpacing="-12">{data.number}</text>
+      </>}
+      {isFront && photo && <g><image href={photo} x="854" y="900" width="112" height="112" preserveAspectRatio="xMidYMid slice" clipPath="url(#real-photo-frame)"/><rect x="854" y="900" width="112" height="112" rx="8" fill="none" stroke={data.primary} strokeWidth="5"/><text x="910" y="1032" textAnchor="middle" fill="#f4f3ee" fontFamily="Arial,sans-serif" fontWeight="700" fontSize="11" letterSpacing="2">MEMORY</text></g>}
+    </svg>
+  </div>
 }
 
 function BuilderField({ fieldId, template, values, update, error }) {
@@ -60,7 +83,7 @@ export default function StoryBuilder({ onAdd }) {
     <section className="engine-builder">
       <div className="engine-stage">
         <div className="engine-stage__top"><span>LIVE ARTWORK PROOF</span><span><i/> DETERMINISTIC ENGINE</span></div>
-        <div className="engine-stage__canvas"><div className="engine-grid"/><ArtworkPreview template={template} values={values} view={view}/><div className="engine-stage__ratio"><strong>{template.artworkLock}%</strong><span>DESIGNER<br/>LOCKED</span></div></div>
+        <div className="engine-stage__canvas"><div className="engine-grid"/>{template.mockup ? <RealMockupPreview template={template} values={values} view={view}/> : <ArtworkPreview template={template} values={values} view={view}/>}<div className="engine-stage__ratio"><strong>{template.artworkLock}%</strong><span>DESIGNER<br/>LOCKED</span></div></div>
         <div className="engine-stage__bottom"><div className="engine-view-switch"><button className={view === 'front' ? 'is-active' : ''} onClick={() => setView('front')}>FRONT</button><button className={view === 'back' ? 'is-active' : ''} onClick={() => setView('back')}>BACK</button></div><div><span>TEMPLATE</span><strong>{template.id} / V{template.version}</strong></div><div><span>OUTPUT</span><strong>3000 × 3600</strong></div></div>
       </div>
       <aside className="engine-form">
