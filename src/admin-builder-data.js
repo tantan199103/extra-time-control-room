@@ -42,6 +42,15 @@ export const adminMenus = [
       { id: 'returns', label: 'Returns', target: '/returns', type: 'Page', visible: true, children: [] },
       { id: 'journal', label: 'Journal', target: '/journal', type: 'External', visible: true, children: [] }
     ]
+  },
+  {
+    id: 'fixed-footer', name: 'Fixed footer menu', location: 'Fixed footer / mobile', status: 'PUBLISHED', updatedAt: 'Today, 11:30',
+    items: [
+      { id: 'fixed-home', label: 'Home', target: '/', type: 'Page', visible: true, children: [] },
+      { id: 'fixed-shop', label: 'Shop', target: '/shop', type: 'Collection', visible: true, children: [] },
+      { id: 'fixed-custom', label: 'Custom', target: '/custom', type: 'Page', visible: true, children: [] },
+      { id: 'fixed-bag', label: 'Bag', target: '#bag', type: 'Action', visible: true, children: [] }
+    ]
   }
 ]
 

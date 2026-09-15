@@ -286,13 +286,17 @@ create table if not exists public.pod_menu_items (
   parent_id text references public.pod_menu_items(id) on update cascade on delete cascade,
   label text not null,
   target text not null,
-  link_type text not null default 'PAGE' check (link_type in ('PAGE', 'COLLECTION', 'PRODUCT', 'EXTERNAL')),
+  link_type text not null default 'PAGE' check (link_type in ('PAGE', 'COLLECTION', 'PRODUCT', 'ACTION', 'EXTERNAL')),
   visible boolean not null default true,
   sort_order integer not null default 0,
   settings jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.pod_menu_items drop constraint if exists pod_menu_items_link_type_check;
+alter table public.pod_menu_items add constraint pod_menu_items_link_type_check
+  check (link_type in ('PAGE', 'COLLECTION', 'PRODUCT', 'ACTION', 'EXTERNAL'));
 
 create table if not exists public.pod_collections (
   id text primary key,
@@ -472,7 +476,8 @@ on conflict (id) do nothing;
 insert into public.pod_menus (id, name, location, status)
 values
   ('main', 'Main navigation', 'HEADER', 'PUBLISHED'),
-  ('footer', 'Footer navigation', 'FOOTER', 'PUBLISHED')
+  ('footer', 'Footer navigation', 'FOOTER', 'PUBLISHED'),
+  ('fixed-footer', 'Fixed footer menu', 'FIXED_FOOTER_MOBILE', 'PUBLISHED')
 on conflict (id) do nothing;
 
 insert into public.pod_collections (id, handle, name, description, status, hero_image, sort_mode)
@@ -490,7 +495,11 @@ values
   ('main-vault', 'main', 'The Vault', '/vault', 'PAGE', 3),
   ('footer-shipping', 'footer', 'Shipping', '/shipping', 'PAGE', 0),
   ('footer-returns', 'footer', 'Returns', '/returns', 'PAGE', 1),
-  ('footer-journal', 'footer', 'Journal', '/journal', 'EXTERNAL', 2)
+  ('footer-journal', 'footer', 'Journal', '/journal', 'EXTERNAL', 2),
+  ('fixed-home', 'fixed-footer', 'Home', '/', 'PAGE', 0),
+  ('fixed-shop', 'fixed-footer', 'Shop', '/shop', 'COLLECTION', 1),
+  ('fixed-custom', 'fixed-footer', 'Custom', '/custom', 'PAGE', 2),
+  ('fixed-bag', 'fixed-footer', 'Bag', '#bag', 'ACTION', 3)
 on conflict (id) do nothing;
 
 insert into public.pod_menu_items (id, menu_id, parent_id, label, target, link_type, sort_order)

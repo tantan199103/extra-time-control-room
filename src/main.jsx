@@ -7,12 +7,15 @@ import {
   Check,
   ChevronDown,
   CircleUserRound,
+  Grid2X2,
   Heart,
+  House,
   Menu,
   Minus,
   Plus,
   Search,
   ShoppingBag,
+  Sparkles,
   SlidersHorizontal,
   X
 } from 'lucide-react'
@@ -384,6 +387,18 @@ function Footer() {
   )
 }
 
+function FixedFooterMenu({ path, bagCount, openCart }) {
+  const items = [
+    { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
+    { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: path === '/shop' || path.startsWith('/product/') },
+    { id: 'custom', label: 'Custom', target: '/custom', icon: Sparkles, active: path === '/custom' || path === '/studio' }
+  ]
+  return <nav className="fixed-footer-menu" aria-label="Quick navigation">
+    {items.map(item => { const Icon = item.icon; return <button key={item.id} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
+    <button className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
+  </nav>
+}
+
 function Home({ onAdd }) {
   return <><Hero/><DropFeature/><ProductRail onAdd={onAdd}/><StoryExplorer/><PlayerDiscovery/><CustomTeaser/><VaultTeaser/><Manifesto/><Newsletter/></>
 }
@@ -507,6 +522,7 @@ function App() {
       <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)}/>
       {page}
       <Footer/>
+      <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)}/>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty}/>
     </>
