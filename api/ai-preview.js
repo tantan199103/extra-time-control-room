@@ -31,7 +31,7 @@ export default async function handler(request, response) {
     const prompt = String(body.prompt || '').trim().slice(0, 1200)
     if (!prompt) return json(response, 422, { error:'Write a prompt first.' })
     const apiKey = process.env.AI_IMAGE_API_KEY || process.env.OPENAI_API_KEY
-    const apiUrl = process.env.AI_IMAGE_API_URL || `${process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'}/images/edits`
+    const apiUrl = process.env.AI_IMAGE_API_URL || `${process.env.OPENAI_BASE_URL || 'https://api.apikey.fan/v1'}/images/edits`
     const model = process.env.AI_IMAGE_MODEL || 'gpt-image-2'
     if (!apiKey) return json(response, 503, { error:'AI preview is not connected. Add AI_IMAGE_API_KEY in the server environment.' })
     const reference = await fetchReference(request, listing)
