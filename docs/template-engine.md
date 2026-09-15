@@ -78,7 +78,7 @@ The Template Builder remains an operator tool for locked layers, editable slots,
 - `pod_customization_orders` — customer payload plus preview/print URLs.
 - `pod_render_jobs` — deterministic render state and output URLs.
 - `pod_themes`, `pod_theme_versions`, `pod_pages` — storefront layout, tokens and versioned page definitions.
-- `pod_menus`, `pod_menu_items` — header/footer navigation trees.
+- `pod_menus`, `pod_menu_items` — header, footer and fixed-mobile navigation trees.
 - `pod_collections`, `pod_collection_products` — curated product groups and ordering.
 - `pod_product_options`, `pod_product_option_values`, `pod_product_variants` — size/color options, SKU price and inventory.
 
