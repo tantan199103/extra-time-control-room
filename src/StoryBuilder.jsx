@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { ArrowRight, Check, ChevronDown, Lock, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
 import { buildCustomizationPayload, cityPresets, fieldGroups, getCity, getTemplate, renderTemplateSvg, resolveCustomization, storyTemplates, svgDataUrl, universalSlots, validateCustomization } from './template-engine'
 import { requestArtworkRender } from './lib/supabase'
+import { fetchRuntimeTemplates } from './lib/supabase'
 
 function ArtworkPreview({ template, values, view, showGuides = false }) {
   const src = useMemo(() => svgDataUrl(renderTemplateSvg(template, values, view, { showGuides })), [template, values, view, showGuides])
@@ -31,13 +32,15 @@ function DerivedCity({ cityId }) {
 }
 
 export default function StoryBuilder({ onAdd }) {
+  const [templates, setTemplates] = useState(storyTemplates)
   const [templateId, setTemplateId] = useState('hometown-v1')
-  const template = getTemplate(templateId)
+  const template = templates.find(item => item.id === templateId) || templates[0] || getTemplate(templateId)
   const [valuesByTemplate, setValuesByTemplate] = useState(() => Object.fromEntries(storyTemplates.map(item => [item.id,{...item.defaults}])))
   const [view, setView] = useState('back')
   const [size, setSize] = useState('M')
   const [errors, setErrors] = useState({})
   const [confirmed, setConfirmed] = useState(false)
+  React.useEffect(() => { let active = true; fetchRuntimeTemplates().then(result => { if (!active || !result.data?.length) return; setTemplates(result.data); setValuesByTemplate(current => Object.fromEntries(result.data.map(item => [item.id, current[item.id] || {...item.defaults}]))) }).catch(() => {}); return () => { active = false } }, [])
   const values = valuesByTemplate[template.id] || template.defaults
   const resolved = resolveCustomization(template, values)
   const update = (key,value) => { setValuesByTemplate(current => ({...current,[template.id]:{...current[template.id], [key]:value}})); setErrors(current => ({...current,[key]:null})); setConfirmed(false) }

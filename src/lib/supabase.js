@@ -51,6 +51,22 @@ export async function fetchAdminTemplates() {
   return { data: data.map(row => ({ ...row, editable_slots: (row.editable_slots || []).map(item => slotLabels[item] || item), locked_layers: row.locked_layers || [] })), source: 'supabase', error: null }
 }
 
+export async function fetchRuntimeTemplates() {
+  if (!supabase) return { data: storyTemplates, source:'preview', error:null }
+  const result = await fetchAdminTemplates()
+  const labelToField = {
+    'NAME + NUMBER':['backName','backNumber'], 'TEAM / CITY':['city'], YEAR:['year'], COLOUR:['accent'], 'OPTIONAL PHOTO':['optionalPhoto'],
+    'MILESTONE 1':['milestone1'], 'MILESTONE 2':['milestone2'], 'MILESTONE 3':['milestone3'], MOTTO:['motto'], 'CREST INITIALS':['crest'], 'CHAMPIONSHIP YEARS':['championshipYears']
+  }
+  const runtime = result.data.map(row => {
+    const base = storyTemplates.find(template => template.id === row.id)
+    if (!base) return null
+    const editableFields = (row.editable_slots || []).flatMap(label => labelToField[label] || [])
+    return { ...base, version:row.version || base.version, artworkLock:row.artwork_lock_percent ?? base.artworkLock, status:row.status || base.status, strapline:row.description || base.strapline, fields:editableFields.length ? [...new Set(editableFields)] : base.fields }
+  }).filter(Boolean)
+  return { data: runtime.length ? runtime : storyTemplates, source:result.source, error:result.error }
+}
+
 export async function saveAdminTemplate(template) {
   if (!supabase) return previewResult(template)
   const payload = {
