@@ -44,6 +44,8 @@ The five original campaign/product images were generated with the built-in image
 3. Push this folder to GitHub. The included [`.github/workflows/ci.yml`](<D:/APP Dự Án/custom pod/.github/workflows/ci.yml>) runs `npm ci` and `npm run build` on every push and pull request to `main`.
 4. Import the GitHub repository into Vercel. `vercel.json` configures the Vite build and SPA rewrite so `/admin/*`, `/custom` and `/product/*` work on refresh. Add the same two `VITE_SUPABASE_*` variables in Vercel Project Settings before deploying.
 
+The deterministic high-resolution renderer lives at [`api/render-artwork.js`](<D:/APP Dự Án/custom pod/api/render-artwork.js>) as a Vercel serverless function. Set `SUPABASE_SERVICE_ROLE_KEY` and (optionally) `SUPABASE_ARTWORK_BUCKET=artwork` only in Vercel server-side environment variables when you want rendered PNG masters uploaded to Supabase Storage. Keep the service-role key out of the browser.
+
 The current production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). It is running in preview-data mode until Supabase environment variables are added.
 
 The workspace now has a local Git history and CI workflow. No GitHub remote is configured yet, so add the destination repository URL and push `main` to enable GitHub ↔ Vercel continuous deployment.
