@@ -123,6 +123,34 @@ export async function uploadProductMedia(file, productId) {
   return { id:`media-${id}`, type, url:data.publicUrl, path, filename:file.name, alt:'', createdAt:new Date().toISOString() }
 }
 
+// Bridge uploads deliberately use a content-addressed path.  A retry after a
+// tab reload therefore reuses the same Storage object instead of creating a
+// second randomly-named file.
+export async function uploadBridgeMedia(file, productId, sha256, { alt = '', filename = '' } = {}) {
+  if (!supabase) throw new Error('Supabase is not configured. Media was not uploaded.')
+  const type = mediaTypes.get(file?.type)
+  if (type !== 'IMAGE') throw new Error('POD Bridge accepts JPG, PNG, WebP or AVIF images only.')
+  if (!file?.size || file.size > 15 * 1024 * 1024) throw new Error('Each bridge image must be smaller than 15 MB.')
+  if (!/^[a-f0-9]{64}$/i.test(String(sha256 || ''))) throw new Error('A valid SHA-256 is required for bridge media.')
+  const extension = ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/avif':'avif' })[file.type] || 'img'
+  const safeProductId = String(productId).replace(/[^a-zA-Z0-9-]/g, '-')
+  const path = `${safeProductId}/bridge/${String(sha256).toLowerCase()}`
+  const { error } = await supabase.storage.from('product-media').upload(path, file, {
+    contentType: file.type, cacheControl: '31536000', upsert: false
+  })
+  // Storage returns a conflict when a previous attempt already uploaded this
+  // hash.  The public URL is deterministic, so that conflict is safe to reuse.
+  if (error && String(error.statusCode || error.status || '') !== '409' && !/already exists|duplicate|conflict|409/i.test(error.message || '')) throw new Error(error.message)
+  const { data } = supabase.storage.from('product-media').getPublicUrl(path)
+  if (!data?.publicUrl) throw new Error('The bridge upload finished but no public media URL was returned.')
+  return {
+    id: `bridge-media-${String(sha256).slice(0, 16)}`,
+    type: 'IMAGE', url: data.publicUrl, path,
+    filename: filename || file.name || `bridge.${extension}`, alt,
+    createdAt: new Date().toISOString()
+  }
+}
+
 export async function requestAiListingCopy(product, brief = {}) {
   if (!supabase) throw new Error('Supabase is not configured. AI copy needs an authenticated admin session.')
   const { data:{ session }, error:sessionError } = await supabase.auth.getSession()

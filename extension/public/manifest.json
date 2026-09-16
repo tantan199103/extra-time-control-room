@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "POD Bridge",
+  "version": "1.0.0",
+  "description": "Capture selected ChatGPT assistant messages and create draft listings in the Extra Time admin workspace.",
+  "minimum_chrome_version": "116",
+  "permissions": ["sidePanel", "storage", "tabs", "scripting"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://extra-time-control-room.vercel.app/*"
+  ],
+  "action": { "default_title": "Open POD Bridge" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "background": { "service_worker": "service-worker.js", "type": "module" },
+  "content_scripts": [
+    { "matches": ["https://chatgpt.com/*"], "js": ["chatgpt.js"], "run_at": "document_idle" },
+    { "matches": ["https://extra-time-control-room.vercel.app/admin/*"], "js": ["webapp.js"], "run_at": "document_start" }
+  ],
+  "options_ui": { "page": "sidepanel.html", "open_in_tab": false }
+}
