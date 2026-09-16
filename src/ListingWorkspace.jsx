@@ -8,7 +8,6 @@ import {
 import VariantMatrix from './VariantMatrix'
 import { createProductDraft, customFieldPresets, duplicateProductDraft, productCompleteness, slugify } from './lib/catalog-model'
 import { requestAiListingCopy, saveAdminProduct, uploadProductMedia } from './lib/supabase'
-import { products as storefrontProducts } from './data'
 import './listing-workspace.css'
 
 const navigate = path => {
@@ -36,7 +35,7 @@ function SelectField({ label, value, onChange, children, hint }) {
 }
 
 function WorkspaceHeader({ draft, dirty, saving, previewProduct, onSave, onPublish, onDuplicate }) {
-  return <header className="listing-workspace__header"><button className="listing-workspace__back" onClick={() => navigate('/admin/catalog')}><ArrowLeft size={15}/> Products</button><div className="listing-workspace__identity"><span>{draft._persisted ? 'LISTING' : 'UNSAVED DRAFT'} / {draft.sku}</span><h1>{draft.title || 'Untitled listing'}</h1></div><div className="listing-workspace__actions"><span className={`listing-dirty ${dirty ? 'is-dirty' : ''}`}><i/>{dirty ? 'Unsaved changes' : 'Up to date'}</span><button className="admin-button admin-button--outline" onClick={onDuplicate}><Copy size={14}/> Duplicate</button><button className="admin-button admin-button--outline" disabled={!previewProduct} title={previewProduct ? 'Open the current live storefront listing.' : 'This listing is not available in the current storefront build.'} onClick={() => previewProduct && navigate(`/product/${previewProduct.id}`)}><Eye size={14}/> Preview</button><button className="admin-button admin-button--outline" disabled={saving} onClick={() => onSave()}><Save size={14}/>{saving ? 'Saving…' : 'Save changes'}</button><button className="admin-button admin-button--dark" disabled={saving || draft.status === 'ARCHIVED'} onClick={onPublish}><PackageCheck size={14}/> Publish</button></div></header>
+  return <header className="listing-workspace__header"><button className="listing-workspace__back" onClick={() => navigate('/admin/catalog')}><ArrowLeft size={15}/> Products</button><div className="listing-workspace__identity"><span>{draft._persisted ? 'LISTING' : 'UNSAVED DRAFT'} / {draft.sku}</span><h1>{draft.title || 'Untitled listing'}</h1></div><div className="listing-workspace__actions"><span className={`listing-dirty ${dirty ? 'is-dirty' : ''}`}><i/>{dirty ? 'Unsaved changes' : 'Up to date'}</span><button className="admin-button admin-button--outline" onClick={onDuplicate}><Copy size={14}/> Duplicate</button><button className="admin-button admin-button--outline" disabled={!previewProduct} title={previewProduct ? 'Open the current published storefront listing.' : 'Publish this listing before opening its storefront page.'} onClick={() => previewProduct && window.open(`/product/${previewProduct.handle || previewProduct.id}`, '_blank', 'noopener,noreferrer')}><Eye size={14}/> Preview</button><button className="admin-button admin-button--outline" disabled={saving} onClick={() => onSave()}><Save size={14}/>{saving ? 'Saving…' : 'Save changes'}</button><button className="admin-button admin-button--dark" disabled={saving || draft.status === 'ARCHIVED'} onClick={onPublish}><PackageCheck size={14}/> Publish</button></div></header>
 }
 
 function StoryPanel({ draft, update }) {
@@ -162,7 +161,7 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
     if(activeRows.length&&total===0)tags.push('out-of-stock'); else if(activeRows.length&&total<=10)tags.push('low-stock')
     return [...new Set(tags)]
   },[draft])
-  const previewProduct = storefrontProducts.find(product => product.id === draft.id)
+  const previewProduct = draft._persisted && draft.status === 'PUBLISHED' ? draft : null
   const save = async status => {
     setSaving(true); setNotice('')
     const candidate = status ? {...draft,status} : draft

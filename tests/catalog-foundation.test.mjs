@@ -23,6 +23,10 @@ test('database product mapping preserves IDs, versions, zero and explicit empty 
   assert.equal(product.compareAt,0); assert.deepEqual(product.variants,[])
   assert.equal(product._persisted,true)
 })
+test('legacy personalization labels remain usable until structured fields are migrated', () => {
+  const product=normalizeProduct({id:'legacy',title:'Legacy',type:'PERSONALIZED',custom_fields:[],personalization:['NAME + NUMBER','TEAM / CITY','YEAR','COLOUR']})
+  assert.deepEqual(product.customFields.map(field=>field.key),['name','number','teamCity','year','color','photo'])
+})
 test('database template mapping keeps the full definition and cover', () => {
   const template=normalizeTemplate({definition:{zones:['back']},cover_image:'/cover.webp',editable_slots:[]})
   assert.deepEqual(template.templateDefinition,{zones:['back']})

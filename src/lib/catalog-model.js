@@ -28,7 +28,10 @@ export function normalizeCustomFields(fields = []) {
   return source.map((field, index) => {
     const preset = typeof field === 'string' ? customFieldPresets.find(item => item.label === field || item.key === field) : null
     const input = preset || field || {}
-    let key = slugify(input.key || input.label || `field-${index + 1}`, `field-${index + 1}`).replace(/-([a-z0-9])/g, (_, letter) => letter.toUpperCase())
+    const rawKey = String(input.key || '').trim()
+    let key = /^[A-Za-z][A-Za-z0-9]*$/.test(rawKey)
+      ? `${rawKey[0].toLowerCase()}${rawKey.slice(1)}`
+      : slugify(rawKey || input.label || `field-${index + 1}`, `field-${index + 1}`).replace(/-([a-z0-9])/g, (_, letter) => letter.toUpperCase())
     if (seen.has(key)) key = `${key}${index + 1}`
     seen.add(key)
     return {
@@ -43,6 +46,25 @@ export function normalizeCustomFields(fields = []) {
       options: Array.isArray(input.options) ? input.options.map(value => String(value).trim()).filter(Boolean) : []
     }
   })
+}
+
+function legacyPersonalizationFields(fields = [], productType = '') {
+  if (!Array.isArray(fields) || !fields.length) return []
+  const keys = []
+  const add = key => { if (!keys.includes(key)) keys.push(key) }
+  fields.forEach(field => {
+    if (field && typeof field === 'object') { keys.push(field); return }
+    const label = String(field || '').toUpperCase()
+    if (label.includes('NAME')) add('name')
+    if (label.includes('NUMBER')) add('number')
+    if (label.includes('TEAM') || label.includes('CITY')) add('teamCity')
+    if (label.includes('YEAR')) add('year')
+    if (label.includes('COLOUR') || label.includes('COLOR')) add('color')
+    if (label.includes('PHOTO')) add('photo')
+    if (label.includes('MESSAGE') || label.includes('PRINT')) add('printText')
+  })
+  if (String(productType).toUpperCase() === 'PERSONALIZED' && keys.length && !keys.includes('photo')) add('photo')
+  return keys.map(key => typeof key === 'string' ? (customFieldPresets.find(field => field.key === key) || key) : key)
 }
 
 export function deriveAutomaticTags(product) {
@@ -71,7 +93,11 @@ export function productCompleteness(product) {
 
 export function normalizeProduct(row, persisted = true) {
   const media = Array.isArray(row.media) ? row.media : []
-  const customFields = normalizeCustomFields(row.custom_fields ?? row.customFields ?? row.personalization ?? [])
+  const configuredFields = row.custom_fields ?? row.customFields
+  const customFieldSource = Array.isArray(configuredFields) && configuredFields.length
+    ? configuredFields
+    : legacyPersonalizationFields(row.personalization, row.type)
+  const customFields = normalizeCustomFields(customFieldSource)
   return {
     ...row,
     name: row.title ?? row.name ?? '',

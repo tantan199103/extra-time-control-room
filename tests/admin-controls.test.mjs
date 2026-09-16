@@ -26,8 +26,7 @@ test('legacy template workflow is removed from admin navigation and data loading
   assert.doesNotMatch(admin, /AdminTemplates/)
   assert.match(admin, /<ListingWorkspace/)
   assert.match(admin, /aria-label="Search admin — not available yet" disabled/)
-  assert.doesNotMatch(builder, /window\.open\(`\/collection\//)
-  assert.match(builder, /disabled title="Collection pages are not available on the storefront yet\."/)
+  assert.match(builder, /window\.open\(`\/collection\/\$\{selected\.handle\}`/)
   assert.match(builder, /LINKS \/ USE ARROWS TO REORDER/)
 })
 
@@ -39,7 +38,7 @@ test('listing workspace exposes the complete product operating flow', () => {
   assert.match(listing, /70%/)
   assert.match(listing, /duplicateProductDraft/)
   assert.match(listing, /disabled=\{!previewProduct\}/)
-  assert.match(listing, /navigate\(`\/product\/\$\{previewProduct\.id\}`\)/)
+  assert.match(listing, /window\.open\(`\/product\/\$\{previewProduct\.handle \|\| previewProduct\.id\}`/)
 })
 
 test('media upload, AI writer and bulk pricing keep dangerous authority server-side', () => {

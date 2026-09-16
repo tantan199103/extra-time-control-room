@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { adminProducts, adminTemplates } from '../admin-data'
+import { adminProducts } from '../admin-data'
 import { adminCollections, adminMenus, adminProductOptions, adminTheme } from '../admin-builder-data'
-import { storyTemplates } from '../template-engine'
-import { buildListingInput, normalizeProduct, normalizeTemplate, validateListing } from './catalog-model'
+import { buildListingInput, normalizeProduct, validateListing } from './catalog-model'
+import { prepareStorefrontProduct } from './storefront-model'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -11,6 +11,77 @@ export const supabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 export const supabase = supabaseConfigured ? createClient(supabaseUrl, supabaseAnonKey) : null
 
 const previewResult = (data, error = null) => ({ data, source: 'preview', error })
+
+export function getCustomerSessionId() {
+  const key = 'extra-time-customer-session'
+  try {
+    const existing = window.localStorage.getItem(key)
+    if (existing) return existing
+    const created = `session_${globalThis.crypto.randomUUID().replace(/-/g,'')}`
+    window.localStorage.setItem(key, created)
+    return created
+  } catch {
+    return `session_${globalThis.crypto.randomUUID().replace(/-/g,'')}`
+  }
+}
+
+export async function uploadCustomerReference(file, productId, fieldKey) {
+  if (!file || !/^image\/(?:png|jpe?g|webp)$/i.test(file.type) || file.size > 2 * 1024 * 1024) throw new Error('Use a JPG, PNG or WebP image smaller than 2 MB.')
+  const dataUrl = await new Promise((resolve,reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error('The selected image could not be read.'))
+    reader.readAsDataURL(file)
+  })
+  const response = await fetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, dataUrl }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'The reference image could not be uploaded.')
+  return result
+}
+
+export async function fetchStorefrontCatalog(fallback = []) {
+  if (!supabase) return previewResult(fallback)
+  const { data, error } = await supabase
+    .from('pod_products')
+    .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
+    .eq('status', 'PUBLISHED')
+    .order('updated_at', { ascending:false })
+  if (error) return previewResult(fallback, error.message)
+  const products = (data || []).map(row => prepareStorefrontProduct(row))
+  return products.length ? { data:products, source:'supabase', error:null } : previewResult(fallback, 'No published listings were returned.')
+}
+
+export async function fetchStorefrontMenus(fallback = []) {
+  if (!supabase) return previewResult(fallback)
+  const { data, error } = await supabase.from('pod_menus').select('*, pod_menu_items(*)').eq('status','PUBLISHED').order('updated_at',{ascending:false})
+  if (error) return previewResult(fallback, error.message)
+  const menus = (data || []).map(menu => {
+    const all = (menu.pod_menu_items || []).filter(item => item.visible !== false).sort((a,b) => a.sort_order - b.sort_order)
+    return { ...menu, items:all.filter(item => !item.parent_id).map(item => ({ ...item, type:item.link_type, children:all.filter(child => child.parent_id === item.id).map(child => ({...child,type:child.link_type})) })) }
+  })
+  return { data:menus.length ? menus : fallback, source:menus.length ? 'supabase' : 'preview', error:null }
+}
+
+export async function fetchStorefrontCollections(fallback = []) {
+  if (!supabase) return previewResult(fallback)
+  const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order, featured)').eq('status','PUBLISHED').order('updated_at',{ascending:false})
+  if (error) return previewResult(fallback, error.message)
+  const collections = (data || []).map(row => ({
+    ...row,
+    hero:row.hero_image,
+    sort:row.sort_mode,
+    products:(row.pod_collection_products || []).sort((a,b) => a.sort_order - b.sort_order).map(item => item.product_id)
+  }))
+  return { data:collections.length ? collections : fallback, source:collections.length ? 'supabase' : 'preview', error:null }
+}
+
+export async function fetchStorefrontTheme(fallback = null) {
+  if (!supabase) return previewResult(fallback)
+  const { data, error } = await supabase.from('pod_themes').select('*, pod_pages(*)').eq('status','PUBLISHED').order('updated_at',{ascending:false}).limit(1).maybeSingle()
+  if (error || !data) return previewResult(fallback, error?.message || 'No published theme was returned.')
+  const definition = data.definition && typeof data.definition === 'object' ? data.definition : {}
+  return { data:{ ...data, ...definition, tokens:{ ...(fallback?.tokens || {}), ...(data.tokens || {}) }, pages:data.pod_pages || definition.pages || [] }, source:'supabase', error:null }
+}
 
 export async function fetchAdminProducts() {
   if (!supabase) return { data:[], source:'error', error:'Supabase is not configured.' }
@@ -91,52 +162,6 @@ export async function fetchProductVariants(productId) {
   }
 }
 
-export async function fetchAdminTemplates() {
-  if (!supabase) return previewResult(adminTemplates)
-  const { data, error } = await supabase.from('pod_templates').select('*').order('updated_at', { ascending: false })
-  if (error) return { data:[], source:'error', error:error.message }
-  const slotLabels = { BACK_NAME:'NAME + NUMBER', BACK_NUMBER:'NAME + NUMBER', FRONT_NUMBER:'NAME + NUMBER', CITY:'TEAM / CITY', CITY_CODE:'TEAM / CITY', COORDINATES:'TEAM / CITY', YEAR:'YEAR', MILESTONE_1:'MILESTONE 1', MILESTONE_2:'MILESTONE 2', MILESTONE_3:'MILESTONE 3', MOTTO:'MOTTO', ACCENT_COLOR:'COLOUR', METAL_ACCENT:'COLOUR', CREST:'CREST INITIALS', CHAMPIONSHIP_YEARS:'CHAMPIONSHIP YEARS', OPTIONAL_PHOTO:'OPTIONAL PHOTO' }
-  return { data: (data || []).map(row => normalizeTemplate({ ...row, editable_slots: [...new Set((row.editable_slots || []).map(item => slotLabels[item] || item))], locked_layers: row.locked_layers || [] })), source: 'supabase', error: null }
-}
-
-export async function fetchRuntimeTemplates() {
-  if (!supabase) return { data: storyTemplates, source:'preview', error:null }
-  const result = await fetchAdminTemplates()
-  const labelToField = {
-    'NAME + NUMBER':['backName','backNumber'], 'TEAM / CITY':['city'], YEAR:['year'], COLOUR:['accent'], 'OPTIONAL PHOTO':['optionalPhoto'],
-    'MILESTONE 1':['milestone1'], 'MILESTONE 2':['milestone2'], 'MILESTONE 3':['milestone3'], MOTTO:['motto'], 'CREST INITIALS':['crest'], 'CHAMPIONSHIP YEARS':['championshipYears']
-  }
-  const runtime = result.data.map(row => {
-    const base = storyTemplates.find(template => template.id === row.id)
-    if (!base) return null
-    const editableFields = (row.editable_slots || []).flatMap(label => labelToField[label] || [])
-    return { ...base, version:row.version || base.version, artworkLock:row.artwork_lock_percent ?? base.artworkLock, status:row.status || base.status, strapline:row.description || base.strapline, fields:editableFields.length ? [...new Set(editableFields)] : base.fields }
-  }).filter(Boolean)
-  return { data: runtime.length ? runtime : storyTemplates, source:result.source, error:result.error }
-}
-
-export async function saveAdminTemplate(template) {
-  if (!supabase) return previewResult(template)
-  const payload = {
-    id: template.id,
-    name: template.name,
-    slug: template.slug || template.id,
-    status: template.status || 'DRAFT',
-    version: template.version || 'v1.0',
-    artwork_lock_percent: Number(template.lockPercent ?? 70),
-    description: template.description || '',
-    locked_layers: template.locked || [],
-    editable_slots: template.editable || [],
-    definition: template.templateDefinition || {},
-    cover_image: template.cover || null,
-    updated_at: new Date().toISOString()
-  }
-  const { data, error } = await supabase.from('pod_templates').upsert(payload).select().single()
-  if (error) return previewResult(template, error.message)
-  await supabase.from('pod_template_versions').upsert({ id:`${template.id}-${template.version}`, template_id:template.id, version:template.version, definition:payload.definition, changelog:'Updated from Admin Template Builder' }).catch(() => {})
-  return { data, source: 'supabase', error: null }
-}
-
 export async function fetchAdminTheme() {
   if (!supabase) return previewResult(adminTheme)
   const [{ data: theme, error: themeError }, { data: pages, error: pagesError }] = await Promise.all([
@@ -144,13 +169,16 @@ export async function fetchAdminTheme() {
     supabase.from('pod_pages').select('*').eq('theme_id', adminTheme.id).order('updated_at', { ascending: false })
   ])
   if (themeError || !theme) return previewResult(adminTheme, themeError?.message || null)
+  const definition = theme.definition && typeof theme.definition === 'object' ? theme.definition : {}
   return {
     data: {
       ...adminTheme,
       ...theme,
       updatedAt: theme.updated_at,
       tokens: { ...adminTheme.tokens, ...(theme.tokens || {}) },
-      pages: pagesError || !pages?.length ? adminTheme.pages : pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : 0, updatedAt: page.updated_at, layout: Array.isArray(page.layout) ? page.layout.join(' + ') : 'Custom layout' }))
+      blocks:definition.blocks || theme.blocks || [],
+      content:definition.content || theme.content || {},
+      pages: pagesError || !pages?.length ? (definition.pages || adminTheme.pages) : pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout }))
     },
     source: 'supabase', error: pagesError?.message || null
   }
@@ -158,18 +186,9 @@ export async function fetchAdminTheme() {
 
 export async function saveAdminTheme(theme) {
   if (!supabase) return previewResult(theme)
-  const payload = {
-    id: theme.id,
-    name: theme.name,
-    status: theme.status || 'DRAFT',
-    version: theme.version || 'v1.0',
-    tokens: theme.tokens || {},
-    definition: { blocks: theme.blocks || [], pages: theme.pages || [] },
-    updated_at: new Date().toISOString()
-  }
-  const { data, error } = await supabase.from('pod_themes').upsert(payload).select().single()
-  if (error) return previewResult(theme, error.message)
-  await supabase.from('pod_theme_versions').upsert({ id: `${theme.id}-${theme.version}`, theme_id: theme.id, version: theme.version, definition: payload.definition, changelog: 'Theme draft updated from Control Room' }).catch(() => {})
+  const payload = { ...theme, status:theme.status || 'DRAFT', version:theme.version || 'v1.0', tokens:theme.tokens || {}, blocks:theme.blocks || [], content:theme.content || {}, pages:theme.pages || [] }
+  const { data, error } = await supabase.rpc('pod_save_theme', { theme_payload:payload })
+  if (error) return { data:theme, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
   return { data, source: 'supabase', error: null }
 }
 
@@ -187,17 +206,10 @@ export async function fetchAdminMenus() {
 
 export async function saveAdminMenus(menus) {
   if (!supabase) return previewResult(menus)
-  for (const menu of menus) {
-    const { error } = await supabase.from('pod_menus').upsert({ id: menu.id, name: menu.name, location: menu.location, status: menu.status || 'DRAFT', updated_at: new Date().toISOString() })
-    if (error) return previewResult(menus, error.message)
-    await supabase.from('pod_menu_items').delete().eq('menu_id', menu.id)
-    const flat = menu.items.flatMap((item, index) => [
-      { id: item.id, menu_id: menu.id, parent_id: null, label: item.label, target: item.target, link_type: String(item.type || 'PAGE').toUpperCase(), visible: item.visible !== false, sort_order: index },
-      ...(item.children || []).map((child, childIndex) => ({ id: child.id, menu_id: menu.id, parent_id: item.id, label: child.label, target: child.target, link_type: String(child.type || 'PAGE').toUpperCase(), visible: child.visible !== false, sort_order: childIndex }))
-    ])
-    if (flat.length) await supabase.from('pod_menu_items').insert(flat)
-  }
-  return { data: menus, source: 'supabase', error: null }
+  const payload = menus.map(menu => ({ ...menu, items:(menu.items || []).map((item,index) => ({...item,sortOrder:index,children:(item.children || []).map((child,childIndex) => ({...child,sortOrder:childIndex}))})) }))
+  const { data, error } = await supabase.rpc('pod_save_menus', { menu_payload:payload })
+  if (error) return { data:menus, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
+  return { data, source:'supabase', error:null }
 }
 
 export async function fetchAdminCollections() {
@@ -212,25 +224,18 @@ export async function fetchAdminCollections() {
 
 export async function saveAdminCollections(collections) {
   if (!supabase) return previewResult(collections)
-  for (const collection of collections) {
-    const { error } = await supabase.from('pod_collections').upsert({ id: collection.id, handle: collection.handle, name: collection.name, description: collection.description || '', status: collection.status || 'DRAFT', hero_image: collection.hero || null, sort_mode: String(collection.sort || 'MANUAL').toUpperCase().replace(/\s+/g, '_'), updated_at: new Date().toISOString() })
-    if (error) return previewResult(collections, error.message)
-    await supabase.from('pod_collection_products').delete().eq('collection_id', collection.id)
-    if (collection.products?.length) await supabase.from('pod_collection_products').insert(collection.products.map((productId, index) => ({ collection_id: collection.id, product_id: productId, sort_order: index, featured: index === 0 })))
-  }
-  return { data: collections, source: 'supabase', error: null }
-}
-
-export async function requestArtworkRender(payload) {
-  const response = await fetch('/api/render-artwork', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payload) })
-  const result = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(result.error || 'Artwork render failed.')
-  return result
+  const { data, error } = await supabase.rpc('pod_save_collections', { collection_payload:collections })
+  if (error) return { data:collections, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
+  return { data, source:'supabase', error:null }
 }
 
 export async function createCustomizationOrder(order) {
-  if (!supabase) return previewResult(order)
-  const { data, error } = await supabase.from('pod_customization_orders').insert(order).select().single()
-  if (error) return previewResult(order, error.message)
-  return { data, source:'supabase', error:null }
+  const response = await fetch('/api/customization-order', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body:JSON.stringify(order)
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'The custom request could not be saved.')
+  return { data:result.order, source:'server', error:null }
 }

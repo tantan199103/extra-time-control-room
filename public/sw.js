@@ -1,4 +1,4 @@
-const CACHE_NAME = 'extra-time-shell-v3'
+const CACHE_NAME = 'extra-time-shell-v4'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
 
 self.addEventListener('install', event => {
@@ -10,12 +10,19 @@ self.addEventListener('activate', event => {
 })
 
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return
-  event.respondWith(fetch(event.request).then(response => {
-    if (response.ok) {
-      const copy = response.clone()
-      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => {})
-    }
-    return response
-  }).catch(() => caches.match(event.request).then(cached => cached || caches.match('/'))))
+  if (event.request.method !== 'GET') return
+  const url = new URL(event.request.url)
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin')) return
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).catch(() => caches.match('/')))
+    return
+  }
+  if (!['script','style','font','image','manifest'].includes(event.request.destination)) return
+  event.respondWith(caches.match(event.request).then(cached => {
+    const network = fetch(event.request).then(response => {
+      if (response.ok && response.type === 'basic') caches.open(CACHE_NAME).then(cache => cache.put(event.request,response.clone())).catch(() => {})
+      return response
+    })
+    return cached || network
+  }))
 })

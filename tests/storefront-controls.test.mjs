@@ -26,22 +26,23 @@ test('closed panels are inert to keyboard and screen-reader interactions', () =>
 
 test('routing observes query changes and isolates different product state', () => {
   assert.match(source, /setRoute\(window\.location\.pathname \+ window\.location\.search \+ window\.location\.hash\)/)
-  assert.match(source, /<ProductPage key=\{product\.id\}/)
+  assert.match(source, /<ProductPage key=\{routeProduct\.id\}/)
   assert.match(source, /startPersonalized=\{new URLSearchParams\(search\)\.get\('custom'\) === '1'\}/)
-  assert.match(source, /useEffect\(\(\) => \{ if \(startPersonalized\) setPersonalized\(true\) \}, \[startPersonalized\]\)/)
+  assert.match(source, /useEffect\(\(\) => \{ if \(startPersonalized && customFields\.length\) setPersonalized\(true\) \}, \[startPersonalized,customFields\.length\]\)/)
 })
 
 test('navigation closes overlays and product drafts remain scoped by listing', () => {
   const handler = source.match(/const onPop = \(\) => \{([^}]+)\}/)?.[1]
   for (const name of ['Search', 'Cart', 'Install', 'SizeGuide']) assert.match(handler, new RegExp(`set${name}Open\\(false\\)`))
   assert.match(source, /extra-time-pdp-draft-\$\{product\.id\}/)
-  assert.match(source, /item\.product\.color === product\.color/)
+  assert.match(source, /cartLineKey\(item\)/)
+  assert.match(source, /extra-time-cart-v2/)
 })
 
 test('Standard clears the custom URL flag so the Custom shortcut can open it again', () => {
   const chooseOrderType = source.match(/const chooseOrderType = enabled => \{([\s\S]*?)\n  \}/)?.[1]
   assert.ok(chooseOrderType)
-  assert.match(chooseOrderType, /url\.searchParams\.set\('custom', '1'\)/)
+  assert.match(chooseOrderType, /url\.searchParams\.set\('custom','1'\)/)
   assert.match(chooseOrderType, /url\.searchParams\.delete\('custom'\)/)
   assert.match(chooseOrderType, /history\.replaceState/)
   assert.match(chooseOrderType, /dispatchEvent\(new PopStateEvent\('popstate'\)\)/)
