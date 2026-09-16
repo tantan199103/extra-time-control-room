@@ -419,7 +419,7 @@ function FixedFooterMenu({ path, bagCount, openCart, hidden = false }) {
   </nav>
 }
 
-function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled }) {
+function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptUsed }) {
   const [copied, setCopied] = useState(false)
   const isiOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent)
   const install = async () => {
@@ -427,6 +427,7 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled }) {
     deferredPrompt.prompt()
     const choice = await deferredPrompt.userChoice
     if (choice?.outcome === 'accepted') onInstalled()
+    onPromptUsed()
     onClose()
   }
   const share = async () => {
@@ -711,7 +712,7 @@ function App() {
       {page}
       <Footer/>
       <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} hidden={footerActuallyHidden}/>
-      <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)}/>
+      <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)} onPromptUsed={() => setInstallPrompt(null)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)}/>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty}/>
     </>
