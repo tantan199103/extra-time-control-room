@@ -87,7 +87,7 @@ export const products = [
     color: 'White',
     image: '/assets/jersey-white.webp',
     alt: 'Touchline custom white jersey',
-    customFields: ['name', 'number', 'teamCity', 'year', 'color']
+    customFields: ['name', 'number', 'teamCity', 'year', 'color', 'printText']
   }
 ]
 

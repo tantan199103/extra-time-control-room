@@ -10,6 +10,7 @@ import {
   Grid2X2,
   Heart,
   House,
+  Lock,
   Menu,
   Minus,
   Plus,
@@ -20,13 +21,28 @@ import {
   X
 } from 'lucide-react'
 import { products, searchGroups, storyPoints } from './data'
+import { createCustomizationOrder } from './lib/supabase'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
-const SimpleCustomize = lazy(() => import('./SimpleCustomize'))
 const AiStudio = lazy(() => import('./AiStudio'))
 
 const money = value => `$${value.toFixed(0)}`
+
+const personalizationFields = {
+  name: { label:'Name', hint:'Back name', placeholder:'YOUR NAME', maxLength:14 },
+  number: { label:'Number', hint:'00—99', placeholder:'24', maxLength:2, inputMode:'numeric' },
+  teamCity: { label:'Team / city', hint:'Optional location', placeholder:'SAIGON', maxLength:18 },
+  year: { label:'Year', hint:'Four digits', placeholder:'2026', maxLength:4, inputMode:'numeric' },
+  color: { label:'Colour note', hint:'If this listing allows it', placeholder:'BLACK / PURPLE', maxLength:20 },
+  printText: { label:'Printed message', hint:'Short line on the shirt', placeholder:'RELENTLESS', maxLength:28 }
+}
+
+const emptyPersonalization = { name:'', number:'', teamCity:'', year:'', color:'', printText:'' }
+
+function readSession(key, fallback = null) {
+  try { return JSON.parse(window.sessionStorage.getItem(key) || 'null') || fallback } catch { return fallback }
+}
 
 function Mark({ inverted = false }) {
   return (
@@ -63,7 +79,7 @@ function Header({ bagCount, openCart, openSearch }) {
   const links = ['SHOP', 'MOMENTS', 'PLAYERS', 'CUSTOM LAB']
   const openLink = label => {
     if (label === 'SHOP') navigate('/shop')
-    else if (label === 'CUSTOM LAB') navigate('/custom')
+    else if (label === 'CUSTOM LAB') navigate('/product/touchline?custom=1')
     else {
       navigate('/')
       const target = label === 'MOMENTS' ? '#story' : '#players'
@@ -120,7 +136,7 @@ function MegaMenu({ active, onNavigate }) {
         <p>{active}</p>
         {menus[active].map(item => <button key={item} onClick={() => onNavigate(active)}>{item}<ArrowRight size={15} /></button>)}
       </div>
-      <button className="mega-menu__feature" onClick={() => active === 'CUSTOM LAB' ? navigate('/custom') : navigate('/product/after-90')}>
+      <button className="mega-menu__feature" onClick={() => active === 'CUSTOM LAB' ? navigate('/product/touchline?custom=1') : navigate('/product/after-90')}>
         <img src={active === 'CUSTOM LAB' ? '/assets/jersey-white.webp' : '/assets/editorial-player.webp'} alt="" />
         <span>{active === 'CUSTOM LAB' ? 'CUSTOM LAB' : 'THE 90+ DROP'}<small>{active === 'CUSTOM LAB' ? 'BUILD YOURS' : 'DISCOVER THE STORY'} <ArrowRight size={14} /></small></span>
       </button>
@@ -291,7 +307,7 @@ function PlayerDiscovery() {
   return (
     <section className="players-section section" id="players">
       <div className="section-title-row"><h2>WHO DO YOU<br />PLAY FOR?</h2><p>Find a shirt by the role you remember,<br />not just the name on the back.</p></div>
-      <div className="player-grid">{cards.map((card, index) => <button key={card.name} onClick={() => index === 2 ? navigate('/custom') : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} {card.count === '∞' ? 'POSSIBILITIES' : 'STORIES'} <ArrowRight size={15}/></small></span></button>)}</div>
+      <div className="player-grid">{cards.map((card, index) => <button key={card.name} onClick={() => index === 2 ? navigate('/product/touchline?custom=1') : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} {card.count === '∞' ? 'POSSIBILITIES' : 'STORIES'} <ArrowRight size={15}/></small></span></button>)}</div>
     </section>
   )
 }
@@ -339,7 +355,7 @@ function CustomTeaser() {
   return (
     <section className="custom-teaser" id="custom">
       <div className="custom-teaser__grid" aria-hidden="true" />
-      <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>YOUR STORY.<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">70% of the artwork stays fixed.<br />You choose the details that make it yours.</p><button className="button button--acid" onClick={() => navigate('/custom')}>START PERSONALIZING <ArrowRight size={17}/></button></div>
+      <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>YOUR STORY.<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">70% of the artwork stays fixed.<br />You choose the details that make it yours.</p><button className="button button--acid" onClick={() => navigate('/product/touchline?custom=1')}>START PERSONALIZING <ArrowRight size={17}/></button></div>
       <div className="custom-teaser__jersey"><span className="axis-label axis-label--top">REAR VIEW · LIVE</span><JerseySvg name={names[nameIndex][0]} number={names[nameIndex][1]} /><span className="axis-label axis-label--bottom">DESIGN STATE / {String(nameIndex + 1).padStart(2, '0')}</span></div>
       <div className="custom-teaser__steps"><span>70% / ARTWORK LOCKED</span><span>NAME + NUMBER</span><span>TEAM / CITY · YEAR</span><span>COLOUR · OPTIONAL PHOTO</span></div>
     </section>
@@ -380,7 +396,7 @@ function Footer() {
   return (
     <footer>
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
-      <div className="footer__links"><div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate('/custom')}>Custom lab</button></div><div><span>STORIES</span><button>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button>Our process</button></div><div><span>HELP</span><button>Size guide</button><button>Shipping</button><button>Returns</button></div><div><span>FOLLOW</span><button>Instagram</button><button>TikTok</button><button>Journal</button></div></div>
+      <div className="footer__links"><div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate('/product/touchline?custom=1')}>Custom lab</button></div><div><span>STORIES</span><button>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button>Our process</button></div><div><span>HELP</span><button>Size guide</button><button>Shipping</button><button>Returns</button></div><div><span>FOLLOW</span><button>Instagram</button><button>TikTok</button><button>Journal</button></div></div>
       <div className="footer__wordmark">EXTRA TIME<span>+</span></div>
       <div className="footer__legal"><span>© 2026 EXTRA TIME STUDIO</span><span>PRIVACY · TERMS · ACCESSIBILITY</span><span>MADE FOR THE GAME AFTER THE GAME.</span></div>
     </footer>
@@ -388,10 +404,11 @@ function Footer() {
 }
 
 function FixedFooterMenu({ path, bagCount, openCart }) {
+  const isCustom = path === '/custom' || path === '/studio' || (path.startsWith('/product/') && new URLSearchParams(window.location.search).get('custom') === '1')
   const items = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
-    { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: path === '/shop' || path.startsWith('/product/') },
-    { id: 'custom', label: 'Custom', target: '/custom', icon: Sparkles, active: path === '/custom' || path === '/studio' }
+    { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
+    { id: 'custom', label: 'Custom', target: '/product/touchline?custom=1', icon: Sparkles, active: isCustom }
   ]
   return <nav className="fixed-footer-menu" aria-label="Quick navigation">
     {items.map(item => { const Icon = item.icon; return <button key={item.id} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
@@ -434,15 +451,69 @@ function SizeFinder({ open, onClose, onRecommend }) {
   )
 }
 
-function ProductPage({ product, onAdd }) {
-  const [size, setSize] = useState('')
-  const [selectedColor, setSelectedColor] = useState(product.color)
+function ProductPage({ product, onAdd, startPersonalized = false }) {
+  const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
+  const savedAi = readSession('extra-time-ai-preview')
+  const initialPersonalized = startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || (savedAi?.productId === product.id)
+  const [size, setSize] = useState(savedDraft?.size || '')
+  const [selectedColor, setSelectedColor] = useState(savedDraft?.selectedColor || product.color)
   const [galleryIndex, setGalleryIndex] = useState(0)
   const [finder, setFinder] = useState(false)
   const [activeStory, setActiveStory] = useState(storyPoints[0])
+  const [personalized, setPersonalized] = useState(initialPersonalized)
+  const [customValues, setCustomValues] = useState({ ...emptyPersonalization, ...(savedDraft?.values || {}) })
+  const [customNote, setCustomNote] = useState(savedDraft?.note || '')
+  const [customError, setCustomError] = useState('')
+  const [added, setAdded] = useState(false)
+  const availableFields = product.customFields || ['name', 'number']
+  const aiPreview = savedAi?.productId === product.id ? savedAi : null
   const colorImages = { Black: '/assets/jersey-black.webp', White: '/assets/jersey-white.webp', Oxblood: '/assets/jersey-oxblood.webp' }
-  const add = () => { if (!size) { setFinder(true); return } onAdd({ ...product, color: selectedColor, image: colorImages[selectedColor] || product.image }, size) }
-  const gallery = [colorImages[selectedColor] || product.image, '/assets/editorial-player.webp', '/assets/jersey-black.webp', '/assets/hero-tunnel.webp']
+  const updateCustom = (key, rawValue) => {
+    const field = personalizationFields[key]
+    const value = field?.inputMode === 'numeric' ? rawValue.replace(/\D/g, '') : rawValue.toUpperCase()
+    setCustomValues(current => ({ ...current, [key]:value.slice(0, field?.maxLength || 40) }))
+    setCustomError('')
+    setAdded(false)
+  }
+  const openAi = () => {
+    window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues, note:customNote, size, selectedColor }))
+    navigate(`/studio?product=${product.id}`)
+  }
+  const add = () => {
+    if (!size) { setFinder(true); return }
+    const hasCustomRequest = availableFields.some(key => customValues[key]?.trim()) || customNote.trim() || aiPreview
+    if (personalized && !hasCustomRequest) {
+      setCustomError('Add at least one detail, a studio note, or an AI direction.')
+      return
+    }
+    const image = aiPreview?.imageUrl || colorImages[selectedColor] || product.image
+    if (!personalized) {
+      onAdd({ ...product, color:selectedColor, image }, size)
+      setAdded(true)
+      return
+    }
+    const customization = {
+      source:aiPreview ? 'ai-assisted-product-page' : 'product-page',
+      listingId:product.id,
+      listingImage:product.image,
+      fields:Object.fromEntries(availableFields.map(key => [key, customValues[key]?.trim() || ''])),
+      note:customNote.trim(),
+      aiPreview:aiPreview?.imageUrl || null,
+      aiPrompt:aiPreview?.prompt || null
+    }
+    createCustomizationOrder({
+      id:globalThis.crypto?.randomUUID?.() || `custom-${Date.now()}`,
+      product_id:product.id,
+      template_id:product.id === 'touchline' ? 'touchline-04' : 'after-90-core',
+      template_version:product.id === 'touchline' ? 'v1.4' : 'v2.0',
+      payload:{ ...customization, size, color:selectedColor },
+      preview_front_url:aiPreview?.imageUrl || null,
+      status:'PREVIEW'
+    }).catch(() => {})
+    onAdd({ ...product, id:`${product.id}-custom-${Date.now()}`, name:`${product.name} / ${customValues.name || 'CUSTOM'}`, color:selectedColor, image, customization }, size)
+    setAdded(true)
+  }
+  const gallery = [aiPreview?.imageUrl || colorImages[selectedColor] || product.image, '/assets/editorial-player.webp', '/assets/jersey-black.webp', '/assets/hero-tunnel.webp']
   return (
     <main className="pdp">
       <div className="pdp__commerce">
@@ -456,9 +527,23 @@ function ProductPage({ product, onAdd }) {
           <Rating value={product.rating} reviews={product.reviews}/>
           <div className="pdp__price"><strong>{money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</div>
           <div className="option-block"><div><span>COLOUR</span><strong>{selectedColor}</strong></div><div className="swatches"><button className={`black ${selectedColor === 'Black' ? 'is-active' : ''}`} aria-label="Black" onClick={() => setSelectedColor('Black')}/><button className={`chalk ${selectedColor === 'White' ? 'is-active' : ''}`} aria-label="Chalk" onClick={() => setSelectedColor('White')}/><button className={`oxblood ${selectedColor === 'Oxblood' ? 'is-active' : ''}`} aria-label="Oxblood" onClick={() => setSelectedColor('Oxblood')}/></div></div>
-          <div className="option-block"><div><span>SIZE</span><button onClick={() => setFinder(true)}>FIND MY SIZE</button></div><div className="sizes">{['XS','S','M','L','XL','XXL'].map(item => <button className={size === item ? 'is-active' : ''} onClick={() => setSize(item)} key={item}>{item}</button>)}</div><p className="model-size">Model is 180 cm / 74 kg and wears M.</p></div>
-          <button className="pdp__personalize" onClick={() => navigate(`/custom?product=${product.id}`)}><span><small>MAKE IT YOURS</small><strong>CUSTOMIZE THIS LISTING</strong><em>Enter the details you want changed. The artwork stays fixed.</em></span><ArrowRight size={18}/></button>
-          <button className="pdp__add" onClick={add}>{size ? `ADD TO BAG — ${money(product.price)}` : 'SELECT SIZE TO ADD'}</button>
+          <div className="option-block"><div><span>SIZE</span><button onClick={() => setFinder(true)}>FIND MY SIZE</button></div><div className="sizes">{['XS','S','M','L','XL','XXL'].map(item => <button className={size === item ? 'is-active' : ''} onClick={() => { setSize(item); setAdded(false) }} key={item}>{item}</button>)}</div><p className="model-size">Model is 180 cm / 74 kg and wears M.</p></div>
+          <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}>
+            <div className="pdp-custom__choice" aria-label="Order type">
+              <button className={!personalized ? 'is-active' : ''} onClick={() => { setPersonalized(false); setCustomError(''); setAdded(false) }}><span>Standard</span><small>As shown</small></button>
+              <button className={personalized ? 'is-active' : ''} onClick={() => { setPersonalized(true); setAdded(false) }}><span>Personalized</span><small>Name, number + more</small></button>
+            </div>
+            {personalized && <div className="pdp-custom__body">
+              <div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields below change. Leave any field blank to keep the listing as shown.</p></div>
+              <div className="pdp-custom__fields">{availableFields.map(key => { const field = personalizationFields[key]; if (!field) return null; return <label key={key} className={key === 'printText' ? 'is-wide' : ''}><span>{field.label}<small>{field.hint}</small></span><input value={customValues[key]} onChange={event => updateCustom(key, event.target.value)} placeholder={field.placeholder} inputMode={field.inputMode || 'text'} maxLength={field.maxLength}/></label> })}</div>
+              <label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => { setCustomNote(event.target.value.slice(0,320)); setCustomError(''); setAdded(false) }} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/320</small></label>
+              {aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>AI direction attached</strong><small>Your generated preview will be reviewed with this order.</small></span><img src={aiPreview.imageUrl} alt="Attached AI direction"/></div>}
+              <button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Edit more with AI</strong><small>Change several print areas or describe a new direction in one prompt.</small></span><ArrowRight size={16}/></button>
+              {customError && <p className="pdp-custom__error">{customError}</p>}
+            </div>}
+          </section>
+          <div className="pdp__decision"><span><i/> Made to order</span><strong>{personalized ? 'Artwork confirmed before production' : 'Ready to ship in 48 hours'}</strong><small>Tracked delivery · Secure checkout · 14-day returns</small></div>
+          <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add}>{added ? <><Check size={17}/> ADDED TO BAG</> : size ? `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(product.price)}` : 'SELECT SIZE TO ADD'}</button>
           <div className="pdp__promises"><span><Check size={16}/> Ships in 48 hours</span><span><Check size={16}/> 14-day returns</span><span><Check size={16}/> Secure checkout</span></div>
           <details><summary>THE PRODUCT <Plus/></summary><p>Heavyweight recycled knit, engineered for everyday wear. Original artwork with embroidered details and a ribbed collar.</p></details>
           <details><summary>SHIPPING & RETURNS <Plus/></summary><p>Worldwide tracked shipping. Easy returns within 14 days of delivery.</p></details>
@@ -471,7 +556,7 @@ function ProductPage({ product, onAdd }) {
       <section className="timeline"><p>THE 90 MINUTES / RECONSTRUCTED</p><div>{[['00′','THE WALK IN'],['45′','THE HALF-LIGHT'],['89′','THE WAIT'],['90+','THE MEMORY']].map((item,index) => <div key={item[0]} className={index === 3 ? 'active' : ''}><strong>{item[0]}</strong><span>{item[1]}</span></div>)}</div></section>
       <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onAdd={onAdd}/>
       <SizeFinder open={finder} onClose={() => setFinder(false)} onRecommend={setSize}/>
-      <div className="mobile-sticky-atc"><span><strong>{money(product.price)}</strong>{size || 'Select size'}</span><button onClick={add}>{size ? 'ADD TO BAG' : 'CHOOSE SIZE'}</button></div>
+      <div className="mobile-sticky-atc"><span><strong>{money(product.price)}</strong>{size ? `${size} · ${personalized ? 'Personalized' : 'Standard'}` : 'Select size'}</span><button onClick={add}>{added ? 'ADDED' : size ? (personalized ? 'ADD CUSTOM' : 'ADD TO BAG') : 'CHOOSE SIZE'}</button></div>
     </main>
   )
 }
@@ -496,6 +581,14 @@ function App() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
+  useEffect(() => {
+    if (path !== '/custom') return
+    const id = new URLSearchParams(window.location.search).get('product') || 'touchline'
+    const product = products.find(item => item.id === id) || products.find(item => item.id === 'touchline') || products[0]
+    const next = `/product/${product.id}?custom=1`
+    window.history.replaceState({}, '', next)
+    setPath(`/product/${product.id}`)
+  }, [path])
   useEffect(() => { document.body.classList.toggle('no-scroll', searchOpen || cartOpen) }, [searchOpen, cartOpen])
   if (path.startsWith('/admin')) return <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening control room…</p></div>}><AdminApp /></Suspense>
   const addToCart = (product, size = 'M') => {
@@ -510,7 +603,11 @@ function App() {
   let page
   if (path === '/') page = <Home onAdd={addToCart}/>
   else if (path === '/shop') page = <Shop onAdd={addToCart}/>
-  else if (path === '/custom') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening custom form…</p></div>}><SimpleCustomize onAdd={addToCart}/></Suspense>
+  else if (path === '/custom') {
+    const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'
+    const customProduct = products.find(item => item.id === customProductId) || products.find(item => item.id === 'touchline') || products[0]
+    page = <ProductPage product={customProduct} onAdd={addToCart} startPersonalized/>
+  }
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio /></Suspense>
   else if (path === '/vault') page = <VaultPage/>
   else if (path.startsWith('/product/')) {
@@ -522,7 +619,7 @@ function App() {
       <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)}/>
       {page}
       <Footer/>
-      <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)}/>
+    <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)}/>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty}/>
     </>
