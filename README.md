@@ -33,7 +33,9 @@ npm run preview
 - `/admin/templates` — template builder where locked artwork layers and the allowed personalization slots are managed separately.
 - `/admin/settings` — Supabase, GitHub and Vercel connection status plus safe environment setup notes.
 
-The checkout, customer account and Shopify data layer are intentionally represented as frontend states. Connect these components to Shopify products, variants, cart endpoints, metafields and metaobjects for production commerce.
+Checkout, customer accounts, newsletter signup and several advanced admin controls are not connected. Unavailable controls are now disabled and labeled instead of silently doing nothing or displaying false success. No checkout/payment backend was added by the interaction repair.
+
+Run `npm test` for the overlay, routing, unavailable-control and admin save-error regression checks. See `docs/interaction-audit.md` for the scope and remaining product work.
 
 ## Mobile app experience
 
@@ -52,7 +54,7 @@ The five original campaign/product images were generated with the built-in image
 ## Supabase, GitHub and Vercel handoff
 
 1. Create a Supabase project and run [`supabase/schema.sql`](<D:/APP Dự Án/custom pod/supabase/schema.sql>) in the SQL editor.
-2. Copy [`.env.example`](<D:/APP Dự Án/custom pod/.env.example>) to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The admin UI uses preview data until both variables exist, then reads the isolated `pod_*` tables through the Supabase adapter. Admin writes remain protected by the `app_metadata.role = 'admin'` policy.
+2. Copy [`.env.example`](<D:/APP Dự Án/custom pod/.env.example>) to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The admin UI uses preview data until both variables exist, then reads the isolated `pod_*` tables through the Supabase adapter. Admin writes remain protected by the `app_metadata.extra_time_role = 'admin'` policy.
 3. Push this folder to GitHub. The included [`.github/workflows/ci.yml`](<D:/APP Dự Án/custom pod/.github/workflows/ci.yml>) runs `npm ci` and `npm run build` on every push and pull request to `main`.
 4. Import the GitHub repository into Vercel. `vercel.json` configures the Vite build and SPA rewrite so `/admin/*`, `/custom`, `/studio` and `/product/*` work on refresh. Add the same two `VITE_SUPABASE_*` variables in Vercel Project Settings before deploying.
 
@@ -60,7 +62,7 @@ To connect the optional AI edit route through APIKEY.FUN, add `AI_IMAGE_API_KEY`
 
 The deterministic high-resolution renderer lives at [`api/render-artwork.js`](<D:/APP Dự Án/custom pod/api/render-artwork.js>) as a Vercel serverless function. Set `SUPABASE_SERVICE_ROLE_KEY` and (optionally) `SUPABASE_ARTWORK_BUCKET=artwork` only in Vercel server-side environment variables when you want rendered PNG masters uploaded to Supabase Storage. Keep the service-role key out of the browser.
 
-The current production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). It reads the isolated `pod_*` storefront system from Supabase; writes remain protected by the admin JWT policy.
+The production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). Admin adapters read the isolated `pod_*` Supabase tables, with preview fallbacks; writes require the admin JWT policy. The customer storefront still reads `src/data.js` and does not yet render published admin theme/menu/collection changes.
 
 The workspace has a local Git history, CI workflow and an `origin` remote targeting the private `tantan199103/extra-time-control-room` repository. Push `main` after completing Git Credential Manager authentication to enable GitHub ↔ Vercel continuous deployment.
 

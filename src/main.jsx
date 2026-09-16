@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { products, searchGroups, storyPoints } from './data'
 import { createCustomizationOrder } from './lib/supabase'
+import { useDialogFocus } from './useDialogFocus'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -58,7 +59,9 @@ function Mark({ inverted = false }) {
 function navigate(path) {
   window.history.pushState({}, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
-  window.scrollTo({ top: 0, behavior: 'instant' })
+  if (window.location.hash) {
+    requestAnimationFrame(() => document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }))
+  } else window.scrollTo({ top: 0, behavior: 'instant' })
 }
 
 function IconButton({ label, children, className = '', ...props }) {
@@ -78,14 +81,19 @@ function Announcement() {
 function Header({ bagCount, openCart, openSearch, openInstall, appInstalled }) {
   const [mega, setMega] = useState(null)
   const [mobile, setMobile] = useState(false)
+  const mobileRef = useRef(null)
+  useDialogFocus(mobile, mobileRef, () => setMobile(false))
+  useEffect(() => {
+    const closeMenus = () => { setMobile(false); setMega(null) }
+    window.addEventListener('popstate', closeMenus)
+    return () => window.removeEventListener('popstate', closeMenus)
+  }, [])
   const links = ['SHOP', 'MOMENTS', 'PLAYERS', 'CUSTOM LAB']
   const openLink = label => {
     if (label === 'SHOP') navigate('/shop')
     else if (label === 'CUSTOM LAB') navigate('/product/touchline?custom=1')
     else {
-      navigate('/')
-      const target = label === 'MOMENTS' ? '#story' : '#players'
-      window.setTimeout(() => document.querySelector(target)?.scrollIntoView({ behavior: 'smooth' }), 30)
+      navigate(label === 'MOMENTS' ? '/#story' : '/#players')
     }
     setMega(null)
     setMobile(false)
@@ -106,14 +114,14 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled }) {
         </nav>
         <div className="header-actions">
           <button className="text-action" onClick={openSearch}><Search size={16} /> <span>SEARCH</span></button>
-          <button className="text-action desktop-account"><CircleUserRound size={16} /> <span>ACCOUNT</span></button>
+          <button className="text-action desktop-account" disabled title="Customer accounts are not connected yet"><CircleUserRound size={16} /> <span>ACCOUNT · SOON</span></button>
           {!appInstalled && <button className="text-action header-install" onClick={openInstall} aria-label="Add Extra Time to your home screen"><Download size={16}/><span>APP</span></button>}
           <button className="text-action" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
           <IconButton label="Open menu" className="mobile-menu-button" onClick={() => setMobile(true)}><Menu /></IconButton>
         </div>
         {mega && <MegaMenu active={mega} onNavigate={openLink} />}
       </header>
-      <div className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile}>
+      <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
           {links.map((link, index) => <button key={link} onClick={() => openLink(link)}><span>0{index + 1}</span>{link}<ArrowRight /></button>)}
@@ -127,17 +135,17 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled }) {
 
 function MegaMenu({ active, onNavigate }) {
   const menus = {
-    SHOP: ['New drop', 'Best sellers', 'Jerseys', 'T-shirts', 'Last chance'],
-    MOMENTS: ['Extra time', 'Final whistle', 'Homecoming', 'Night games', 'View all stories'],
-    PLAYERS: ['The No. 9', 'The playmaker', 'The captain', 'The keeper', 'Your player'],
-    'CUSTOM LAB': ['Create a jersey', 'Name & number', 'Team order', 'Saved designs', 'How it works']
+    SHOP: [['All jerseys', '/shop'], ['After 90', '/product/after-90'], ['Personalized jerseys', '/product/touchline?custom=1']],
+    MOMENTS: [['Story explorer', '/#story'], ['After 90 story', '/product/after-90'], ['The archive', '/vault']],
+    PLAYERS: [['Find your role', '/#players'], ['Shop the drop', '/shop'], ['Your name', '/product/touchline?custom=1']],
+    'CUSTOM LAB': [['Name & number', '/product/touchline?custom=1'], ['Edit with AI', '/studio?product=touchline'], ['How it works', '/#custom']]
   }
   return (
     <div className="mega-menu">
       <div className="mega-menu__index">{active === 'CUSTOM LAB' ? 'MAKE' : 'FIND'}<br />YOUR<br />MOMENT<span>90+</span></div>
       <div className="mega-menu__links">
         <p>{active}</p>
-        {menus[active].map(item => <button key={item} onClick={() => onNavigate(active)}>{item}<ArrowRight size={15} /></button>)}
+        {menus[active].map(([label, target]) => <button key={label} onClick={() => navigate(target)}>{label}<ArrowRight size={15} /></button>)}
       </div>
       <button className="mega-menu__feature" onClick={() => active === 'CUSTOM LAB' ? navigate('/product/touchline?custom=1') : navigate('/product/after-90')}>
         <img src={active === 'CUSTOM LAB' ? '/assets/jersey-white.webp' : '/assets/editorial-player.webp'} alt="" />
@@ -150,12 +158,11 @@ function MegaMenu({ active, onNavigate }) {
 function SearchOverlay({ open, onClose }) {
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)
-  useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 50)
-  }, [open])
+  const panelRef = useRef(null)
+  useDialogFocus(open, panelRef, onClose, inputRef)
   const matchingProducts = products.filter(product => `${product.name} ${product.story} ${product.meta}`.toLowerCase().includes(query.toLowerCase()))
   return (
-    <div className={`overlay search-overlay ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+    <div ref={panelRef} className={`overlay search-overlay ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={!open} role="dialog" aria-modal="true" aria-label="Search products" tabIndex={-1}>
       <div className="search-overlay__top">
         <Mark />
         <IconButton label="Close search" onClick={onClose}><X /></IconButton>
@@ -185,12 +192,14 @@ function SearchOverlay({ open, onClose }) {
 }
 
 function CartDrawer({ open, onClose, cart, updateQty }) {
+  const panelRef = useRef(null)
+  useDialogFocus(open, panelRef, onClose)
   const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.qty, 0)
   const remaining = Math.max(0, 100 - subtotal)
   return (
     <>
-      <button className={`backdrop ${open ? 'is-open' : ''}`} onClick={onClose} aria-label="Close bag" />
-      <aside className={`cart-drawer ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+      <button className={`backdrop ${open ? 'is-open' : ''}`} onClick={onClose} aria-label="Close bag backdrop" aria-hidden={!open} tabIndex={-1} />
+      <aside ref={panelRef} className={`cart-drawer ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={!open} role="dialog" aria-modal="true" aria-label="Your bag" tabIndex={-1}>
         <div className="drawer-head"><h2>YOUR BAG <span>{cart.reduce((sum, item) => sum + item.qty, 0)}</span></h2><IconButton label="Close bag" onClick={onClose}><X /></IconButton></div>
         {!cart.length ? (
           <div className="empty-cart"><span>90+</span><h3>THE NEXT MEMORY<br />STARTS HERE.</h3><p>Your bag is empty. The archive is not.</p><button className="button button--dark" onClick={() => { onClose(); navigate('/shop') }}>EXPLORE THE DROP</button></div>
@@ -198,7 +207,7 @@ function CartDrawer({ open, onClose, cart, updateQty }) {
           <>
             <div className="cart-status"><Check size={16} /> Added to your bag</div>
             <div className="cart-items">
-              {cart.map(item => <div className="cart-item" key={`${item.product.id}-${item.size}`}>
+              {cart.map(item => <div className="cart-item" key={`${item.product.id}-${item.size}-${item.product.color}`}>
                 <img src={item.product.image} alt="" />
                 <div><h3>{item.product.name}</h3><p>Size {item.size}</p>{item.product.customization && <div className="cart-item__custom"><span>{Object.entries(item.product.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key === 'teamCity' ? 'Team / city' : key}: ${value}`).join(' · ') || 'Custom request'}</span>{item.product.customization.note && <small>Note: {item.product.customization.note}</small>}{item.product.customization.aiPreview && <small>AI direction attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)}><Plus size={14} /></button></div></div>
                 <strong>{money(item.product.price * item.qty)}</strong>
@@ -208,8 +217,7 @@ function CartDrawer({ open, onClose, cart, updateQty }) {
               <p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p>
               <div><span style={{ width: `${Math.min(100, subtotal)}%` }} /></div>
             </div>
-            <div className="cart-cross-sell"><p>COMPLETE THE LOOK</p><button><img src="/assets/jersey-white.webp" alt=""/><span>CHALK SHORTS<small>+$54</small></span><Plus size={18}/></button></div>
-            <div className="cart-checkout"><div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button>CHECKOUT — {money(subtotal)}</button><p>Secure checkout · Easy returns</p></div>
+            <div className="cart-checkout"><div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button disabled aria-describedby="checkout-status">CHECKOUT NOT AVAILABLE YET</button><p id="checkout-status">Checkout is not connected. No payment or purchase has been made.</p></div>
           </>
         )}
       </aside>
@@ -383,23 +391,25 @@ function Manifesto() {
 }
 
 function Newsletter() {
-  const [email, setEmail] = useState('')
-  const [done, setDone] = useState(false)
-  const submit = event => { event.preventDefault(); if (email.includes('@')) setDone(true) }
   return (
     <section className="newsletter">
       <span className="newsletter__number">90<sup>+</sup></span>
       <div><p>NEXT DROP / EARLY ACCESS</p><h2>BE THERE<br />BEFORE THE<br />WHISTLE.</h2></div>
-      {done ? <div className="newsletter__success"><Check/><strong>YOU'RE ON THE TEAM.</strong><span>Watch your inbox before the next drop.</span></div> : <form onSubmit={submit}><label htmlFor="email">EMAIL ADDRESS</label><div><input id="email" type="email" placeholder="you@email.com" value={email} onChange={event => setEmail(event.target.value)} required/><button aria-label="Join early access"><ArrowRight/></button></div><p>Drop alerts only. No weekly noise.</p></form>}
+      <div className="newsletter__success"><Lock/><strong>EARLY ACCESS OPENS SOON.</strong><span>Email registration is not connected yet. Explore the current drop while we get it ready.</span><button className="button-link" onClick={() => navigate('/shop')}>SHOP THE DROP <ArrowRight size={17}/></button></div>
     </section>
   )
 }
 
-function Footer() {
+function Footer({ openSizeGuide }) {
   return (
     <footer>
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
-      <div className="footer__links"><div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate('/product/touchline?custom=1')}>Custom lab</button></div><div><span>STORIES</span><button>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button>Our process</button></div><div><span>HELP</span><button>Size guide</button><button>Shipping</button><button>Returns</button></div><div><span>FOLLOW</span><button>Instagram</button><button>TikTok</button><button>Journal</button></div></div>
+      <div className="footer__links">
+        <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate('/product/touchline?custom=1')}>Custom lab</button></div>
+        <div><span>STORIES</span><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/#custom')}>How custom works</button></div>
+        <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button disabled title="Shipping policy page has not been published">Shipping · soon</button><button disabled title="Returns policy page has not been published">Returns · soon</button></div>
+        <div><span>FOLLOW · COMING SOON</span><button disabled title="Official Instagram link is not configured">Instagram</button><button disabled title="Official TikTok link is not configured">TikTok</button><button disabled title="The journal has not been published">Journal</button></div>
+      </div>
       <div className="footer__wordmark">EXTRA TIME<span>+</span></div>
       <div className="footer__legal"><span>© 2026 EXTRA TIME STUDIO</span><span>PRIVACY · TERMS · ACCESSIBILITY</span><span>MADE FOR THE GAME AFTER THE GAME.</span></div>
     </footer>
@@ -421,6 +431,8 @@ function FixedFooterMenu({ path, bagCount, openCart, hidden = false }) {
 
 function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptUsed }) {
   const [copied, setCopied] = useState(false)
+  const panelRef = useRef(null)
+  useDialogFocus(open, panelRef, onClose)
   const isiOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent)
   const install = async () => {
     if (!deferredPrompt) return
@@ -441,9 +453,9 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
       }
     } catch {}
   }
-  return <div className={`install-sheet ${open ? 'is-open' : ''}`} aria-hidden={!open}>
-    <button className="backdrop" onClick={onClose} aria-label="Close app install guide"/>
-    <section className="install-sheet__panel" role="dialog" aria-modal="true" aria-label="Add Extra Time to home screen">
+  return <div className={`install-sheet ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={!open}>
+    <button className="backdrop" onClick={onClose} aria-label="Close app install guide" tabIndex={-1}/>
+    <section ref={panelRef} className="install-sheet__panel" role="dialog" aria-modal="true" aria-label="Add Extra Time to home screen" tabIndex={-1}>
       <div className="install-sheet__head"><span><b>90<sup>+</sup></b> APP MODE</span><IconButton label="Close" onClick={onClose}><X/></IconButton></div>
       <div className="install-sheet__body"><Download size={24}/><h2>Add Extra Time<br/>to your home screen</h2><p>Open it like an app with less browser chrome and faster access to your bag and custom orders.</p></div>
       {deferredPrompt ? <button className="install-sheet__primary" onClick={install}><Download size={16}/> ADD TO HOME SCREEN</button> : <div className="install-sheet__steps">
@@ -464,6 +476,8 @@ function Shop({ onAdd }) {
   const [filter, setFilter] = useState('ALL')
   const [sort, setSort] = useState('FEATURED')
   const [filterOpen, setFilterOpen] = useState(false)
+  const filterRef = useRef(null)
+  useDialogFocus(filterOpen, filterRef, () => setFilterOpen(false))
   let shown = filter === 'ALL' ? products : products.filter(product => product.color.toUpperCase() === filter)
   shown = [...shown].sort((a, b) => sort === 'PRICE LOW' ? a.price - b.price : sort === 'PRICE HIGH' ? b.price - a.price : 0)
   return (
@@ -475,19 +489,21 @@ function Shop({ onAdd }) {
         <label>SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={15}/></label>
       </div>
       <section className="shop-grid section"><div className="product-grid">{shown.map(product => <ProductCard key={product.id} product={product} onAdd={onAdd}/>)}</div></section>
-      <div className={`filter-sheet ${filterOpen ? 'is-open' : ''}`}><div><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div><p>COLOUR</p>{['ALL', 'BLACK', 'WHITE', 'OXBLOOD'].map(item => <button key={item} className={filter === item ? 'is-active' : ''} onClick={() => setFilter(item)}>{item}<span>{item === 'ALL' ? products.length : products.filter(product => product.color.toUpperCase() === item).length}</span></button>)}<button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
+      <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}><div><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div><p>COLOUR</p>{['ALL', 'BLACK', 'WHITE', 'OXBLOOD'].map(item => <button key={item} className={filter === item ? 'is-active' : ''} onClick={() => setFilter(item)}>{item}<span>{item === 'ALL' ? products.length : products.filter(product => product.color.toUpperCase() === item).length}</span></button>)}<button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
       <Newsletter/>
     </main>
   )
 }
 
 function SizeFinder({ open, onClose, onRecommend }) {
+  const panelRef = useRef(null)
+  useDialogFocus(open, panelRef, onClose)
   const [height, setHeight] = useState(175)
   const [weight, setWeight] = useState(72)
   const [fit, setFit] = useState('RELAXED')
   const getSize = () => weight < 60 ? 'S' : weight < 76 ? (fit === 'RELAXED' ? 'L' : 'M') : weight < 90 ? (fit === 'RELAXED' ? 'XL' : 'L') : 'XXL'
   return (
-    <div className={`size-modal ${open ? 'is-open' : ''}`} aria-hidden={!open}><button className={`backdrop ${open ? 'is-open' : ''}`} onClick={onClose} aria-label="Close size finder"/><div className="size-modal__panel"><div className="drawer-head"><h2>FIND MY SIZE</h2><IconButton label="Close" onClick={onClose}><X/></IconButton></div><p>Two measurements. One clearer choice.</p><label>HEIGHT <strong>{height} CM</strong><input type="range" min="150" max="200" value={height} onChange={event => setHeight(Number(event.target.value))}/></label><label>WEIGHT <strong>{weight} KG</strong><input type="range" min="45" max="110" value={weight} onChange={event => setWeight(Number(event.target.value))}/></label><div className="fit-toggle"><span>PREFERRED FIT</span>{['ATHLETIC', 'RELAXED'].map(item => <button className={fit === item ? 'is-active' : ''} key={item} onClick={() => setFit(item)}>{item}</button>)}</div><div className="size-result"><span>WE RECOMMEND</span><strong>{getSize()}</strong><p>For {height} cm / {weight} kg in a {fit.toLowerCase()} fit.</p></div><button className="button button--dark" onClick={() => { onRecommend(getSize()); onClose() }}>CHOOSE SIZE {getSize()}</button></div></div>
+    <div className={`size-modal ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={!open}><button className={`backdrop ${open ? 'is-open' : ''}`} onClick={onClose} aria-label="Close size finder" tabIndex={-1}/><div ref={panelRef} className="size-modal__panel" role="dialog" aria-modal="true" aria-label="Find my size" tabIndex={-1}><div className="drawer-head"><h2>FIND MY SIZE</h2><IconButton label="Close" onClick={onClose}><X/></IconButton></div><p>Approximate guidance only. Check the product measurements before ordering.</p><label>HEIGHT <strong>{height} CM</strong><input type="range" min="150" max="200" value={height} onChange={event => setHeight(Number(event.target.value))}/></label><label>WEIGHT <strong>{weight} KG</strong><input type="range" min="45" max="110" value={weight} onChange={event => setWeight(Number(event.target.value))}/></label><div className="fit-toggle"><span>PREFERRED FIT</span>{['ATHLETIC', 'RELAXED'].map(item => <button className={fit === item ? 'is-active' : ''} key={item} onClick={() => setFit(item)}>{item}</button>)}</div><div className="size-result"><span>WE RECOMMEND</span><strong>{getSize()}</strong><p>For {height} cm / {weight} kg in a {fit.toLowerCase()} fit.</p></div><button className="button button--dark" onClick={() => { onRecommend?.(getSize()); onClose() }}>{onRecommend ? `CHOOSE SIZE ${getSize()}` : 'DONE'}</button></div></div>
   )
 }
 
@@ -505,9 +521,23 @@ function ProductPage({ product, onAdd, startPersonalized = false }) {
   const [customNote, setCustomNote] = useState(savedDraft?.note || '')
   const [customError, setCustomError] = useState('')
   const [added, setAdded] = useState(false)
+  useEffect(() => { if (startPersonalized) setPersonalized(true) }, [startPersonalized])
+  useEffect(() => {
+    try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues, note:customNote, size, selectedColor })) } catch {}
+  }, [product.id, customValues, customNote, size, selectedColor])
   const availableFields = product.customFields || ['name', 'number']
   const aiPreview = savedAi?.productId === product.id ? savedAi : null
   const colorImages = { Black: '/assets/jersey-black.webp', White: '/assets/jersey-white.webp', Oxblood: '/assets/jersey-oxblood.webp' }
+  const chooseOrderType = enabled => {
+    setPersonalized(enabled)
+    setCustomError('')
+    setAdded(false)
+    const url = new URL(window.location.href)
+    if (enabled) url.searchParams.set('custom', '1')
+    else url.searchParams.delete('custom')
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
   const updateCustom = (key, rawValue) => {
     const field = personalizationFields[key]
     const value = field?.inputMode === 'numeric' ? rawValue.replace(/\D/g, '') : rawValue.toUpperCase()
@@ -516,7 +546,7 @@ function ProductPage({ product, onAdd, startPersonalized = false }) {
     setAdded(false)
   }
   const openAi = () => {
-    window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues, note:customNote, size, selectedColor }))
+    try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues, note:customNote, size, selectedColor })) } catch {}
     navigate(`/studio?product=${product.id}`)
   }
   const add = () => {
@@ -570,8 +600,8 @@ function ProductPage({ product, onAdd, startPersonalized = false }) {
           <div className="option-block"><div><span>SIZE</span><button onClick={() => setFinder(true)}>FIND MY SIZE</button></div><div className="sizes">{['XS','S','M','L','XL','XXL'].map(item => <button className={size === item ? 'is-active' : ''} onClick={() => { setSize(item); setAdded(false) }} key={item}>{item}</button>)}</div><p className="model-size">Model is 180 cm / 74 kg and wears M.</p></div>
           <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}>
             <div className="pdp-custom__choice" aria-label="Order type">
-              <button className={!personalized ? 'is-active' : ''} onClick={() => { setPersonalized(false); setCustomError(''); setAdded(false) }}><span>Standard</span><small>As shown</small></button>
-              <button className={personalized ? 'is-active' : ''} onClick={() => { setPersonalized(true); setAdded(false) }}><span>Personalized</span><small>Name, number + more</small></button>
+              <button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button>
+              <button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>Name, number + more</small></button>
             </div>
             {personalized && <div className="pdp-custom__body">
               <div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields below change. Leave any field blank to keep the listing as shown.</p></div>
@@ -602,8 +632,17 @@ function ProductPage({ product, onAdd, startPersonalized = false }) {
 }
 
 function VaultPage() {
+  const archives = [
+    ['2025', 'THE LONG WALK', 'A jersey about leaving the tunnel for the last time.', '/assets/hero-tunnel.webp'],
+    ['2024', 'HOME AFTER DARK', 'Made from the sound of a wet five-a-side court.', '/assets/editorial-player.webp'],
+    ['2023', 'FIRST TOUCH', 'Our first study of football memory.', '/assets/jersey-white.webp']
+  ]
   return (
-    <main className="vault-page"><section className="vault-page__hero"><p>THE ARCHIVE / 2023—2026</p><h1>THE<br />VAULT.</h1><span>Every drop leaves a story.<br />Some never return.</span></section><section className="vault-page__list">{[['2025','THE LONG WALK','A jersey about leaving the tunnel for the last time.','/assets/hero-tunnel.webp'],['2024','HOME AFTER DARK','Made from the sound of a wet five-a-side court.','/assets/editorial-player.webp'],['2023','FIRST TOUCH','Our first study of football memory.','/assets/jersey-white.webp']].map((item,index) => <article key={item[0]}><span>{item[0]}</span><img src={item[3]} alt=""/><div><p>SOLD OUT FOREVER / 0{index+1}</p><h2>{item[1]}</h2><span>{item[2]}</span><ButtonLink light>VIEW THE STORY</ButtonLink></div></article>)}</section><Newsletter/></main>
+    <main className="vault-page">
+      <section className="vault-page__hero"><p>THE ARCHIVE / 2023—2026</p><h1>THE<br />VAULT.</h1><span>Every drop leaves a story.<br />Some never return.</span></section>
+      <section className="vault-page__list">{archives.map((item,index) => <article key={item[0]}><span>{item[0]}</span><img src={item[3]} alt=""/><div><p>SOLD OUT FOREVER / 0{index+1}</p><h2>{item[1]}</h2><span>{item[2]}</span><ButtonLink light onClick={() => navigate('/shop')}>EXPLORE CURRENT DROP</ButtonLink></div></article>)}</section>
+      <Newsletter/>
+    </main>
   )
 }
 
@@ -612,17 +651,26 @@ function NotFound() {
 }
 
 function App() {
-  const [path, setPath] = useState(window.location.pathname)
+  const [route, setRoute] = useState(() => window.location.pathname + window.location.search + window.location.hash)
+  const path = route.split(/[?#]/)[0]
+  const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState([])
   const [footerHidden, setFooterHidden] = useState(false)
   const [installOpen, setInstallOpen] = useState(false)
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState(null)
   const [appInstalled, setAppInstalled] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const lastScrollY = useRef(window.scrollY)
   useEffect(() => {
-    const onPop = () => setPath(window.location.pathname)
+    const onPop = () => {
+      setRoute(window.location.pathname + window.location.search + window.location.hash)
+      setSearchOpen(false)
+      setCartOpen(false)
+      setInstallOpen(false)
+      setSizeGuideOpen(false)
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
@@ -632,9 +680,12 @@ function App() {
     const product = products.find(item => item.id === id) || products.find(item => item.id === 'touchline') || products[0]
     const next = `/product/${product.id}?custom=1`
     window.history.replaceState({}, '', next)
-    setPath(`/product/${product.id}`)
+    setRoute(next)
   }, [path])
-  useEffect(() => { document.body.classList.toggle('no-scroll', searchOpen || cartOpen || installOpen) }, [searchOpen, cartOpen, installOpen])
+  useEffect(() => {
+    document.body.classList.toggle('no-scroll', searchOpen || cartOpen || installOpen || sizeGuideOpen)
+    return () => document.body.classList.remove('no-scroll')
+  }, [searchOpen, cartOpen, installOpen, sizeGuideOpen])
   useEffect(() => {
     if (!('serviceWorker' in window.navigator)) return
     window.navigator.serviceWorker.register('/sw.js').catch(() => {})
@@ -676,8 +727,8 @@ function App() {
       window.removeEventListener('scroll', onScroll)
       window.clearTimeout(settleTimer)
     }
-  }, [path])
-  const footerActuallyHidden = footerHidden && !searchOpen && !cartOpen && !installOpen
+  }, [route])
+  const footerActuallyHidden = footerHidden && !searchOpen && !cartOpen && !installOpen && !sizeGuideOpen
   useEffect(() => {
     document.documentElement.classList.toggle('footer-nav-hidden', footerActuallyHidden)
     return () => document.documentElement.classList.remove('footer-nav-hidden')
@@ -685,7 +736,7 @@ function App() {
   if (path.startsWith('/admin')) return <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening control room…</p></div>}><AdminApp /></Suspense>
   const addToCart = (product, size = 'M') => {
     setCart(current => {
-      const found = current.find(item => item.product.id === product.id && item.size === size)
+      const found = current.find(item => item.product.id === product.id && item.size === size && item.product.color === product.color)
       return found ? current.map(item => item === found ? {...item, qty:item.qty+1} : item) : [...current, { product, size, qty: 1 }]
     })
     setCartOpen(true)
@@ -698,23 +749,24 @@ function App() {
   else if (path === '/custom') {
     const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'
     const customProduct = products.find(item => item.id === customProductId) || products.find(item => item.id === 'touchline') || products[0]
-    page = <ProductPage product={customProduct} onAdd={addToCart} startPersonalized/>
+    page = <ProductPage key={customProduct.id} product={customProduct} onAdd={addToCart} startPersonalized/>
   }
-  else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio /></Suspense>
+  else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search}/></Suspense>
   else if (path === '/vault') page = <VaultPage/>
   else if (path.startsWith('/product/')) {
-    const product = products.find(item => item.id === path.split('/').pop()) || products[0]
-    page = <ProductPage product={product} onAdd={addToCart}/>
+    const product = products.find(item => item.id === path.split('/').pop())
+    page = product ? <ProductPage key={product.id} product={product} onAdd={addToCart} startPersonalized={new URLSearchParams(search).get('custom') === '1'}/> : <NotFound/>
   } else page = <NotFound/>
   return (
     <>
       <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled}/>
       {page}
-      <Footer/>
+      <Footer openSizeGuide={() => setSizeGuideOpen(true)}/>
       <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} hidden={footerActuallyHidden}/>
       <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)} onPromptUsed={() => setInstallPrompt(null)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)}/>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty}/>
+      <SizeFinder open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)}/>
     </>
   )
 }

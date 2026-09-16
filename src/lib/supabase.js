@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { adminProducts, adminTemplates } from '../admin-data'
 import { adminCollections, adminMenus, adminProductOptions, adminTheme } from '../admin-builder-data'
 import { storyTemplates } from '../template-engine'
+import { buildListingInput, normalizeProduct, normalizeTemplate, validateListing } from './catalog-model'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -12,62 +13,21 @@ export const supabase = supabaseConfigured ? createClient(supabaseUrl, supabaseA
 const previewResult = (data, error = null) => ({ data, source: 'preview', error })
 
 export async function fetchAdminProducts() {
-  if (!supabase) return previewResult(adminProducts)
+  if (!supabase) return { data:[], source:'error', error:'Supabase is not configured.' }
   const { data, error } = await supabase.from('pod_products').select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))').order('updated_at', { ascending: false })
-  if (error || !data?.length) return previewResult(adminProducts, error?.message || null)
-  return { data, source: 'supabase', error: null }
+  if (error) return { data:[], source:'error', error:error.message }
+  return { data: (data || []).map(row => normalizeProduct(row)), source: 'supabase', error: null }
 }
 
 export async function saveAdminProduct(product) {
-  if (!supabase) return previewResult(product)
-  const payload = {
-    id: product.id,
-    handle: product.handle || product.id,
-    title: product.title || product.name,
-    subtitle: product.subtitle || product.story,
-    description: product.description || product.story,
-    price: Number(product.price),
-    compare_at: product.compareAt ? Number(product.compareAt) : null,
-    status: product.status || 'DRAFT',
-    badge: product.badge || null,
-    type: product.type || 'READY TO SHIP',
-    template_id: product.templateId || storyTemplates.find(item => item.name === product.template)?.id || 'after-90-core',
-    image: product.image,
-    color: product.color,
-    artwork_lock: Number(product.artworkLock ?? 100),
-    personalization: product.personalization || [],
-    inventory: Number(product.inventory ?? 0),
-    updated_at: new Date().toISOString()
-  }
-  const { data, error } = await supabase.from('pod_products').upsert(payload).select().single()
-  if (error) return previewResult(product, error.message)
-  if (product.variants?.length) {
-    await supabase.from('pod_product_variants').upsert(product.variants.map(variant => ({
-      id: variant.id,
-      product_id: product.id,
-      sku: variant.sku,
-      option_values: variant.values || variant.option_values || {},
-      price: Number(variant.price ?? product.price ?? 0),
-      compare_at: variant.compareAt ? Number(variant.compareAt) : null,
-      inventory: Number(variant.inventory ?? 0),
-      status: variant.status === 'LOW STOCK' ? 'ACTIVE' : variant.status || 'ACTIVE',
-      updated_at: new Date().toISOString()
-    })))
-  }
-  if (product.options?.length) {
-    for (const [optionIndex, option] of product.options.entries()) {
-      const optionSlug = String(option.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-      const optionId = `${product.id}-${optionSlug}`
-      await supabase.from('pod_product_options').upsert({ id: optionId, product_id: product.id, name: option.name, sort_order: optionIndex })
-      if (option.values?.length) {
-        await supabase.from('pod_product_option_values').upsert(option.values.map((label, valueIndex) => {
-          const valueSlug = String(label).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-          return { id: `${optionId}-${valueSlug}`, option_id: optionId, label, slug: valueSlug, sort_order: valueIndex }
-        }))
-      }
-    }
-  }
-  return { data, source: 'supabase', error: null }
+  if (!supabase) return { data:null, source:'error', error:'Supabase is not configured. Nothing was saved.' }
+  const errors = validateListing(product)
+  if (errors.length) return { data:null, source:'error', error:errors.join(' ') }
+  const { data, error } = await supabase.rpc('pod_save_listing', {
+    listing: buildListingInput(product), expected_updated_at: product._persisted ? product.updatedAt : null
+  })
+  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Listing migration is not installed. Apply 20260916_listing_foundation.sql before saving. Nothing was saved.' : error.message }
+  return { data:normalizeProduct(data), source:'supabase', error:null }
 }
 
 export async function fetchProductVariants(productId) {
@@ -90,9 +50,9 @@ export async function fetchProductVariants(productId) {
 export async function fetchAdminTemplates() {
   if (!supabase) return previewResult(adminTemplates)
   const { data, error } = await supabase.from('pod_templates').select('*').order('updated_at', { ascending: false })
-  if (error || !data?.length) return previewResult(adminTemplates, error?.message || null)
+  if (error) return { data:[], source:'error', error:error.message }
   const slotLabels = { BACK_NAME:'NAME + NUMBER', BACK_NUMBER:'NAME + NUMBER', FRONT_NUMBER:'NAME + NUMBER', CITY:'TEAM / CITY', CITY_CODE:'TEAM / CITY', COORDINATES:'TEAM / CITY', YEAR:'YEAR', MILESTONE_1:'MILESTONE 1', MILESTONE_2:'MILESTONE 2', MILESTONE_3:'MILESTONE 3', MOTTO:'MOTTO', ACCENT_COLOR:'COLOUR', METAL_ACCENT:'COLOUR', CREST:'CREST INITIALS', CHAMPIONSHIP_YEARS:'CHAMPIONSHIP YEARS', OPTIONAL_PHOTO:'OPTIONAL PHOTO' }
-  return { data: data.map(row => ({ ...row, editable_slots: (row.editable_slots || []).map(item => slotLabels[item] || item), locked_layers: row.locked_layers || [] })), source: 'supabase', error: null }
+  return { data: (data || []).map(row => normalizeTemplate({ ...row, editable_slots: [...new Set((row.editable_slots || []).map(item => slotLabels[item] || item))], locked_layers: row.locked_layers || [] })), source: 'supabase', error: null }
 }
 
 export async function fetchRuntimeTemplates() {

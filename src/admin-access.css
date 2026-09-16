@@ -1,0 +1,17 @@
+.admin-access { min-height:100dvh; padding:48px 20px; display:grid; place-items:center; background:var(--chalk); }
+.admin-access__panel { width:min(440px,100%); padding:32px; background:#fff; border-top:4px solid var(--ink); }
+.admin-access__brand { display:flex; align-items:baseline; gap:12px; font:800 34px var(--headline); text-decoration:none; }
+.admin-access__brand span { font:700 15px var(--body); }
+.admin-access h1 { margin:28px 0 14px; font:700 34px/1.08 var(--headline); }
+.admin-access p { font-size:14px; line-height:1.6; color:#585851; }
+.admin-access label { display:grid; gap:8px; margin:20px 0; font-size:14px; }
+.admin-access input { width:100%; padding:12px; border:1px solid var(--line); background:var(--chalk); font-size:16px; }
+.admin-access__submit { width:100%; min-height:48px; padding:12px; color:var(--chalk); background:var(--ink); font-size:14px; }
+.admin-access__secondary { width:100%; min-height:48px; padding:12px; border:1px solid var(--ink); font-size:14px; }
+.admin-access__text-button { display:block; margin:16px auto 0; padding:8px; color:#585851; font-size:13px; text-decoration:underline; text-underline-offset:3px; }
+.admin-access__panel > a:last-child { display:inline-block; margin-top:24px; font-size:13px; }
+.admin-access .admin-access__error { color:#ae2222; }
+.admin-access .admin-access__notice { padding:12px; border-left:3px solid #227247; background:#eff8f2; color:#1f5c3b; }
+.admin-session-bar { display:flex; justify-content:flex-end; gap:16px; padding:10px 20px; background:#fff; font:500 12px var(--body); flex-wrap:wrap; }
+.admin-session-bar button { text-decoration:underline; }
+.admin-load-error { margin:20px; padding:20px; border:1px solid #b63838; background:#fff5f5; font-size:14px; line-height:1.5; }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'extra-time-shell-v2'
+const CACHE_NAME = 'extra-time-shell-v3'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
 
 self.addEventListener('install', event => {
@@ -6,7 +6,7 @@ self.addEventListener('install', event => {
 })
 
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()))
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('extra-time-shell-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()))
 })
 
 self.addEventListener('fetch', event => {

@@ -1,0 +1,62 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+
+const source = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
+const css = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
+const focus = await readFile(new URL('../src/useDialogFocus.js', import.meta.url), 'utf8')
+
+test('closed install sheet cannot intercept pointer events', () => {
+  const rule = css.match(/\.install-sheet \{([^}]+)\}/)?.[1]
+  assert.match(rule, /pointer-events:\s*none/)
+  assert.match(rule, /visibility:\s*hidden/)
+  const backdrop = css.match(/\.install-sheet \.backdrop \{([^}]+)\}/)?.[1]
+  assert.doesNotMatch(backdrop, /visibility:\s*visible/)
+  assert.match(css, /\.install-sheet\.is-open \.backdrop \{[^}]*visibility:\s*visible/)
+})
+
+test('closed panels are inert to keyboard and screen-reader interactions', () => {
+  for (const name of ['mobile-menu', 'search-overlay', 'cart-drawer', 'install-sheet', 'filter-sheet', 'size-modal']) {
+    const tag = source.split('\n').find(line => line.includes(`className={\``) && line.includes(name))
+    assert.ok(tag, `${name} exists`)
+    assert.match(tag, /inert=\{!\w+\}/, `${name} must be inert when closed`)
+    assert.match(tag, /aria-hidden=\{!\w+\}/, `${name} must be hidden from assistive technology when closed`)
+  }
+})
+
+test('routing observes query changes and isolates different product state', () => {
+  assert.match(source, /setRoute\(window\.location\.pathname \+ window\.location\.search \+ window\.location\.hash\)/)
+  assert.match(source, /<ProductPage key=\{product\.id\}/)
+  assert.match(source, /startPersonalized=\{new URLSearchParams\(search\)\.get\('custom'\) === '1'\}/)
+  assert.match(source, /useEffect\(\(\) => \{ if \(startPersonalized\) setPersonalized\(true\) \}, \[startPersonalized\]\)/)
+})
+
+test('navigation closes overlays and product drafts remain scoped by listing', () => {
+  const handler = source.match(/const onPop = \(\) => \{([^}]+)\}/)?.[1]
+  for (const name of ['Search', 'Cart', 'Install', 'SizeGuide']) assert.match(handler, new RegExp(`set${name}Open\\(false\\)`))
+  assert.match(source, /extra-time-pdp-draft-\$\{product\.id\}/)
+  assert.match(source, /item\.product\.color === product\.color/)
+})
+
+test('Standard clears the custom URL flag so the Custom shortcut can open it again', () => {
+  const chooseOrderType = source.match(/const chooseOrderType = enabled => \{([\s\S]*?)\n  \}/)?.[1]
+  assert.ok(chooseOrderType)
+  assert.match(chooseOrderType, /url\.searchParams\.set\('custom', '1'\)/)
+  assert.match(chooseOrderType, /url\.searchParams\.delete\('custom'\)/)
+  assert.match(chooseOrderType, /history\.replaceState/)
+  assert.match(chooseOrderType, /dispatchEvent\(new PopStateEvent\('popstate'\)\)/)
+})
+
+test('Escape closes dialogs and focus returns to the opener', () => {
+  assert.match(focus, /event\.key === 'Escape'/)
+  assert.match(focus, /closeRef\.current\?\.\(\)/)
+  assert.match(focus, /event\.key !== 'Tab'/)
+  assert.match(focus, /previousFocus\.focus\(\{ preventScroll: true \}\)/)
+  assert.match(focus, /removeEventListener\('keydown', onKeyDown\)/)
+})
+
+test('unconnected checkout and signup never imply a completed transaction', () => {
+  assert.match(source, /<button disabled aria-describedby="checkout-status">CHECKOUT NOT AVAILABLE YET/)
+  assert.doesNotMatch(source, /YOU'RE ON THE TEAM|Watch your inbox/)
+  assert.doesNotMatch(source, /<ButtonLink light>VIEW THE STORY/)
+})
