@@ -1,6 +1,6 @@
 # Extra Time — Story Commerce prototype
 
-An interactive storefront prototype built from the supplied football-culture / custom-POD direction.
+Custom POD storefront and control room, built from the supplied football-culture direction.
 
 ## Run locally
 
