@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <path d="M0 390 512 84v86L0 476Z" fill="#d72c2c" opacity=".95"/>
+  <text x="42" y="276" fill="#f4f3ee" font-family="Arial Narrow,Arial,sans-serif" font-size="190" font-weight="800" letter-spacing="-16">90</text>
+  <text x="350" y="178" fill="#f8f04a" font-family="Arial,sans-serif" font-size="116" font-weight="800">+</text>
+  <text x="47" y="356" fill="#f4f3ee" font-family="Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="8">EXTRA TIME</text>
+</svg>

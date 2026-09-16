@@ -35,6 +35,12 @@ npm run preview
 
 The checkout, customer account and Shopify data layer are intentionally represented as frontend states. Connect these components to Shopify products, variants, cart endpoints, metafields and metaobjects for production commerce.
 
+## Mobile app experience
+
+The fixed mobile navigation moves out of the way while the customer scrolls down, returns immediately on upward scrolling, and returns after a short pause. Product-page purchase actions use the freed bottom space while the menu is hidden.
+
+The storefront is installable as a Progressive Web App. [`public/manifest.webmanifest`](<D:/APP Dự Án/custom pod/public/manifest.webmanifest>) defines standalone display, home-screen icons and Shop/Custom shortcuts; [`public/sw.js`](<D:/APP Dự Án/custom pod/public/sw.js>) provides a network-first shell cache. The header install action uses the browser install prompt when supported and otherwise shows iOS/Android home-screen instructions plus native sharing.
+
 ## Customer customization flow
 
 The customer-facing flow is intentionally short: open a listing, choose standard or personalized, enter the available text details, leave an optional note and add to bag without leaving the product page. There is no canvas, layer panel, drag, resize or live typography editor. Each product's `customFields` array in [`src/data.js`](<D:/APP Dự Án/custom pod/src/data.js>) controls exactly which fields appear.

@@ -7,6 +7,7 @@ import {
   Check,
   ChevronDown,
   CircleUserRound,
+  Download,
   Grid2X2,
   Heart,
   House,
@@ -15,6 +16,7 @@ import {
   Minus,
   Plus,
   Search,
+  Share2,
   ShoppingBag,
   Sparkles,
   SlidersHorizontal,
@@ -73,7 +75,7 @@ function Announcement() {
   )
 }
 
-function Header({ bagCount, openCart, openSearch }) {
+function Header({ bagCount, openCart, openSearch, openInstall, appInstalled }) {
   const [mega, setMega] = useState(null)
   const [mobile, setMobile] = useState(false)
   const links = ['SHOP', 'MOMENTS', 'PLAYERS', 'CUSTOM LAB']
@@ -105,6 +107,7 @@ function Header({ bagCount, openCart, openSearch }) {
         <div className="header-actions">
           <button className="text-action" onClick={openSearch}><Search size={16} /> <span>SEARCH</span></button>
           <button className="text-action desktop-account"><CircleUserRound size={16} /> <span>ACCOUNT</span></button>
+          {!appInstalled && <button className="text-action header-install" onClick={openInstall} aria-label="Add Extra Time to your home screen"><Download size={16}/><span>APP</span></button>}
           <button className="text-action" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
           <IconButton label="Open menu" className="mobile-menu-button" onClick={() => setMobile(true)}><Menu /></IconButton>
         </div>
@@ -403,17 +406,53 @@ function Footer() {
   )
 }
 
-function FixedFooterMenu({ path, bagCount, openCart }) {
+function FixedFooterMenu({ path, bagCount, openCart, hidden = false }) {
   const isCustom = path === '/custom' || path === '/studio' || (path.startsWith('/product/') && new URLSearchParams(window.location.search).get('custom') === '1')
   const items = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
     { id: 'custom', label: 'Custom', target: '/product/touchline?custom=1', icon: Sparkles, active: isCustom }
   ]
-  return <nav className="fixed-footer-menu" aria-label="Quick navigation">
-    {items.map(item => { const Icon = item.icon; return <button key={item.id} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
-    <button className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
+  return <nav className={`fixed-footer-menu ${hidden ? 'is-hidden' : ''}`} aria-label="Quick navigation" aria-hidden={hidden}>
+    {items.map(item => { const Icon = item.icon; return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
+    <button tabIndex={hidden ? -1 : 0} className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
   </nav>
+}
+
+function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled }) {
+  const [copied, setCopied] = useState(false)
+  const isiOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent)
+  const install = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const choice = await deferredPrompt.userChoice
+    if (choice?.outcome === 'accepted') onInstalled()
+    onClose()
+  }
+  const share = async () => {
+    const shareData = { title:'Extra Time', text:'Football memories, made wearable.', url:window.location.href }
+    try {
+      if (window.navigator.share) await window.navigator.share(shareData)
+      else {
+        await window.navigator.clipboard.writeText(window.location.href)
+        setCopied(true)
+        window.setTimeout(() => setCopied(false), 1800)
+      }
+    } catch {}
+  }
+  return <div className={`install-sheet ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+    <button className="backdrop" onClick={onClose} aria-label="Close app install guide"/>
+    <section className="install-sheet__panel" role="dialog" aria-modal="true" aria-label="Add Extra Time to home screen">
+      <div className="install-sheet__head"><span><b>90<sup>+</sup></b> APP MODE</span><IconButton label="Close" onClick={onClose}><X/></IconButton></div>
+      <div className="install-sheet__body"><Download size={24}/><h2>Add Extra Time<br/>to your home screen</h2><p>Open it like an app with less browser chrome and faster access to your bag and custom orders.</p></div>
+      {deferredPrompt ? <button className="install-sheet__primary" onClick={install}><Download size={16}/> ADD TO HOME SCREEN</button> : <div className="install-sheet__steps">
+        <div><strong>1</strong><span>{isiOS ? 'Tap Share in Safari' : 'Open your browser menu'}</span></div>
+        <div><strong>2</strong><span>Choose “Add to Home Screen” or “Install app”</span></div>
+      </div>}
+      <button className="install-sheet__share" onClick={share}><Share2 size={15}/>{copied ? 'LINK COPIED' : 'SHARE THIS PAGE'}</button>
+      <small>The browser controls its address bar. Installed app mode is the cleanest full-screen experience available.</small>
+    </section>
+  </div>
 }
 
 function Home({ onAdd }) {
@@ -576,6 +615,11 @@ function App() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState([])
+  const [footerHidden, setFooterHidden] = useState(false)
+  const [installOpen, setInstallOpen] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [appInstalled, setAppInstalled] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
+  const lastScrollY = useRef(window.scrollY)
   useEffect(() => {
     const onPop = () => setPath(window.location.pathname)
     window.addEventListener('popstate', onPop)
@@ -589,7 +633,54 @@ function App() {
     window.history.replaceState({}, '', next)
     setPath(`/product/${product.id}`)
   }, [path])
-  useEffect(() => { document.body.classList.toggle('no-scroll', searchOpen || cartOpen) }, [searchOpen, cartOpen])
+  useEffect(() => { document.body.classList.toggle('no-scroll', searchOpen || cartOpen || installOpen) }, [searchOpen, cartOpen, installOpen])
+  useEffect(() => {
+    if (!('serviceWorker' in window.navigator)) return
+    window.navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }, [])
+  useEffect(() => {
+    const captureInstall = event => {
+      event.preventDefault()
+      setInstallPrompt(event)
+    }
+    const installed = () => {
+      setInstallPrompt(null)
+      setAppInstalled(true)
+      setInstallOpen(false)
+    }
+    window.addEventListener('beforeinstallprompt', captureInstall)
+    window.addEventListener('appinstalled', installed)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', captureInstall)
+      window.removeEventListener('appinstalled', installed)
+    }
+  }, [])
+  useEffect(() => {
+    const mobile = window.matchMedia('(max-width: 780px)')
+    let settleTimer
+    const onScroll = () => {
+      if (!mobile.matches) { setFooterHidden(false); return }
+      const currentY = Math.max(0, window.scrollY)
+      const delta = currentY - lastScrollY.current
+      if (currentY < 28 || delta < -4) setFooterHidden(false)
+      else if (currentY > 96 && delta > 4) setFooterHidden(true)
+      lastScrollY.current = currentY
+      window.clearTimeout(settleTimer)
+      settleTimer = window.setTimeout(() => setFooterHidden(false), 700)
+    }
+    lastScrollY.current = window.scrollY
+    setFooterHidden(false)
+    window.addEventListener('scroll', onScroll, { passive:true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.clearTimeout(settleTimer)
+    }
+  }, [path])
+  const footerActuallyHidden = footerHidden && !searchOpen && !cartOpen && !installOpen
+  useEffect(() => {
+    document.documentElement.classList.toggle('footer-nav-hidden', footerActuallyHidden)
+    return () => document.documentElement.classList.remove('footer-nav-hidden')
+  }, [footerActuallyHidden])
   if (path.startsWith('/admin')) return <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening control room…</p></div>}><AdminApp /></Suspense>
   const addToCart = (product, size = 'M') => {
     setCart(current => {
@@ -616,10 +707,11 @@ function App() {
   } else page = <NotFound/>
   return (
     <>
-      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)}/>
+      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled}/>
       {page}
       <Footer/>
-    <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)}/>
+      <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} hidden={footerActuallyHidden}/>
+      <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)}/>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty}/>
     </>
