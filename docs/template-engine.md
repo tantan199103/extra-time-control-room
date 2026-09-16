@@ -6,9 +6,9 @@ The storefront is a premium custom-order intake flow, not a general design tool.
 
 The legacy deterministic renderer still contains an internal \`C17\` photo slot for backwards-compatible template definitions, but the current customer form and Admin defaults do not expose image upload.
 
-`src/data.js` defines the allowed `customFields` for every listing. `/custom?product=:id` renders only those fields and saves the selected listing ID, listing image, values, note and size with the cart request.
+`src/data.js` defines the allowed `customFields` for every listing. `/product/:id?custom=1` renders only those fields inline in the PDP and saves the selected listing ID, listing image, values, note and size with the cart request. `/custom?product=:id` redirects into this product-page state.
 
-If the customer explicitly chooses **Edit with AI**, `/studio?product=:id` opens a separate prompt workspace. The server resolves the listing again instead of trusting a browser-supplied image URL, downloads the listing's exact main image and sends it as the only edit reference. Suggestions are derived from the same `customFields`; the prompt may also describe a larger new direction.
+If the customer explicitly chooses **Edit with AI**, `/studio?product=:id` opens a separate prompt workspace. The product draft is carried forward so its long-form suggestions can update name, number, team/city, year, colour and printed message together. The server resolves the listing again instead of trusting a browser-supplied image URL, downloads the listing's exact main image and sends it as the only edit reference. The prompt may also describe a larger new direction.
 
 ## Runtime contract
 

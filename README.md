@@ -21,8 +21,8 @@ npm run preview
 - `/` — campaign-led homepage, drop, product rail, Story Explorer, player discovery, Custom Lab teaser, Vault and early access.
 - `/shop` — responsive collection page with colour filters and sorting.
 - `/product/after-90` — editorial PDP, size recommender, product story, interactive details and cart flow.
-- `/custom?product=:id` — mobile-first customer request form. It only shows the fields allowed by that listing plus an optional note and size.
-- `/studio?product=:id` — optional prompt-based AI edit workspace. It always starts from the selected listing's main image.
+- `/product/:id?custom=1` — product detail with personalization opened inline. `/custom?product=:id` is kept as a compatibility redirect into the same product page.
+- `/studio?product=:id` — optional prompt-based AI edit workspace. It starts from the selected listing's main image and carries the product-page draft into long-form prompt suggestions.
 - `/vault` — archive for sold-out drops.
 - `/admin` — control-room dashboard for catalog health, deployment pulse and recent activity.
 - `/admin/theme` — storefront Theme Studio with page selection, live desktop/mobile preview, editable copy, global design tokens and ordered section blocks.
@@ -37,9 +37,9 @@ The checkout, customer account and Shopify data layer are intentionally represen
 
 ## Customer customization flow
 
-The customer-facing flow is intentionally short: open a listing, enter the available text details, leave an optional note and save the request. There is no canvas, layer panel, drag, resize or live typography editor. Each product's `customFields` array in [`src/data.js`](<D:/APP Dự Án/custom pod/src/data.js>) controls exactly which fields appear.
+The customer-facing flow is intentionally short: open a listing, choose standard or personalized, enter the available text details, leave an optional note and add to bag without leaving the product page. There is no canvas, layer panel, drag, resize or live typography editor. Each product's `customFields` array in [`src/data.js`](<D:/APP Dự Án/custom pod/src/data.js>) controls exactly which fields appear.
 
-`Edit with AI` is an optional escape hatch for a bigger visual change. [`api/ai-preview.js`](<D:/APP Dự Án/custom pod/api/ai-preview.js>) resolves the requested product on the server, downloads that product's exact main image and sends it as the only image-edit reference. The returned image is stored with the customer request as a visual direction; it is not treated as a print-ready master. On submit, the form also attempts to insert the structured request into Supabase `customization_orders`; the cart remains usable if Supabase is not configured yet.
+`Edit with AI` is an optional escape hatch for a bigger visual change. It receives the current name, number, team/city, year, colour, printed message and note, then offers long-form prompts that can change several areas together. [`api/ai-preview.js`](<D:/APP Dự Án/custom pod/api/ai-preview.js>) resolves the requested product on the server, downloads that product's exact main image and sends it as the only image-edit reference. The returned image is stored with the customer request as a visual direction; it is not treated as a print-ready master. On submit, the PDP also attempts to insert the structured request into Supabase `customization_orders`; the cart remains usable if Supabase is not configured yet.
 
 The five original campaign/product images were generated with the built-in image generation tool from a shared art direction: anonymous football culture, original garments, no player, club, sponsor or trademark. The source PNG files are retained; the app serves optimized WebP derivatives.
 
