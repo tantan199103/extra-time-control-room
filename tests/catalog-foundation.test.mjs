@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { isAdminUser, createProductDraft, normalizeProduct, normalizeTemplate, validateListing, buildListingInput, generateVariantMatrix } from '../src/lib/catalog-model.js'
+import { isAdminUser, createProductDraft, normalizeProduct, normalizeTemplate, validateListing, buildListingInput, generateVariantMatrix, normalizeCustomFields, duplicateProductDraft, deriveAutomaticTags, productCompleteness, slugify } from '../src/lib/catalog-model.js'
 
 test('new listings have distinct IDs and SKUs', () => {
   const drafts = Array.from({length:30}, createProductDraft)
@@ -38,11 +38,45 @@ test('drafts can be incomplete, publishing needs primary image and active varian
   const product=createProductDraft(); assert.deepEqual(validateListing(product),[])
   product.status='PUBLISHED'; assert.equal(validateListing(product).length,2)
 })
-test('save contract uses selected template IDs, not inferred names or fixed defaults', () => {
+test('save contract makes listings own content and clears legacy template links', () => {
   const product=createProductDraft(); product.templateId='custom-template'; product.templateVersion='v2'
+  product.media=[{id:'media-1',type:'IMAGE',url:'https://cdn.test/a.webp',alt:'Black football shirt'}]
+  product.contentBlocks=[{id:'block-1',type:'paragraph',content:'The story.'}]
+  product.tags=['Night Match','limited']; product.productGroup='Memory Jerseys'
+  product.customFields=normalizeCustomFields(['Name','Number'])
+  product.seo={title:'A title',description:'A description'}
   const result=buildListingInput(product)
-  assert.equal(result.template_id,'custom-template'); assert.equal(result.template_version,'v2')
+  assert.equal(result.template_id,null); assert.equal(result.template_version,null)
   assert.equal(result.sku,product.sku); assert.deepEqual(result.options,[])
+  assert.deepEqual(result.media,product.media); assert.deepEqual(result.content_blocks,product.contentBlocks)
+  assert.deepEqual(result.tags,['night-match','limited']); assert.equal(result.product_group,'Memory Jerseys')
+  assert.deepEqual(result.custom_fields.map(field=>field.key),['name','number'])
+})
+
+test('structured customer fields, catalogue signals and completeness are deterministic', () => {
+  const product=createProductDraft()
+  product.customFields=normalizeCustomFields(['Name','Number','Photo'])
+  product.type='PERSONALIZED'; product.productGroup='Memory Jerseys'; product.tags=['night']
+  product.media=[{id:'v',type:'VIDEO',url:'https://cdn.test/a.mp4'}]
+  product.price=80; product.compareAt=100
+  product.variants=[{id:'v1',sku:'ONE',values:{},price:80,compareAt:100,inventory:4,status:'ACTIVE'}]
+  assert.deepEqual(product.customFields.map(field=>field.type),['text','number','photo'])
+  assert.deepEqual(deriveAutomaticTags(product),['draft','personalized','memory-jerseys','customizable','has-video','sale','low-stock'])
+  assert.equal(productCompleteness(product).percent,40)
+  assert.equal(slugify('Áo Kỷ Niệm / 90+'),'ao-ky-niem-90')
+})
+
+test('duplicating a listing creates independent IDs, SKUs and a unique draft handle', () => {
+  const product=createProductDraft(); product.handle='after-90'; product.title='After 90'; product.status='PUBLISHED'
+  product.media=[{id:'old-media',type:'IMAGE',url:'https://cdn.test/a.webp'}]
+  product.contentBlocks=[{id:'old-block',type:'paragraph',content:'Story'}]
+  product.customFields=normalizeCustomFields(['Name'])
+  product.variants=[{id:'old-var',sku:'OLD-SKU',values:{},price:90,inventory:2,status:'ACTIVE'}]
+  const copy=duplicateProductDraft(product,[product,{handle:'after-90-copy'}])
+  assert.notEqual(copy.id,product.id); assert.equal(copy.handle,'after-90-copy-2'); assert.equal(copy.status,'DRAFT')
+  assert.notEqual(copy.media[0].id,product.media[0].id); assert.equal(copy.media[0].url,product.media[0].url)
+  assert.notEqual(copy.contentBlocks[0].id,product.contentBlocks[0].id)
+  assert.notEqual(copy.variants[0].id,product.variants[0].id); assert.notEqual(copy.variants[0].sku,product.variants[0].sku); assert.equal(copy.variants[0].status,'DRAFT')
 })
 
 test('variant matrix creates only missing combinations and preserves edited values', () => {

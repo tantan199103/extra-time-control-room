@@ -28,9 +28,8 @@ npm run preview
 - `/admin/theme` — storefront Theme Studio with page selection, live desktop/mobile preview, editable copy, global design tokens and ordered section blocks.
 - `/admin/theme/menus` — header, footer and fixed-mobile navigation builder with link types, visibility, ordering and responsive preview.
 - `/admin/collections` — collection editor for content, merchandising order and product assignment.
-- `/admin/catalog` — searchable product catalog with publish state, stock, price and template linkage.
-- `/admin/products/:id` — product editor with live preview, publishing, price/stock, options, SKU-level variations and personalization policy.
-- `/admin/templates` — template builder where locked artwork layers and the allowed personalization slots are managed separately.
+- `/admin/catalog` — searchable listing catalogue with status, group, tag and automatically derived sale/stock/media filters plus one-click duplication.
+- `/admin/products/:id` — the Listing Workspace for Story/SEO, direct image/video upload, rich content blocks, SKU-level variations and bulk pricing, structured customer fields, catalogue routing and AI-assisted copy.
 - `/admin/settings` — Supabase, GitHub and Vercel connection status plus safe environment setup notes.
 
 Checkout, customer accounts, newsletter signup and several advanced admin controls are not connected. Unavailable controls are now disabled and labeled instead of silently doing nothing or displaying false success. No checkout/payment backend was added by the interaction repair.
@@ -53,12 +52,14 @@ The five original campaign/product images were generated with the built-in image
 
 ## Supabase, GitHub and Vercel handoff
 
-1. Create a Supabase project and run [`supabase/schema.sql`](<D:/APP Dự Án/custom pod/supabase/schema.sql>) in the SQL editor.
+1. Create a Supabase project and run [`supabase/schema.sql`](<D:/APP Dự Án/custom pod/supabase/schema.sql>) in the SQL editor. For an existing project, apply the files in [`supabase/migrations`](<D:/APP Dự Án/custom pod/supabase/migrations>) in filename order. `20260916_listing_workspace.sql` adds listing-owned content/media/custom fields, variation cost data, the atomic save contract and the protected `product-media` bucket without deleting legacy artwork-template data.
 2. Copy [`.env.example`](<D:/APP Dự Án/custom pod/.env.example>) to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The admin UI uses preview data until both variables exist, then reads the isolated `pod_*` tables through the Supabase adapter. Admin writes remain protected by the `app_metadata.extra_time_role = 'admin'` policy.
 3. Push this folder to GitHub. The included [`.github/workflows/ci.yml`](<D:/APP Dự Án/custom pod/.github/workflows/ci.yml>) runs `npm ci` and `npm run build` on every push and pull request to `main`.
 4. Import the GitHub repository into Vercel. `vercel.json` configures the Vite build and SPA rewrite so `/admin/*`, `/custom`, `/studio` and `/product/*` work on refresh. Add the same two `VITE_SUPABASE_*` variables in Vercel Project Settings before deploying.
 
 To connect the optional AI edit route through APIKEY.FUN, add `AI_IMAGE_API_KEY` as a server-only Vercel variable. The app defaults to `https://api.apikey.fan/v1/images/edits` with model `gpt-image-2`; `AI_IMAGE_API_URL` can still override the endpoint if APIKEY.FUN changes its production gateway. Do not use the `slb.apikey.fan` endpoint for this route because that gateway disables image generation. Never prefix the key with `VITE_`, because that would expose it to the browser bundle.
+
+The Admin listing writer uses the same server-only APIKEY.FUN key by default and calls an OpenAI-compatible chat endpoint. Set `AI_TEXT_API_KEY`, `AI_TEXT_API_URL=https://api.apikey.fan/v1` and `AI_TEXT_MODEL` when you want a separate text model/key; otherwise it falls back to `AI_IMAGE_API_KEY` and `gpt-4.1-mini`. The server validates the Supabase access token and the scoped `app_metadata.extra_time_role = 'admin'` claim before forwarding a title, story or SEO request. AI output is always presented as a draft that an administrator must explicitly apply.
 
 The deterministic high-resolution renderer lives at [`api/render-artwork.js`](<D:/APP Dự Án/custom pod/api/render-artwork.js>) as a Vercel serverless function. Set `SUPABASE_SERVICE_ROLE_KEY` and (optionally) `SUPABASE_ARTWORK_BUCKET=artwork` only in Vercel server-side environment variables when you want rendered PNG masters uploaded to Supabase Storage. Keep the service-role key out of the browser.
 

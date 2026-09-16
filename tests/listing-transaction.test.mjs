@@ -12,6 +12,8 @@ test('listing migration and transaction run against isolated PostgreSQL', async 
       create table auth.users(id uuid primary key);
       insert into auth.users values ('00000000-0000-0000-0000-000000000001');
       create table storage.buckets(id text primary key,name text,public boolean);
+      create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text not null,name text not null,owner_id uuid);
+      alter table storage.objects enable row level security;
       create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
       create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
     `)
@@ -22,15 +24,23 @@ test('listing migration and transaction run against isolated PostgreSQL', async 
     const scopedMigration=await readFile(new URL('../supabase/migrations/20260916_scoped_admin.sql',import.meta.url),'utf8')
     await db.exec(scopedMigration)
     await db.exec(scopedMigration)
+    const workspaceMigration=await readFile(new URL('../supabase/migrations/20260916_listing_workspace.sql',import.meta.url),'utf8')
+    await db.exec(workspaceMigration)
+    await db.exec(workspaceMigration)
     await db.exec(`grant usage on schema public,auth to authenticated,anon;
       grant select,insert,update,delete on all tables in schema public to authenticated;
+      grant usage on schema storage to authenticated,anon;
+      grant select on storage.buckets to authenticated,anon;
+      grant select,insert,update,delete on storage.objects to authenticated,anon;
       grant usage,select on all sequences in schema public to authenticated;
       set role authenticated;
       set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
       set request.jwt.claims = '{"app_metadata":{"role":"ADMIN","extra_time_role":"admin"}}';`)
-    const listing={id:'qa-listing',title:'QA Listing',handle:'qa-listing',status:'PUBLISHED',image:'/assets/test.webp',price:89,options:[{name:'Size',values:['S','M']}],variants:[
-      {id:'qa-small',sku:'QA-S',option_values:{Size:'S'},price:89,inventory:2,status:'ACTIVE'},
-      {id:'qa-medium',sku:'QA-M',option_values:{Size:'M'},price:92,inventory:3,status:'ACTIVE'}
+    const listing={id:'qa-listing',title:'QA Listing',subtitle:'A short story',description:'A detailed design story.',handle:'qa-listing',status:'PUBLISHED',image:'/assets/test.webp',price:89,
+      media:[{id:'media-1',type:'IMAGE',url:'/assets/test.webp',alt:'Test shirt'}],content_blocks:[{id:'block-1',type:'paragraph',content:'The story.'}],tags:['memory','night-match'],product_group:'Memory Jerseys',taxonomy:{category:'Jerseys'},custom_fields:[{id:'field-1',key:'name',label:'Name',type:'text',required:false,placeholder:'YOUR NAME',maxLength:14,help:'',options:[]}],seo:{title:'QA Listing',description:'QA listing search description'},ai_metadata:{},personalization:['Name'],artwork_lock:70,
+      options:[{name:'Size',values:['S','M']}],variants:[
+      {id:'qa-small',sku:'QA-S',option_values:{Size:'S'},price:89,cost:32.5,inventory:2,weight_grams:220,barcode:'111',status:'ACTIVE'},
+      {id:'qa-medium',sku:'QA-M',option_values:{Size:'M'},price:92,cost:34,inventory:3,weight_grams:230,barcode:'222',status:'ACTIVE'}
     ]}
     const save=async (value,stamp=null)=>(await db.query('select public.pod_save_listing($1::jsonb,$2::timestamptz) as result',[JSON.stringify(value),stamp])).rows[0].result
     let saved
@@ -38,8 +48,13 @@ test('listing migration and transaction run against isolated PostgreSQL', async 
       saved=await save(listing)
       assert.equal(saved.inventory,5)
       assert.equal(saved.pod_product_variants.length,2)
+      assert.equal(Number(saved.pod_product_variants.find(row=>row.id==='qa-small').cost),32.5)
       assert.equal(saved.pod_product_options[0].pod_product_option_values.length,2)
+      assert.deepEqual(saved.tags,['memory','night-match'])
+      assert.equal(saved.template_id,null)
       assert.equal((await db.query("select count(*)::int n from public.pod_audit_logs where entity_id='qa-listing'")).rows[0].n,1)
+      assert.equal((await db.query("select count(*)::int n from storage.buckets where id='product-media'")).rows[0].n,1)
+      await db.query("insert into storage.objects(bucket_id,name) values('product-media','qa-listing/image.webp')")
     })
     await t.test('new save cannot overwrite an existing listing without its revision',async()=>{
       await assert.rejects(save({...listing,title:'Overwrite'}),/changed elsewhere/)
@@ -78,6 +93,7 @@ test('listing migration and transaction run against isolated PostgreSQL', async 
     await t.test('customer-editable scoped role is rejected and public catalogue reads still work',async()=>{
       await db.exec(`set request.jwt.claims = '{"user_metadata":{"extra_time_role":"admin"}}';`)
       await assert.rejects(save(listing),/Admin permission/)
+      await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('product-media','forbidden.webp')"),/row-level security/)
       await db.exec('reset role; grant select on public.pod_products to anon; set role anon')
       const rows=(await db.query('select id,status from public.pod_products')).rows
       assert.ok(rows.length>0)

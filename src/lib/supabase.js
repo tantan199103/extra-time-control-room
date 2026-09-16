@@ -26,8 +26,52 @@ export async function saveAdminProduct(product) {
   const { data, error } = await supabase.rpc('pod_save_listing', {
     listing: buildListingInput(product), expected_updated_at: product._persisted ? product.updatedAt : null
   })
-  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Listing migration is not installed. Apply 20260916_listing_foundation.sql before saving. Nothing was saved.' : error.message }
+  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Listing migration is not installed. Apply 20260916_listing_workspace.sql before saving. Nothing was saved.' : error.message }
   return { data:normalizeProduct(data), source:'supabase', error:null }
+}
+
+const mediaTypes = new Map([
+  ['image/jpeg','IMAGE'], ['image/png','IMAGE'], ['image/webp','IMAGE'], ['image/avif','IMAGE'],
+  ['video/mp4','VIDEO'], ['video/webm','VIDEO']
+])
+
+export async function uploadProductMedia(file, productId) {
+  if (!supabase) throw new Error('Supabase is not configured. Media was not uploaded.')
+  const type = mediaTypes.get(file?.type)
+  if (!type) throw new Error('Use JPG, PNG, WebP, AVIF, MP4 or WebM files.')
+  const sizeLimit = type === 'VIDEO' ? 80 * 1024 * 1024 : 15 * 1024 * 1024
+  if (!file.size || file.size > sizeLimit) throw new Error(`${type === 'VIDEO' ? 'Video' : 'Image'} must be smaller than ${sizeLimit / 1024 / 1024} MB.`)
+  const extension = (file.name.split('.').pop() || (type === 'VIDEO' ? 'mp4' : 'webp')).toLowerCase().replace(/[^a-z0-9]/g, '')
+  const safeName = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'media'
+  const id = globalThis.crypto.randomUUID()
+  const path = `${String(productId).replace(/[^a-zA-Z0-9-]/g, '-')}/${id}-${safeName}.${extension}`
+  const { error } = await supabase.storage.from('product-media').upload(path, file, { contentType:file.type, cacheControl:'31536000', upsert:false })
+  if (error) throw new Error(error.message)
+  const { data } = supabase.storage.from('product-media').getPublicUrl(path)
+  if (!data?.publicUrl) throw new Error('The upload finished but no public media URL was returned.')
+  return { id:`media-${id}`, type, url:data.publicUrl, path, filename:file.name, alt:'', createdAt:new Date().toISOString() }
+}
+
+export async function requestAiListingCopy(product, brief = {}) {
+  if (!supabase) throw new Error('Supabase is not configured. AI copy needs an authenticated admin session.')
+  const { data:{ session }, error:sessionError } = await supabase.auth.getSession()
+  if (sessionError || !session?.access_token) throw new Error('Your admin session expired. Sign in again before using AI.')
+  const response = await fetch('/api/ai-listing-copy', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${session.access_token}` },
+    body:JSON.stringify({
+      product:{
+        title:product.title, subtitle:product.subtitle, description:product.description, type:product.type,
+        productGroup:product.productGroup, tags:product.tags, image:product.image,
+        media:(product.media || []).slice(0,8).map(item => ({ type:item.type, url:item.url, alt:item.alt })),
+        customFields:(product.customFields || []).map(field => field.label)
+      },
+      brief
+    })
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'AI copy could not be generated.')
+  return result
 }
 
 export async function fetchProductVariants(productId) {
@@ -41,7 +85,7 @@ export async function fetchProductVariants(productId) {
   return {
     data: {
       options: (options || []).map(option => ({ name: option.name, values: (option.pod_product_option_values || []).sort((a, b) => a.sort_order - b.sort_order).map(value => value.label) })),
-      variants: (variants || []).map(variant => ({ ...variant, values: variant.option_values || {}, compareAt: variant.compare_at }))
+      variants: (variants || []).map(variant => ({ ...variant, values: variant.option_values || {}, compareAt: variant.compare_at, weightGrams:variant.weight_grams }))
     },
     source: 'supabase', error: null
   }
