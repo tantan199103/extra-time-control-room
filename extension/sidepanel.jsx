@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './sidepanel.css'
 import { createBridgeEnvelope, parseProductPackText, POD_BRIDGE_ACTIONS, POD_BRIDGE_LIMITS, sha256Hex, slugifyBridge } from '../src/lib/pod-bridge-contract'
+import { sanitizeImagePrivacyMetadata } from '../src/lib/image-privacy'
 
 const DB_NAME = 'pod-bridge-v1'
 const STORE = 'assets'
@@ -47,6 +48,7 @@ function App() {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [webappTab, setWebappTab] = useState(null)
+  const [adapterStatus, setAdapterStatus] = useState({ state: 'not-detected', count: 0 })
   const [newSlot, setNewSlot] = useState('')
   const pending = useRef(new Map())
   const captureQueue = useRef(Promise.resolve())
@@ -58,19 +60,22 @@ function App() {
         setSession(current => {
           const next = current || emptySession()
           if (next.locked) return next
+          const messageKey = message.payload?.messageKey || uuid()
+          if (next.messages.some(item => item.key === messageKey)) return next
           const parsed = parseProductPackText(message.payload?.text || '')
-          const pack = parsed.ok ? { ...parsed.value, source: { ...parsed.value.source, provider: 'chatgpt-web', messageKey: message.payload?.messageKey || '' } } : { ...next.pack, content: { ...next.pack.content, description: (next.pack.content.description ? `${next.pack.content.description}\n\n` : '') + String(message.payload?.text || '').slice(0, 5000) }, source: { provider: 'chatgpt-web', messageKey: message.payload?.messageKey || '' } }
+          const pack = parsed.ok ? { ...parsed.value, source: { ...parsed.value.source, provider: 'chatgpt-web', messageKey } } : { ...next.pack, content: { ...next.pack.content, description: (next.pack.content.description ? `${next.pack.content.description}\n\n` : '') + String(message.payload?.text || '').slice(0, 5000) }, source: { provider: 'chatgpt-web', messageKey } }
           const slots = pack.assetSlots?.length ? pack.assetSlots : next.pack.assetSlots
-          const merged = { ...next, pack: { ...next.pack, ...pack, content: { ...next.pack.content, ...pack.content }, assetSlots: slots }, messages: [...next.messages, { key: message.payload?.messageKey || uuid(), parseError: parsed.ok ? '' : parsed.errors?.join(' '), text: message.payload?.text || '' }], status: 'READY', assets: [...next.assets] }
+          const merged = { ...next, pack: { ...next.pack, ...pack, content: { ...next.pack.content, ...pack.content }, assetSlots: slots }, messages: [...next.messages, { key: messageKey, parseError: parsed.ok ? '' : parsed.errors?.join(' '), text: message.payload?.text || '' }], status: 'READY', assets: [...next.assets] }
           setNotice(parsed.ok ? 'Product Pack captured.' : `${parsed.errors?.join(' ')} Plain text was kept as a draft.`)
           return merged
         })
       }
+      if (message?.type === 'ADAPTER_STATUS') setAdapterStatus(message.payload || { state: 'unknown', count: 0 })
       if (message?.type === 'CAPTURE_ASSET') {
         captureQueue.current = captureQueue.current.then(async () => {
           const image = message.payload?.image || {}
           let blob
-          try { blob = await (await fetch(image.dataUrl)).blob() } catch { setNotice('An image could not be captured. Add it manually.'); return }
+          try { blob = await (await fetch(image.dataUrl)).blob(); blob = await sanitizeImagePrivacyMetadata(blob) } catch (caught) { setNotice(caught instanceof Error ? caught.message : 'An image could not be captured. Add it manually.'); return }
           if (!IMAGE_TYPES.includes(blob.type) || blob.size > POD_BRIDGE_LIMITS.maxImageBytes) { setNotice('An image was rejected by the MIME or 15 MB limit.'); return }
           const hash = await sha256Hex(blob); const assetId = uuid(); await putBlob(assetId, blob)
           setSession(current => {
@@ -110,16 +115,29 @@ function App() {
   const addManualFiles = async event => {
     const files = [...event.target.files].slice(0, POD_BRIDGE_LIMITS.maxImages - session.assets.length)
     const next = { ...session, assets: [...session.assets], status: 'READY' }
+    const startingCount = next.assets.length
+    const rejected = []
     for (const file of files) {
-      if (!IMAGE_TYPES.includes(file.type) || file.size > POD_BRIDGE_LIMITS.maxImageBytes || next.assets.reduce((sum, asset) => sum + asset.size, 0) + file.size > POD_BRIDGE_LIMITS.maxSessionBytes) continue
-      const hash = await sha256Hex(file); if (next.assets.some(asset => asset.sha256 === hash)) continue
-      const assetId = uuid(); await putBlob(assetId, file)
+      if (!IMAGE_TYPES.includes(file.type) || file.size > POD_BRIDGE_LIMITS.maxImageBytes) { rejected.push(`${file.name}: unsupported type or larger than 15 MB.`); continue }
+      let cleanFile
+      try { cleanFile = await sanitizeImagePrivacyMetadata(file) } catch (caught) { rejected.push(`${file.name}: ${caught instanceof Error ? caught.message : 'metadata cleaning failed.'}`); continue }
+      if (cleanFile.size > POD_BRIDGE_LIMITS.maxImageBytes || next.assets.reduce((sum, asset) => sum + asset.size, 0) + cleanFile.size > POD_BRIDGE_LIMITS.maxSessionBytes) { rejected.push(`${file.name}: session size limit exceeded.`); continue }
+      const hash = await sha256Hex(cleanFile); if (next.assets.some(asset => asset.sha256 === hash)) continue
+      const assetId = uuid()
       const slot = chooseSlot(slots, next.assets, file.name)
-      next.assets.push({ assetId, slotKey: slot.key, kind: slot.kind, label: slot.label, filename: file.name, mimeType: file.type, size: file.size, sha256: hash, primary: !next.assets.length, alt: '' })
+      await putBlob(assetId, cleanFile)
+      next.assets.push({ assetId, slotKey: slot.key, kind: slot.kind, label: slot.label, filename: file.name, mimeType: cleanFile.type, size: cleanFile.size, sha256: hash, primary: !next.assets.length, alt: '' })
     }
-    setSession(next); event.target.value = ''
+    setSession(next)
+    const added = next.assets.length - startingCount
+    setNotice(rejected.length ? `${added} image(s) added. ${rejected.join(' ')}` : `${added} image(s) added; privacy metadata removed where safe.`)
+    event.target.value = ''
   }
   const callWorker = message => new Promise((resolve, reject) => { chrome.runtime.sendMessage(message, result => { if (chrome.runtime.lastError || result?.error) reject(new Error(chrome.runtime.lastError?.message || result.error)); else resolve(result) }) })
+  const rescanChatGpt = async () => {
+    try { const result = await callWorker({ type: 'RESCAN_CHATGPT' }); setAdapterStatus({ state: result.count ? 'ready' : 'no-messages', count: result.count || 0 }); setNotice(`ChatGPT scan complete: ${result.count || 0} assistant message(s).`) }
+    catch (caught) { setAdapterStatus({ state: 'not-detected', count: 0 }); setNotice(caught instanceof Error ? caught.message : 'ChatGPT adapter is not available.') }
+  }
   const send = async () => {
     if (!session.pack.content.title || !session.pack.externalKey) { setNotice('Add a title and external key first.'); return }
     if (!session.assets.length) { setNotice('Add at least one image, or capture a message with an image.'); return }
@@ -181,6 +199,7 @@ function App() {
   return <main className="pod-panel">
     <header><div><p>POD BRIDGE / V1</p><h1>TURN CHAT<br/><em>INTO LISTINGS.</em></h1></div><span className={`status status--${session.status.toLowerCase()}`}>{session.status}</span></header>
     <div className="panel-actions"><button onClick={() => setSession(emptySession())} disabled={busy}>Start Product</button><button onClick={() => setSession(current => ({ ...current, locked: !current.locked, status: current.locked ? 'READY' : 'LOCKED' }))} disabled={busy}>{session.locked ? 'Unlock' : 'Lock Product'}</button></div>
+    <div className={`adapter-status adapter-status--${adapterStatus.state}`}><span>{adapterStatus.state === 'ready' ? `ChatGPT adapter ready · ${adapterStatus.count} assistant message(s)` : adapterStatus.state === 'no-messages' ? 'ChatGPT adapter is running; no assistant messages are visible yet.' : 'Open or refresh chatgpt.com. If no Add to POD buttons appear, reload the extension and refresh ChatGPT.'}</span><button onClick={rescanChatGpt}>Rescan</button></div>
     <label>External key<input value={session.pack.externalKey} onChange={event => updatePack('externalKey', event.target.value)} placeholder="MIL-006" disabled={session.locked}/></label>
     <label>Title<input value={session.pack.content.title} onChange={event => updateContent('title', event.target.value)} placeholder="Product title" disabled={session.locked}/></label>
     <label>Description<textarea value={session.pack.content.description} onChange={event => updateContent('description', event.target.value)} placeholder="Story and product description" disabled={session.locked}/></label>
@@ -188,6 +207,7 @@ function App() {
     {session.productId && <fieldset><legend>Fields to sync</legend>{ALL_FIELDS.map(field => <label className="check" key={field}><input type="checkbox" checked={session.selectedFields.includes(field)} onChange={() => setSession(current => ({ ...current, selectedFields: current.selectedFields.includes(field) ? current.selectedFields.filter(item => item !== field) : [...current.selectedFields, field] }))}/>{field}</label>)}</fieldset>}
     <section className="assets"><div className="section-head"><strong>Assets · {session.assets.length}/{POD_BRIDGE_LIMITS.maxImages}</strong><label className="file-button">Add images<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple onChange={addManualFiles} disabled={session.locked}/></label></div><div className="add-slot"><input value={newSlot} onChange={event => setNewSlot(event.target.value)} placeholder="New flexible slot"/><button onClick={addSlot} disabled={!newSlot.trim()}>Add slot</button></div>{session.assets.map(asset => <AssetRow key={asset.assetId} asset={asset} slots={slots} onChange={changeAsset} onRemove={() => setSession(current => { const assets = current.assets.filter(item => item.assetId !== asset.assetId); if (asset.primary && assets.length) assets[0] = { ...assets[0], primary: true }; return { ...current, assets, status: 'READY' } })}/>)}{!session.assets.length && <p className="empty">Capture an assistant message or choose images manually.</p>}</section>
     {session.messages.some(message => message.parseError) && <p className="parse-error">Some messages had invalid or missing pod-product JSON. Their plain text is preserved for manual editing.</p>}
+    <p className="privacy-note">Privacy EXIF/XMP/IPTC and hidden text controls are removed. Content Credentials/C2PA are preserved.</p>
     {notice && <p className="notice" role="status">{notice}</p>}<button className="send" onClick={send} disabled={busy || session.locked}>{busy ? 'Syncing…' : session.productId ? 'Sync selected changes' : 'Send to WebApp'}</button><small className="foot">Admin tab: {webappTab ? 'connected' : 'will open on send'} · price 0 · draft only</small>
   </main>
 }

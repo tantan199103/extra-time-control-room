@@ -65,7 +65,6 @@ export async function createBridgeDraft(packInput, products = []) {
       schemaVersion: '1.0',
       presetId: EMPTY_PERSONALIZED_JERSEY_PRESET.id,
       externalKey,
-      source: pack.source,
       state: 'RECEIVING',
       fieldHashes,
       assetHashes: {},
@@ -89,8 +88,7 @@ export function bridgeMediaItem({ asset, publicUrl, path }) {
     bridge: {
       slotKey: asset.slotKey || '',
       kind: asset.kind || 'other',
-      sourceHash: asset.sha256,
-      sourceMessageKey: asset.sourceMessageKey || ''
+      sourceHash: asset.sha256
     }
   }
 }
@@ -140,14 +138,14 @@ export async function applyBridgeContentPatch(existing, packInput, { webAppWins 
 export async function finalizeBridgeMetadata(product, pack, { operationId, assetHashes = {}, state = 'SYNCED' } = {}) {
   const fieldHashes = await bridgeFieldHashes(product)
   const previous = product.aiMetadata?.bridge || {}
+  const { source: _legacySource, ...previousWithoutSource } = previous
   const operations = [...new Set([...(previous.recentOperations || []), operationId].filter(Boolean))].slice(-POD_BRIDGE_LIMITS.maxRecentOperations)
   return {
     ...(product.aiMetadata || {}),
     bridge: {
-      ...previous,
+      ...previousWithoutSource,
       schemaVersion: '1.0',
       externalKey: pack.externalKey || previous.externalKey || '',
-      source: pack.source || previous.source || {},
       state,
       fieldHashes,
       assetHashes,

@@ -6,14 +6,20 @@ const optionSlug = value => String(value || '').trim().toLowerCase().replace(/[^
 
 export function prepareStorefrontProduct(input, persisted = true) {
   const product = normalizeProduct(input, persisted)
+  const { aiMetadata: _privateAiMetadata, ai_metadata: _privateAiMetadataRow, ...publicProduct } = product
+  const publicMedia = (product.media || []).map(item => {
+    const { bridge: _privateBridgeMetadata, ...media } = item || {}
+    return media
+  })
   const variants = (product.variants || []).filter(variant => variant.status === 'ACTIVE')
   const prices = variants.map(variant => Number(variant.price)).filter(Number.isFinite)
   const comparePrices = variants.map(variant => variant.compareAt).filter(value => value != null).map(Number).filter(Number.isFinite)
-  const primaryMedia = product.media.find(item => item.type === 'IMAGE' && item.url === product.image)
-    || product.media.find(item => item.type === 'IMAGE')
+  const primaryMedia = publicMedia.find(item => item.type === 'IMAGE' && item.url === product.image)
+    || publicMedia.find(item => item.type === 'IMAGE')
 
   return {
-    ...product,
+    ...publicProduct,
+    media: publicMedia,
     handle: product.handle || product.id,
     image: product.image || primaryMedia?.url || '',
     alt: primaryMedia?.alt || product.alt || `${product.title || product.name} product image`,
@@ -65,6 +71,84 @@ export function buildFallbackCatalog(rows = []) {
 
 export function findStorefrontProduct(products, value) {
   return products.find(product => product.handle === value || product.id === value)
+}
+
+export function isSellableVariant(variant) {
+  return Boolean(variant && variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number.isFinite(Number(variant.price)))
+}
+
+export function sellableVariants(product) {
+  return (product?.variants || []).filter(isSellableVariant)
+}
+
+export function reconcileCart(cart = [], products = []) {
+  const productMap = new Map(products.map(product => [product.id, product]))
+  const items = []
+  const issues = []
+  for (const item of Array.isArray(cart) ? cart : []) {
+    const product = productMap.get(item?.product?.id)
+    if (!product) {
+      issues.push({ key:item?.key || '', code:'PRODUCT_UNAVAILABLE', message:`${item?.product?.name || 'A product'} is no longer available and was removed.` })
+      continue
+    }
+    const variant = (product.variants || []).find(row => row.id === item.variantId)
+    if (!isSellableVariant(variant)) {
+      issues.push({ key:item?.key || '', code:'VARIANT_UNAVAILABLE', message:`${product.name} · ${item.sku || 'variation'} is no longer available and was removed.` })
+      continue
+    }
+    const requestedQty = Math.max(1, Math.trunc(Number(item.qty || 1)))
+    const qty = Math.min(requestedQty, Number(variant.inventory))
+    if (qty !== requestedQty) issues.push({ key:item?.key || '', code:'QTY_CLAMPED', message:`${product.name} quantity was reduced to ${qty} to match live stock.` })
+    items.push({
+      ...item,
+      qty,
+      sku:variant.sku,
+      options:variant.values || item.options || {},
+      unitPrice:Number(variant.price),
+      product:{ ...item.product, id:product.id, handle:product.handle, name:product.name, alt:product.alt, image:item.customization?.aiPreviewUrl || product.image, price:product.price }
+    })
+  }
+  return { items, issues }
+}
+
+export function sortCollectionProducts(products = [], collection = null, override = '') {
+  if (!collection) return [...products]
+  const links = Array.isArray(collection.productLinks) ? collection.productLinks : (collection.products || []).map((productId, index) => ({ productId, sortOrder:index, featured:index === 0 }))
+  const linkMap = new Map(links.map(link => [link.productId, link]))
+  const rows = products.filter(product => linkMap.has(product.id))
+  const mode = String(override || collection.sort || 'MANUAL').toUpperCase().replace(/\s+/g, '_')
+  return [...rows].sort((a,b) => {
+    const aLink = linkMap.get(a.id) || {}
+    const bLink = linkMap.get(b.id) || {}
+    if (mode === 'FEATURED' || mode === 'FEATURED_FIRST') return Number(Boolean(bLink.featured)) - Number(Boolean(aLink.featured)) || Number(aLink.sortOrder || 0) - Number(bLink.sortOrder || 0)
+    if (mode === 'NEWEST') return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))
+    if (mode === 'LOW_STOCK') return Number(a.inventory || 0) - Number(b.inventory || 0)
+    // Best-selling requires order analytics. Keep the explicit merchandising
+    // order until that aggregate exists instead of pretending recency is sales.
+    return Number(aLink.sortOrder || 0) - Number(bLink.sortOrder || 0)
+  })
+}
+
+export function normalizeMenuLocation(value) {
+  return String(value || '').trim().toUpperCase().replace(/\s*\/\s*/g, '_').replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')
+}
+
+export function menuAtLocation(menus = [], location) {
+  const wanted = normalizeMenuLocation(location)
+  return menus.find(menu => normalizeMenuLocation(menu.location) === wanted)
+}
+
+export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/custom', '/studio', '/membership', '/account/membership', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns'])
+
+export function menuTargetProblem(target, type = 'PAGE') {
+  const value = String(target || '').trim()
+  if (!value) return 'Enter a destination.'
+  if (String(type).toUpperCase() === 'EXTERNAL') {
+    return /^https:\/\//i.test(value) ? '' : 'External links must use HTTPS.'
+  }
+  if (value === '#bag' || value.startsWith('/#') || value.startsWith('/product/') || value.startsWith('/collection/')) return ''
+  const path = value.split(/[?#]/)[0]
+  return STOREFRONT_STATIC_ROUTES.has(path) ? '' : 'This route is not published by the storefront.'
 }
 
 export function storefrontOptionValues(product, optionName) {

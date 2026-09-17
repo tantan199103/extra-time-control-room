@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { applyBridgeContentPatch, bridgeMediaItem, createBridgeDraft, finalizeBridgeMetadata } from './lib/pod-bridge-sync'
 import { POD_BRIDGE_ACTIONS, POD_BRIDGE_LIMITS, createBridgeEnvelope, dataUrlToBlob, isBridgeEnvelope, sha256Hex, validateBridgeAssets, validateProductPack } from './lib/pod-bridge-contract'
+import { sanitizeImagePrivacyMetadata } from './lib/image-privacy'
 import { saveAdminProduct, uploadBridgeMedia } from './lib/supabase'
 
 const PAGE_CHANNEL = 'pod-bridge-response'
@@ -61,8 +62,9 @@ export default function PodBridgeReceiver({ products = [], onSaved }) {
         const part = current.chunks.get(asset.assetId)
         if (!part || part.size !== asset.chunkCount || [...part.keys()].some(index => !part.has(index))) throw new Error(`Asset ${asset.slotKey || asset.assetId} is incomplete. Retry the transfer.`)
         const base64 = [...part.keys()].sort((a, b) => a - b).map(index => part.get(index)).join('')
-        const blob = asBlob({ base64, mimeType: asset.mimeType })
-        if (blob.size !== Number(asset.size)) throw new Error(`Asset ${asset.slotKey || asset.assetId} failed its byte-size check.`)
+        const transferred = asBlob({ base64, mimeType: asset.mimeType })
+        const blob = await sanitizeImagePrivacyMetadata(transferred)
+        if (blob.size !== Number(asset.size)) throw new Error(`Asset ${asset.slotKey || asset.assetId} was not privacy-sanitized before transfer.`)
         const actualHash = await sha256Hex(blob)
         if (actualHash.toLowerCase() !== String(asset.sha256).toLowerCase()) throw new Error(`Asset ${asset.slotKey || asset.assetId} failed its SHA-256 check.`)
         const existingIndex = media.findIndex(row => row.bridge?.slotKey === asset.slotKey)

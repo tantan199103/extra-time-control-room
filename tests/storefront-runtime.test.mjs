@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { availableOptionValue, buildFallbackCatalog, findStorefrontProduct, initialSelections, resolveVariant } from '../src/lib/storefront-model.js'
+import { availableOptionValue, buildFallbackCatalog, findStorefrontProduct, initialSelections, prepareStorefrontProduct, resolveVariant } from '../src/lib/storefront-model.js'
 import { products as fallback } from '../src/data.js'
 
 test('fallback catalogue has published-looking variants while live Supabase is unavailable', () => {
@@ -21,6 +21,16 @@ test('variation resolution respects option combinations and availability', () =>
   assert.equal(availableOptionValue(product,'Size','M',{Colour:'Black'}),false)
   assert.equal(availableOptionValue(product,'Size','M',{Colour:'White'}),true)
   assert.deepEqual(initialSelections(product,{Size:'S',Colour:'Purple'}),{Size:'S'})
+})
+
+test('storefront products do not expose private bridge audit metadata', () => {
+  const product = prepareStorefrontProduct({
+    id: 'private-audit', handle: 'private-audit', title: 'Private audit', status: 'PUBLISHED', ai_metadata: { bridge: { source: { provider: 'chatgpt-web' } } },
+    media: [{ id: 'hero', type: 'IMAGE', url: '/hero.webp', bridge: { slotKey: 'hero', sourceHash: 'a'.repeat(64) } }], variants: []
+  })
+  assert.equal('aiMetadata' in product, false)
+  assert.equal('ai_metadata' in product, false)
+  assert.equal('bridge' in product.media[0], false)
 })
 
 test('storefront uses the public catalogue and server-validated custom request routes', async () => {

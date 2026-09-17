@@ -247,7 +247,10 @@ export function validateListing(product) {
   }
   if (product.status === 'PUBLISHED') {
     if (!String(product.image || '').trim()) errors.push('A primary listing image is required before publishing.')
-    if (!variants.some(variant => variant.status === 'ACTIVE')) errors.push('At least one active variant is required before publishing.')
+    if (!String(product.description || '').trim()) errors.push('A product description is required before publishing.')
+    if (!String(product.seo?.title || '').trim() || !String(product.seo?.description || '').trim()) errors.push('SEO title and description are required before publishing.')
+    if (!String(product.type || '').trim() || !(product.tags || []).length) errors.push('Product type and at least one catalogue tag are required before publishing.')
+    if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) errors.push('At least one priced, in-stock active variant is required before publishing.')
   }
   return [...new Set(errors)]
 }

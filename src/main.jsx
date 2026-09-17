@@ -20,12 +20,14 @@ import {
   ShoppingBag,
   Sparkles,
   SlidersHorizontal,
+  Ticket,
   X
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
-import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, optionNameLike, resolveVariant } from './lib/storefront-model'
-import { createCustomizationOrder, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, uploadCustomerReference } from './lib/supabase'
+import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
+import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
+import MembershipPage from './MembershipPage'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -79,7 +81,7 @@ function menuTarget(target, customProduct) {
   return target || '/'
 }
 
-function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], customProduct }) {
+function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], customProduct, account }) {
   const [mega, setMega] = useState(null)
   const [mobile, setMobile] = useState(false)
   const mobileRef = useRef(null)
@@ -89,7 +91,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     window.addEventListener('popstate', closeMenus)
     return () => window.removeEventListener('popstate', closeMenus)
   }, [])
-  const configured = menus.find(menu => /header/i.test(menu.location || ''))?.items || []
+  const configured = menuAtLocation(menus,'HEADER')?.items || menuAtLocation(menus,'HEADER_DESKTOP_MOBILE')?.items || []
   const links = configured.length ? configured : [
     {id:'shop',label:'SHOP',target:'/shop',children:[]},
     {id:'moments',label:'MOMENTS',target:'/#story',children:[]},
@@ -97,6 +99,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     {id:'custom',label:'CUSTOM LAB',target:'/custom',children:[]}
   ]
   const hasVaultLink = links.some(item => menuTarget(item.target, customProduct) === '/vault')
+  const hasClubLink = links.some(item => menuTarget(item.target, customProduct) === '/membership')
   const openLink = item => {
     const target = menuTarget(item.target,customProduct)
     if (String(item.type || '').toUpperCase() === 'EXTERNAL') window.open(target,'_blank','noopener,noreferrer')
@@ -116,11 +119,12 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
               {item.label}
             </button>
           ))}
+          {!hasClubLink && <button onClick={() => navigate('/membership')}>90+ CLUB</button>}
           {!hasVaultLink && <button onClick={() => navigate('/vault')}>THE VAULT</button>}
         </nav>
         <div className="header-actions">
           <button className="text-action" onClick={openSearch}><Search size={16} /> <span>SEARCH</span></button>
-          <button className="text-action desktop-account" disabled title="Customer accounts are not connected yet"><CircleUserRound size={16} /> <span>ACCOUNT · SOON</span></button>
+          <button className="text-action desktop-account" onClick={() => navigate('/membership#account')}><CircleUserRound size={16} /> <span>{account?.user ? 'ACCOUNT' : 'SIGN IN'}</span></button>
           {!appInstalled && <button className="text-action header-install" onClick={openInstall} aria-label="Add Extra Time to your home screen"><Download size={16}/><span>APP</span></button>}
           <button className="text-action" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
           <IconButton label="Open menu" className="mobile-menu-button" onClick={() => setMobile(true)}><Menu /></IconButton>
@@ -131,7 +135,8 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
           {links.map((item, index) => <button key={item.id || item.label} onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.label}<ArrowRight /></button>)}
-          {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
+          {!hasClubLink && <button onClick={() => { navigate('/membership'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>90+ CLUB<ArrowRight /></button>}
+          {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+(hasClubLink?1:2)).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
         </nav>
         <div className="mobile-menu__foot"><button onClick={() => { setMobile(false); openSearch() }}>Search the archive</button><span>USD / EN</span></div>
       </div>
@@ -194,11 +199,13 @@ function SearchOverlay({ open, onClose, products }) {
   )
 }
 
-function CartDrawer({ open, onClose, cart, updateQty }) {
+function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quoteLoading, quoteError, cartNotice }) {
   const panelRef = useRef(null)
   useDialogFocus(open, panelRef, onClose)
-  const subtotal = cart.reduce((sum, item) => sum + Number(item.unitPrice ?? item.product.price) * item.qty, 0)
-  const remaining = Math.max(0, 100 - subtotal)
+  const publicSubtotal = cart.reduce((sum, item) => sum + Number(item.unitPrice ?? item.product.price) * item.qty, 0)
+  const quoteMap = new Map((memberQuote?.lines || []).map(line => [line.lineKey,line]))
+  const subtotal = memberQuote?.member ? Number(memberQuote.subtotal) : publicSubtotal
+  const remaining = Math.max(0, 100 - publicSubtotal)
   return (
     <>
       <button className={`backdrop ${open ? 'is-open' : ''}`} onClick={onClose} aria-label="Close bag backdrop" aria-hidden={!open} tabIndex={-1} />
@@ -208,19 +215,19 @@ function CartDrawer({ open, onClose, cart, updateQty }) {
           <div className="empty-cart"><span>90+</span><h3>THE NEXT MEMORY<br />STARTS HERE.</h3><p>Your bag is empty. The archive is not.</p><button className="button button--dark" onClick={() => { onClose(); navigate('/shop') }}>EXPLORE THE DROP</button></div>
         ) : (
           <>
-            <div className="cart-status"><Check size={16} /> Added to your bag</div>
+            <div className="cart-status"><Check size={16} /> Bag checked against live stock</div>
+            {cartNotice && <p className="cart-runtime-notice" role="status">{cartNotice}</p>}
             <div className="cart-items">
-              {cart.map(item => <div className="cart-item" key={item.key || cartLineKey(item)}>
+              {cart.map(item => { const lineKey=item.key || cartLineKey(item); const clubLine=quoteMap.get(lineKey); const publicTotal=Number(item.unitPrice ?? item.product.price)*item.qty; return <div className="cart-item" key={lineKey}>
                 <img src={item.product.image} alt="" />
                 <div><h3>{item.product.name}</h3><p>{Object.entries(item.options || {}).map(([name,value]) => `${name} ${value}`).join(' · ') || item.sku || 'Default variation'}</p>{item.customization && <div className="cart-item__custom"><span>{Object.entries(item.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key}: ${value}`).join(' · ') || 'Custom request'}</span>{item.customization.note && <small>Note: {item.customization.note}</small>}{item.customization.aiPreviewUrl && <small>AI direction attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)} aria-label={`Decrease ${item.product.name}`}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)} aria-label={`Increase ${item.product.name}`}><Plus size={14} /></button></div></div>
-                <strong>{money(Number(item.unitPrice ?? item.product.price) * item.qty)}</strong>
-              </div>)}
+                <strong className={clubLine?.discount>0?'cart-member-price':''}>{clubLine?.discount>0&&<del>{money(publicTotal)}</del>}{money(clubLine?.lineTotal ?? publicTotal)}{clubLine?.discount>0&&<small>90+ CLUB</small>}</strong>
+              </div>})}
             </div>
-            <div className="shipping-meter">
-              <p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p>
-              <div><span style={{ width: `${Math.min(100, subtotal)}%` }} /></div>
-            </div>
-            <div className="cart-checkout"><div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button disabled aria-describedby="checkout-status">CHECKOUT NOT AVAILABLE YET</button><p id="checkout-status">Checkout is not connected. No payment or purchase has been made.</p></div>
+            {memberQuote?.member ? <div className="cart-club-status"><Ticket size={17}/><div><strong>90+ Club pricing applied</strong><span>{memberQuote.shipping?.eligible ? `Eligible ${memberQuote.shipping.method.toLowerCase()} shipping included up to ${money(memberQuote.shipping.subsidyCap)}.` : memberQuote.shipping?.reason}</span></div></div> : <button className="cart-club-upsell" onClick={()=>{onClose();navigate('/membership')}}><Ticket/><span><strong>JOIN 90+ CLUB</strong><small>20–40% eligible savings + standard shipping benefit</small></span><ArrowRight/></button>}
+            {!memberQuote?.member && <div className="shipping-meter"><p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p><div><span style={{ width: `${Math.min(100, publicSubtotal)}%` }} /></div></div>}
+            {quoteLoading&&<p className="cart-quote-note" role="status">Checking secure member price…</p>}{quoteError&&account?.user&&<p className="cart-quote-note is-error" role="alert">{quoteError}</p>}
+            <div className="cart-checkout">{memberQuote?.discount>0&&<div className="cart-checkout__saving"><span>90+ CLUB SAVING</span><strong>−{money(memberQuote.discount)}</strong></div>}<div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button disabled aria-describedby="checkout-status">CHECKOUT NOT AVAILABLE YET</button><p id="checkout-status">Checkout is not connected. No payment or purchase has been made.</p></div>
           </>
         )}
       </aside>
@@ -270,36 +277,63 @@ function Rating({ value, reviews }) {
   return <span className="rating"><span>★★★★★</span> {value} <small>({reviews})</small></span>
 }
 
-function ProductCard({ product, onAdd }) {
-  const quickVariant = product.variants?.find(variant => Number(variant.inventory || 0) > 0) || product.variants?.[0]
-  const quickLabel = quickVariant ? Object.values(quickVariant.values || {}).join(' / ') || 'DEFAULT' : 'VIEW OPTIONS'
+function ProductCard({ product, onQuickView }) {
+  const available = sellableVariants(product)
+  const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
   return (
     <article className="product-card">
       <button className="product-card__image" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
         <img src={product.image} alt={product.alt} loading="lazy" />
         <span className="product-badge">{product.badge}</span>
         <span className="heart" aria-hidden="true"><Heart size={19}/></span>
-        <span className="quick-add" onClick={event => { event.stopPropagation(); quickVariant ? onAdd(product, { variant:quickVariant, options:quickVariant.values || {} }) : navigate(`/product/${product.handle || product.id}`) }}>{quickVariant ? `QUICK ADD · ${quickLabel}` : quickLabel} <Plus size={16}/></span>
+        <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
       </button>
       <button className="product-card__info" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
         <span><strong>{product.name}</strong><small>{product.meta}</small></span>
-        <span className="product-card__price"><strong>{money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</span>
+        <span className="product-card__price"><strong>{maxPrice > Number(product.price) ? `FROM ${money(product.price)}` : money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</span>
       </button>
       {product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}
     </article>
   )
 }
 
-function ProductRail({ onAdd, title = 'THE DROP', items = [] }) {
+function ProductRail({ onQuickView, title = 'THE DROP', items = [] }) {
   return (
     <section className="product-section section">
       <div className="section-title-row"><h2>{title}</h2><ButtonLink onClick={() => navigate('/shop')}>SHOP ALL</ButtonLink></div>
-      <div className="product-grid">{items.map(product => <ProductCard key={product.id} product={product} onAdd={onAdd}/>)}</div>
+      <div className="product-grid">{items.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div>
     </section>
   )
 }
 
-function StoryExplorer() {
+function QuickView({ product, onClose, onAdd }) {
+  const panelRef = useRef(null)
+  const open = Boolean(product)
+  useDialogFocus(open,panelRef,onClose)
+  const options = product?.options || []
+  const [selections,setSelections] = useState(() => Object.fromEntries(options.filter(option => option.values?.length === 1).map(option => [option.name,option.values[0]])))
+  if (!product) return null
+  const complete = options.every(option => selections[option.name])
+  const selected = complete ? (product.variants || []).find(variant => options.every(option => variant.values?.[option.name] === selections[option.name])) : options.length ? null : sellableVariants(product)[0]
+  const canAdd = isSellableVariant(selected)
+  const shownVariant = selected || sellableVariants(product)[0]
+  const price = Number(shownVariant?.price ?? product.price)
+  const choose = (name,value) => setSelections(current => ({...current,[name]:value}))
+  return <div className="quick-view" aria-hidden={!open}>
+    <button className="backdrop is-open" onClick={onClose} aria-label="Close quick view" tabIndex={-1}/>
+    <section ref={panelRef} className="quick-view__panel" role="dialog" aria-modal="true" aria-label={`Quick view ${product.name}`} tabIndex={-1}>
+      <button className="quick-view__close" onClick={onClose} aria-label="Close quick view"><X size={19}/></button>
+      <figure><img src={product.image} alt={product.alt || product.name}/><figcaption>{product.badge || 'PUBLISHED PIECE'}</figcaption></figure>
+      <div className="quick-view__body"><span>QUICK VIEW</span><h2>{product.name}</h2><p>{product.story || product.description}</p><strong>{money(price)}</strong>
+        {options.map(option => <div className="quick-view__option" key={option.name}><div><span>{option.name}</span><b>{selections[option.name] || 'Choose'}</b></div><div>{option.values.map(value => { const other=Object.fromEntries(Object.entries(selections).filter(([name])=>name!==option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={selections[option.name]===value?'is-active':''} onClick={()=>choose(option.name,value)}>{value}</button> })}</div></div>)}
+        <button className="quick-view__add" disabled={!canAdd} onClick={() => { onAdd(product,{variant:selected,options:selected.values || selections}); onClose() }}>{!complete ? 'CHOOSE OPTIONS' : canAdd ? `ADD TO BAG — ${money(price)}` : 'SOLD OUT'}</button>
+        <button className="quick-view__full" onClick={() => { onClose(); navigate(`/product/${product.handle || product.id}`) }}>VIEW FULL PRODUCT <ArrowRight size={14}/></button>
+      </div>
+    </section>
+  </div>
+}
+
+function StoryExplorer({ product }) {
   const [active, setActive] = useState(storyPoints[0])
   return (
     <section className="story-explorer" id="story">
@@ -310,7 +344,7 @@ function StoryExplorer() {
         {storyPoints.map((point, index) => <button key={point.id} className={`hotspot ${active.id === point.id ? 'is-active' : ''}`} style={{ left: `${point.x}%`, top: `${point.y}%` }} onClick={() => setActive(point)}><span>0{index + 1}</span></button>)}
         <div className="story-card" key={active.id}><span>{String(storyPoints.indexOf(active) + 1).padStart(2, '0')} / 04</span><h3>{active.title}</h3><p>{active.text}</p></div>
       </div>
-      <div className="story-explorer__foot"><span>AFTER 90 / MEMORY JERSEY 01</span><ButtonLink light onClick={() => navigate('/product/after-90')}>READ THE FULL STORY</ButtonLink></div>
+      <div className="story-explorer__foot"><span>{product?.name || 'THE CURRENT DROP'} / MEMORY JERSEY</span><ButtonLink light onClick={() => navigate(product ? `/product/${product.handle || product.id}` : '/shop')}>READ THE FULL STORY</ButtonLink></div>
     </section>
   )
 }
@@ -407,13 +441,14 @@ function Newsletter() {
 }
 
 function Footer({ openSizeGuide, menus = [], customProduct }) {
-  const configured = menus.find(menu => /^footer$/i.test(menu.location || ''))?.items || []
+  const configured = menuAtLocation(menus,'FOOTER')?.items || []
   return (
     <footer>
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
       <div className="footer__links">
         {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`)}>Custom lab</button></div>}
         <div><span>STORIES</span><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/#custom')}>How custom works</button></div>
+        <div><span>90+ CLUB</span><button onClick={() => navigate('/membership')}>Membership</button><button onClick={() => navigate('/membership#join')}>Plans & benefits</button><button onClick={() => navigate('/membership#account')}>Member account</button></div>
         <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button disabled title="Shipping policy page has not been published">Shipping · soon</button><button disabled title="Returns policy page has not been published">Returns · soon</button></div>
         <div><span>FOLLOW · COMING SOON</span><button disabled title="Official Instagram link is not configured">Instagram</button><button disabled title="Official TikTok link is not configured">TikTok</button><button disabled title="The journal has not been published">Journal</button></div>
       </div>
@@ -428,10 +463,11 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
   const defaults = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
-    { id: 'custom', label: 'Custom', target: `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`, icon: Sparkles, active: isCustom }
+    { id: 'custom', label: 'Custom', target: `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`, icon: Sparkles, active: isCustom },
+    { id: 'club', label: 'Club', target: '/membership', icon: Ticket, active: path === '/membership' }
   ]
-  const configured = menus.find(menu => /fixed footer/i.test(menu.location || ''))?.items || []
-  const items = configured.length ? configured.filter(item => item.target !== '#bag').map(item => { const target=menuTarget(item.target,customProduct); const Icon=/custom|studio/i.test(`${item.label} ${target}`) ? Sparkles : target === '/' ? House : Grid2X2; return {...item,target,icon:Icon,active:target === '/' ? path === '/' : target.includes('custom=1') ? isCustom : path === target || (target === '/shop' && path.startsWith('/product/') && !isCustom)} }) : defaults
+  const configured = menuAtLocation(menus,'FIXED_FOOTER_MOBILE')?.items || []
+  const items = configured.length ? configured.filter(item => item.target !== '#bag').map(item => { const target=menuTarget(item.target,customProduct); const Icon=/club|member/i.test(`${item.label} ${target}`) ? Ticket : /custom|studio/i.test(`${item.label} ${target}`) ? Sparkles : target === '/' ? House : Grid2X2; return {...item,target,icon:Icon,active:target === '/' ? path === '/' : target.includes('custom=1') ? isCustom : path === target || (target === '/shop' && path.startsWith('/product/') && !isCustom)} }) : defaults
   return <nav className={`fixed-footer-menu ${hidden ? 'is-hidden' : ''}`} aria-label="Quick navigation" aria-hidden={hidden}>
     {items.map(item => { const Icon = item.icon; return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
     <button tabIndex={hidden ? -1 : 0} className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
@@ -477,15 +513,27 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
   </div>
 }
 
-function Home({ onAdd, products, theme }) {
+function Home({ onQuickView, products, theme, collections = [] }) {
   const featured = products[0]
   const customProduct = products.find(product => product.customFields?.length) || featured
-  const enabled = new Set((theme?.blocks || []).filter(block => block.enabled !== false).map(block => block.id))
-  const show = id => !theme?.blocks?.length || enabled.has(id)
-  return <>{show('hero') && <Hero content={theme?.content}/>}<DropFeature product={featured}/>{show('rail') && <ProductRail onAdd={onAdd} items={products.slice(0,4)}/>}<StoryExplorer/><PlayerDiscovery customProduct={customProduct}/>{show('custom-cta') && <CustomTeaser product={customProduct}/>}<VaultTeaser/>{show('manifesto') && <Manifesto/>}{show('newsletter') && <Newsletter/>}</>
+  const primaryCollection = collections[0]
+  const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,4) : products.slice(0,4)
+  const renderBlock = id => ({
+    hero:<Hero key="hero" content={theme?.content}/>,
+    drop:<DropFeature key="drop" product={featured}/>,
+    rail:<ProductRail key="rail" onQuickView={onQuickView} items={merchandised}/>,
+    story:<StoryExplorer key="story" product={featured}/>,
+    players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
+    'custom-cta':<CustomTeaser key="custom-cta" product={customProduct}/>,
+    vault:<VaultTeaser key="vault"/>,
+    manifesto:<Manifesto key="manifesto"/>,
+    newsletter:<Newsletter key="newsletter"/>
+  }[id] || null)
+  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','drop','rail','story','players','custom-cta','vault','manifesto','newsletter']
+  return <>{configured.map(renderBlock)}</>
 }
 
-function Shop({ onAdd, products, collection = null }) {
+function Shop({ onQuickView, products, collection = null }) {
   const params = new URLSearchParams(window.location.search)
   const [color, setColor] = useState(params.get('color')?.toUpperCase() || 'ALL')
   const [group, setGroup] = useState(params.get('group') || 'ALL')
@@ -495,7 +543,7 @@ function Shop({ onAdd, products, collection = null }) {
   const [filterOpen, setFilterOpen] = useState(false)
   const filterRef = useRef(null)
   useDialogFocus(filterOpen, filterRef, () => setFilterOpen(false))
-  const baseProducts = collection ? products.filter(product => collection.products?.includes(product.id)) : products
+  const baseProducts = collection ? sortCollectionProducts(products,collection) : products
   const productColours = product => {
     const name = optionNameLike(product,['color','colour'])
     return name ? [...new Set(product.variants.flatMap(variant => variant.values?.[name] || []))] : [product.color].filter(Boolean)
@@ -509,7 +557,7 @@ function Shop({ onAdd, products, collection = null }) {
     if (inStock && !(product.variants || []).some(variant => Number(variant.inventory || 0) > 0)) return false
     return true
   })
-  shown = [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
+  shown = sort === 'FEATURED' && collection ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
   useEffect(() => {
     const next = new URL(window.location.href)
     const set = (key,value,empty) => value === empty ? next.searchParams.delete(key) : next.searchParams.set(key,value)
@@ -529,7 +577,7 @@ function Shop({ onAdd, products, collection = null }) {
         <label>SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>NEWEST</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={15}/></label>
       </div>
       {activeCount > 0 && <div className="active-filters">{color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}{group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}{customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}{inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}<button onClick={clear}>CLEAR ALL</button></div>}
-      <section className="shop-grid section">{shown.length ? <div className="product-grid">{shown.map(product => <ProductCard key={product.id} product={product} onAdd={onAdd}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
+      <section className="shop-grid section">{shown.length ? <div className="product-grid">{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
       <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}><div><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div><p>COLOUR</p>{colours.map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productColours(product).some(value => String(value).toUpperCase() === item)).length}</span></button>)}<p>PRODUCT GROUP</p><label className="filter-sheet__select"><select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={14}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOMIZABLE <span>{customOnly ? 'ON' : 'OFF'}</span></button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK <span>{inStock ? 'ON' : 'OFF'}</span></button><button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
       <Newsletter/>
     </main>
@@ -578,7 +626,7 @@ function ProductContentBlocks({ product }) {
   })}</section>
 }
 
-function ProductPage({ product, products, onAdd, startPersonalized = false }) {
+function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account }) {
   const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
   const savedAi = readSession('extra-time-ai-preview')
   const aiPreview = savedAi?.productId === product.id && (!savedAi.expiresAt || savedAi.expiresAt > Date.now()) ? savedAi : null
@@ -651,7 +699,7 @@ function ProductPage({ product, products, onAdd, startPersonalized = false }) {
       <div className="pdp__gallery" onScroll={event => setGalleryIndex(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>{gallery.map((item,index) => <figure key={`${item.id}-${index}`} className={index > 0 && index % 3 === 0 ? 'wide' : ''}>{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <img src={item.url} alt={item.alt || `${product.name} view ${index+1}`}/>}<span>{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span></figure>)}</div>
       <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       <aside className="pdp__info">
-        {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div>
+        {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div><button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={16}/><span><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'90+ Club member pricing':'Members save 20–40% on eligible pieces'}</strong><small>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your secure price is calculated in the bag.':'See the season pass and shipping benefit.'}</small></span><ArrowRight size={16}/></button>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{option.name === sizeName && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] || 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${value}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : value}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'} · {selectedVariant.sku}</p>}
         {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={value => updateCustom(field,value)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>AI direction attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached AI direction"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Edit more with AI</strong><small>Create one coordinated direction from this exact listing image.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
@@ -661,7 +709,7 @@ function ProductPage({ product, products, onAdd, startPersonalized = false }) {
       </aside>
     </div>
     <ProductContentBlocks product={product}/>
-    <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onAdd={onAdd}/>
+    <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>
     <SizeFinder open={finder} onClose={() => setFinder(false)} onRecommend={value => sizeName && chooseOption(sizeName,value)}/>
     <div className="mobile-sticky-atc"><span><strong>{money(currentPrice)}</strong>{selectedVariant ? `${Object.values(selections).join(' · ')} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</span><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'ADD TO BAG') : 'CHOOSE OPTIONS'}</button></div>
   </main>
@@ -707,8 +755,8 @@ function useRouteMetadata({ path, product, collection }) {
     const productTitle = product?.seo?.title || product?.name
     const collectionTitle = collection?.seo?.title || collection?.name
     const withBrand = value => /extra time/i.test(value || '') ? value : `${value} — Extra Time`
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable'
-    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || 'Original football memories, designer-led jerseys and considered personalization.'
+    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable'
+    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.')
     const canonical = `${window.location.origin}${path === '/' ? '/' : path}`
     const image = product?.image || collection?.hero || `${window.location.origin}/assets/hero-tunnel.webp`
     document.title=title
@@ -732,6 +780,12 @@ function App() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState(() => readLocal('extra-time-cart-v2', []))
+  const [cartNotice,setCartNotice] = useState('')
+  const [quickViewProduct,setQuickViewProduct] = useState(null)
+  const [account,setAccount] = useState({user:null,membership:null,requests:[],error:null})
+  const [memberQuote,setMemberQuote] = useState(null)
+  const [quoteLoading,setQuoteLoading] = useState(false)
+  const [quoteError,setQuoteError] = useState('')
   const [footerHidden, setFooterHidden] = useState(false)
   const [installOpen, setInstallOpen] = useState(false)
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
@@ -755,7 +809,7 @@ function App() {
       fetchStorefrontTheme(null)
     ]).then(([catalogResult,menuResult,collectionResult,themeResult]) => {
       if(!active)return
-      setProducts(catalogResult.data?.length ? catalogResult.data : initialCatalog)
+      setProducts(catalogResult.data || [])
       setMenus(menuResult.data || [])
       setCollections(collectionResult.data || [])
       setTheme(themeResult.data || null)
@@ -771,13 +825,28 @@ function App() {
   }, [theme])
   useEffect(() => { try { window.localStorage.setItem('extra-time-cart-v2',JSON.stringify(cart)) } catch {} }, [cart])
   useEffect(() => {
-    setCart(current => current.map(item => {
-      const live=findStorefrontProduct(products,item.product?.id || item.product?.handle)
-      if(!live)return item
-      const variant=live.variants?.find(row=>row.id===item.variantId)
-      return {...item,product:{...item.product,name:live.name,handle:live.handle,alt:live.alt,image:item.customization?.aiPreviewUrl || live.image},unitPrice:Number(variant?.price ?? item.unitPrice ?? live.price)}
-    }))
-  }, [products])
+    if (!supabase || path.startsWith('/admin')) return
+    let active=true
+    const refresh=()=>customerAuthSnapshot().then(snapshot=>{if(active)setAccount(snapshot)}).catch(error=>active&&setAccount({user:null,membership:null,requests:[],error:error instanceof Error?error.message:'Account unavailable.'}))
+    refresh()
+    const {data:{subscription}}=supabase.auth.onAuthStateChange(()=>{window.setTimeout(refresh,0)})
+    return()=>{active=false;subscription.unsubscribe()}
+  }, [path.startsWith('/admin')])
+  useEffect(()=>{
+    let active=true
+    if(!account.user||!cart.length){setMemberQuote(null);setQuoteError('');setQuoteLoading(false);return()=>{active=false}}
+    setQuoteLoading(true);setQuoteError('')
+    requestMemberQuote(cart).then(result=>{if(active)setMemberQuote(result)}).catch(error=>{if(active){setMemberQuote(null);setQuoteError(error instanceof Error?error.message:'Member price unavailable.')}}).finally(()=>{if(active)setQuoteLoading(false)})
+    return()=>{active=false}
+  },[cart,account.user?.id,account.membership?.updated_at])
+  useEffect(() => {
+    if (catalogState.loading || catalogState.source !== 'supabase') return
+    setCart(current => {
+      const result=reconcileCart(current,products)
+      if(result.issues.length)setCartNotice(result.issues.map(issue=>issue.message).join(' '))
+      return result.items
+    })
+  }, [products,catalogState.loading,catalogState.source])
   useEffect(() => {
     const onPop = () => {
       setRoute(window.location.pathname + window.location.search + window.location.hash)
@@ -785,6 +854,7 @@ function App() {
       setCartOpen(false)
       setInstallOpen(false)
       setSizeGuideOpen(false)
+      setQuickViewProduct(null)
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
@@ -799,9 +869,9 @@ function App() {
     setRoute(next)
   }, [path,products])
   useEffect(() => {
-    document.body.classList.toggle('no-scroll', searchOpen || cartOpen || installOpen || sizeGuideOpen)
+    document.body.classList.toggle('no-scroll', searchOpen || cartOpen || installOpen || sizeGuideOpen || Boolean(quickViewProduct))
     return () => document.body.classList.remove('no-scroll')
-  }, [searchOpen, cartOpen, installOpen, sizeGuideOpen])
+  }, [searchOpen, cartOpen, installOpen, sizeGuideOpen, quickViewProduct])
   useEffect(() => {
     if (!('serviceWorker' in window.navigator)) return
     if (import.meta.env.DEV) {
@@ -850,15 +920,15 @@ function App() {
       window.clearTimeout(settleTimer)
     }
   }, [route])
-  const footerActuallyHidden = footerHidden && !searchOpen && !cartOpen && !installOpen && !sizeGuideOpen
+  const footerActuallyHidden = footerHidden && !searchOpen && !cartOpen && !installOpen && !sizeGuideOpen && !quickViewProduct
   useEffect(() => {
     document.documentElement.classList.toggle('footer-nav-hidden', footerActuallyHidden)
     return () => document.documentElement.classList.remove('footer-nav-hidden')
   }, [footerActuallyHidden])
   if (path.startsWith('/admin')) return <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening control room…</p></div>}><AdminApp /></Suspense>
   const addToCart = (product, selection = {}) => {
-    const variant = selection.variant || product.variants?.find(row => Number(row.inventory || 0) > 0) || product.variants?.[0]
-    if(!variant)return
+    const variant = selection.variant || sellableVariants(product)[0]
+    if(!isSellableVariant(variant)){setCartNotice(`${product.name} is sold out or no longer available.`);return}
     const line = {
       product:{ id:product.id,handle:product.handle,name:product.name,image:product.image,alt:product.alt,color:product.color,price:product.price },
       variantId:variant.id,
@@ -871,35 +941,47 @@ function App() {
     line.key=cartLineKey(line)
     setCart(current => {
       const found = current.find(item => (item.key || cartLineKey(item)) === line.key)
+      if(found && found.qty >= Number(variant.inventory)){setCartNotice(`Only ${variant.inventory} of ${product.name} are currently available.`);return current}
+      setCartNotice('')
       return found ? current.map(item => item === found ? {...item,qty:item.qty+1} : item) : [...current,line]
     })
     setCartOpen(true)
   }
-  const updateQty = (target, delta) => setCart(current => current.map(item => (item.key || cartLineKey(item)) === (target.key || cartLineKey(target)) ? {...item,qty:item.qty+delta} : item).filter(item => item.qty > 0))
+  const updateQty = (target, delta) => setCart(current => current.map(item => {
+    if((item.key || cartLineKey(item)) !== (target.key || cartLineKey(target)))return item
+    const product=products.find(row=>row.id===item.product.id)
+    const variant=product?.variants?.find(row=>row.id===item.variantId)
+    const desired=item.qty+delta
+    if(delta>0 && (!isSellableVariant(variant) || desired>Number(variant.inventory||0))){setCartNotice(`Only ${Number(variant?.inventory||0)} of ${item.product.name} are currently available.`);return item}
+    setCartNotice('')
+    return {...item,qty:desired}
+  }).filter(item => item.qty > 0))
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
   let page
-  if (path === '/') page = <Home onAdd={addToCart} products={products} theme={theme}/>
-  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onAdd={addToCart} products={products} collection={routeCollection}/>
+  if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
+  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
   else if (path === '/custom') {
     const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'
     const requested = findStorefrontProduct(products,customProductId) || customProduct
-    page = requested ? <ProductPage key={requested.id} product={requested} products={products} onAdd={addToCart} startPersonalized/> : <NotFound/>
+    page = requested ? <ProductPage key={requested.id} product={requested} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized account={account}/> : <NotFound/>
   }
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
+  else if (path === '/membership' || path === '/account/membership') page = <MembershipPage account={account} onAccountChange={setAccount}/>
   else if (path === '/vault') page = <VaultPage/>
   else if (['/privacy','/terms','/accessibility'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
-  else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} startPersonalized={new URLSearchParams(search).get('custom') === '1'}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
+  else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
   else page = <NotFound/>
   return (
     <>
-      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} customProduct={customProduct}/>
-      {catalogState.error && <div className="catalog-runtime-notice" role="status">Live catalogue is temporarily unavailable. Showing the last safe storefront preview.</div>}
+      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} customProduct={customProduct} account={account}/>
+      {catalogState.error && <div className="catalog-runtime-notice" role="status">Live catalogue is temporarily unavailable. Purchasing is paused until fresh published data is available.</div>}
       {page}
       <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct}/>
       <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} menus={menus} customProduct={customProduct} hidden={footerActuallyHidden}/>
       <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)} onPromptUsed={() => setInstallPrompt(null)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={products}/>
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty}/>
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} account={account} memberQuote={memberQuote} quoteLoading={quoteLoading} quoteError={quoteError} cartNotice={cartNotice}/>
+      <QuickView key={quickViewProduct?.id || 'closed'} product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onAdd={addToCart}/>
       <SizeFinder open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)}/>
     </>
   )

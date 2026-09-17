@@ -20,7 +20,7 @@ const broadcast = message => {
 const allowedSender = sender => Boolean(sender?.tab?.url && (sender.tab.url.startsWith('https://chatgpt.com/') || isWebAppUrl(sender.tab.url)))
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (['CAPTURE_MESSAGE', 'CAPTURE_ASSET', 'CAPTURE_ASSET_FAILED'].includes(message?.type) && sender.tab?.url?.startsWith('https://chatgpt.com/')) { broadcast(message); sendResponse({ ok: true }); return false }
+  if (['CAPTURE_MESSAGE', 'CAPTURE_ASSET', 'CAPTURE_ASSET_FAILED', 'ADAPTER_STATUS'].includes(message?.type) && sender.tab?.url?.startsWith('https://chatgpt.com/')) { broadcast(message); sendResponse({ ok: true }); return false }
   if (message?.type === 'OPEN_SIDE_PANEL' && sender.tab?.url?.startsWith('https://chatgpt.com/')) {
     chrome.sidePanel.open({ windowId: sender.tab.windowId }).then(() => sendResponse({ ok: true })).catch(error => sendResponse({ error: error.message }))
     return true
@@ -37,6 +37,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message?.type === 'GET_WEBAPP_TABS') {
     chrome.tabs.query({}, tabs => sendResponse({ tabs: tabs.filter(tab => isWebAppUrl(tab.url)).map(tab => ({ id: tab.id, title: tab.title, url: tab.url })) }))
+    return true
+  }
+  if (message?.type === 'RESCAN_CHATGPT') {
+    chrome.tabs.query({ url: 'https://chatgpt.com/*' }, tabs => {
+      const target = tabs.find(tab => tab.active) || tabs[0]
+      if (!target?.id) { sendResponse({ error: 'Open a ChatGPT conversation first.' }); return }
+      chrome.tabs.sendMessage(target.id, { type: 'POD_BRIDGE_RESCAN' }, result => {
+        if (chrome.runtime.lastError) sendResponse({ error: 'Reload the extension, then refresh the ChatGPT tab.' })
+        else sendResponse(result || { ok: true, count: 0 })
+      })
+    })
     return true
   }
   if (message?.type === 'OPEN_WEBAPP') {

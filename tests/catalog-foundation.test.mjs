@@ -38,9 +38,15 @@ test('invalid combinations, duplicate SKUs and invalid numbers are rejected', ()
   const errors=validateListing(product).join(' ')
   assert.match(errors,/SKUs/); assert.match(errors,/price/); assert.match(errors,/stock/); assert.match(errors,/combination/)
 })
-test('drafts can be incomplete, publishing needs primary image and active variant', () => {
+test('drafts can be incomplete, publishing needs a complete sellable listing', () => {
   const product=createProductDraft(); assert.deepEqual(validateListing(product),[])
-  product.status='PUBLISHED'; assert.equal(validateListing(product).length,2)
+  product.status='PUBLISHED'
+  const errors=validateListing(product).join(' ')
+  assert.match(errors,/primary listing image/)
+  assert.match(errors,/description/)
+  assert.match(errors,/SEO/)
+  assert.match(errors,/catalogue tag/)
+  assert.match(errors,/priced, in-stock active variant/)
 })
 test('save contract makes listings own content and clears legacy template links', () => {
   const product=createProductDraft(); product.templateId='custom-template'; product.templateVersion='v2'

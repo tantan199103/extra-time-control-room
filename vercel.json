@@ -6,6 +6,8 @@
     "api/render-artwork.js": { "maxDuration": 30 },
     "api/ai-preview.js": { "maxDuration": 60 },
     "api/ai-listing-copy.js": { "maxDuration": 60 },
+    "api/member-quote.js": { "maxDuration": 30 },
+    "api/membership-enroll.js": { "maxDuration": 30 },
     "api/customization-order.js": { "maxDuration": 30 },
     "api/customer-upload.js": { "maxDuration": 30 }
   },

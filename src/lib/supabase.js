@@ -10,6 +10,21 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const supabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 export const supabase = supabaseConfigured ? createClient(supabaseUrl, supabaseAnonKey) : null
 
+export const membershipPreview = {
+  program:{ id:'90-club',slug:'90-plus-club',name:'90+ Club',tagline:'More time. Better access.',description:'A season pass for people who wear the story beyond the final whistle.',status:'PUBLISHED',currency:'USD',default_discount_percent:20,max_discount_percent:40,min_margin_percent:20,benefits:[
+    {id:'member-price',title:'20–40% member pricing',copy:'The best eligible price is applied automatically.'},
+    {id:'shipping',title:'Eligible standard shipping included',copy:'Destination, method and subsidy limits are checked at quote time.'},
+    {id:'early-access',title:'Early access to new drops',copy:'Enter selected releases before the public window opens.'},
+    {id:'studio',title:'Studio priority',copy:'Custom, artwork and production fees stay transparent.'}
+  ],shipping_policy:{enabled:true,eligible_zones:['ALL'],method:'STANDARD',minimum_subtotal:0,subsidy_cap:15,excluded_product_tags:['oversize-shipping'],copy:'Standard shipping is covered up to $15 for eligible destinations.'}},
+  prices:[
+    {id:'90000000-0000-4000-8000-000000000001',program_id:'90-club',billing_interval:'MONTH',interval_months:1,label:'Monthly',amount:19,currency:'USD',status:'ACTIVE',sort_order:1},
+    {id:'90000000-0000-4000-8000-000000000003',program_id:'90-club',billing_interval:'QUARTER',interval_months:3,label:'Quarterly',amount:49,currency:'USD',status:'ACTIVE',sort_order:2},
+    {id:'90000000-0000-4000-8000-000000000012',program_id:'90-club',billing_interval:'YEAR',interval_months:12,label:'Annual',amount:169,currency:'USD',status:'ACTIVE',sort_order:3}
+  ],
+  policy:{id:'92000000-0000-4000-8000-000000000001',program_id:'90-club',version:'v1',title:'90+ Club membership policy',summary:'Benefits are subject to eligibility, price protection and the published shipping policy.',content:'Member pricing is calculated at quote time and does not normally stack with a public sale; the better eligible price applies. Standard shipping is limited by destination, method and subsidy cap. Customization, AI artwork and production upgrades are excluded unless a published benefit says otherwise. An enrollment request alone is not an active membership.',status:'PUBLISHED'}
+}
+
 const previewResult = (data, error = null) => ({ data, source: 'preview', error })
 
 export function getCustomerSessionId() {
@@ -40,15 +55,15 @@ export async function uploadCustomerReference(file, productId, fieldKey) {
 }
 
 export async function fetchStorefrontCatalog(fallback = []) {
-  if (!supabase) return previewResult(fallback)
+  if (!supabase) return import.meta.env.DEV ? previewResult(fallback) : { data:[], source:'unavailable', error:'Live catalogue is not configured.' }
   const { data, error } = await supabase
     .from('pod_products')
     .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
     .eq('status', 'PUBLISHED')
     .order('updated_at', { ascending:false })
-  if (error) return previewResult(fallback, error.message)
+  if (error) return import.meta.env.DEV ? previewResult(fallback, error.message) : { data:[], source:'unavailable', error:error.message }
   const products = (data || []).map(row => prepareStorefrontProduct(row))
-  return products.length ? { data:products, source:'supabase', error:null } : previewResult(fallback, 'No published listings were returned.')
+  return { data:products, source:'supabase', error:null }
 }
 
 export async function fetchStorefrontMenus(fallback = []) {
@@ -70,7 +85,8 @@ export async function fetchStorefrontCollections(fallback = []) {
     ...row,
     hero:row.hero_image,
     sort:row.sort_mode,
-    products:(row.pod_collection_products || []).sort((a,b) => a.sort_order - b.sort_order).map(item => item.product_id)
+    products:(row.pod_collection_products || []).sort((a,b) => a.sort_order - b.sort_order).map(item => item.product_id),
+    productLinks:(row.pod_collection_products || []).map(item => ({ productId:item.product_id, sortOrder:item.sort_order, featured:Boolean(item.featured) }))
   }))
   return { data:collections.length ? collections : fallback, source:collections.length ? 'supabase' : 'preview', error:null }
 }
@@ -242,10 +258,10 @@ export async function saveAdminMenus(menus) {
 
 export async function fetchAdminCollections() {
   if (!supabase) return previewResult(adminCollections)
-  const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order)').order('updated_at', { ascending: false })
+  const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order, featured)').order('updated_at', { ascending: false })
   if (error || !data?.length) return previewResult(adminCollections, error?.message || null)
   return {
-    data: data.map(collection => ({ ...collection, hero: collection.hero_image, sort: collection.sort_mode, products: (collection.pod_collection_products || []).sort((a, b) => a.sort_order - b.sort_order).map(item => item.product_id), count: collection.pod_collection_products?.length || 0, updatedAt: collection.updated_at })),
+    data: data.map(collection => ({ ...collection, hero: collection.hero_image, sort: collection.sort_mode, products: (collection.pod_collection_products || []).sort((a, b) => a.sort_order - b.sort_order).map(item => item.product_id), productLinks:(collection.pod_collection_products || []).map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count: collection.pod_collection_products?.length || 0, updatedAt: collection.updated_at })),
     source: 'supabase', error: null
   }
 }
@@ -266,4 +282,98 @@ export async function createCustomizationOrder(order) {
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error || 'The custom request could not be saved.')
   return { data:result.order, source:'server', error:null }
+}
+
+export async function fetchMembershipOffer() {
+  if (!supabase) return previewResult(membershipPreview)
+  const [{ data:program,error:programError },{ data:prices,error:pricesError },{ data:policies,error:policyError }] = await Promise.all([
+    supabase.from('pod_membership_programs').select('*').eq('slug','90-plus-club').eq('status','PUBLISHED').maybeSingle(),
+    supabase.from('pod_membership_prices').select('*').eq('program_id','90-club').eq('status','ACTIVE').order('sort_order'),
+    supabase.from('pod_membership_policy_versions').select('*').eq('program_id','90-club').eq('status','PUBLISHED').order('published_at',{ascending:false}).limit(1)
+  ])
+  if (programError || pricesError || policyError || !program) return previewResult(membershipPreview,programError?.message || pricesError?.message || policyError?.message || 'Membership offer is not published.')
+  return {data:{program,prices:prices || [],policy:policies?.[0] || membershipPreview.policy},source:'supabase',error:null}
+}
+
+export async function customerAuthSnapshot() {
+  if (!supabase) return {user:null,membership:null,requests:[],error:'Supabase is not configured.'}
+  const {data:{session},error}=await supabase.auth.getSession()
+  if (error || !session?.user) return {user:null,membership:null,requests:[],error:error?.message || null}
+  const [{data:memberships,error:membershipError},{data:requests,error:requestError}] = await Promise.all([
+    supabase.from('pod_memberships').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(1),
+    supabase.from('pod_membership_enrollment_requests').select('id,status,requested_at,price_id').eq('user_id',session.user.id).order('requested_at',{ascending:false}).limit(5)
+  ])
+  return {user:session.user,membership:memberships?.[0] || null,requests:requests || [],token:session.access_token,error:membershipError?.message || requestError?.message || null}
+}
+
+export async function sendCustomerMagicLink(email) {
+  if (!supabase) throw new Error('Customer sign-in needs Supabase configuration.')
+  const redirectTo=new URL('/membership',window.location.origin).toString()
+  const {error}=await supabase.auth.signInWithOtp({email:String(email||'').trim(),options:{emailRedirectTo:redirectTo,shouldCreateUser:true}})
+  if(error) throw error
+  return true
+}
+
+export async function signOutCustomer() {
+  if (!supabase) return
+  const {error}=await supabase.auth.signOut({scope:'local'})
+  if(error) throw error
+}
+
+export async function requestMembershipEnrollment({priceId,policyVersionId,note='',accepted}) {
+  if (!supabase) throw new Error('Membership enrollment needs Supabase configuration.')
+  const {data:{session}}=await supabase.auth.getSession()
+  if(!session?.access_token) throw new Error('Sign in before requesting membership.')
+  const response=await fetch('/api/membership-enroll',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({priceId,policyVersionId,note,accepted})})
+  const result=await response.json().catch(()=>({}))
+  if(!response.ok) throw new Error(result.error || 'Membership request could not be saved.')
+  return result
+}
+
+export async function requestMemberQuote(cart,{country=''}={}) {
+  if(!supabase || !cart.length) return null
+  const {data:{session}}=await supabase.auth.getSession()
+  if(!session?.access_token) return null
+  const lines=cart.map(item=>({lineKey:item.key || `${item.product.id}:${item.variantId}`,productId:item.product.id,variantId:item.variantId,qty:item.qty}))
+  const response=await fetch('/api/member-quote',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({lines,shipping:{country}})})
+  const result=await response.json().catch(()=>({}))
+  if(!response.ok) throw new Error(result.error || 'Member price could not be checked.')
+  return result
+}
+
+export async function fetchAdminMembership() {
+  if(!supabase) return previewResult({...membershipPreview,rules:[],members:[],requests:[]})
+  const [{data:program,error:programError},{data:prices,error:pricesError},{data:rules,error:rulesError},{data:policies,error:policiesError},{data:members,error:membersError},{data:requests,error:requestsError}]=await Promise.all([
+    supabase.from('pod_membership_programs').select('*').eq('id','90-club').maybeSingle(),
+    supabase.from('pod_membership_prices').select('*').eq('program_id','90-club').order('sort_order'),
+    supabase.from('pod_membership_discount_rules').select('*').eq('program_id','90-club').order('priority',{ascending:false}),
+    supabase.from('pod_membership_policy_versions').select('*').eq('program_id','90-club').order('created_at',{ascending:false}),
+    supabase.from('pod_memberships').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('program_id','90-club').order('created_at',{ascending:false}),
+    supabase.from('pod_membership_enrollment_requests').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('program_id','90-club').order('requested_at',{ascending:false})
+  ])
+  const userIds=[...new Set([...(members||[]),...(requests||[])].map(item=>item.user_id).filter(Boolean))]
+  const profileResult=userIds.length ? await supabase.from('pod_customer_profiles').select('user_id,email,display_name').in('user_id',userIds) : {data:[],error:null}
+  const profiles=new Map((profileResult.data||[]).map(profile=>[profile.user_id,profile]))
+  const error=programError||pricesError||rulesError||policiesError||membersError||requestsError||profileResult.error
+  if(error) return {data:{...membershipPreview,rules:[],policies:[],members:[],requests:[]},source:'error',error:error.message}
+  return {data:{program:program || membershipPreview.program,prices:prices || [],rules:rules || [],policies:policies || [],policy:policies?.find(item=>item.status==='PUBLISHED') || policies?.[0] || membershipPreview.policy,members:(members||[]).map(item=>({...item,pod_customer_profiles:profiles.get(item.user_id)||null})),requests:(requests||[]).map(item=>({...item,pod_customer_profiles:profiles.get(item.user_id)||null}))},source:'supabase',error:null}
+}
+
+export async function saveAdminMembership(config) {
+  if(!supabase) return {data:null,source:'error',error:'Supabase is not configured. Nothing was saved.'}
+  const {data,error}=await supabase.rpc('pod_save_membership_program',{payload:{program:config.program,prices:config.prices,rules:config.rules,policy:config.policy}})
+  if(error) return {data:null,source:'error',error:error.code==='PGRST202'?'Membership migration is not installed. Nothing was saved.':error.message}
+  return {data,source:'supabase',error:null}
+}
+
+export async function approveMembershipRequest(requestId) {
+  if(!supabase) return {data:null,error:'Supabase is not configured.'}
+  const {data,error}=await supabase.rpc('pod_admin_approve_membership_request',{request_id:requestId,period_end:null})
+  return {data,error:error?.message || null}
+}
+
+export async function setAdminMembership(payload) {
+  if(!supabase) return {data:null,error:'Supabase is not configured.'}
+  const {data,error}=await supabase.rpc('pod_admin_set_membership',{payload})
+  return {data,error:error?.message || null}
 }

@@ -1,4 +1,4 @@
-const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g
+const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u200B-\u200D\u202A-\u202E\u2066-\u2069\uFEFF]/g
 
 export const POD_BRIDGE_PROTOCOL_VERSION = '1.0'
 
@@ -31,7 +31,7 @@ export const POD_BRIDGE_LIMITS = Object.freeze({
 
 export const POD_BRIDGE_ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
 
-const text = (value, max = POD_BRIDGE_LIMITS.maxTextLength) => String(value ?? '').replace(CONTROL_CHARS, '').trim().slice(0, max)
+const text = (value, max = POD_BRIDGE_LIMITS.maxTextLength) => String(value ?? '').normalize('NFC').replace(CONTROL_CHARS, '').trim().slice(0, max)
 const list = (value, max, itemMax = 240) => Array.isArray(value) ? value.map(item => text(item, itemMax)).filter(Boolean).slice(0, max) : []
 
 export function slugifyBridge(value, fallback = 'asset') {

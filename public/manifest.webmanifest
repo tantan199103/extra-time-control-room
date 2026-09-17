@@ -16,6 +16,7 @@
   ],
   "shortcuts": [
     { "name": "Shop the drop", "short_name": "Shop", "url": "/shop", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Personalize a jersey", "short_name": "Custom", "url": "/product/touchline?custom=1", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Personalize a jersey", "short_name": "Custom", "url": "/product/touchline?custom=1", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "90+ Club membership", "short_name": "Club", "url": "/membership", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

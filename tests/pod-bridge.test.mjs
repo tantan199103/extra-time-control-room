@@ -18,6 +18,13 @@ test('Product Pack parses fenced JSON and sanitizes unsupported commercial field
   assert.equal('status' in result.value, false)
 })
 
+test('Product Pack removes hidden controls and normalizes visible text', () => {
+  const result = parseProductPackText(`\`\`\`pod-product\n${JSON.stringify({ ...pack, content: { ...pack.content, title: 'Fa\u200Bm\u202Eily\uFEFF of Honor', description: 'Cafe\u0301' } })}\n\`\`\``)
+  assert.equal(result.ok, true)
+  assert.equal(result.value.content.title, 'Family of Honor')
+  assert.equal(result.value.content.description, 'Café')
+})
+
 test('invalid JSON and missing fenced blocks return explicit fallback errors', () => {
   assert.match(parseProductPackText('plain draft copy').errors[0], /No pod-product/)
   assert.match(parseProductPackText('```json\n{}\n```').errors[0], /No pod-product/)
@@ -39,6 +46,7 @@ test('bridge drafts always use the safe empty personalized jersey preset', async
   assert.equal(draft.variants.length, 5)
   assert.ok(draft.variants.every(variant => variant.status === 'DRAFT' && variant.inventory === 0 && variant.price === 0 && variant.compareAt === null))
   assert.equal(draft.aiMetadata.bridge.state, 'RECEIVING')
+  assert.equal('source' in draft.aiMetadata.bridge, false)
 })
 
 test('WebApp-wins skips fields edited after the previous sync', async () => {
@@ -56,12 +64,14 @@ test('WebApp-wins skips fields edited after the previous sync', async () => {
 
 test('recent bridge operations are bounded and deduplicated', async () => {
   const { draft } = await createBridgeDraft(pack)
+  draft.aiMetadata.bridge.source = { provider: 'chatgpt-web' }
   draft.aiMetadata.bridge.recentOperations = Array.from({ length: 20 }, (_, index) => `op-${index}`)
   draft.aiMetadata = await finalizeBridgeMetadata(draft, pack, { operationId: 'op-19' })
   assert.equal(draft.aiMetadata.bridge.recentOperations.length, 20)
   draft.aiMetadata = await finalizeBridgeMetadata(draft, pack, { operationId: 'op-20' })
   assert.equal(draft.aiMetadata.bridge.recentOperations.length, 20)
   assert.equal(draft.aiMetadata.bridge.recentOperations.at(-1), 'op-20')
+  assert.equal('source' in draft.aiMetadata.bridge, false)
 })
 
 test('asset descriptors reject invalid MIME and oversized images', async () => {

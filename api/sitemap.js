@@ -5,7 +5,7 @@ const escapeXml = value => String(value).replace(/[<>&'"]/g, character => ({'<':
 export default async function handler(request,response) {
   if(request.method !== 'GET') return response.status(405).send('Method not allowed')
   const origin=(process.env.SITE_URL || 'https://extra-time-control-room.vercel.app').replace(/\/$/,'')
-  const urls=[{path:'/',priority:'1.0'},{path:'/shop',priority:'0.9'},{path:'/vault',priority:'0.6'}]
+  const urls=[{path:'/',priority:'1.0'},{path:'/shop',priority:'0.9'},{path:'/membership',priority:'0.7'},{path:'/vault',priority:'0.6'}]
   const supabaseUrl=process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
   const key=process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if(supabaseUrl && key){
