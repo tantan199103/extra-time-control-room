@@ -253,6 +253,11 @@ export async function fetchAdminMenus() {
 
 export async function saveAdminMenus(menus) {
   if (!supabase) return previewResult(menus)
+  // The legacy menu RPC silently drops media fields. Probe the additive
+  // column first so the Admin never reports a successful save that cannot
+  // round-trip representative-image overrides.
+  const { error: capabilityError } = await supabase.from('pod_menu_items').select('image_mode').limit(1)
+  if (capabilityError) return { data:menus, source:'error', error:'Menu media migration is not installed. Apply 20260920_menu_navigation_media.sql before saving navigation.' }
   const normalize = (items = [], parentId = null) => items.map((item, index) => ({
     ...item,
     parentId,

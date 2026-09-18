@@ -88,6 +88,7 @@ test('storefront uses the public catalogue and server-validated custom request r
   assert.match(adminQueue,/review_note/)
   assert.match(adminQueue,/NOTE_UPDATE/)
   assert.match(order,/assetRefs/)
+  assert.match(adapter,/Menu media migration is not installed/)
 })
 
 test('service worker excludes sensitive routes from runtime caching', async () => {
