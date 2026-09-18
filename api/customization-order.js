@@ -65,6 +65,7 @@ export default async function handler(request, response) {
     const aiPreviewId = safeText(body.aiPreviewId,180)
     const aiPreviewUrl = safeText(body.aiPreviewUrl, 1600)
     if (aiPreviewUrl && !/^https:\/\//i.test(aiPreviewUrl)) throw Object.assign(new Error('AI preview must be a secure stored URL.'), { status:422 })
+    if (aiPreviewUrl && !aiPreviewId) throw Object.assign(new Error('AI preview reference is missing its stored preview ID.'), { status:422 })
     let aiPreviewStorage=null
     if(aiPreviewId){
       const {data:job,error:jobError}=await client.from('pod_ai_preview_jobs').select('id,product_id,session_hash,storage_path,status').eq('id',aiPreviewId).eq('product_id',product.id).eq('session_hash',identityHash).eq('status','COMPLETED').maybeSingle()

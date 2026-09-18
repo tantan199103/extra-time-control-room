@@ -65,6 +65,7 @@ test('storefront uses the public catalogue and server-validated custom request r
   assert.match(ai,/createSignedUrl/)
   assert.match(order,/field this listing does not allow/)
   assert.match(order,/idempotencyKey/)
+  assert.match(order,/AI preview reference is missing its stored preview ID/)
   const adminQueue=await readFile(new URL('../api/admin-customizations.js',import.meta.url),'utf8')
   assert.match(adminQueue,/requireAdmin/)
   assert.match(adminQueue,/createSignedUrl/)
