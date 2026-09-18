@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { adminProducts } from '../admin-data'
 import { adminCollections, adminMenus, adminProductOptions, adminTheme } from '../admin-builder-data'
 import { buildListingInput, normalizeProduct, validateListing } from './catalog-model'
-import { prepareStorefrontProduct } from './storefront-model'
+import { buildMenuTree, prepareStorefrontProduct, resolveMenuImages } from './storefront-model'
 import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
 import { apiFetch } from './api-client'
 
@@ -68,15 +68,16 @@ export async function fetchStorefrontCatalog(fallback = []) {
   return { data:products, source:'supabase', error:null }
 }
 
-export async function fetchStorefrontMenus(fallback = []) {
-  if (!supabase) return previewResult(fallback)
+export async function fetchStorefrontMenus(fallback = [], context = {}) {
+  if (!supabase) return previewResult(resolveMenuImages(fallback, context))
   const { data, error } = await supabase.from('pod_menus').select('*, pod_menu_items(*)').eq('status','PUBLISHED').order('updated_at',{ascending:false})
-  if (error) return previewResult(fallback, error.message)
+  if (error) return previewResult(resolveMenuImages(fallback, context), error.message)
   const menus = (data || []).map(menu => {
-    const all = (menu.pod_menu_items || []).filter(item => item.visible !== false).sort((a,b) => a.sort_order - b.sort_order)
-    return { ...menu, items:all.filter(item => !item.parent_id).map(item => ({ ...item, type:item.link_type, children:all.filter(child => child.parent_id === item.id).map(child => ({...child,type:child.link_type})) })) }
+    const all = (menu.pod_menu_items || []).filter(item => item.visible !== false)
+    return { ...menu, items:buildMenuTree(all) }
   })
-  return { data:menus.length ? menus : fallback, source:menus.length ? 'supabase' : 'preview', error:null }
+  const resolved = resolveMenuImages(menus.length ? menus : fallback, context)
+  return { data:resolved, source:menus.length ? 'supabase' : 'preview', error:null }
 }
 
 export async function fetchStorefrontCollections(fallback = []) {
@@ -98,7 +99,8 @@ export async function fetchStorefrontTheme(fallback = null) {
   const { data, error } = await supabase.from('pod_themes').select('*, pod_pages(*)').eq('status','PUBLISHED').order('updated_at',{ascending:false}).limit(1).maybeSingle()
   if (error || !data) return previewResult(fallback, error?.message || 'No published theme was returned.')
   const definition = data.definition && typeof data.definition === 'object' ? data.definition : {}
-  return { data:{ ...data, ...definition, tokens:{ ...(fallback?.tokens || {}), ...(data.tokens || {}) }, pages:data.pod_pages || definition.pages || [] }, source:'supabase', error:null }
+  const pageRows = data.pod_pages || definition.pages || []
+  return { data:{ ...data, ...definition, tokens:{ ...(fallback?.tokens || {}), ...(data.tokens || {}) }, pages:pageRows.map(page => ({ ...page, representativeImage:page.representative_image || page.representativeImage || '', representativeAlt:page.representative_alt || page.representativeAlt || '' })) }, source:'supabase', error:null }
 }
 
 export async function fetchAdminProducts() {
@@ -224,7 +226,7 @@ export async function fetchAdminTheme() {
       tokens: { ...adminTheme.tokens, ...(theme.tokens || {}) },
       blocks:definition.blocks || theme.blocks || [],
       content:definition.content || theme.content || {},
-      pages: pagesError || !pages?.length ? (definition.pages || adminTheme.pages) : pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout }))
+      pages: pagesError || !pages?.length ? (definition.pages || adminTheme.pages) : pages.map(page => ({ ...page, representativeImage:page.representative_image || page.representativeImage || '', representativeAlt:page.representative_alt || page.representativeAlt || '', sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout }))
     },
     source: 'supabase', error: pagesError?.message || null
   }
@@ -244,15 +246,23 @@ export async function fetchAdminMenus() {
   if (error || !data?.length) return previewResult(adminMenus, error?.message || null)
   const rows = data.map(menu => {
     const all = (menu.pod_menu_items || []).sort((a, b) => a.sort_order - b.sort_order)
-    const roots = all.filter(item => !item.parent_id).map(item => ({ ...item, type: item.link_type, target: item.target, children: all.filter(child => child.parent_id === item.id).map(child => ({ ...child, type: child.link_type })) }))
-    return { ...menu, location: menu.location, updatedAt: menu.updated_at, items: roots }
+    return { ...menu, location: menu.location, updatedAt: menu.updated_at, items: buildMenuTree(all) }
   })
   return { data: rows, source: 'supabase', error: null }
 }
 
 export async function saveAdminMenus(menus) {
   if (!supabase) return previewResult(menus)
-  const payload = menus.map(menu => ({ ...menu, items:(menu.items || []).map((item,index) => ({...item,sortOrder:index,children:(item.children || []).map((child,childIndex) => ({...child,sortOrder:childIndex}))})) }))
+  const normalize = (items = [], parentId = null) => items.map((item, index) => ({
+    ...item,
+    parentId,
+    sortOrder:index,
+    imageMode:item.imageMode || item.image_mode || 'AUTO',
+    imageUrl:item.imageUrl || item.image_url || '',
+    imageAlt:item.imageAlt || item.image_alt || '',
+    children:normalize(item.children || [], item.id)
+  }))
+  const payload = menus.map(menu => ({ ...menu, location:menu.location, items:normalize(menu.items || []) }))
   const { data, error } = await supabase.rpc('pod_save_menus', { menu_payload:payload })
   if (error) return { data:menus, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
   return { data, source:'supabase', error:null }

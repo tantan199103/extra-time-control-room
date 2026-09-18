@@ -13,11 +13,11 @@ export const adminTheme = {
     radius: '0px'
   },
   pages: [
-    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 8, updatedAt: 'Today, 10:12', layout: 'Editorial drop' },
-    { id: 'collection', name: 'Collection', path: '/collection', status: 'PUBLISHED', sections: 5, updatedAt: 'Yesterday, 18:42', layout: 'Product grid' },
-    { id: 'product', name: 'Product detail', path: '/product/:handle', status: 'PUBLISHED', sections: 9, updatedAt: 'Yesterday, 16:20', layout: 'Gallery + story' },
-    { id: 'custom', name: 'Custom Lab', path: '/custom', status: 'PUBLISHED', sections: 6, updatedAt: 'Sep 12, 2026', layout: 'Form first' },
-    { id: 'vault', name: 'The Vault', path: '/vault', status: 'DRAFT', sections: 4, updatedAt: 'Sep 08, 2026', layout: 'Archive index' }
+    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 8, updatedAt: 'Today, 10:12', layout: 'Editorial drop', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Extra Time storefront hero' },
+    { id: 'collection', name: 'Collection', path: '/collection', status: 'PUBLISHED', sections: 5, updatedAt: 'Yesterday, 18:42', layout: 'Product grid', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'The 90+ drop' },
+    { id: 'product', name: 'Product detail', path: '/product/:handle', status: 'PUBLISHED', sections: 9, updatedAt: 'Yesterday, 16:20', layout: 'Gallery + story', representativeImage: '/assets/jersey-black.webp', representativeAlt: 'Product detail preview' },
+    { id: 'custom', name: 'Custom Lab', path: '/custom', status: 'PUBLISHED', sections: 6, updatedAt: 'Sep 12, 2026', layout: 'Form first', representativeImage: '/assets/jersey-white.webp', representativeAlt: 'Custom jersey preview' },
+    { id: 'vault', name: 'The Vault', path: '/vault', status: 'DRAFT', sections: 4, updatedAt: 'Sep 08, 2026', layout: 'Archive index', representativeImage: '/assets/jersey-oxblood.webp', representativeAlt: 'The archive' }
   ]
 }
 

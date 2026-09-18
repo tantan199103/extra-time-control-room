@@ -24,7 +24,7 @@ import {
   X
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
-import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
+import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
 import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
@@ -140,7 +140,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
       <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
-          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.label}<ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><strong>{league.label}</strong>{league.children?.slice(0,4).map(team => <button key={team.id} onClick={() => openLink(team)}>{team.label}</button>)}</div>)}</div>}</React.Fragment>)}
+          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><strong>{league.label}</strong>{league.children?.slice(0,4).map(team => <button key={team.id} onClick={() => openLink(team)}>{team.label}</button>)}</div>)}</div>}</React.Fragment>)}
           {!hasClubLink && <button onClick={() => { navigate('/membership'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>90+ CLUB<ArrowRight /></button>}
           {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+(hasClubLink?1:2)).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
         </nav>
@@ -162,9 +162,9 @@ function MegaMenu({ item, customProduct, onNavigate }) {
         <div className="mega-menu__taxonomy-leagues"><p>SHOP BY LEAGUE</p>{children.map(child => <button key={child.id || child.label} onClick={() => onNavigate(child)}><span><strong>{child.label}</strong><small>{child.sport || 'Team collections'}</small></span><ArrowRight size={15} /></button>)}</div>
         <div className="mega-menu__taxonomy-teams"><p>POPULAR TEAMS</p>{children.slice(0,3).map(league => <div key={league.id}><span>{league.label}</span>{(league.children || []).slice(0,6).map(team => <button key={team.id || team.label} onClick={() => onNavigate(team)}>{team.label}</button>)}</div>)}</div>
       </> : <>
-        <div className="mega-menu__links"><p>{item.label}</p>{children.map(child => <button key={child.id || child.label} onClick={() => onNavigate(child)}>{child.label}<ArrowRight size={15} /></button>)}</div>
+        <div className="mega-menu__links"><p>{item.label}</p>{children.map(child => <button className={child.representativeImage ? 'has-image' : ''} key={child.id || child.label} onClick={() => onNavigate(child)}>{child.representativeImage && <img src={child.representativeImage} alt={child.representativeAlt || ''} /> }<span>{child.label}<small>{child.representativeSource === 'CUSTOM' ? 'CUSTOM ARTWORK' : child.type || 'PAGE'}</small></span><ArrowRight size={15} /></button>)}</div>
         <button className="mega-menu__feature" onClick={() => onNavigate(item.label === 'CUSTOM LAB' ? {target:customTarget} : {target:'/shop'})}>
-          <img src={item.label === 'CUSTOM LAB' ? customProduct?.image || '/assets/jersey-white.webp' : '/assets/editorial-player.webp'} alt="" />
+          <img src={item.representativeImage || (item.label === 'CUSTOM LAB' ? customProduct?.image || '/assets/jersey-white.webp' : '/assets/editorial-player.webp')} alt={item.representativeAlt || ''} />
           <span>{item.label === 'CUSTOM LAB' ? 'CUSTOM LAB' : 'THE 90+ DROP'}<small>{item.label === 'CUSTOM LAB' ? 'BUILD YOURS' : 'DISCOVER THE STORY'} <ArrowRight size={14} /></small></span>
         </button>
       </>}
@@ -925,9 +925,11 @@ function App() {
     ]).then(([catalogResult,menuResult,collectionResult,themeResult]) => {
       if(!active)return
       setProducts(catalogResult.data || [])
-      setMenus(menuResult.data || [])
-      setCollections(collectionResult.data || [])
-      setTheme(themeResult.data || null)
+      const nextCollections = collectionResult.data || []
+      const nextTheme = themeResult.data || null
+      setMenus(resolveMenuImages(menuResult.data || [], { products:catalogResult.data || [], collections:nextCollections, pages:nextTheme?.pages || [] }))
+      setCollections(nextCollections)
+      setTheme(nextTheme)
       setCatalogState({loading:false,source:catalogResult.source,error:catalogResult.error})
     }).catch(error => active && setCatalogState({loading:false,source:'preview',error:error instanceof Error ? error.message : 'Catalogue unavailable.'}))
     return () => { active=false }

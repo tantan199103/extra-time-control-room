@@ -143,6 +143,195 @@ export function menuAtLocation(menus = [], location) {
   return menus.find(menu => normalizeMenuLocation(menu.location) === wanted)
 }
 
+// Menu media is deliberately resolved at runtime instead of storing a copied
+// product/collection image on the menu row. That keeps a navigation thumbnail
+// in sync when the linked listing changes its hero image. Admin overrides are
+// still persisted as imageMode/imageUrl/imageAlt and win over this resolver.
+export const MENU_IMAGE_MODES = new Set(['AUTO', 'CUSTOM', 'NONE'])
+
+const MENU_PAGE_IMAGE_FALLBACKS = {
+  '/': '/assets/hero-tunnel.webp',
+  '/shop': '/assets/hero-tunnel.webp',
+  '/collection': '/assets/hero-tunnel.webp',
+  '/custom': '/assets/jersey-white.webp',
+  '/studio': '/assets/jersey-white.webp',
+  '/membership': '/assets/jersey-white.webp',
+  '/vault': '/assets/jersey-oxblood.webp',
+  '/moments': '/assets/editorial-player.webp',
+  '/players': '/assets/editorial-player.webp',
+  '/shipping': '/assets/hero-tunnel.webp',
+  '/returns': '/assets/hero-tunnel.webp',
+  '/journal': '/assets/editorial-player.webp'
+}
+
+const menuPath = target => {
+  const value = String(target || '').trim()
+  if (!value || value === '#bag') return ''
+  try {
+    return new URL(value, 'https://extra-time.local').pathname || '/'
+  } catch {
+    return value.split(/[?#]/)[0] || '/'
+  }
+}
+
+const menuQuery = target => {
+  try { return new URL(String(target || ''), 'https://extra-time.local').searchParams } catch { return new URLSearchParams() }
+}
+
+const rowImage = row => row?.image || row?.hero || row?.hero_image || row?.representativeImage || row?.representative_image || row?.cover || row?.cover_image || row?.seo?.image || row?.seo?.ogImage || (row?.media || []).find(item => item?.type === 'IMAGE' && item?.url)?.url || ''
+
+const rowAlt = row => row?.alt || row?.image_alt || row?.representativeAlt || row?.representative_alt || row?.seo?.title || row?.title || row?.name || ''
+
+const normalizeMenuImageFields = item => {
+  const settings = item?.settings && typeof item.settings === 'object' ? item.settings : {}
+  const rawMode = item?.imageMode ?? item?.image_mode ?? settings.imageMode ?? settings.image_mode ?? 'AUTO'
+  const imageMode = MENU_IMAGE_MODES.has(String(rawMode).toUpperCase()) ? String(rawMode).toUpperCase() : 'AUTO'
+  return {
+    imageMode,
+    imageUrl: String(item?.imageUrl ?? item?.image_url ?? settings.imageUrl ?? settings.image_url ?? '').trim(),
+    imageAlt: String(item?.imageAlt ?? item?.image_alt ?? settings.imageAlt ?? settings.image_alt ?? '').trim()
+  }
+}
+
+/**
+ * Convert a flat Supabase menu item result into a deterministic tree. The
+ * same function is used by Admin and storefront so nesting/order cannot drift
+ * between the two experiences.
+ */
+export function buildMenuTree(rows = []) {
+  const flat = Array.isArray(rows) ? rows : []
+  const hasParentColumns = flat.some(row => row && (row.parent_id != null || row.parentId != null))
+  if (!hasParentColumns) {
+    const normalize = (item, index = 0) => ({
+      ...item,
+      type: String(item?.type || item?.link_type || 'PAGE').toUpperCase(),
+      target: item?.target || '/',
+      sortOrder: Number(item?.sortOrder ?? item?.sort_order ?? index),
+      ...normalizeMenuImageFields(item),
+      children: (item?.children || []).map(normalize)
+    })
+    return flat.map(normalize)
+  }
+  const byParent = new Map()
+  flat.forEach((row, index) => {
+    const parent = row?.parent_id ?? row?.parentId ?? null
+    const list = byParent.get(parent) || []
+    list.push({ row, index })
+    byParent.set(parent, list)
+  })
+  const visit = (parentId, ancestry = []) => (byParent.get(parentId) || [])
+    .sort((a, b) => Number(a.row.sort_order ?? a.row.sortOrder ?? a.index) - Number(b.row.sort_order ?? b.row.sortOrder ?? b.index))
+    .map(({ row, index }) => {
+      const id = String(row?.id || `menu-item-${index}`)
+      if (ancestry.includes(id)) return null
+      return {
+        ...row,
+        id,
+        type: String(row?.type || row?.link_type || 'PAGE').toUpperCase(),
+        target: row?.target || '/',
+        sortOrder: Number(row?.sortOrder ?? row?.sort_order ?? index),
+        ...normalizeMenuImageFields(row),
+        children: visit(id, [...ancestry, id])
+      }
+    }).filter(Boolean)
+  return visit(null)
+}
+
+const flattenMenuItems = (items, output = []) => {
+  ;(items || []).forEach(item => {
+    output.push(item)
+    flattenMenuItems(item.children, output)
+  })
+  return output
+}
+
+export function menuImageProblem(item = {}) {
+  const { imageMode, imageUrl } = normalizeMenuImageFields(item)
+  if (imageMode !== 'CUSTOM') return ''
+  if (!imageUrl) return 'Add an image URL or switch to Auto.'
+  if (!/^https:\/\//i.test(imageUrl) && !/^\//.test(imageUrl)) return 'Use an HTTPS URL or a local /assets path.'
+  return ''
+}
+
+/**
+ * Attach representativeImage metadata to every menu item. `context` is kept
+ * optional so the same resolver works with the local preview catalogue.
+ */
+export function resolveMenuImages(menus = [], context = {}) {
+  const products = Array.isArray(context.products) ? context.products : []
+  const collections = Array.isArray(context.collections) ? context.collections : []
+  const pages = Array.isArray(context.pages) ? context.pages : []
+  const pageFallbacks = { ...MENU_PAGE_IMAGE_FALLBACKS, ...(context.pageFallbacks || {}) }
+  const productForTarget = (target, type) => {
+    const path = menuPath(target)
+    const handle = path.startsWith('/product/') ? decodeURIComponent(path.split('/')[2] || '') : String(target || '').replace(/^product:/i, '')
+    if (String(type).toUpperCase() !== 'PRODUCT' && !handle) return null
+    return products.find(row => row.handle === handle || row.id === handle) || (String(type).toUpperCase() === 'PRODUCT' ? products[0] : null)
+  }
+  const collectionForTarget = (target, type) => {
+    const path = menuPath(target)
+    const query = menuQuery(target)
+    const handle = path.startsWith('/collection/') ? decodeURIComponent(path.split('/')[2] || '') : query.get('collection') || String(target || '').replace(/^collection:/i, '')
+    if (path === '/shop' || path === '/collection' || String(type).toUpperCase() === 'COLLECTION') {
+      return collections.find(row => row.handle === handle || row.id === handle) || collections[0] || null
+    }
+    return null
+  }
+  const pageForTarget = target => {
+    const path = menuPath(target)
+    return pages.find(page => page.path === path || (page.path?.includes(':') && path.startsWith(page.path.split('/:')[0] + '/'))) || null
+  }
+  const resolveItem = item => {
+    const fields = normalizeMenuImageFields(item)
+    let image = ''
+    let alt = fields.imageAlt || item?.label || 'Navigation image'
+    let source = fields.imageMode
+    if (fields.imageMode === 'CUSTOM') {
+      image = fields.imageUrl
+      source = image ? 'CUSTOM' : 'MISSING'
+    } else if (fields.imageMode === 'AUTO') {
+      const type = String(item?.type || item?.link_type || 'PAGE').toUpperCase()
+      const product = productForTarget(item?.target, type)
+      const collection = collectionForTarget(item?.target, type)
+      const page = pageForTarget(item?.target)
+      if (product) {
+        image = rowImage(product)
+        alt = fields.imageAlt || rowAlt(product) || item?.label || alt
+        source = image ? 'PRODUCT' : 'MISSING'
+      } else if (collection) {
+        image = rowImage(collection)
+        if (!image && collection.products?.length) image = rowImage(products.find(row => row.id === collection.products[0]))
+        alt = fields.imageAlt || rowAlt(collection) || item?.label || alt
+        source = image ? 'COLLECTION' : 'MISSING'
+      } else if (page) {
+        image = rowImage(page)
+        alt = fields.imageAlt || rowAlt(page) || item?.label || alt
+        source = image ? 'PAGE' : 'MISSING'
+      }
+      if (!image) {
+        const path = menuPath(item?.target)
+        image = pageFallbacks[path] || pageFallbacks['/'] || ''
+        source = image ? 'FALLBACK' : 'MISSING'
+      }
+    } else {
+      source = 'NONE'
+    }
+    return {
+      ...item,
+      ...fields,
+      representativeImage: image || null,
+      representativeAlt: alt,
+      representativeSource: source,
+      children: (item?.children || []).map(resolveItem)
+    }
+  }
+  return (Array.isArray(menus) ? menus : []).map(menu => ({ ...menu, items: (menu.items || []).map(resolveItem) }))
+}
+
+export function flattenMenuTree(items = []) {
+  return flattenMenuItems(items)
+}
+
 export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/custom', '/studio', '/membership', '/account/membership', '/checkout', '/track-order', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns', '/journal', '/moments', '/players'])
 
 export function menuTargetProblem(target, type = 'PAGE') {

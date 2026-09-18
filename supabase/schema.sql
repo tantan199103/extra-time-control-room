@@ -265,6 +265,8 @@ create table if not exists public.pod_pages (
   path text not null,
   status text not null default 'DRAFT' check (status in ('PUBLISHED', 'DRAFT', 'ARCHIVED')),
   layout jsonb not null default '[]'::jsonb,
+  representative_image text not null default '',
+  representative_alt text not null default '',
   seo jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -289,6 +291,9 @@ create table if not exists public.pod_menu_items (
   link_type text not null default 'PAGE' check (link_type in ('PAGE', 'COLLECTION', 'PRODUCT', 'ACTION', 'EXTERNAL')),
   visible boolean not null default true,
   sort_order integer not null default 0,
+  image_mode text not null default 'AUTO' check (image_mode in ('AUTO', 'CUSTOM', 'NONE')),
+  image_url text not null default '',
+  image_alt text not null default '',
   settings jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

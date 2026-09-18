@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { availableOptionValue, buildFallbackCatalog, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveVariant, sortCollectionProducts } from '../src/lib/storefront-model.js'
+import { availableOptionValue, buildFallbackCatalog, buildMenuTree, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveMenuImages, resolveVariant, sortCollectionProducts } from '../src/lib/storefront-model.js'
 import { products as fallback } from '../src/data.js'
 
 test('fallback catalogue has published-looking variants while live Supabase is unavailable', () => {
@@ -39,6 +39,22 @@ test('collection merchandising and menu validation follow published contracts', 
   assert.equal(menuTargetProblem('/unknown-page','PAGE').length>0,true)
   assert.equal(menuTargetProblem('/moments','PAGE'),'')
   assert.equal(menuTargetProblem('/product/a','PRODUCT'),'')
+})
+
+test('menu trees preserve nesting and resolve representative images from linked records', () => {
+  const tree = buildMenuTree([
+    { id:'root', label:'After 90', target:'/product/after-90', link_type:'PRODUCT', sort_order:0, parent_id:null, image_mode:'AUTO' },
+    { id:'child', label:'Custom', target:'/custom', link_type:'PAGE', sort_order:0, parent_id:'root', image_mode:'CUSTOM', image_url:'/custom.webp' }
+  ])
+  assert.equal(tree[0].children[0].id,'child')
+  const resolved = resolveMenuImages([{ id:'main', items:tree }], {
+    products:[{ id:'after-90', handle:'after-90', title:'After 90', image:'/after.webp' }],
+    pages:[{ id:'custom', path:'/custom', representativeImage:'/page.webp', representativeAlt:'Custom page' }]
+  })
+  assert.equal(resolved[0].items[0].representativeImage,'/after.webp')
+  assert.equal(resolved[0].items[0].representativeSource,'PRODUCT')
+  assert.equal(resolved[0].items[0].children[0].representativeImage,'/custom.webp')
+  assert.equal(resolved[0].items[0].children[0].representativeSource,'CUSTOM')
 })
 
 test('storefront products do not expose private bridge audit metadata', () => {

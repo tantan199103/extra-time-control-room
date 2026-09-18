@@ -37,6 +37,7 @@ import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
 import { fetchAdminCollections, fetchAdminMenus, fetchAdminPaymentSettings, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
+import { resolveMenuImages } from './lib/storefront-model'
 import './admin-payment.css'
 
 const go = path => {
@@ -181,7 +182,7 @@ function AdminWorkspace() {
     if (failure) throw new Error(failure.error)
     setProductRows(productResult.data || [])
     if (themeResult.data) setThemeDraft(themeResult.data)
-    if (menuResult.data?.length) setMenuRows(menuResult.data)
+    if (menuResult.data?.length) setMenuRows(resolveMenuImages(menuResult.data, { products:productResult.data || [], collections:collectionResult.data || [], pages:themeResult.data?.pages || [] }))
     if (collectionResult.data?.length) setCollectionRows(collectionResult.data)
     setSource([productResult, themeResult, menuResult, collectionResult].every(result => result.source === 'supabase') ? 'supabase' : 'preview')
     } catch (error) { setLoadError(error instanceof Error ? error.message : 'Could not load Admin data.') }
