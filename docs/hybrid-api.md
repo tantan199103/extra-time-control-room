@@ -35,7 +35,7 @@ same route as a direct fallback when the Edge origin is not configured. If the
 Node URL is unavailable it fails closed with `503`; it never falls back to
 client totals.
 
-## Node backend
+## Node backend trên Cloud Run
 
 ```bash
 copy .env.example .env
@@ -54,9 +54,8 @@ SUPABASE_SERVICE_ROLE_KEY=server-only-key
 CHECKOUT_SIGNING_SECRET=random-long-secret
 ```
 
-Add the server-only AI, PayPal and Paddle values from `.env.example`. Put the
-Node service behind HTTPS at `api.jersevo.com`, then configure PayPal/Paddle
-webhooks at:
+Add the server-only AI, PayPal and Paddle values from `.env.example`. Deploy
+the container with [deploy/cloudrun/README.md](<D:/APP Dự Án/custom pod/deploy/cloudrun/README.md>), then map `api.jersevo.com` and configure PayPal/Paddle webhooks at:
 
 ```text
 https://api.jersevo.com/api/payment-webhook
@@ -65,19 +64,9 @@ https://api.jersevo.com/api/payment-webhook
 The `/health` endpoint is safe for an uptime monitor and returns no secrets.
 The `/ready` endpoint returns `503` until Supabase, checkout signing and the
 origin allowlist are configured. It only reports missing variable names.
-Use a reverse proxy/load balancer with request-body limits, TLS, and a process
-manager (Docker, systemd, or the host's managed service). Never expose port
-8787 directly to the public internet without TLS and the CORS allowlist.
-
-For a Tenten VPS, copy the repository and `.env.backend.example` to the server,
-rename the populated copy to `.env.backend`, then run:
-
-```bash
-docker compose -f docker-compose.production.yml up -d --build
-```
-
-The included Caddy service obtains HTTPS automatically after TCP ports 80/443
-are open and the Tenten `api` A record resolves to the VPS public IPv4.
+Cloud Run owns HTTPS, scaling and container restarts. The older Docker Compose
+and Caddy files remain as a self-hosted fallback, but are not needed for the
+Cloud Run deployment.
 
 ## Frontend variables
 

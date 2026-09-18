@@ -41,6 +41,7 @@ $secretNames = @(
   'PADDLE_WEBHOOK_SECRET'
 )
 $secretBindings = ($secretNames | ForEach-Object { "${_}=${_}:latest" }) -join ','
+$envVars = "^@^NODE_ENV=production@PORT=8080@ALLOWED_ORIGINS=$AllowedOrigins@TRUST_PROXY=true@SITE_URL=https://www.jersevo.com@AI_IMAGE_API_URL=https://api.apikey.fan/v1/images/edits@AI_IMAGE_MODEL=gpt-image-2@AI_IMAGE_QUALITY=medium@AI_TEXT_API_URL=https://api.apikey.fan/v1@AI_TEXT_MODEL=gpt-4.1-mini"
 
 gcloud run deploy $Service `
   --image=$image `
@@ -54,7 +55,7 @@ gcloud run deploy $Service `
   --concurrency=40 `
   --min-instances=0 `
   --max-instances=10 `
-  --set-env-vars="NODE_ENV=production,PORT=8080,ALLOWED_ORIGINS=$AllowedOrigins,TRUST_PROXY=true,SITE_URL=https://www.jersevo.com,AI_IMAGE_API_URL=https://api.apikey.fan/v1/images/edits,AI_IMAGE_MODEL=gpt-image-2,AI_IMAGE_QUALITY=medium,AI_TEXT_API_URL=https://api.apikey.fan/v1,AI_TEXT_MODEL=gpt-4.1-mini" `
+  --set-env-vars=$envVars `
   --update-secrets=$secretBindings
 
 $url = gcloud run services describe $Service --region=$Region --format='value(status.url)'
