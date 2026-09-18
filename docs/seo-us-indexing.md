@@ -12,6 +12,7 @@ The storefront is a Vite SPA. Before this change, the HTTP response for every ro
 - `robots.txt` and the dynamic sitemap now use `https://www.jersevo.com`. The sitemap includes only the public routes plus published products/collections and is marked `X-Robots-Tag: noindex`.
 - Admin, account, studio and custom-tool routes receive `X-Robots-Tag: noindex, nofollow`; unresolved product/collection routes are also marked `noindex` by the client metadata layer.
 - Product metadata is kept aligned with visible product name, price, stock and rating values. Do not add invented reviews, brand claims, materials or shipping promises.
+- The prerender is a build-time snapshot. After publishing or materially editing a product, redeploy (or later add a Supabase-to-Vercel rebuild hook) so the initial HTML/schema and sitemap stay aligned; the browser storefront still reads the live catalogue between deploys.
 
 ## US targeting
 
