@@ -25,7 +25,7 @@ export default async function handler(request,response){
     const admin=await requireAdmin(request,client)
     if(request.method==='GET'){
       const status=safeText(request.query?.status,20).toUpperCase()
-      let query=client.from('pod_customization_orders').select('id,product_id,variant_id,payload,asset_refs,ai_preview_id,status,customer_email,created_at,updated_at').order('created_at',{ascending:false}).limit(200)
+      let query=client.from('pod_customization_orders').select('id,product_id,variant_id,payload,asset_refs,ai_preview_id,review_note,status,customer_email,created_at,updated_at').order('created_at',{ascending:false}).limit(200)
       if(allowedStatuses.has(status))query=query.eq('status',status)
       const {data,error}=await query
       if(error)throw error
@@ -33,15 +33,18 @@ export default async function handler(request,response){
     }
     if(request.method==='PATCH'){
       const body=readBody(request,12000)
-      const id=safeText(body.id,180), next=safeText(body.status,20).toUpperCase()
-      if(!id||!allowedStatuses.has(next))throw Object.assign(new Error('A valid request and status are required.'),{status:422})
+      const id=safeText(body.id,180), requestedStatus=safeText(body.status,20).toUpperCase(), hasReviewNote=Object.prototype.hasOwnProperty.call(body,'reviewNote'), reviewNote=safeText(body.reviewNote,2000)
+      if(!id||requestedStatus && !allowedStatuses.has(requestedStatus))throw Object.assign(new Error('A valid request is required.'),{status:422})
       const {data:current,error:readError}=await client.from('pod_customization_orders').select('id,status').eq('id',id).maybeSingle()
       if(readError)throw readError
       if(!current)throw Object.assign(new Error('Customization request not found.'),{status:404})
+      const next=requestedStatus || current.status
       if(current.status!==next&&!transitions[current.status]?.has(next))throw Object.assign(new Error(`Cannot move ${current.status} to ${next}.`),{status:409})
-      const {data,error}=await client.from('pod_customization_orders').update({status:next,updated_at:new Date().toISOString()}).eq('id',id).select('id,status,updated_at').single()
+      const changes={status:next,updated_at:new Date().toISOString()}
+      if(hasReviewNote) changes.review_note=reviewNote
+      const {data,error}=await client.from('pod_customization_orders').update(changes).eq('id',id).select('id,status,review_note,updated_at').single()
       if(error)throw error
-      await client.from('pod_audit_logs').insert({actor_id:admin.id,entity_type:'customization-order',entity_id:id,action:`STATUS_${next}`,snapshot:{previousStatus:current.status,status:next}})
+      await client.from('pod_audit_logs').insert({actor_id:admin.id,entity_type:'customization-order',entity_id:id,action:requestedStatus ? `STATUS_${next}` : 'NOTE_UPDATE',snapshot:{previousStatus:current.status,status:next,reviewNote}})
       return sendJson(response,200,{order:data})
     }
     return sendJson(response,405,{error:'GET or PATCH customization operations only.'})

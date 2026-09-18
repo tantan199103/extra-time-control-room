@@ -299,8 +299,8 @@ export async function fetchAdminCustomizations(status='') {
   return adminApi(`/api/admin-customizations${query}`)
 }
 
-export async function updateAdminCustomization(id,status) {
-  return adminApi('/api/admin-customizations',{method:'PATCH',body:JSON.stringify({id,status})})
+export async function updateAdminCustomization(id,status,reviewNote='') {
+  return adminApi('/api/admin-customizations',{method:'PATCH',body:JSON.stringify({id,status,reviewNote})})
 }
 
 export async function fetchMembershipOffer() {

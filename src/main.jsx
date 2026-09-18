@@ -808,6 +808,15 @@ function App() {
   const routeCollection = collectionHandle ? collections.find(collection => collection.handle === collectionHandle || collection.id === collectionHandle) : null
   useRouteMetadata({ path, product:routeProduct, collection:routeCollection })
   useEffect(() => {
+    const aliases = { '/moments': 'story', '/players': 'players' }
+    const anchor = aliases[path]
+    if (!anchor) return
+    const target = `/#${anchor}`
+    window.history.replaceState({}, '', target)
+    setRoute(target)
+    window.requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth' }))
+  }, [path])
+  useEffect(() => {
     if (path.startsWith('/admin')) return
     let active=true
     setCatalogState(current => ({...current,loading:true}))
@@ -984,6 +993,8 @@ function App() {
   let page
   if (!path.startsWith('/admin') && catalogState.loading && !products.length) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
   else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
+  else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
+  else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
   else if (path === '/custom') {
     const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'

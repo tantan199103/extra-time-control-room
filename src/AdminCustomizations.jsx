@@ -28,6 +28,7 @@ export default function AdminCustomizations() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [notice, setNotice] = useState('')
+  const [reviewNote, setReviewNote] = useState('')
 
   const load = async () => {
     setLoading(true); setNotice('')
@@ -40,14 +41,25 @@ export default function AdminCustomizations() {
   }
   useEffect(() => { load() }, [filter])
   const selected = useMemo(() => rows.find(row => row.id === selectedId) || rows[0], [rows, selectedId])
+  useEffect(() => { setReviewNote(selected?.review_note || '') }, [selected?.id])
   const change = async status => {
     if (!selected) return
     setBusy(status); setNotice('')
     try {
-      const result = await updateAdminCustomization(selected.id, status)
+      const result = await updateAdminCustomization(selected.id, status, reviewNote)
       setRows(current => current.map(row => row.id === selected.id ? { ...row, ...result.order } : row))
       setNotice(`Request moved to ${status.toLowerCase()}.`)
     } catch (error) { setNotice(error instanceof Error ? error.message : 'Status could not be updated.') }
+    finally { setBusy('') }
+  }
+  const saveNote = async () => {
+    if (!selected) return
+    setBusy('note'); setNotice('')
+    try {
+      const result = await updateAdminCustomization(selected.id, '', reviewNote)
+      setRows(current => current.map(row => row.id === selected.id ? { ...row, ...result.order } : row))
+      setNotice('Internal review note saved.')
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Review note could not be saved.') }
     finally { setBusy('') }
   }
 
@@ -59,6 +71,7 @@ export default function AdminCustomizations() {
     return <section className="custom-ops__detail">
       <div className="custom-ops__head"><div><span>{selected.status}</span><h2>{selected.payload?.listingHandle || selected.product_id}</h2><small>{selected.id}</small></div><div>{(nextActions[selected.status] || []).map(([status, label]) => <button key={status} className={status === 'CANCELLED' ? 'is-danger' : ''} disabled={Boolean(busy)} onClick={() => change(status)}>{status === 'CANCELLED' ? <X size={14} /> : <Check size={14} />}{busy === status ? 'Saving…' : label}</button>)}</div></div>
       <div className="custom-ops__grid"><article><p>Customer details</p><dl>{fields.map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>{selected.payload?.note && <blockquote>{selected.payload.note}</blockquote>}</article><article><p>Request facts</p><dl><div><dt>SKU</dt><dd>{selected.payload?.sku || '—'}</dd></div><div><dt>Options</dt><dd>{options}</dd></div><div><dt>Submitted</dt><dd>{new Date(selected.created_at).toLocaleString()}</dd></div></dl></article></div>
+      <div className="custom-ops__review"><label><span>Internal review note</span><textarea value={reviewNote} maxLength={2000} onChange={event => setReviewNote(event.target.value)} placeholder="Production instruction, approval context or handoff note…" /></label><button onClick={saveNote} disabled={Boolean(busy)}>{busy === 'note' ? 'Saving…' : 'Save note'}</button></div>
       <div className="custom-ops__assets"><p>Stable source assets</p><div>{references.map(asset => <AssetLink key={`${asset.key}-${asset.path}`} asset={asset} label={asset.key} />)}{selected.assets?.aiPreview && <AssetLink asset={selected.assets.aiPreview} label="AI direction" />}{!references.length && !selected.assets?.aiPreview && <span>No stored image assets were attached.</span>}</div></div>
     </section>
   }
