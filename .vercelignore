@@ -3,5 +3,17 @@
 # Serverless Functions, which keeps the Hobby plan below its function cap.
 api/*.js
 !api/sitemap.js
+# Keep the payment-adjacent fallback in Vercel so the storefront remains
+# fail-closed (JSON/no-store) while the dedicated Node runtime is being
+# provisioned. Heavy AI/upload routes stay on Node.
+!api/payment-config.js
+!api/checkout-quote.js
+!api/checkout-create.js
+!api/payment-capture.js
+!api/payment-cancel.js
+!api/payment-webhook.js
+!api/order-track.js
+!api/admin-orders.js
+!api/admin-payment-settings.js
 backend/
 supabase/functions/

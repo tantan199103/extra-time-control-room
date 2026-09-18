@@ -5,7 +5,16 @@
   "framework": "vite",
   "regions": ["iad1"],
   "functions": {
-    "api/sitemap.js": { "maxDuration": 15 }
+    "api/sitemap.js": { "maxDuration": 15 },
+    "api/payment-config.js": { "maxDuration": 15 },
+    "api/checkout-quote.js": { "maxDuration": 30 },
+    "api/checkout-create.js": { "maxDuration": 30 },
+    "api/payment-capture.js": { "maxDuration": 30 },
+    "api/payment-cancel.js": { "maxDuration": 30 },
+    "api/payment-webhook.js": { "maxDuration": 30 },
+    "api/order-track.js": { "maxDuration": 30 },
+    "api/admin-orders.js": { "maxDuration": 30 },
+    "api/admin-payment-settings.js": { "maxDuration": 30 }
   },
   "headers": [
     {
