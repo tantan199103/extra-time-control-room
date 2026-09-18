@@ -56,8 +56,9 @@ test('Escape closes dialogs and focus returns to the opener', () => {
   assert.match(focus, /removeEventListener\('keydown', onKeyDown\)/)
 })
 
-test('unconnected checkout and signup never imply a completed transaction', () => {
-  assert.match(source, /<button disabled aria-describedby="checkout-status">CHECKOUT NOT AVAILABLE YET/)
+test('checkout starts a secure flow without implying payment confirmation', () => {
+  assert.match(source, /<button onClick=\{onCheckout\} disabled=\{!cart\.length\}>CHECKOUT/)
+  assert.match(source, /Your order is only confirmed after the provider approves payment/)
   assert.doesNotMatch(source, /YOU'RE ON THE TEAM|Watch your inbox/)
   assert.doesNotMatch(source, /<ButtonLink light>VIEW THE STORY/)
 })

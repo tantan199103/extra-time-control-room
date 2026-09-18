@@ -12,7 +12,10 @@
     "dev:extension": "vite build --config extension/vite.config.js --mode development --watch",
     "build:extension": "vite build --config extension/vite.config.js",
     "package:extension": "npm run build:extension && powershell -NoProfile -ExecutionPolicy Bypass -File extension/package.ps1",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend:dev": "node backend/src/server.mjs",
+    "backend:start": "node backend/src/server.mjs",
+    "backend:docker": "docker build -f backend/Dockerfile -t jersevo-api ."
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.2.6",

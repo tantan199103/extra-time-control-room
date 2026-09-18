@@ -1,0 +1,7 @@
+# API handlers are retained in the repository for rollback and local tests.
+# Production traffic uses the dedicated Node runtime instead of Vercel
+# Serverless Functions, which keeps the Hobby plan below its function cap.
+api/*.js
+!api/sitemap.js
+backend/
+supabase/functions/

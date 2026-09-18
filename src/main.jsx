@@ -25,9 +25,12 @@ import {
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
+import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
 import MembershipPage from './MembershipPage'
+import CheckoutPage from './CheckoutPage'
+import OrderTrackingPage from './OrderTrackingPage'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -94,12 +97,13 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     return () => window.removeEventListener('popstate', closeMenus)
   }, [])
   const configured = menuAtLocation(menus,'HEADER')?.items || menuAtLocation(menus,'HEADER_DESKTOP_MOBILE')?.items || []
-  const links = configured.length ? configured : [
+  const taxonomyItem = {id:'leagues',label:'LEAGUES',target:'/shop',type:'TAXONOMY',children:LEAGUE_TAXONOMY.map(league => ({ id:league.key, label:league.name, target:leaguePath(league), type:'TAXONOMY_LEAGUE', leagueKey:league.key, sport:league.sport, children:league.teams.slice(0,6).map(team => ({ id:team.slug, label:team.name, target:teamPath(league.key,team), type:'TAXONOMY_TEAM' })) }))}
+  const defaults = [
     {id:'shop',label:'SHOP',target:'/shop',children:[]},
-    {id:'moments',label:'MOMENTS',target:'/#story',children:[]},
-    {id:'players',label:'PLAYERS',target:'/#players',children:[]},
+    taxonomyItem,
     {id:'custom',label:'CUSTOM LAB',target:'/custom',children:[]}
   ]
+  const links = configured.length ? (configured.some(item => item.type === 'TAXONOMY' || /league/i.test(item.label || '')) ? configured : [...configured.slice(0,1),taxonomyItem,...configured.slice(1)]) : defaults
   const hasVaultLink = links.some(item => menuTarget(item.target, customProduct) === '/vault')
   const hasClubLink = links.some(item => menuTarget(item.target, customProduct) === '/membership')
   const openLink = item => {
@@ -136,7 +140,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
       <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
-          {links.map((item, index) => <button key={item.id || item.label} onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.label}<ArrowRight /></button>)}
+          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.label}<ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><strong>{league.label}</strong>{league.children?.slice(0,4).map(team => <button key={team.id} onClick={() => openLink(team)}>{team.label}</button>)}</div>)}</div>}</React.Fragment>)}
           {!hasClubLink && <button onClick={() => { navigate('/membership'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>90+ CLUB<ArrowRight /></button>}
           {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+(hasClubLink?1:2)).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
         </nav>
@@ -150,17 +154,20 @@ function MegaMenu({ item, customProduct, onNavigate }) {
   const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
   const fallbacks = item.label === 'CUSTOM LAB' ? [{id:'custom-start',label:'Name, number + details',target:customTarget},{id:'custom-ai',label:'Edit with AI',target:`/studio?product=${customProduct?.handle || customProduct?.id || 'touchline'}`},{id:'custom-how',label:'How it works',target:'/#custom'}] : [{id:'all',label:'All jerseys',target:'/shop'},{id:'story',label:'Story explorer',target:'/#story'},{id:'vault',label:'The archive',target:'/vault'}]
   const children = item.children?.length ? item.children : fallbacks
+  const taxonomy = item.type === 'TAXONOMY' || item.label === 'LEAGUES'
   return (
-    <div className="mega-menu">
-      <div className="mega-menu__index">{item.label === 'CUSTOM LAB' ? 'MAKE' : 'FIND'}<br />YOUR<br />MOMENT<span>90+</span></div>
-      <div className="mega-menu__links">
-        <p>{item.label}</p>
-        {children.map(child => <button key={child.id || child.label} onClick={() => onNavigate(child)}>{child.label}<ArrowRight size={15} /></button>)}
-      </div>
-      <button className="mega-menu__feature" onClick={() => onNavigate(item.label === 'CUSTOM LAB' ? {target:customTarget} : {target:'/shop'})}>
-        <img src={item.label === 'CUSTOM LAB' ? customProduct?.image || '/assets/jersey-white.webp' : '/assets/editorial-player.webp'} alt="" />
-        <span>{item.label === 'CUSTOM LAB' ? 'CUSTOM LAB' : 'THE 90+ DROP'}<small>{item.label === 'CUSTOM LAB' ? 'BUILD YOURS' : 'DISCOVER THE STORY'} <ArrowRight size={14} /></small></span>
-      </button>
+    <div className={`mega-menu ${taxonomy ? 'mega-menu--taxonomy' : ''}`}>
+      <div className="mega-menu__index">{taxonomy ? <><strong className="mega-menu__index-copy">FIND<br />YOUR<br />TEAM</strong></> : item.label === 'CUSTOM LAB' ? <>MAKE<br />YOUR<br />MOMENT</> : <>FIND<br />YOUR<br />MOMENT</>}<span>90+</span></div>
+      {taxonomy ? <>
+        <div className="mega-menu__taxonomy-leagues"><p>SHOP BY LEAGUE</p>{children.map(child => <button key={child.id || child.label} onClick={() => onNavigate(child)}><span><strong>{child.label}</strong><small>{child.sport || 'Team collections'}</small></span><ArrowRight size={15} /></button>)}</div>
+        <div className="mega-menu__taxonomy-teams"><p>POPULAR TEAMS</p>{children.slice(0,3).map(league => <div key={league.id}><span>{league.label}</span>{(league.children || []).slice(0,6).map(team => <button key={team.id || team.label} onClick={() => onNavigate(team)}>{team.label}</button>)}</div>)}</div>
+      </> : <>
+        <div className="mega-menu__links"><p>{item.label}</p>{children.map(child => <button key={child.id || child.label} onClick={() => onNavigate(child)}>{child.label}<ArrowRight size={15} /></button>)}</div>
+        <button className="mega-menu__feature" onClick={() => onNavigate(item.label === 'CUSTOM LAB' ? {target:customTarget} : {target:'/shop'})}>
+          <img src={item.label === 'CUSTOM LAB' ? customProduct?.image || '/assets/jersey-white.webp' : '/assets/editorial-player.webp'} alt="" />
+          <span>{item.label === 'CUSTOM LAB' ? 'CUSTOM LAB' : 'THE 90+ DROP'}<small>{item.label === 'CUSTOM LAB' ? 'BUILD YOURS' : 'DISCOVER THE STORY'} <ArrowRight size={14} /></small></span>
+        </button>
+      </>}
     </div>
   )
 }
@@ -201,7 +208,7 @@ function SearchOverlay({ open, onClose, products }) {
   )
 }
 
-function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quoteLoading, quoteError, cartNotice }) {
+function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quoteLoading, quoteError, cartNotice, onCheckout }) {
   const panelRef = useRef(null)
   useDialogFocus(open, panelRef, onClose)
   const publicSubtotal = cart.reduce((sum, item) => sum + Number(item.unitPrice ?? item.product.price) * item.qty, 0)
@@ -229,7 +236,7 @@ function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quot
             {memberQuote?.member ? <div className="cart-club-status"><Ticket size={17}/><div><strong>90+ Club pricing applied</strong><span>{memberQuote.shipping?.eligible ? `Eligible ${memberQuote.shipping.method.toLowerCase()} shipping included up to ${money(memberQuote.shipping.subsidyCap)}.` : memberQuote.shipping?.reason}</span></div></div> : <button className="cart-club-upsell" onClick={()=>{onClose();navigate('/membership')}}><Ticket/><span><strong>JOIN 90+ CLUB</strong><small>20–40% eligible savings + standard shipping benefit</small></span><ArrowRight/></button>}
             {!memberQuote?.member && <div className="shipping-meter"><p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p><div><span style={{ width: `${Math.min(100, publicSubtotal)}%` }} /></div></div>}
             {quoteLoading&&<p className="cart-quote-note" role="status">Checking secure member price…</p>}{quoteError&&account?.user&&<p className="cart-quote-note is-error" role="alert">{quoteError}</p>}
-            <div className="cart-checkout">{memberQuote?.discount>0&&<div className="cart-checkout__saving"><span>90+ CLUB SAVING</span><strong>−{money(memberQuote.discount)}</strong></div>}<div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button disabled aria-describedby="checkout-status">CHECKOUT NOT AVAILABLE YET</button><p id="checkout-status">Checkout is not connected. No payment or purchase has been made.</p></div>
+            <div className="cart-checkout">{memberQuote?.discount>0&&<div className="cart-checkout__saving"><span>90+ CLUB SAVING</span><strong>−{money(memberQuote.discount)}</strong></div>}<div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button onClick={onCheckout} disabled={!cart.length}>CHECKOUT <ArrowRight size={16}/></button><p id="checkout-status">Live stock and pricing are checked again before payment. Your order is only confirmed after the provider approves payment.</p></div>
           </>
         )}
       </aside>
@@ -308,6 +315,34 @@ function ProductRail({ onQuickView, title = 'THE DROP', items = [] }) {
   )
 }
 
+function Breadcrumbs({ items = [] }) {
+  return <nav className="breadcrumbs" aria-label="Breadcrumb"><button onClick={() => navigate('/')}>Home</button>{items.map((item, index) => <React.Fragment key={`${item.label}-${index}`}><span aria-hidden="true">/</span>{item.href ? <button onClick={() => navigate(item.href)}>{item.label}</button> : <strong aria-current="page">{item.label}</strong>}</React.Fragment>)}</nav>
+}
+
+function StorefrontTrust({ compact = false }) {
+  const items = [
+    ['SHIPPING', 'Free US shipping over $100'],
+    ['DELIVERY', 'Tracked delivery with clear updates'],
+    ['RETURNS', '30-day standard return window'],
+    ['CHECKOUT', 'Secure checkout in USD']
+  ]
+  return <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''}`} aria-label="Shipping and shopping assurances">{items.map(([label, copy]) => <div key={label}><span>{label}</span><strong>{copy}</strong></div>)}</section>
+}
+
+function TaxonomyLanding({ league, team, products, onQuickView }) {
+  const filtered = products.filter(product => productMatchesTaxonomy(product, { league: league?.key, team: team?.slug }))
+  const title = team?.name || league?.name || 'League collections'
+  const description = team ? `${team.name} fan gear and custom jersey styles, curated for game day.` : league?.description || 'Browse custom fan gear by league, sport and team.'
+  const teams = league?.teams || []
+  return <main className="taxonomy-page">
+    <section className="taxonomy-hero"><Breadcrumbs items={[{ label:'Leagues', href:'/shop' }, ...(league ? [{ label:league.name, href:leaguePath(league) }] : []), ...(team ? [{ label:team.name }] : [])]}/><p>{team ? `${league?.name || 'TEAM'} / TEAM COLLECTION` : 'LEAGUE / TEAM COLLECTIONS'}</p><h1>{title.toUpperCase()}</h1><div><p>{description}</p><span>{filtered.length} {filtered.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span></div></section>
+    {league && <section className="taxonomy-team-nav"><div><span>EXPLORE {league.name}</span><a href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>All {league.name}</a></div><div>{teams.map(item => <a key={item.slug} className={team?.slug === item.slug ? 'is-active' : ''} href={teamPath(league.key,item)} onClick={event => { event.preventDefault(); navigate(teamPath(league.key,item)) }}>{item.name}</a>)}</div></section>}
+    <StorefrontTrust compact />
+    <section className="taxonomy-products section">{filtered.length ? <div className="product-grid">{filtered.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>More {title} gear is on the way.</h2><p>Browse the full catalog while this collection grows.</p><button onClick={() => navigate('/shop')}>SHOP ALL PRODUCTS</button></div>}</section>
+    <section className="taxonomy-related"><span>SHOP BY LEAGUE</span><div>{LEAGUE_TAXONOMY.filter(item => item.key !== league?.key).map(item => <a key={item.key} href={leaguePath(item)} onClick={event => { event.preventDefault(); navigate(leaguePath(item)) }}>{item.name}<ArrowRight size={15}/></a>)}</div></section>
+  </main>
+}
+
 function QuickView({ product, onClose, onAdd }) {
   const panelRef = useRef(null)
   const open = Boolean(product)
@@ -363,6 +398,10 @@ function PlayerDiscovery({ customProduct }) {
       <div className="player-grid">{cards.map((card, index) => <button key={card.name} onClick={() => index === 2 ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} {card.count === '∞' ? 'POSSIBILITIES' : 'STORIES'} <ArrowRight size={15}/></small></span></button>)}</div>
     </section>
   )
+}
+
+function LeagueDiscovery() {
+  return <section className="league-discovery section" id="leagues"><div className="section-title-row"><h2>FIND YOUR<br />COLORS.</h2><p>Start with the league.<br />Stay for the team connection.</p></div><div className="league-discovery__grid">{LEAGUE_TAXONOMY.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}><span>{league.name}</span><small>{league.sport}</small><ArrowRight size={16}/></a>)}</div></section>
 }
 
 function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '' }) {
@@ -450,8 +489,9 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
       <div className="footer__links">
         {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`)}>Custom lab</button></div>}
         <div><span>STORIES</span><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/#custom')}>How custom works</button></div>
+        <div><span>LEAGUES</span>{LEAGUE_TAXONOMY.map(league => <button key={league.key} onClick={() => navigate(leaguePath(league))}>{league.name} collections</button>)}</div>
         <div><span>90+ CLUB</span><button onClick={() => navigate('/membership')}>Membership</button><button onClick={() => navigate('/membership#join')}>Plans & benefits</button><button onClick={() => navigate('/membership#account')}>Member account</button></div>
-        <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button disabled title="Shipping policy page has not been published">Shipping · soon</button><button disabled title="Returns policy page has not been published">Returns · soon</button></div>
+        <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button onClick={() => navigate('/track-order')}>Track an order</button><button onClick={() => navigate('/shipping')}>Shipping</button><button onClick={() => navigate('/returns')}>Returns</button></div>
         <div><span>FOLLOW · COMING SOON</span><button disabled title="Official Instagram link is not configured">Instagram</button><button disabled title="Official TikTok link is not configured">TikTok</button><button disabled title="The journal has not been published">Journal</button></div>
       </div>
       <div className="footer__wordmark">EXTRA TIME<span>+</span></div>
@@ -526,13 +566,15 @@ function Home({ onQuickView, products, theme, collections = [] }) {
     rail:<ProductRail key="rail" onQuickView={onQuickView} items={merchandised}/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
+    leagues:<LeagueDiscovery key="leagues"/>,
     'custom-cta':<CustomTeaser key="custom-cta" product={customProduct}/>,
     vault:<VaultTeaser key="vault"/>,
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
   }[id] || null)
   const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','drop','rail','story','players','custom-cta','vault','manifesto','newsletter']
-  return <>{configured.map(renderBlock)}</>
+  const homeBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
+  return <>{homeBlocks.map(renderBlock)}</>
 }
 
 function Shop({ onQuickView, products, collection = null }) {
@@ -574,7 +616,8 @@ function Shop({ onQuickView, products, collection = null }) {
   const activeCount = Number(color !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock)
   return (
     <main className="shop-page">
-      <section className="collection-hero" style={collection?.hero ? { '--collection-image':`url(${collection.hero})` } : undefined}><p>{collection ? 'CURATED COLLECTION' : 'DROP 01 · LIVE NOW'}</p><h1>{(collection?.name || 'THE 90+ COLLECTION').toUpperCase()}</h1><div><p>{collection?.description || 'Original jerseys built from the minutes football gives us back.'}</p><span>{shown.length} PRODUCTS</span></div></section>
+      <section className="collection-hero" style={collection?.hero ? { '--collection-image':`url(${collection.hero})` } : undefined}><Breadcrumbs items={collection ? [{ label:'Shop', href:'/shop' }, { label:collection.name }] : [{ label:'Shop' }]}/><p>{collection ? 'CURATED COLLECTION' : 'DROP 01 · LIVE NOW'}</p><h1>{(collection?.name || 'THE 90+ COLLECTION').toUpperCase()}</h1><div><p>{collection?.description || 'Original jerseys built from the minutes football gives us back.'}</p><span>{shown.length} PRODUCTS</span></div></section>
+      <StorefrontTrust compact />
       <div className="filter-bar">
         <div className="desktop-filters"><span>FILTER</span>{colours.slice(0,5).map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}</button>)}<label className="catalog-select">GROUP<select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><label className="catalog-select">TYPE<select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={13}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOM</button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK</button></div>
         <button className="mobile-filter" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={16}/> FILTER{activeCount ? ` · ${activeCount}` : ''}</button>
@@ -699,7 +742,11 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   }
   const media = (product.media?.length ? product.media : [{id:'primary',type:'IMAGE',url:product.image,alt:product.alt}]).filter(item => item.url)
   const gallery = aiPreview ? [{id:'ai-preview',type:'IMAGE',url:aiPreview.imageUrl,alt:'Attached AI direction'},...media] : media
+  const taxonomy = productTaxonomyValues(product)
+  const productLeague = findLeague(taxonomy.league)
+  const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
   return <main className="pdp">
+    <div className="pdp-breadcrumb-wrap"><Breadcrumbs items={[{ label:'Shop', href:'/shop' }, ...(productLeague ? [{ label:productLeague.name, href:leaguePath(productLeague) }] : []), ...(productTeam ? [{ label:productTeam.name, href:teamPath(productLeague.key,productTeam) }] : []), { label:product.name }]}/></div>
     <div className="pdp__commerce">
       <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={16}/> BACK TO THE DROP</button>
       <div className="pdp__gallery" onScroll={event => setGalleryIndex(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>{gallery.map((item,index) => <figure key={`${item.id}-${index}`} className={index > 0 && index % 3 === 0 ? 'wide' : ''}>{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <img src={item.url} alt={item.alt || `${product.name} view ${index+1}`}/>}<span>{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span></figure>)}</div>
@@ -711,10 +758,14 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>AI direction attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached AI direction"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Edit more with AI</strong><small>Create one coordinated direction from this exact listing image.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>Tracked delivery · Final artwork review · 14-day standard returns</small></div>
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
-        <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div><details><summary>THE PRODUCT <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing is confirmed before checkout. Standard pieces can be returned within 14 days; personalized work is reviewed before production.</p></details>
+        <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div>
+        <div className="pdp__shipping-card"><div><strong>Ships across the US</strong><span>Free shipping on orders over $100</span></div><div><strong>30-day standard returns</strong><span>Personalized orders are reviewed before production</span></div><button onClick={() => navigate('/shipping')}>VIEW SHIPPING DETAILS <ArrowRight size={14}/></button></div>
+        <details open><summary>THE PRODUCT <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing and the live delivery estimate are shown before checkout. Standard pieces can be returned within 30 days; personalized work is reviewed before production.</p></details><details><summary>CARE & FIT <Plus/></summary><p>Use the size guide before ordering. Wash inside out on a cool cycle and hang dry to protect printed names and numbers.</p></details>
       </aside>
     </div>
     <ProductContentBlocks product={product}/>
+    {productLeague && <section className="pdp-taxonomy-links"><span>KEEP EXPLORING</span><div><a href={leaguePath(productLeague)} onClick={event => { event.preventDefault(); navigate(leaguePath(productLeague)) }}>{productLeague.name} collections <ArrowRight size={14}/></a>{productTeam && <a href={teamPath(productLeague.key,productTeam)} onClick={event => { event.preventDefault(); navigate(teamPath(productLeague.key,productTeam)) }}>{productTeam.name} gear <ArrowRight size={14}/></a>}</div></section>}
+    <StorefrontTrust />
     <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>
     <SizeFinder open={finder} onClose={() => setFinder(false)} onRecommend={value => sizeName && chooseOption(sizeName,value)}/>
     <div className="mobile-sticky-atc"><span><strong>{money(currentPrice)}</strong>{selectedVariant ? `${Object.values(selections).join(' · ')} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</span><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'ADD TO BAG') : 'CHOOSE OPTIONS'}</button></div>
@@ -745,7 +796,7 @@ function PolicyPage({ type }) {
     returns:['Returns','Standard pieces can be returned within 14 days in unused condition. Personalized work is reviewed before production and may be excluded after artwork approval.'],
     journal:['Journal','The Extra Time journal is being assembled from the stories behind each drop. Visit the current collection while new entries are prepared.']
   }[type]
-  return <main className="policy-page"><span>EXTRA TIME / STORE POLICY</span><h1>{content[0]}</h1><p>{content[1]}</p><h2>What to expect</h2><p>Clear product information, visible order states and a human review before personalized production. Full operational contact and policy details will be added before checkout is enabled.</p><button className="button button--dark" onClick={() => navigate('/shop')}>BACK TO THE DROP</button></main>
+  return <main className="policy-page"><span>EXTRA TIME / STORE POLICY</span><h1>{content[0]}</h1><p>{content[1]}</p><h2>What to expect</h2><p>Checkout shows the live delivery estimate before payment. Orders enter production only after a verified provider confirmation, and personalized work receives a human artwork review.</p><button className="button button--dark" onClick={() => navigate('/shop')}>BACK TO THE DROP</button></main>
 }
 
 function NotFound() {
@@ -767,18 +818,19 @@ function setLink(rel, href, extra = {}) {
   return node
 }
 
-function useRouteMetadata({ path, product, collection }) {
+function useRouteMetadata({ path, product, collection, league, team }) {
   useEffect(() => {
     const publicOrigin = import.meta.env.VITE_SITE_URL || 'https://www.jersevo.com'
     const productTitle = product?.seo?.title || product?.name
     const collectionTitle = collection?.seo?.title || collection?.name
+    const taxonomyTitle = team?.name || league?.name
     const withBrand = value => /extra time/i.test(value || '') ? value : `${value} — Extra Time`
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable'
-    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.')
+    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable'
+    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.')
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
     const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`
-    const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom'
-    const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection)
+    const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
+    const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team))
     const indexable = !privateRoute && !unresolvedRoute
     const image = product?.image || collection?.hero || `${publicOrigin}/assets/hero-tunnel.webp`
     const absoluteImage = new URL(image,publicOrigin).toString()
@@ -787,24 +839,37 @@ function useRouteMetadata({ path, product, collection }) {
     setMeta('description',description.slice(0,180)); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name','Extra Time',true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description.slice(0,200),true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description.slice(0,200)); setMeta('twitter:image',absoluteImage)
     setLink('canonical',canonical); setLink('alternate',canonical,{hreflang:'en-US'}); setLink('alternate',canonical,{hreflang:'x-default'})
     let schema=document.getElementById('route-structured-data')
-    if(indexable && (product || collection)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
+    if(indexable && (product || collection || league)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
       const breadcrumb=[{'@type':'ListItem',position:1,name:'Home',item:`${publicOrigin}/`}]
       if(product){
         const canonicalProduct=`${publicOrigin}/product/${encodeURIComponent(product.handle || product.id)}`
-        breadcrumb.push({'@type':'ListItem',position:2,name:'Shop',item:`${publicOrigin}/shop`},{'@type':'ListItem',position:3,name:product.name,item:canonicalProduct})
+        const taxonomy = productTaxonomyValues(product)
+        const productLeague = findLeague(taxonomy.league)
+        const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
+        breadcrumb.push({'@type':'ListItem',position:2,name:'Shop',item:`${publicOrigin}/shop`})
+        if(productLeague) breadcrumb.push({'@type':'ListItem',position:breadcrumb.length + 1,name:productLeague.name,item:`${publicOrigin}${leaguePath(productLeague)}`})
+        if(productTeam) breadcrumb.push({'@type':'ListItem',position:breadcrumb.length + 1,name:productTeam.name,item:`${publicOrigin}${teamPath(productLeague.key,productTeam)}`})
+        breadcrumb.push({'@type':'ListItem',position:breadcrumb.length + 1,name:product.name,item:canonicalProduct})
         const prices=(product.variants || []).map(row=>Number(row.price)).filter(value=>Number.isFinite(value) && value>0)
         const lowest=prices.length ? Math.min(...prices) : Number(product.price || 0)
         const inventory=Number(product.inventory || 0)
-        const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:{'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:'Extra Time',url:`${publicOrigin}/`}}}
+        const variantOffers=(product.variants || []).filter(variant => Number.isFinite(Number(variant.price)) && Number(variant.price) > 0).slice(0,80).map(variant => ({'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:Number(variant.price).toFixed(2),sku:variant.sku,availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:'Extra Time',url:`${publicOrigin}/`}}))
+        const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:variantOffers.length > 1 ? variantOffers : {'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:'Extra Time',url:`${publicOrigin}/`}}}
         if(Number(product.rating)>0 && Number(product.reviews)>0) productSchema.aggregateRating={'@type':'AggregateRating',ratingValue:Number(product.rating).toFixed(1),reviewCount:Number(product.reviews)}
         schema.textContent=JSON.stringify([productSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
-      } else {
+      } else if (collection) {
         const canonicalCollection=`${publicOrigin}/collection/${encodeURIComponent(collection.handle || collection.id)}`
         breadcrumb.push({'@type':'ListItem',position:2,name:collection.name,item:canonicalCollection})
         schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:collection.name,description:collection.description,url:canonicalCollection,image:collection.hero ? [new URL(collection.hero,publicOrigin).toString()] : undefined,inLanguage:'en-US'},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
+      } else {
+        const canonicalTaxonomy = `${publicOrigin}${team ? teamPath(league.key,team) : leaguePath(league)}`
+        breadcrumb.push({'@type':'ListItem',position:2,name:'Leagues',item:`${publicOrigin}/shop`})
+        if(team) breadcrumb.push({'@type':'ListItem',position:3,name:league.name,item:`${publicOrigin}${leaguePath(league)}`},{'@type':'ListItem',position:4,name:team.name,item:canonicalTaxonomy})
+        else breadcrumb.push({'@type':'ListItem',position:3,name:league.name,item:canonicalTaxonomy})
+        schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:taxonomyTitle,description,url:canonicalTaxonomy,inLanguage:'en-US',about:{'@type':'SportsOrganization',name:taxonomyTitle}},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
       }
     } else schema?.remove()
-  }, [path,product?.id,product?.updatedAt,collection?.id])
+  }, [path,product?.id,product?.updatedAt,collection?.id,league?.key,team?.slug])
 }
 
 function App() {
@@ -836,7 +901,9 @@ function App() {
   const routeProduct = productSlug ? findStorefrontProduct(products,productSlug) : null
   const collectionHandle = path.startsWith('/collection/') ? decodeURIComponent(path.split('/').pop()) : new URLSearchParams(search).get('collection')
   const routeCollection = collectionHandle ? collections.find(collection => collection.handle === collectionHandle || collection.id === collectionHandle) : null
-  useRouteMetadata({ path, product:routeProduct, collection:routeCollection })
+  const routeLeague = path.startsWith('/league/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
+  const routeTeam = path.startsWith('/team/') ? findTeam(routeLeague?.key, decodeURIComponent(path.split('/')[3] || '')) : null
+  useRouteMetadata({ path, product:routeProduct, collection:routeCollection, league:routeLeague, team:routeTeam })
   useEffect(() => {
     const aliases = { '/moments': 'story', '/players': 'players' }
     const anchor = aliases[path]
@@ -1010,6 +1077,24 @@ function App() {
     })
     setCartOpen(true)
   }
+  const clearCart = () => {
+    setCart([])
+    setMemberQuote(null)
+    try { window.localStorage.removeItem('extra-time-cart-v2') } catch {}
+  }
+  const completeCheckout = (lineKeys) => {
+    const keys = Array.isArray(lineKeys) ? new Set(lineKeys) : null
+    // A tracking link opened on another device must never clear a shopper's
+    // current bag. Checkout itself always supplies the purchased line keys.
+    if (!keys?.size) return
+    setCart(current => current.filter(item => !keys.has(item.key || `${item.product.id}:${item.variantId}`)))
+    setMemberQuote(null)
+  }
+  const openCheckout = () => {
+    if (!cart.length) { setCartNotice('Your bag is empty.'); return }
+    setCartOpen(false)
+    navigate('/checkout')
+  }
   const updateQty = (target, delta) => setCart(current => current.map(item => {
     if((item.key || cartLineKey(item)) !== (target.key || cartLineKey(target)))return item
     const product=products.find(row=>row.id===item.product.id)
@@ -1026,6 +1111,8 @@ function App() {
   else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
+  else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding league={routeLeague} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
+  else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding league={routeLeague} team={routeTeam} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path === '/custom') {
     const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'
     const requested = findStorefrontProduct(products,customProductId) || customProduct
@@ -1033,6 +1120,9 @@ function App() {
   }
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
   else if (path === '/membership' || path === '/account/membership') page = <MembershipPage account={account} onAccountChange={setAccount}/>
+  else if (path === '/checkout') page = <CheckoutPage cart={cart} account={account} onNavigate={navigate} onClearCart={clearCart} onPaymentConfirmed={completeCheckout} initialRoute={route}/>
+  else if (path === '/track-order') page = <OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout}/>
+  else if (path.startsWith('/order/')) { const orderPublicId = decodeURIComponent(path.split('/').slice(2).join('/')); const trackingToken = new URLSearchParams(search).get('token') || ''; page = <OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout} initialPublicId={orderPublicId} initialToken={trackingToken}/> }
   else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
   else if (['/privacy','/terms','/accessibility','/shipping','/returns','/journal'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
   else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
@@ -1046,7 +1136,7 @@ function App() {
       <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} menus={menus} customProduct={customProduct} hidden={footerActuallyHidden}/>
       <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)} onPromptUsed={() => setInstallPrompt(null)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={products}/>
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} account={account} memberQuote={memberQuote} quoteLoading={quoteLoading} quoteError={quoteError} cartNotice={cartNotice}/>
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} account={account} memberQuote={memberQuote} quoteLoading={quoteLoading} quoteError={quoteError} cartNotice={cartNotice} onCheckout={openCheckout}/>
       <QuickView key={quickViewProduct?.id || 'closed'} product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onAdd={addToCart}/>
       <SizeFinder open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)}/>
     </>

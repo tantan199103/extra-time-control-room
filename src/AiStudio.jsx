@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Image as ImageIcon, Lock, RefreshCw, Sparkles } from 'lucide-react'
 import { findStorefrontProduct } from './lib/storefront-model'
 import { getCustomerSessionId } from './lib/supabase'
+import { apiFetch } from './lib/api-client'
 
 function readDraft(productId) {
   try { return JSON.parse(window.sessionStorage.getItem(`extra-time-pdp-draft-${productId}`) || 'null') || {} } catch { return {} }
@@ -44,7 +45,7 @@ export default function AiStudio({ products = [] }) {
     if (prompt.trim().length < 8) { setError('Describe the change in at least 8 characters.'); return }
     setLoading(true); setError('')
     try {
-      const response = await fetch('/api/ai-preview', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId:product.id, prompt:prompt.trim() }) })
+      const response = await apiFetch('/api/ai-preview', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId:product.id, prompt:prompt.trim() }) })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(body.error || 'AI preview is not connected yet.')
       setPreview(body)

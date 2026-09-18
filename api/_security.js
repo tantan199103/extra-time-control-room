@@ -14,11 +14,27 @@ export function readBody(request, maxBytes = 24000) {
   catch { throw Object.assign(new Error('Request body must be valid JSON.'), { status:400 }) }
 }
 
+export function rawRequestBody(request) {
+  const raw = request?.rawBody ?? request?.body
+  if (Buffer.isBuffer(raw)) return raw.toString('utf8')
+  if (typeof raw === 'string') return raw
+  return null
+}
+
 export function enforceSameOrigin(request) {
   const origin = request.headers?.origin
   if (!origin) return
   const host = request.headers?.['x-forwarded-host'] || request.headers?.host
+  const allowedOrigins = String(process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(value => value.trim().replace(/\/$/, ''))
+    .filter(Boolean)
   try {
+    const normalizedOrigin = new URL(origin).origin.replace(/\/$/, '')
+    if (allowedOrigins.length) {
+      if (!allowedOrigins.includes(normalizedOrigin)) throw new Error('origin-not-allowlisted')
+      return
+    }
     if (!host || new URL(origin).host !== host) throw new Error('mismatch')
   } catch {
     throw Object.assign(new Error('Cross-origin requests are not allowed.'), { status:403 })

@@ -11,6 +11,7 @@ The Admin Settings page now stores a provider-neutral payment configuration. It 
    ```text
    PAYPAL_CLIENT_SECRET=…
    PAYPAL_WEBHOOK_ID=…
+   SITE_URL=https://www.jersevo.com
    ```
 
 4. Configure PayPal webhooks for order approval/capture events and verify their signatures before updating an order. PayPal’s Orders API must be called from the server; the browser must not receive the secret.
@@ -35,4 +36,6 @@ The Admin Settings page now stores a provider-neutral payment configuration. It 
 
 ## Safety gate
 
-The Admin screen reports missing server keys. Checkout remains disabled until the provider-specific server credentials are present and the actual server-side order creation, stock reservation, capture/transaction flow and verified webhook handlers are deployed. This is deliberate: a client-side checkout callback is not proof of payment.
+The Admin screen reports missing server keys and keeps checkout fail-closed until the provider-specific server credentials are present. The deployed flow creates a pending reservation, performs provider-side order creation/capture, and accepts only verified idempotent webhook/capture confirmations as proof of payment. A client-side return URL is never treated as payment proof.
+
+`SITE_URL` must be the canonical HTTPS storefront origin. It is used to build the PayPal return/cancel URLs; production requests are rejected rather than deriving those URLs from an arbitrary host header.

@@ -4,6 +4,7 @@ import { adminCollections, adminMenus, adminProductOptions, adminTheme } from '.
 import { buildListingInput, normalizeProduct, validateListing } from './catalog-model'
 import { prepareStorefrontProduct } from './storefront-model'
 import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
+import { apiFetch } from './api-client'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -49,7 +50,7 @@ export async function uploadCustomerReference(file, productId, fieldKey) {
     reader.onerror = () => reject(new Error('The selected image could not be read.'))
     reader.readAsDataURL(file)
   })
-  const response = await fetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, dataUrl }) })
+  const response = await apiFetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, dataUrl }) })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error || 'The reference image could not be uploaded.')
   return result
@@ -172,7 +173,7 @@ export async function requestAiListingCopy(product, brief = {}) {
   if (!supabase) throw new Error('Supabase is not configured. AI copy needs an authenticated admin session.')
   const { data:{ session }, error:sessionError } = await supabase.auth.getSession()
   if (sessionError || !session?.access_token) throw new Error('Your admin session expired. Sign in again before using AI.')
-  const response = await fetch('/api/ai-listing-copy', {
+  const response = await apiFetch('/api/ai-listing-copy', {
     method:'POST',
     headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${session.access_token}` },
     body:JSON.stringify({
@@ -278,7 +279,7 @@ export async function fetchAdminPaymentSettings() {
   if (!supabase) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: ['Supabase is not configured.'] }, source: 'error', error: 'Supabase is not configured.' }
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
   if (sessionError || !session?.access_token) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: ['Admin sign-in is required.'] }, source: 'error', error: 'Admin sign-in is required.' }
-  const response = await fetch('/api/admin-payment-settings', { headers: { Authorization: `Bearer ${session.access_token}` } })
+  const response = await apiFetch('/api/admin-payment-settings', { headers: { Authorization: `Bearer ${session.access_token}` } })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: [result.error || 'Payment settings could not be loaded.'] }, source: 'error', error: result.error || 'Payment settings could not be loaded.' }
   return { data: normalizePaymentSettings(result.settings), readiness: result.readiness || { ready: false, missing: [] }, source: 'server', error: null }
@@ -290,14 +291,16 @@ export async function saveAdminPaymentSettings(settings) {
   if (!supabase) return { data: validation.settings, source: 'error', error: 'Supabase is not configured. Nothing was saved.' }
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
   if (sessionError || !session?.access_token) return { data: validation.settings, source: 'error', error: 'Admin sign-in is required.' }
-  const response = await fetch('/api/admin-payment-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ settings: validation.settings }) })
+  const response = await apiFetch('/api/admin-payment-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ settings: validation.settings }) })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) return { data: validation.settings, source: 'error', error: result.error || 'Payment settings could not be saved.' }
   return { data: normalizePaymentSettings(result.settings), readiness: result.readiness || { ready: false, missing: [] }, source: 'server', error: null }
 }
 
 export async function createCustomizationOrder(order) {
-  const response = await fetch('/api/customization-order', {
+  // Compatibility contract: the legacy fetch('/api/customization-order'
+  // route is now resolved by apiFetch so the same handler can move to Node.
+  const response = await apiFetch('/api/customization-order', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body:JSON.stringify(order)
@@ -311,7 +314,7 @@ async function adminApi(path,options={}) {
   if(!supabase)throw new Error('Supabase is not configured.')
   const {data:{session},error}=await supabase.auth.getSession()
   if(error||!session?.access_token)throw new Error('Your admin session expired. Sign in again.')
-  const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`,...(options.headers||{})}})
+  const response=await apiFetch(path,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`,...(options.headers||{})}})
   const result=await response.json().catch(()=>({}))
   if(!response.ok)throw new Error(result.error||'The admin request failed.')
   return result
@@ -366,7 +369,7 @@ export async function requestMembershipEnrollment({priceId,policyVersionId,note=
   if (!supabase) throw new Error('Membership enrollment needs Supabase configuration.')
   const {data:{session}}=await supabase.auth.getSession()
   if(!session?.access_token) throw new Error('Sign in before requesting membership.')
-  const response=await fetch('/api/membership-enroll',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({priceId,policyVersionId,note,accepted})})
+  const response=await apiFetch('/api/membership-enroll',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({priceId,policyVersionId,note,accepted})})
   const result=await response.json().catch(()=>({}))
   if(!response.ok) throw new Error(result.error || 'Membership request could not be saved.')
   return result
@@ -377,7 +380,7 @@ export async function requestMemberQuote(cart,{country=''}={}) {
   const {data:{session}}=await supabase.auth.getSession()
   if(!session?.access_token) return null
   const lines=cart.map(item=>({lineKey:item.key || `${item.product.id}:${item.variantId}`,productId:item.product.id,variantId:item.variantId,qty:item.qty}))
-  const response=await fetch('/api/member-quote',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({lines,shipping:{country}})})
+  const response=await apiFetch('/api/member-quote',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({lines,shipping:{country}})})
   const result=await response.json().catch(()=>({}))
   if(!response.ok) throw new Error(result.error || 'Member price could not be checked.')
   return result
@@ -385,10 +388,99 @@ export async function requestMemberQuote(cart,{country=''}={}) {
 
 export async function requestCartValidation(cart) {
   if(!supabase || !cart.length) return { lines:[] }
-  const response=await fetch('/api/cart-validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:getCustomerSessionId(),lines:cart.map(item=>({lineKey:item.key || `${item.product.id}:${item.variantId}`,productId:item.product.id,variantId:item.variantId,qty:item.qty}))})})
+  const response=await apiFetch('/api/cart-validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:getCustomerSessionId(),lines:cart.map(item=>({lineKey:item.key || `${item.product.id}:${item.variantId}`,productId:item.product.id,variantId:item.variantId,qty:item.qty}))})})
   const result=await response.json().catch(()=>({}))
   if(!response.ok)throw new Error(result.error||'Cart could not be validated.')
   return result
+}
+
+function checkoutLines(cart = []) {
+  return cart.map(item => ({
+    lineKey: item.key || `${item.product.id}:${item.variantId}`,
+    productId: item.product.id,
+    variantId: item.variantId,
+    qty: item.qty,
+    customization: item.customization ? {
+      requestId: item.customization.requestId || null,
+      fields: item.customization.fields || {},
+      note: item.customization.note || '',
+      aiPreviewUrl: item.customization.aiPreviewUrl || null
+    } : null
+  }))
+}
+
+async function customerHeaders() {
+  const headers = { 'Content-Type': 'application/json' }
+  if (supabase) {
+    const { data } = await supabase.auth.getSession()
+    if (data?.session?.access_token) headers.Authorization = `Bearer ${data.session.access_token}`
+  }
+  return headers
+}
+
+export async function requestCheckoutQuote(cart, shipping = {}) {
+  if (!cart?.length) throw new Error('Your bag is empty.')
+  const response = await apiFetch('/api/checkout-quote', { method: 'POST', headers: await customerHeaders(), body: JSON.stringify({ sessionId: getCustomerSessionId(), lines: checkoutLines(cart), shipping }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'Checkout quote could not be calculated.')
+  return result.quote
+}
+
+export async function createCheckout({ cart, shipping, customer, quoteToken, idempotencyKey, trackingToken }) {
+  if (!cart?.length) throw new Error('Your bag is empty.')
+  const response = await apiFetch('/api/checkout-create', { method: 'POST', headers: await customerHeaders(), body: JSON.stringify({ sessionId: getCustomerSessionId(), lines: checkoutLines(cart), shipping, customer, quoteToken, idempotencyKey, trackingToken }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    const error = new Error(result.error || 'Checkout could not be started.')
+    error.status = response.status
+    error.code = result.code
+    throw error
+  }
+  return result
+}
+
+export async function capturePayPalPayment({ publicId, token, providerOrderId }) {
+  const response = await apiFetch('/api/payment-capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicId, token, providerOrderId }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    const error = new Error(result.error || 'Payment could not be confirmed.')
+    error.status = response.status
+    error.reviewRequired = Boolean(result.reviewRequired)
+    throw error
+  }
+  return result
+}
+
+export async function cancelPendingPayment({ publicId, token, providerOrderId = '' }) {
+  const response = await apiFetch('/api/payment-cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicId, token, providerOrderId }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    const error = new Error(result.error || 'Payment cancellation could not be recorded.')
+    error.status = response.status
+    throw error
+  }
+  return result
+}
+
+export async function trackOrder(publicId, token) {
+  const response = await apiFetch('/api/order-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicId, token }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'Order tracking is unavailable.')
+  return result.order
+}
+
+export async function fetchAdminOrders(status = '') {
+  const query = status ? `?status=${encodeURIComponent(status)}` : ''
+  return adminApi(`/api/admin-orders${query}`)
+}
+
+export async function fetchAdminOrder(id) {
+  if (!id) throw new Error('Order id is required.')
+  return adminApi(`/api/admin-orders?id=${encodeURIComponent(id)}`)
+}
+
+export async function updateAdminOrder(payload) {
+  return adminApi('/api/admin-orders', { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
 export async function fetchAdminMembership() {

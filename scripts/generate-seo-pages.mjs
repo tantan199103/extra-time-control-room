@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog } from '../src/lib/storefront-model.js'
+import { LEAGUE_TAXONOMY, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
@@ -151,7 +152,7 @@ const home = pageHtml(shell, {
   title:'Extra Time — Football memories, made wearable',
   description:'Extra Time makes designer-led football jerseys and personalized match-day pieces for supporters in the United States.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:'<main class="seo-fallback"><h1>Football memories, made wearable.</h1><p>Designer-led jerseys and considered personalization for the moments supporters never forget.</p></main>'
+  fallback:`<main class="seo-fallback"><h1>Football memories, made wearable.</h1><p>Designer-led jerseys and considered personalization for the moments supporters never forget.</p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
 
@@ -188,6 +189,32 @@ for (const collection of collections) {
     fallback:`<main class="seo-fallback"><h1>${escapeHtml(collection.title)}</h1><p>${escapeHtml(collection.description)}</p></main>`,
     schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:collection.title, description:collection.description, url:`${PUBLIC_ORIGIN}${path}`, image:collection.image }
   }))
+}
+
+// Taxonomy pages are generated from the same source used by the runtime mega
+// menu. This keeps the navigation graph crawlable even when the live catalog
+// is empty or Supabase is temporarily unavailable.
+for (const league of LEAGUE_TAXONOMY) {
+  const path = leaguePath(league)
+  await writePage(path, pageHtml(shell, {
+    path,
+    title:`${league.name} custom fan gear — Extra Time`,
+    description:league.description,
+    image:absolute('/assets/editorial-player.webp'),
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} custom fan gear</h1><p>${escapeHtml(league.description)}</p><ul>${league.teams.slice(0, 12).map(team => `<li><a href="${teamPath(league.key, team)}">${escapeHtml(team.name)}</a></li>`).join('')}</ul></main>`,
+    schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} custom fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } }
+  }))
+  for (const team of league.teams) {
+    const teamPage = teamPath(league.key, team)
+    await writePage(teamPage, pageHtml(shell, {
+      path:teamPage,
+      title:`${team.name} custom fan gear — Extra Time`,
+      description:`Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.`,
+      image:absolute('/assets/editorial-player.webp'),
+      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} custom fan gear</h1><p>Shop ${escapeHtml(team.name)} custom fan gear and personalized jerseys with tracked US delivery.</p><p><a href="${path}">Browse all ${escapeHtml(league.name)} collections</a></p></main>`,
+      schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} custom fan gear`, description:`Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.`, url:`${PUBLIC_ORIGIN}${teamPage}`, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } }
+    }))
+  }
 }
 
 const staticPages = [

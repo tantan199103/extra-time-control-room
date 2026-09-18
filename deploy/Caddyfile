@@ -1,0 +1,39 @@
+{
+  email {$TLS_EMAIL}
+  servers {
+    protocols h1 h2 h3
+  }
+}
+
+api.jersevo.com {
+  encode zstd gzip
+
+  @health path /health /ready
+  handle @health {
+    reverse_proxy api:8787
+  }
+
+  @api path /api/*
+  handle @api {
+    reverse_proxy api:8787 {
+      header_up X-Forwarded-Proto {scheme}
+      header_up X-Forwarded-Host {host}
+    }
+  }
+
+  handle {
+    respond "Not found" 404
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "no-referrer"
+    -Server
+  }
+
+  log {
+    output stdout
+    format json
+  }
+}

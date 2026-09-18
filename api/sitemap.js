@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { LEAGUE_TAXONOMY, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
 
 const escapeXml = value => String(value).replace(/[<>&'"]/g, character => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[character]))
 
@@ -7,6 +8,10 @@ export default async function handler(request,response) {
   const configuredOrigin = process.env.SITE_URL || 'https://www.jersevo.com'
   const origin = new URL(configuredOrigin).origin
   const urls=[{path:'/',priority:'1.0'},{path:'/shop',priority:'0.9'},{path:'/membership',priority:'0.7'},{path:'/vault',priority:'0.6'}]
+  for(const league of LEAGUE_TAXONOMY){
+    urls.push({path:leaguePath(league),priority:'0.7'})
+    for(const team of league.teams) urls.push({path:teamPath(league.key,team),priority:'0.6'})
+  }
   const supabaseUrl=process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
   const key=process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if(supabaseUrl && key){

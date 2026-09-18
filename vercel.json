@@ -16,6 +16,13 @@
     "api/customer-upload.js": { "maxDuration": 30 },
     "api/payment-config.js": { "maxDuration": 15 },
     "api/admin-payment-settings.js": { "maxDuration": 30 },
+    "api/checkout-quote.js": { "maxDuration": 30 },
+    "api/checkout-create.js": { "maxDuration": 30 },
+    "api/payment-capture.js": { "maxDuration": 30 },
+    "api/payment-cancel.js": { "maxDuration": 30 },
+    "api/payment-webhook.js": { "maxDuration": 30 },
+    "api/order-track.js": { "maxDuration": 30 },
+    "api/admin-orders.js": { "maxDuration": 30 },
     "api/sitemap.js": { "maxDuration": 15 }
   },
   "headers": [
@@ -42,6 +49,18 @@
     {
       "source": "/custom",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/checkout",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }, { "key": "Cache-Control", "value": "no-store" }, { "key": "Referrer-Policy", "value": "no-referrer" }]
+    },
+    {
+      "source": "/track-order",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }, { "key": "Cache-Control", "value": "no-store" }, { "key": "Referrer-Policy", "value": "no-referrer" }]
+    },
+    {
+      "source": "/order/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }, { "key": "Cache-Control", "value": "no-store" }, { "key": "Referrer-Policy", "value": "no-referrer" }]
     },
     {
       "source": "/assets/(.*)",
@@ -77,6 +96,7 @@
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
