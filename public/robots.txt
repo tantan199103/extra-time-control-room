@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api
 
-Sitemap: https://extra-time-control-room.vercel.app/sitemap.xml
+Sitemap: https://www.jersevo.com/sitemap.xml

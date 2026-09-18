@@ -759,21 +759,51 @@ function setMeta(name, content, property = false) {
   node.setAttribute('content',content)
 }
 
+function setLink(rel, href, extra = {}) {
+  const selector = `link[rel="${rel}"]${extra.hreflang ? `[hreflang="${extra.hreflang}"]` : ''}`
+  let node = document.head.querySelector(selector)
+  if (!node) { node=document.createElement('link'); node.rel=rel; if (extra.hreflang) node.hreflang=extra.hreflang; document.head.appendChild(node) }
+  node.href=href
+  return node
+}
+
 function useRouteMetadata({ path, product, collection }) {
   useEffect(() => {
+    const publicOrigin = import.meta.env.VITE_SITE_URL || 'https://www.jersevo.com'
     const productTitle = product?.seo?.title || product?.name
     const collectionTitle = collection?.seo?.title || collection?.name
     const withBrand = value => /extra time/i.test(value || '') ? value : `${value} — Extra Time`
     const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable'
     const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.')
-    const canonical = `${window.location.origin}${path === '/' ? '/' : path}`
-    const image = product?.image || collection?.hero || `${window.location.origin}/assets/hero-tunnel.webp`
-    document.title=title
-    setMeta('description',description.slice(0,180)); setMeta('og:title',title,true); setMeta('og:description',description.slice(0,200),true); setMeta('og:url',canonical,true); setMeta('og:image',new URL(image,window.location.origin).toString(),true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image')
-    let link=document.head.querySelector('link[rel="canonical"]'); if(!link){link=document.createElement('link');link.rel='canonical';document.head.appendChild(link)} link.href=canonical
+    const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
+    const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`
+    const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom'
+    const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection)
+    const indexable = !privateRoute && !unresolvedRoute
+    const image = product?.image || collection?.hero || `${publicOrigin}/assets/hero-tunnel.webp`
+    const absoluteImage = new URL(image,publicOrigin).toString()
+    document.documentElement.lang='en-US'
+    document.title=indexable ? title : `${title} · Extra Time`
+    setMeta('description',description.slice(0,180)); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name','Extra Time',true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description.slice(0,200),true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description.slice(0,200)); setMeta('twitter:image',absoluteImage)
+    setLink('canonical',canonical); setLink('alternate',canonical,{hreflang:'en-US'}); setLink('alternate',canonical,{hreflang:'x-default'})
     let schema=document.getElementById('route-structured-data')
-    if(product){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)} schema.textContent=JSON.stringify({'@context':'https://schema.org','@type':'Product',name:product.name,description,image:[new URL(product.image,window.location.origin).toString()],sku:product.variants?.[0]?.sku,offers:{'@type':'AggregateOffer',priceCurrency:'USD',lowPrice:product.price,highPrice:Math.max(product.price,...(product.variants || []).map(row=>Number(row.price || 0))),offerCount:(product.variants || []).filter(row=>Number(row.inventory || 0)>0).length,availability:product.inventory>0?'https://schema.org/InStock':'https://schema.org/OutOfStock'}}) }
-    else schema?.remove()
+    if(indexable && (product || collection)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
+      const breadcrumb=[{'@type':'ListItem',position:1,name:'Home',item:`${publicOrigin}/`}]
+      if(product){
+        const canonicalProduct=`${publicOrigin}/product/${encodeURIComponent(product.handle || product.id)}`
+        breadcrumb.push({'@type':'ListItem',position:2,name:'Shop',item:`${publicOrigin}/shop`},{'@type':'ListItem',position:3,name:product.name,item:canonicalProduct})
+        const prices=(product.variants || []).map(row=>Number(row.price)).filter(value=>Number.isFinite(value) && value>0)
+        const lowest=prices.length ? Math.min(...prices) : Number(product.price || 0)
+        const inventory=Number(product.inventory || 0)
+        const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:{'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:'Extra Time',url:`${publicOrigin}/`}}}
+        if(Number(product.rating)>0 && Number(product.reviews)>0) productSchema.aggregateRating={'@type':'AggregateRating',ratingValue:Number(product.rating).toFixed(1),reviewCount:Number(product.reviews)}
+        schema.textContent=JSON.stringify([productSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
+      } else {
+        const canonicalCollection=`${publicOrigin}/collection/${encodeURIComponent(collection.handle || collection.id)}`
+        breadcrumb.push({'@type':'ListItem',position:2,name:collection.name,item:canonicalCollection})
+        schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:collection.name,description:collection.description,url:canonicalCollection,image:collection.hero ? [new URL(collection.hero,publicOrigin).toString()] : undefined,inLanguage:'en-US'},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
+      }
+    } else schema?.remove()
   }, [path,product?.id,product?.updatedAt,collection?.id])
 }
 
