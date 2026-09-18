@@ -4,9 +4,9 @@ import { access, readFile } from 'node:fs/promises'
 
 const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'))
 
-test('Vercel functions use a bounded US primary and nearby failover', async () => {
+test('Vercel functions use a bounded US primary without unsupported failover', async () => {
   assert.deepEqual(config.regions, ['iad1'])
-  assert.deepEqual(config.functionFailoverRegions, ['cle1'])
+  assert.equal('functionFailoverRegions' in config, false, 'passive failover requires an Enterprise plan')
   for (const [pattern, settings] of Object.entries(config.functions)) {
     assert.ok(settings.maxDuration > 0 && settings.maxDuration <= 60, `${pattern} must have a bounded duration`)
     await access(new URL(`../${pattern}`, import.meta.url))

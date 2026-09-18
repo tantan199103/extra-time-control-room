@@ -4,7 +4,6 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "regions": ["iad1"],
-  "functionFailoverRegions": ["cle1"],
   "functions": {
     "api/render-artwork.js": { "maxDuration": 30 },
     "api/ai-preview.js": { "maxDuration": 60 },

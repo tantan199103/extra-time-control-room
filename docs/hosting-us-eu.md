@@ -12,7 +12,7 @@ Audit date: 2026-09-18. Public origin: `https://jersevo.com` (redirects to `http
 
 ## Changes in this repository
 
-- `vercel.json` now pins server functions to `iad1`, adds `cle1` as a nearby failover, and gives every API a bounded duration. PayPal/Paddle settings routes are explicitly limited to 15/30 seconds.
+- `vercel.json` now pins server functions to `iad1` and gives every API a bounded duration. PayPal/Paddle settings routes are explicitly limited to 15/30 seconds. Passive Function failover is intentionally not configured because Vercel restricts that feature to Enterprise plans.
 - Static `/assets/*` and `/icons/*` receive a one-day browser cache plus seven-day stale-while-revalidate window. HTML, service worker, Admin and payment APIs are not given this policy.
 - Unused high-resolution PNG source files now live under `source-assets/` instead of `public/assets/`; only the WebP delivery assets are emitted into `dist`.
 - AI provider requests abort at 55 seconds, leaving time for a structured error before the 60-second Vercel function limit.
@@ -24,8 +24,8 @@ Keep `iad1` as the primary function region until the Supabase region is verified
 
 | Supabase primary region | Recommended Vercel Functions | Market effect |
 | --- | --- | --- |
-| US East | `iad1`, failover `cle1` | Best for US; acceptable but transatlantic dynamic latency for EU |
-| EU West/Central | `fra1` or `lhr1`, nearby failover | Best for EU; transatlantic dynamic latency for US |
+| US East | `iad1` | Best for US; acceptable but transatlantic dynamic latency for EU |
+| EU West/Central | `fra1` or `lhr1` | Best for EU; transatlantic dynamic latency for US |
 | One market is clearly dominant | Put functions next to the database | Lowest database round-trip and safest write behavior |
 | Both US and EU require low dynamic latency | Add a measured multi-region/data replication design first | Do not enable two compute regions against one distant write-primary by assumption |
 
