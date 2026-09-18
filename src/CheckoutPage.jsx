@@ -33,6 +33,12 @@ function statusLabel(status) {
   return String(status || 'PENDING_PAYMENT').replaceAll('_', ' ').toLowerCase().replace(/(^|\s)\S/g, letter => letter.toUpperCase())
 }
 
+function customerFacingCheckoutError(error, fallback) {
+  const message = error instanceof Error ? error.message : ''
+  if (/migration|request protection|server access|not configured/i.test(message)) return 'Secure checkout is temporarily paused while the store finishes setup. Your bag is safe; please try again shortly.'
+  return message || fallback
+}
+
 export default function CheckoutPage({ cart = [], account, onNavigate, onClearCart, onPaymentConfirmed, initialRoute = '' }) {
   const [shipping, setShipping] = useState(emptyShipping)
   const [customer, setCustomer] = useState({ email: account?.user?.email || '', name: account?.user?.user_metadata?.full_name || '' })
@@ -84,7 +90,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
           // next submit reserves a fresh order instead of replaying it.
           if (result.cancelled) setCheckoutAttempt(newCheckoutAttempt())
         }
-      }).catch(error => active && setCheckoutError(error instanceof Error ? error.message : 'Payment cancellation could not be recorded.')).finally(() => active && setCancelSyncing(false))
+      }).catch(error => active && setCheckoutError(customerFacingCheckoutError(error, 'Payment cancellation could not be recorded.'))).finally(() => active && setCancelSyncing(false))
       return () => { active = false }
     }
     const providerOrderId = params.get('token')
@@ -110,7 +116,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
       } else if (result.pending) {
         onNavigate(`/order/${encodeURIComponent(publicId)}?token=${encodeURIComponent(trackingToken)}`)
       }
-    }).catch(error => { if (!active) return; setPaymentReview(Boolean(error?.reviewRequired)); setReviewOrder({ publicId, token: trackingToken }); setPaymentFailure(error instanceof Error ? error.message : 'Payment could not be confirmed.') }).finally(() => active && setReturning(false))
+    }).catch(error => { if (!active) return; setPaymentReview(Boolean(error?.reviewRequired)); setReviewOrder({ publicId, token: trackingToken }); setPaymentFailure(customerFacingCheckoutError(error, 'Payment could not be confirmed.')) }).finally(() => active && setReturning(false))
     return () => { active = false }
   }, [initialRoute])
 
@@ -119,7 +125,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     let active = true
     setQuoteLoading(true)
     setQuoteError('')
-    requestCheckoutQuote(cart, { country: shipping.country, method: shipping.method }).then(result => active && setQuote(result)).catch(error => active && setQuoteError(error instanceof Error ? error.message : 'Quote unavailable.')).finally(() => active && setQuoteLoading(false))
+    requestCheckoutQuote(cart, { country: shipping.country, method: shipping.method }).then(result => active && setQuote(result)).catch(error => active && setQuoteError(customerFacingCheckoutError(error, 'Quote unavailable.'))).finally(() => active && setQuoteLoading(false))
     return () => { active = false }
   }, [cart, shipping.country, shipping.method, initialRoute])
 
@@ -151,7 +157,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
       // terminal. Preserve the key only for ambiguous network failures, where
       // replaying is what prevents a duplicate reservation.
       if (Number.isFinite(Number(error?.status)) && Number(error.status) >= 400) setCheckoutAttempt(newCheckoutAttempt())
-      setCheckoutError(error instanceof Error ? error.message : 'Checkout could not be started.')
+      setCheckoutError(customerFacingCheckoutError(error, 'Checkout could not be started.'))
     } finally { setSubmitting(false) }
   }
 
