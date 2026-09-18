@@ -12,7 +12,8 @@ async function signedAsset(client, ref) {
 
 async function present(client,row){
   const payload=row.payload&&typeof row.payload==='object'?row.payload:{}
-  const references=(await Promise.all(Object.entries(payload.assetRefs||{}).map(async([key,ref])=>({key,...await signedAsset(client,ref)})))).filter(item=>item.url)
+  const refs=row.asset_refs&&typeof row.asset_refs==='object'?row.asset_refs:(payload.assetRefs||{})
+  const references=(await Promise.all(Object.entries(refs).map(async([key,ref])=>{const asset=await signedAsset(client,ref);return asset?{key,...asset}:null}))).filter(Boolean)
   const aiPreview=await signedAsset(client,payload.aiPreviewStorage)
   return {...row,payload:{...payload,aiPreviewUrl:undefined},assets:{references,aiPreview}}
 }
@@ -24,7 +25,7 @@ export default async function handler(request,response){
     const admin=await requireAdmin(request,client)
     if(request.method==='GET'){
       const status=safeText(request.query?.status,20).toUpperCase()
-      let query=client.from('pod_customization_orders').select('id,product_id,variant_id,payload,status,customer_email,created_at,updated_at').order('created_at',{ascending:false}).limit(200)
+      let query=client.from('pod_customization_orders').select('id,product_id,variant_id,payload,asset_refs,ai_preview_id,status,customer_email,created_at,updated_at').order('created_at',{ascending:false}).limit(200)
       if(allowedStatuses.has(status))query=query.eq('status',status)
       const {data,error}=await query
       if(error)throw error

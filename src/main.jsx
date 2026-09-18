@@ -781,7 +781,7 @@ function App() {
   const [route, setRoute] = useState(() => window.location.pathname + window.location.search + window.location.hash)
   const path = route.split(/[?#]/)[0]
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
-  const [products,setProducts] = useState(initialCatalog)
+  const [products,setProducts] = useState(() => import.meta.env.DEV ? initialCatalog : [])
   const [menus,setMenus] = useState([])
   const [collections,setCollections] = useState([])
   const [theme,setTheme] = useState(null)
@@ -982,7 +982,8 @@ function App() {
   }).filter(item => item.qty > 0))
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
   let page
-  if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
+  if (!path.startsWith('/admin') && catalogState.loading && !products.length) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
+  else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
   else if (path === '/custom') {
     const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'

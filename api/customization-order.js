@@ -98,6 +98,8 @@ export default async function handler(request, response) {
       template_version:null,
       listing_revision:product.updated_at,
       custom_schema:schema,
+      asset_refs:assetRefs,
+      ai_preview_id:aiPreviewId || null,
       idempotency_key:idempotencyKey,
       session_hash:identityHash,
       payload,

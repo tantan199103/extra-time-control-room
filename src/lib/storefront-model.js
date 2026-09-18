@@ -143,7 +143,7 @@ export function menuAtLocation(menus = [], location) {
   return menus.find(menu => normalizeMenuLocation(menu.location) === wanted)
 }
 
-export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/custom', '/studio', '/membership', '/account/membership', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns', '/journal'])
+export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/custom', '/studio', '/membership', '/account/membership', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns', '/journal', '/moments', '/players'])
 
 export function menuTargetProblem(target, type = 'PAGE') {
   const value = String(target || '').trim()

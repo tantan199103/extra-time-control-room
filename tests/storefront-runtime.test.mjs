@@ -36,7 +36,8 @@ test('collection merchandising and menu validation follow published contracts', 
   const products=[{id:'a',updatedAt:'2026-01-01',inventory:8},{id:'b',updatedAt:'2026-02-01',inventory:1}]
   const collection={products:['a','b'],productLinks:[{productId:'a',sortOrder:0,featured:false},{productId:'b',sortOrder:1,featured:true}],sort:'FEATURED'}
   assert.deepEqual(sortCollectionProducts(products,collection).map(row=>row.id),['b','a'])
-  assert.equal(menuTargetProblem('/moments','PAGE').length>0,true)
+  assert.equal(menuTargetProblem('/unknown-page','PAGE').length>0,true)
+  assert.equal(menuTargetProblem('/moments','PAGE'),'')
   assert.equal(menuTargetProblem('/product/a','PRODUCT'),'')
 })
 
