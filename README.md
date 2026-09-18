@@ -63,7 +63,7 @@ The Admin listing writer uses the same server-only APIKEY.FUN key by default and
 
 The deterministic high-resolution renderer lives at [`api/render-artwork.js`](<D:/APP Dự Án/custom pod/api/render-artwork.js>) as a Vercel serverless function. Set `SUPABASE_SERVICE_ROLE_KEY` and (optionally) `SUPABASE_ARTWORK_BUCKET=artwork` only in Vercel server-side environment variables when you want rendered PNG masters uploaded to Supabase Storage. Keep the service-role key out of the browser.
 
-The production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). Admin adapters read the isolated `pod_*` Supabase tables, with preview fallbacks; writes require the admin JWT policy. The customer storefront still reads `src/data.js` and does not yet render published admin theme/menu/collection changes.
+The production storefront is [www.jersevo.com](https://www.jersevo.com) (the Vercel project hostname remains available for deployment inspection). Admin adapters read the isolated `pod_*` Supabase tables, with preview fallbacks; writes require the admin JWT policy. The customer storefront still reads `src/data.js` and does not yet render published admin theme/menu/collection changes.
 
 For the current US/EU placement, cache policy and post-deploy checks, see [`docs/hosting-us-eu.md`](<D:/APP Dự Án/custom pod/docs/hosting-us-eu.md>). Run `npm run audit:hosting -- https://www.jersevo.com` after a production deployment; the check fails if a payment API is routed to the SPA shell or becomes cacheable.
 
