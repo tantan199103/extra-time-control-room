@@ -3,6 +3,7 @@ import { adminProducts } from '../admin-data'
 import { adminCollections, adminMenus, adminProductOptions, adminTheme } from '../admin-builder-data'
 import { buildListingInput, normalizeProduct, validateListing } from './catalog-model'
 import { prepareStorefrontProduct } from './storefront-model'
+import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -271,6 +272,28 @@ export async function saveAdminCollections(collections) {
   const { data, error } = await supabase.rpc('pod_save_collections', { collection_payload:collections })
   if (error) return { data:collections, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
   return { data, source:'supabase', error:null }
+}
+
+export async function fetchAdminPaymentSettings() {
+  if (!supabase) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: ['Supabase is not configured.'] }, source: 'error', error: 'Supabase is not configured.' }
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  if (sessionError || !session?.access_token) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: ['Admin sign-in is required.'] }, source: 'error', error: 'Admin sign-in is required.' }
+  const response = await fetch('/api/admin-payment-settings', { headers: { Authorization: `Bearer ${session.access_token}` } })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: [result.error || 'Payment settings could not be loaded.'] }, source: 'error', error: result.error || 'Payment settings could not be loaded.' }
+  return { data: normalizePaymentSettings(result.settings), readiness: result.readiness || { ready: false, missing: [] }, source: 'server', error: null }
+}
+
+export async function saveAdminPaymentSettings(settings) {
+  const validation = validatePaymentSettings(settings)
+  if (!validation.ok) return { data: validation.settings, source: 'error', error: validation.errors.join(' ') }
+  if (!supabase) return { data: validation.settings, source: 'error', error: 'Supabase is not configured. Nothing was saved.' }
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  if (sessionError || !session?.access_token) return { data: validation.settings, source: 'error', error: 'Admin sign-in is required.' }
+  const response = await fetch('/api/admin-payment-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ settings: validation.settings }) })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) return { data: validation.settings, source: 'error', error: result.error || 'Payment settings could not be saved.' }
+  return { data: normalizePaymentSettings(result.settings), readiness: result.readiness || { ready: false, missing: [] }, source: 'server', error: null }
 }
 
 export async function createCustomizationOrder(order) {
