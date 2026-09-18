@@ -65,7 +65,10 @@ export default async function handler(request, response) {
     form.append('image[]', reference.blob, `${listing.id}-listing-reference.webp`)
     form.append('size', 'auto')
     form.append('quality', process.env.AI_IMAGE_QUALITY || 'medium')
-    const upstream = await fetch(apiUrl, { method:'POST', headers:{ Authorization:`Bearer ${apiKey}` }, body:form, signal:AbortSignal.timeout(110000) })
+    // Leave a small response/cleanup margin before the Vercel function's
+    // 60-second maxDuration. A longer upstream timeout only turns a provider
+    // stall into a platform timeout with no useful JSON error for the client.
+    const upstream = await fetch(apiUrl, { method:'POST', headers:{ Authorization:`Bearer ${apiKey}` }, body:form, signal:AbortSignal.timeout(55000) })
     const result = await upstream.json().catch(() => ({}))
     if (!upstream.ok) throw Object.assign(new Error(result.error?.message || result.message || 'AI provider rejected the preview request.'), { status:upstream.status })
     const bytes = await generatedBytes(result.data?.[0])

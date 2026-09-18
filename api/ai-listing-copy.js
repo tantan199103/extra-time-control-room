@@ -4,6 +4,8 @@ const json = (response, status, body) => response.status(status).setHeader('Cont
 const text = (value, limit) => String(value || '').trim().slice(0, limit)
 const list = (value, limit = 12) => Array.isArray(value) ? value.map(item => text(item, 80)).filter(Boolean).slice(0, limit) : []
 
+const UPSTREAM_TIMEOUT_MS = 55000
+
 async function requireAdmin(request) {
   const token = String(request.headers?.authorization || '').replace(/^Bearer\s+/i, '')
   if (!token) throw Object.assign(new Error('Admin sign-in is required.'), { status:401 })
@@ -75,7 +77,8 @@ export default async function handler(request, response) {
     const headers = { Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json' }
     let upstream = await fetch(apiUrl, {
       method:'POST', headers,
-      body:JSON.stringify({ model, temperature:0.65, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] })
+      body:JSON.stringify({ model, temperature:0.65, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] }),
+      signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
     })
     let payload = await upstream.json().catch(() => ({}))
     // Some OpenAI-compatible gateways do not expose response_format or vision on
@@ -83,7 +86,8 @@ export default async function handler(request, response) {
     if (!upstream.ok && [400,415,422].includes(upstream.status)) {
       upstream = await fetch(apiUrl, {
         method:'POST', headers,
-        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content:userText }] })
+        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
+        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
       })
       payload = await upstream.json().catch(() => ({}))
     }

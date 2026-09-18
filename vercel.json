@@ -1,17 +1,37 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "regions": ["iad1"],
+  "functionFailoverRegions": ["cle1"],
   "functions": {
     "api/render-artwork.js": { "maxDuration": 30 },
     "api/ai-preview.js": { "maxDuration": 60 },
     "api/ai-listing-copy.js": { "maxDuration": 60 },
+    "api/admin-customizations.js": { "maxDuration": 30 },
+    "api/cart-validate.js": { "maxDuration": 30 },
     "api/member-quote.js": { "maxDuration": 30 },
     "api/membership-enroll.js": { "maxDuration": 30 },
     "api/customization-order.js": { "maxDuration": 30 },
-    "api/customer-upload.js": { "maxDuration": 30 }
+    "api/customer-upload.js": { "maxDuration": 30 },
+    "api/payment-config.js": { "maxDuration": 15 },
+    "api/admin-payment-settings.js": { "maxDuration": 30 },
+    "api/sitemap.js": { "maxDuration": 15 }
   },
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    },
+    {
+      "source": "/icons/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    },
     {
       "source": "/sw.js",
       "headers": [

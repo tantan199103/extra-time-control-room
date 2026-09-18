@@ -65,6 +65,8 @@ The deterministic high-resolution renderer lives at [`api/render-artwork.js`](<D
 
 The production deployment is [extra-time-control-room.vercel.app](https://extra-time-control-room.vercel.app). Admin adapters read the isolated `pod_*` Supabase tables, with preview fallbacks; writes require the admin JWT policy. The customer storefront still reads `src/data.js` and does not yet render published admin theme/menu/collection changes.
 
+For the current US/EU placement, cache policy and post-deploy checks, see [`docs/hosting-us-eu.md`](<D:/APP Dự Án/custom pod/docs/hosting-us-eu.md>). Run `npm run audit:hosting -- https://www.jersevo.com` after a production deployment; the check fails if a payment API is routed to the SPA shell or becomes cacheable.
+
 The workspace has a local Git history, CI workflow and an `origin` remote targeting the private `tantan199103/extra-time-control-room` repository. Push `main` after completing Git Credential Manager authentication to enable GitHub ↔ Vercel continuous deployment.
 
 For the product-builder rationale and payload contract, read [`docs/template-engine.md`](<D:/APP Dự Án/custom pod/docs/template-engine.md>).
