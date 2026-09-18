@@ -29,7 +29,7 @@ export default async function handler(request, response) {
     if (uploadError) throw uploadError
     const { data:signed, error:signError } = await client.storage.from('customer-references').createSignedUrl(path, 60 * 60 * 24 * 7)
     if (signError || !signed?.signedUrl) throw signError || new Error('Reference URL could not be created.')
-    return sendJson(response, 201, { imageUrl:signed.signedUrl, path, expiresIn:604800 })
+    return sendJson(response, 201, { imageUrl:signed.signedUrl, storage:{ bucket:'customer-references', path }, expiresIn:604800 })
   } catch (error) {
     return handleApiError(response, error, 'The reference image could not be uploaded.')
   }

@@ -78,7 +78,7 @@ export default async function handler(request, response) {
     const { data:signed, error:signError } = await client.storage.from('ai-previews').createSignedUrl(path, 60 * 60 * 24)
     if (signError || !signed?.signedUrl) throw signError || new Error('Preview URL could not be created.')
     await client.from('pod_ai_preview_jobs').insert({ id:previewId, product_id:listing.id, session_hash:identityHash, storage_path:path, prompt, model, status:'COMPLETED' })
-    return sendJson(response, 200, { productId:listing.id, model, imageUrl:signed.signedUrl, previewId, referenceUrl:reference.url, prompt, expiresIn:86400 })
+    return sendJson(response, 200, { productId:listing.id, model, imageUrl:signed.signedUrl, previewId, storage:{ bucket:'ai-previews', path }, referenceUrl:reference.url, prompt, expiresIn:86400 })
   } catch (error) {
     return handleApiError(response, error, 'AI preview failed.')
   }

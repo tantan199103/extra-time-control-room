@@ -32,6 +32,15 @@ export function serverSupabase() {
   return createClient(url, key, { auth:{ persistSession:false, autoRefreshToken:false } })
 }
 
+export async function requireAdmin(request, client = serverSupabase()) {
+  const token = String(request.headers?.authorization || '').replace(/^Bearer\s+/i,'')
+  if (!token) throw Object.assign(new Error('Admin sign-in is required.'),{status:401})
+  const {data,error}=await client.auth.getUser(token)
+  if(error||!data?.user)throw Object.assign(new Error('The admin session is invalid or expired.'),{status:401})
+  if(data.user.app_metadata?.extra_time_role!=='admin')throw Object.assign(new Error('Extra Time admin permission is required.'),{status:403})
+  return data.user
+}
+
 export function customerSession(body) {
   const sessionId = String(body?.sessionId || '')
   if (!/^[a-zA-Z0-9_-]{16,128}$/.test(sessionId)) throw Object.assign(new Error('A valid customer session is required. Refresh the page and try again.'), { status:422 })

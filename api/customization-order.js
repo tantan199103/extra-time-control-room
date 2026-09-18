@@ -54,9 +54,25 @@ export default async function handler(request, response) {
 
     const note = safeText(body.note, 500)
     const aiPrompt = safeText(body.aiPrompt, 1200)
+    const incomingAssetRefs = body.assetRefs && typeof body.assetRefs === 'object' && !Array.isArray(body.assetRefs) ? body.assetRefs : {}
+    const photoKeys = new Set(schema.filter(field => field.type === 'photo').map(field => field.key))
+    const assetRefs = {}
+    for (const [key,raw] of Object.entries(incomingAssetRefs)) {
+      const bucket=safeText(raw?.bucket,80), path=safeText(raw?.path,700)
+      if(!photoKeys.has(key) || bucket!=='customer-references' || !path.startsWith(`${product.id}/${identityHash.slice(0,16)}/`)) throw Object.assign(new Error('A customer reference does not belong to this request.'),{status:422})
+      assetRefs[key]={bucket,path}
+    }
+    const aiPreviewId = safeText(body.aiPreviewId,180)
     const aiPreviewUrl = safeText(body.aiPreviewUrl, 1600)
     if (aiPreviewUrl && !/^https:\/\//i.test(aiPreviewUrl)) throw Object.assign(new Error('AI preview must be a secure stored URL.'), { status:422 })
-    if (!Object.values(fields).some(Boolean) && !note && !aiPreviewUrl) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
+    let aiPreviewStorage=null
+    if(aiPreviewId){
+      const {data:job,error:jobError}=await client.from('pod_ai_preview_jobs').select('id,product_id,session_hash,storage_path,status').eq('id',aiPreviewId).eq('product_id',product.id).eq('session_hash',identityHash).eq('status','COMPLETED').maybeSingle()
+      if(jobError)throw jobError
+      if(!job)throw Object.assign(new Error('The AI preview does not belong to this request.'),{status:422})
+      aiPreviewStorage={bucket:'ai-previews',path:job.storage_path,jobId:job.id}
+    }
+    if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
 
     const payload = {
       listingId:product.id,
@@ -67,8 +83,10 @@ export default async function handler(request, response) {
       options:variant.option_values || {},
       unitPrice:Number(variant.price),
       fields,
+      assetRefs,
       note,
       aiPreviewUrl:aiPreviewUrl || null,
+      aiPreviewStorage,
       aiPrompt:aiPrompt || null,
       source:aiPreviewUrl ? 'ai-assisted-product-page' : 'product-page'
     }

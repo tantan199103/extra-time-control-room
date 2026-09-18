@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
-import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
+import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
 import MembershipPage from './MembershipPage'
 import './styles.css'
@@ -604,7 +604,7 @@ function CustomFieldControl({ field, value, onChange, productId }) {
     const file = event.target.files?.[0]
     if (!file) return
     setUploading(true); setError('')
-    try { const result = await uploadCustomerReference(file,productId,field.key); onChange(result.imageUrl) }
+    try { const result = await uploadCustomerReference(file,productId,field.key); onChange(result.imageUrl,result.storage) }
     catch(caught) { setError(caught instanceof Error ? caught.message : 'Upload failed.') }
     finally { setUploading(false); event.target.value='' }
   }
@@ -644,6 +644,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const [finder,setFinder] = useState(false)
   const [personalized,setPersonalized] = useState(Boolean(customFields.length && (startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || aiPreview)))
   const [customValues,setCustomValues] = useState(savedDraft?.values || {})
+  const [assetRefs,setAssetRefs] = useState(savedDraft?.assetRefs || {})
   const [customNote,setCustomNote] = useState(savedDraft?.note || '')
   const [requestKey,setRequestKey] = useState(savedDraft?.requestKey || `request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
   const [customError,setCustomError] = useState('')
@@ -658,8 +659,8 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const swatchColor = value => ({black:'#111111',white:'#eeeeea',chalk:'#eeeeea',oxblood:'#711e25',red:'#b52b2b',blue:'#244c89',navy:'#15233d',green:'#315c43',purple:'#5f3a78'}[String(value).toLowerCase()] || String(value))
   useEffect(() => { if (startPersonalized && customFields.length) setPersonalized(true) }, [startPersonalized,customFields.length])
   useEffect(() => {
-    try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues,note:customNote,selections,requestKey })) } catch {}
-  }, [product.id,customValues,customNote,selections,requestKey])
+    try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues,assetRefs,note:customNote,selections,requestKey })) } catch {}
+  }, [product.id,customValues,assetRefs,customNote,selections,requestKey])
   const chooseOrderType = enabled => {
     setPersonalized(enabled); setCustomError(''); setAdded(false)
     const url = new URL(window.location.href)
@@ -668,9 +669,10 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
   const chooseOption = (name,value) => { setSelections(current => ({...current,[name]:value})); setAdded(false); setCustomError('') }
-  const updateCustom = (field,rawValue) => {
+  const updateCustom = (field,rawValue,assetRef = null) => {
     const value = field.type === 'number' ? String(rawValue).replace(/\D/g,'') : String(rawValue)
     setCustomValues(current => ({...current,[field.key]:field.type === 'photo' ? value : value.slice(0,field.maxLength || 500)})); setCustomError(''); setAdded(false)
+    if(field.type === 'photo')setAssetRefs(current => assetRef ? {...current,[field.key]:assetRef} : Object.fromEntries(Object.entries(current).filter(([key])=>key!==field.key)))
   }
   const openAi = () => { navigate(`/studio?product=${product.handle || product.id}`) }
   const add = async () => {
@@ -683,7 +685,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     if (!Object.values(fields).some(Boolean) && !customNote.trim() && !aiPreview) { setCustomError('Add at least one detail, a studio note, or an AI direction.'); return }
     setSubmitting(true); setCustomError('')
     try {
-      const result = await createCustomizationOrder({ sessionId:getCustomerSessionId(),idempotencyKey:requestKey,productId:product.id,variantId:selectedVariant.id,fields,note:customNote.trim(),aiPreviewUrl:aiPreview?.imageUrl || null,aiPrompt:aiPreview?.prompt || null })
+      const result = await createCustomizationOrder({ sessionId:getCustomerSessionId(),idempotencyKey:requestKey,productId:product.id,variantId:selectedVariant.id,fields,assetRefs,note:customNote.trim(),aiPreviewId:aiPreview?.previewId || null,aiPreviewUrl:aiPreview?.imageUrl || null,aiPrompt:aiPreview?.prompt || null })
       const customization = { requestId:result.data.id, fields, note:customNote.trim(), aiPreviewUrl:aiPreview?.imageUrl || null, aiPrompt:aiPreview?.prompt || null }
       onAdd({...product,image:aiPreview?.imageUrl || displayVariant?.image || product.image},{variant:selectedVariant,options:selections,customization})
       setAdded(true)
@@ -702,7 +704,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div><button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={16}/><span><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'90+ Club member pricing':'Members save 20–40% on eligible pieces'}</strong><small>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your secure price is calculated in the bag.':'See the season pass and shipping benefit.'}</small></span><ArrowRight size={16}/></button>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{option.name === sizeName && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] || 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${value}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : value}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'} · {selectedVariant.sku}</p>}
-        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={value => updateCustom(field,value)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>AI direction attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached AI direction"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Edit more with AI</strong><small>Create one coordinated direction from this exact listing image.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
+        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>AI direction attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached AI direction"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Edit more with AI</strong><small>Create one coordinated direction from this exact listing image.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>Tracked delivery · Final artwork review · 14-day standard returns</small></div>
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div><details><summary>THE PRODUCT <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing is confirmed before checkout. Standard pieces can be returned within 14 days; personalized work is reviewed before production.</p></details>
@@ -839,6 +841,21 @@ function App() {
     requestMemberQuote(cart).then(result=>{if(active)setMemberQuote(result)}).catch(error=>{if(active){setMemberQuote(null);setQuoteError(error instanceof Error?error.message:'Member price unavailable.')}}).finally(()=>{if(active)setQuoteLoading(false)})
     return()=>{active=false}
   },[cart,account.user?.id,account.membership?.updated_at])
+  useEffect(()=>{
+    if(!supabase || !cart.length || catalogState.loading || path.startsWith('/admin'))return
+    let active=true
+    requestCartValidation(cart).then(result=>{
+      if(!active)return
+      const live=new Map((result.lines||[]).map(line=>[line.lineKey,line]))
+      setCart(current=>current.flatMap(item=>{
+        const line=live.get(item.key || `${item.product.id}:${item.variantId}`)
+        if(!line?.available){setCartNotice(`${item.product.name} is no longer available and was removed from your bag.`);return []}
+        if(line.qty!==item.qty)setCartNotice(`${item.product.name} quantity was adjusted to live stock.`)
+        return [{...item,qty:line.qty,sku:line.sku,unitPrice:line.unitPrice}]
+      }))
+    }).catch(()=>{})
+    return()=>{active=false}
+  },[cart.length,catalogState.loading,path])
   useEffect(() => {
     if (catalogState.loading || catalogState.source !== 'supabase') return
     setCart(current => {

@@ -48,7 +48,7 @@ export default function AiStudio({ products = [] }) {
       const body = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(body.error || 'AI preview is not connected yet.')
       setPreview(body)
-      try { window.sessionStorage.setItem('extra-time-ai-preview', JSON.stringify({ productId:product.id, previewId:body.previewId, imageUrl:body.imageUrl, prompt:prompt.trim(), expiresAt:Date.now() + Number(body.expiresIn || 86400) * 1000 })) } catch {}
+      try { window.sessionStorage.setItem('extra-time-ai-preview', JSON.stringify({ productId:product.id, previewId:body.previewId, imageUrl:body.imageUrl, storage:body.storage, prompt:prompt.trim(), expiresAt:Date.now() + Number(body.expiresIn || 86400) * 1000 })) } catch {}
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'AI preview failed.') }
     finally { setLoading(false) }
   }

@@ -3,6 +3,7 @@ import AdminAccess from './AdminAccess'
 import ListingWorkspace from './ListingWorkspace'
 import PodBridgeReceiver from './PodBridgeReceiver'
 import AdminMembership from './AdminMembership'
+import AdminCustomizations from './AdminCustomizations'
 import { deriveAutomaticTags, duplicateProductDraft, productCompleteness } from './lib/catalog-model'
 import {
   ArrowRight,
@@ -55,6 +56,7 @@ function AdminShell({ active, children, source, onRefresh }) {
     { id: 'collections', label: 'Collections', icon: Boxes, path: '/admin/collections' },
     { id: 'catalog', label: 'Products', icon: Shirt, path: '/admin/catalog' },
     { id: 'membership', label: 'Membership', icon: Ticket, path: '/admin/membership' },
+    { id: 'customizations', label: 'Custom queue', icon: Sparkles, path: '/admin/customizations' },
     { id: 'bridge', label: 'POD Bridge', icon: Link2, path: '/admin/bridge' },
     { id: 'settings', label: 'Settings', icon: Settings2, path: '/admin/settings' }
   ]
@@ -184,12 +186,13 @@ function AdminWorkspace() {
   if (loading) return <main className="admin-access"><p role="status">Loading store data…</p></main>
   if (loadError) return <main className="admin-load-error" role="alert"><h1>Store data could not be loaded</h1><p>{loadError}</p><button onClick={load}>Retry</button></main>
   const isEditor = path.startsWith('/admin/products/')
-  const active = path === '/admin/bridge' ? 'bridge' : path.startsWith('/admin/membership') ? 'membership' : isEditor || path === '/admin/catalog' ? 'catalog' : path.startsWith('/admin/theme/menus') ? 'menus' : path.startsWith('/admin/theme') ? 'theme' : path.startsWith('/admin/collections') ? 'collections' : path === '/admin/settings' ? 'settings' : 'overview'
+  const active = path === '/admin/bridge' ? 'bridge' : path.startsWith('/admin/membership') ? 'membership' : path.startsWith('/admin/customizations') ? 'customizations' : isEditor || path === '/admin/catalog' ? 'catalog' : path.startsWith('/admin/theme/menus') ? 'menus' : path.startsWith('/admin/theme') ? 'theme' : path.startsWith('/admin/collections') ? 'collections' : path === '/admin/settings' ? 'settings' : 'overview'
   let page = <AdminOverview products={productRows}/>
   if (path === '/admin/bridge') page = <PodBridgeReceiver products={productRows} onSaved={saveProduct}/>
   else if (path === '/admin/catalog') page = <AdminCatalog products={productRows} onDuplicate={duplicateProduct} onBulkUpdate={bulkUpdateProducts}/>
   else if (isEditor) page = <ListingWorkspace key={path} products={productRows} onSaved={saveProduct} onDuplicate={saveProduct}/>
   else if (path.startsWith('/admin/membership')) page = <AdminMembership/>
+  else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
   else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} onSave={persistTheme}/>
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} onSave={persistMenus}/>
   else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections}/>

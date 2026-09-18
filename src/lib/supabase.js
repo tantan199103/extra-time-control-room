@@ -284,6 +284,25 @@ export async function createCustomizationOrder(order) {
   return { data:result.order, source:'server', error:null }
 }
 
+async function adminApi(path,options={}) {
+  if(!supabase)throw new Error('Supabase is not configured.')
+  const {data:{session},error}=await supabase.auth.getSession()
+  if(error||!session?.access_token)throw new Error('Your admin session expired. Sign in again.')
+  const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`,...(options.headers||{})}})
+  const result=await response.json().catch(()=>({}))
+  if(!response.ok)throw new Error(result.error||'The admin request failed.')
+  return result
+}
+
+export async function fetchAdminCustomizations(status='') {
+  const query=status?`?status=${encodeURIComponent(status)}`:''
+  return adminApi(`/api/admin-customizations${query}`)
+}
+
+export async function updateAdminCustomization(id,status) {
+  return adminApi('/api/admin-customizations',{method:'PATCH',body:JSON.stringify({id,status})})
+}
+
 export async function fetchMembershipOffer() {
   if (!supabase) return previewResult(membershipPreview)
   const [{ data:program,error:programError },{ data:prices,error:pricesError },{ data:policies,error:policyError }] = await Promise.all([
@@ -338,6 +357,14 @@ export async function requestMemberQuote(cart,{country=''}={}) {
   const response=await fetch('/api/member-quote',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({lines,shipping:{country}})})
   const result=await response.json().catch(()=>({}))
   if(!response.ok) throw new Error(result.error || 'Member price could not be checked.')
+  return result
+}
+
+export async function requestCartValidation(cart) {
+  if(!supabase || !cart.length) return { lines:[] }
+  const response=await fetch('/api/cart-validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:getCustomerSessionId(),lines:cart.map(item=>({lineKey:item.key || `${item.product.id}:${item.variantId}`,productId:item.product.id,variantId:item.variantId,qty:item.qty}))})})
+  const result=await response.json().catch(()=>({}))
+  if(!response.ok)throw new Error(result.error||'Cart could not be validated.')
   return result
 }
 
