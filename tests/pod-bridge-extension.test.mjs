@@ -40,4 +40,6 @@ test('bridge receiver has no publish transition', async () => {
   const receiver = await read('../src/PodBridgeReceiver.jsx')
   assert.doesNotMatch(receiver, /status\s*[:=]\s*['"]PUBLISHED['"]/)
   assert.match(receiver, /candidate\.status = 'DRAFT'/)
+  assert.match(receiver, /existing = productsRef\.current\.find\(row => row\.aiMetadata\?\.bridge\?\.sessionId === envelope\.sessionId\)/)
+  assert.match(receiver, /interrupted bridge listing is no longer a draft/)
 })

@@ -104,15 +104,15 @@ export default function PodBridgeReceiver({ products = [], onSaved }) {
           const descriptors = Array.isArray(envelope.payload?.assets) ? envelope.payload.assets : []
           const assetValidation = validateBridgeAssets(descriptors)
           if (!assetValidation.ok) throw new Error(assetValidation.errors.join(' '))
-          const replay = productsRef.current.find(row => row.aiMetadata?.bridge?.sessionId === envelope.sessionId)
-          if (replay?.aiMetadata?.bridge?.state === 'SYNCED') {
-            safePost(nonce.current, POD_BRIDGE_ACTIONS.ACK, { stage: 'BEGIN_IMPORT', productId: replay.id, product: replay, state: 'SYNCED', replay: true }, envelope.requestId)
+          const existing = productsRef.current.find(row => row.aiMetadata?.bridge?.sessionId === envelope.sessionId)
+          if (existing && existing.status !== 'DRAFT') throw new Error('The interrupted bridge listing is no longer a draft.')
+          if (existing?.aiMetadata?.bridge?.state === 'SYNCED') {
+            safePost(nonce.current, POD_BRIDGE_ACTIONS.ACK, { stage: 'BEGIN_IMPORT', productId: existing.id, product: existing, state: 'SYNCED', replay: true }, envelope.requestId)
             return
           }
-          const { draft, pack } = await createBridgeDraft(validation.value, productsRef.current)
-          draft.aiMetadata.bridge.sessionId = envelope.sessionId
-          draft.aiMetadata.bridge.recentOperations = [envelope.requestId]
-          const saved = replay || await save(draft)
+          const { draft, pack } = existing ? { draft: existing, pack: validation.value } : await createBridgeDraft(validation.value, productsRef.current)
+          draft.aiMetadata = { ...(draft.aiMetadata || {}), bridge: { ...(draft.aiMetadata?.bridge || {}), sessionId: envelope.sessionId, recentOperations: [...new Set([...(draft.aiMetadata?.bridge?.recentOperations || []), envelope.requestId])].slice(-20), state: 'RECEIVING' } }
+          const saved = existing || await save(draft)
           imports.current.set(envelope.sessionId, { product: saved, pack, assets: descriptors, chunks: new Map(), mode: 'create' })
           setError(''); setStatus(`Receiving ${saved.title || saved.name}`)
           safePost(nonce.current, POD_BRIDGE_ACTIONS.ACK, { stage: 'BEGIN_IMPORT', productId: saved.id, state: 'RECEIVING' }, envelope.requestId)
