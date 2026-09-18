@@ -62,8 +62,9 @@ https://api.jersevo.com/api/payment-webhook
 ```
 
 The `/health` endpoint is safe for an uptime monitor and returns no secrets.
-The `/ready` endpoint returns `503` until Supabase, checkout signing and the
-origin allowlist are configured. It only reports missing variable names.
+The `/ready` endpoint returns `503` until Supabase, checkout signing, the
+origin allowlist and the canonical `SITE_URL` are configured. It only reports
+missing variable names.
 Cloud Run owns HTTPS, scaling and container restarts. The older Docker Compose
 and Caddy files remain as a self-hosted fallback, but are not needed for the
 Cloud Run deployment.
