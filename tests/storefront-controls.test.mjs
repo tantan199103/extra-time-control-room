@@ -61,3 +61,10 @@ test('unconnected checkout and signup never imply a completed transaction', () =
   assert.doesNotMatch(source, /YOU'RE ON THE TEAM|Watch your inbox/)
   assert.doesNotMatch(source, /<ButtonLink light>VIEW THE STORY/)
 })
+
+test('product cards expose quick view and never quick-add sold-out variants', () => {
+  assert.match(source, /QUICK VIEW/)
+  assert.match(source, /SOLD OUT/)
+  assert.match(source, /isSellableVariant\(variant\)/)
+  assert.match(source, /<QuickView/)
+})

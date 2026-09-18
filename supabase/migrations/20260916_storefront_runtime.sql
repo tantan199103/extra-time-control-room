@@ -70,6 +70,7 @@ begin
   if requested_action='ai-preview' then quota:=5; minutes:=60;
   elsif requested_action='customization-order' then quota:=20; minutes:=60;
   elsif requested_action='customer-upload' then quota:=10; minutes:=60;
+  elsif requested_action='cart-validate' then quota:=60; minutes:=60;
   else raise exception 'Unsupported quota action';
   end if;
   if requested_identity_hash !~ '^[a-f0-9]{64}$' then raise exception 'Invalid quota identity'; end if;

@@ -88,9 +88,13 @@ export const themeBlocks = [
   { id: 'announcement', type: 'Announcement bar', note: 'Free shipping message', enabled: true },
   { id: 'header', type: 'Header', note: 'Logo, menu and bag', enabled: true },
   { id: 'hero', type: 'Editorial hero', note: 'Drop 01 campaign image', enabled: true },
+  { id: 'drop', type: 'Drop feature', note: 'Featured current listing', enabled: true },
   { id: 'rail', type: 'Featured product rail', note: 'Curated products', enabled: true },
+  { id: 'story', type: 'Story explorer', note: 'Interactive design memory', enabled: true },
+  { id: 'players', type: 'Player discovery', note: 'Browse by remembered role', enabled: true },
   { id: 'manifesto', type: 'Manifesto / story', note: 'The minutes nobody forgets', enabled: true },
   { id: 'custom-cta', type: 'Custom Lab CTA', note: 'Form-first personalization handoff', enabled: true },
+  { id: 'vault', type: 'Vault teaser', note: 'Archive entry point', enabled: true },
   { id: 'newsletter', type: 'Newsletter', note: 'Email capture', enabled: false },
   { id: 'footer', type: 'Footer', note: 'Footer links and legal', enabled: true }
 ]

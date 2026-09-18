@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { availableOptionValue, buildFallbackCatalog, findStorefrontProduct, initialSelections, prepareStorefrontProduct, resolveVariant } from '../src/lib/storefront-model.js'
+import { availableOptionValue, buildFallbackCatalog, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveVariant, sortCollectionProducts } from '../src/lib/storefront-model.js'
 import { products as fallback } from '../src/data.js'
 
 test('fallback catalogue has published-looking variants while live Supabase is unavailable', () => {
@@ -21,6 +21,23 @@ test('variation resolution respects option combinations and availability', () =>
   assert.equal(availableOptionValue(product,'Size','M',{Colour:'Black'}),false)
   assert.equal(availableOptionValue(product,'Size','M',{Colour:'White'}),true)
   assert.deepEqual(initialSelections(product,{Size:'S',Colour:'Purple'}),{Size:'S'})
+})
+
+test('cart reconciliation removes unavailable variants and clamps live quantity', () => {
+  const products=[{id:'p',handle:'p',name:'Piece',image:'/p.webp',variants:[{id:'v',sku:'P-S',status:'ACTIVE',inventory:2,price:90,values:{Size:'S'}}]}]
+  const result=reconcileCart([{key:'p|v',product:{id:'p',name:'Piece'},variantId:'v',qty:4,unitPrice:1}],products)
+  assert.equal(result.items[0].qty,2)
+  assert.equal(result.items[0].unitPrice,90)
+  assert.match(result.issues[0].message,/reduced/)
+  assert.equal(isSellableVariant(products[0].variants[0]),true)
+})
+
+test('collection merchandising and menu validation follow published contracts', () => {
+  const products=[{id:'a',updatedAt:'2026-01-01',inventory:8},{id:'b',updatedAt:'2026-02-01',inventory:1}]
+  const collection={products:['a','b'],productLinks:[{productId:'a',sortOrder:0,featured:false},{productId:'b',sortOrder:1,featured:true}],sort:'FEATURED'}
+  assert.deepEqual(sortCollectionProducts(products,collection).map(row=>row.id),['b','a'])
+  assert.equal(menuTargetProblem('/moments','PAGE').length>0,true)
+  assert.equal(menuTargetProblem('/product/a','PRODUCT'),'')
 })
 
 test('storefront products do not expose private bridge audit metadata', () => {
@@ -47,6 +64,10 @@ test('storefront uses the public catalogue and server-validated custom request r
   assert.match(ai,/createSignedUrl/)
   assert.match(order,/field this listing does not allow/)
   assert.match(order,/idempotencyKey/)
+  const adminQueue=await readFile(new URL('../api/admin-customizations.js',import.meta.url),'utf8')
+  assert.match(adminQueue,/requireAdmin/)
+  assert.match(adminQueue,/createSignedUrl/)
+  assert.match(order,/assetRefs/)
 })
 
 test('service worker excludes sensitive routes from runtime caching', async () => {

@@ -78,6 +78,8 @@ function Announcement() {
 function menuTarget(target, customProduct) {
   if (target === '/collection') return '/shop'
   if (target === '/custom') return `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
+  if (target === '/moments') return '/#story'
+  if (target === '/players') return '/#players'
   return target || '/'
 }
 
@@ -539,6 +541,7 @@ function Shop({ onQuickView, products, collection = null }) {
   const [group, setGroup] = useState(params.get('group') || 'ALL')
   const [customOnly, setCustomOnly] = useState(params.get('custom') === '1')
   const [inStock, setInStock] = useState(params.get('stock') === '1')
+  const [typeFilter, setTypeFilter] = useState(params.get('type') || 'ALL')
   const [sort, setSort] = useState(params.get('sort') || 'FEATURED')
   const [filterOpen, setFilterOpen] = useState(false)
   const filterRef = useRef(null)
@@ -553,6 +556,7 @@ function Shop({ onQuickView, products, collection = null }) {
   let shown = baseProducts.filter(product => {
     if (color !== 'ALL' && !productColours(product).some(value => String(value).toUpperCase() === color)) return false
     if (group !== 'ALL' && product.productGroup !== group) return false
+    if (typeFilter !== 'ALL' && !String(product.type || '').toLowerCase().includes(typeFilter.toLowerCase())) return false
     if (customOnly && !product.customFields?.length) return false
     if (inStock && !(product.variants || []).some(variant => Number(variant.inventory || 0) > 0)) return false
     return true
@@ -561,24 +565,24 @@ function Shop({ onQuickView, products, collection = null }) {
   useEffect(() => {
     const next = new URL(window.location.href)
     const set = (key,value,empty) => value === empty ? next.searchParams.delete(key) : next.searchParams.set(key,value)
-    set('color',color,'ALL'); set('group',group,'ALL'); set('sort',sort,'FEATURED')
+    set('color',color,'ALL'); set('group',group,'ALL'); set('type',typeFilter,'ALL'); set('sort',sort,'FEATURED')
     customOnly ? next.searchParams.set('custom','1') : next.searchParams.delete('custom')
     inStock ? next.searchParams.set('stock','1') : next.searchParams.delete('stock')
     window.history.replaceState({},'',next.pathname + next.search)
-  }, [color,group,customOnly,inStock,sort])
-  const clear = () => { setColor('ALL'); setGroup('ALL'); setCustomOnly(false); setInStock(false) }
-  const activeCount = Number(color !== 'ALL') + Number(group !== 'ALL') + Number(customOnly) + Number(inStock)
+  }, [color,group,typeFilter,customOnly,inStock,sort])
+  const clear = () => { setColor('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false) }
+  const activeCount = Number(color !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock)
   return (
     <main className="shop-page">
       <section className="collection-hero" style={collection?.hero ? { '--collection-image':`url(${collection.hero})` } : undefined}><p>{collection ? 'CURATED COLLECTION' : 'DROP 01 · LIVE NOW'}</p><h1>{(collection?.name || 'THE 90+ COLLECTION').toUpperCase()}</h1><div><p>{collection?.description || 'Original jerseys built from the minutes football gives us back.'}</p><span>{shown.length} PRODUCTS</span></div></section>
       <div className="filter-bar">
-        <div className="desktop-filters"><span>FILTER</span>{colours.slice(0,5).map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}</button>)}<label className="catalog-select">GROUP<select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOM</button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK</button></div>
+        <div className="desktop-filters"><span>FILTER</span>{colours.slice(0,5).map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}</button>)}<label className="catalog-select">GROUP<select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><label className="catalog-select">TYPE<select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={13}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOM</button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK</button></div>
         <button className="mobile-filter" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={16}/> FILTER{activeCount ? ` · ${activeCount}` : ''}</button>
         <label>SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>NEWEST</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={15}/></label>
       </div>
-      {activeCount > 0 && <div className="active-filters">{color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}{group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}{customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}{inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}<button onClick={clear}>CLEAR ALL</button></div>}
+      {activeCount > 0 && <div className="active-filters">{color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}{group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}{typeFilter !== 'ALL' && <button onClick={() => setTypeFilter('ALL')}>{typeFilter} <X size={12}/></button>}{customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}{inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}<button onClick={clear}>CLEAR ALL</button></div>}
       <section className="shop-grid section">{shown.length ? <div className="product-grid">{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
-      <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}><div><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div><p>COLOUR</p>{colours.map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productColours(product).some(value => String(value).toUpperCase() === item)).length}</span></button>)}<p>PRODUCT GROUP</p><label className="filter-sheet__select"><select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={14}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOMIZABLE <span>{customOnly ? 'ON' : 'OFF'}</span></button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK <span>{inStock ? 'ON' : 'OFF'}</span></button><button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
+      <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}><div><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div><p>COLOUR</p>{colours.map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productColours(product).some(value => String(value).toUpperCase() === item)).length}</span></button>)}<p>PRODUCT GROUP</p><label className="filter-sheet__select"><select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={14}/></label><p>PRODUCT TYPE</p><label className="filter-sheet__select"><select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={14}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOMIZABLE <span>{customOnly ? 'ON' : 'OFF'}</span></button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK <span>{inStock ? 'ON' : 'OFF'}</span></button><button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
       <Newsletter/>
     </main>
   )
@@ -736,7 +740,10 @@ function PolicyPage({ type }) {
   const content = {
     privacy:['Privacy','We collect only the details needed to prepare orders, respond to requests and operate the store. Customer references and AI previews are stored for a limited review period and are never used as public product media without permission.'],
     terms:['Terms','Product availability, production timing and final pricing are confirmed before payment. Personalized work enters production only after the customer has approved the artwork direction.'],
-    accessibility:['Accessibility','Extra Time is designed for keyboard, touch and assistive-technology use. If any part of the store prevents access, contact the studio with the page and action you were trying to complete.']
+    accessibility:['Accessibility','Extra Time is designed for keyboard, touch and assistive-technology use. If any part of the store prevents access, contact the studio with the page and action you were trying to complete.'],
+    shipping:['Shipping','Standard delivery timing, eligible destinations and production windows are confirmed before payment. The live rate and destination rules will be shown during checkout.'],
+    returns:['Returns','Standard pieces can be returned within 14 days in unused condition. Personalized work is reviewed before production and may be excluded after artwork approval.'],
+    journal:['Journal','The Extra Time journal is being assembled from the stories behind each drop. Visit the current collection while new entries are prepared.']
   }[type]
   return <main className="policy-page"><span>EXTRA TIME / STORE POLICY</span><h1>{content[0]}</h1><p>{content[1]}</p><h2>What to expect</h2><p>Clear product information, visible order states and a human review before personalized production. Full operational contact and policy details will be added before checkout is enabled.</p><button className="button button--dark" onClick={() => navigate('/shop')}>BACK TO THE DROP</button></main>
 }
@@ -984,8 +991,8 @@ function App() {
   }
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
   else if (path === '/membership' || path === '/account/membership') page = <MembershipPage account={account} onAccountChange={setAccount}/>
-  else if (path === '/vault') page = <VaultPage/>
-  else if (['/privacy','/terms','/accessibility'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
+  else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
+  else if (['/privacy','/terms','/accessibility','/shipping','/returns','/journal'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
   else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
   else page = <NotFound/>
   return (

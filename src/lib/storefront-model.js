@@ -130,7 +130,12 @@ export function sortCollectionProducts(products = [], collection = null, overrid
 }
 
 export function normalizeMenuLocation(value) {
-  return String(value || '').trim().toUpperCase().replace(/\s*\/\s*/g, '_').replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')
+  const normalized=String(value || '').trim().toUpperCase().replace(/\s*\/\s*/g, '_').replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')
+  if(normalized === 'HEADER' || normalized.startsWith('HEADER_'))return 'HEADER'
+  if(normalized === 'FOOTER')return 'FOOTER'
+  if(normalized.includes('FIXED_FOOTER') || normalized === 'FIXEDFOOTERMOBILE')return 'FIXED_FOOTER_MOBILE'
+  if(normalized.includes('MOBILE_DRAWER'))return 'MOBILE_DRAWER'
+  return normalized
 }
 
 export function menuAtLocation(menus = [], location) {
@@ -138,7 +143,7 @@ export function menuAtLocation(menus = [], location) {
   return menus.find(menu => normalizeMenuLocation(menu.location) === wanted)
 }
 
-export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/custom', '/studio', '/membership', '/account/membership', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns'])
+export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/custom', '/studio', '/membership', '/account/membership', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns', '/journal'])
 
 export function menuTargetProblem(target, type = 'PAGE') {
   const value = String(target || '').trim()

@@ -17,6 +17,7 @@ import {
   Lock,
   Menu as MenuIcon,
   MoreHorizontal,
+  PackageCheck,
   Plus,
   Save,
   Smartphone,
@@ -71,9 +72,9 @@ export function AdminThemeStudio({ theme, onSave }) {
     if (target < 0 || target >= blocks.length) return
     setBlocks(current => { const next = [...current]; [next[index], next[target]] = [next[target], next[index]]; return next })
   }
-  const save = async () => {
-    const result = await onSave?.({ ...theme, tokens, blocks, pages, content, updatedAt: 'Just now' })
-    setNotice(result?.source === 'supabase' ? 'Theme saved to Supabase.' : result?.error ? `Not saved: ${result.error}` : 'Changes kept in this preview only; not published.')
+  const save = async (status = 'DRAFT') => {
+    const result = await onSave?.({ ...theme, status, tokens, blocks, pages:pages.map(page => ({ ...page, status:status === 'PUBLISHED' ? 'PUBLISHED' : page.status === 'PUBLISHED' ? 'DRAFT' : page.status })), content, updatedAt: 'Just now' })
+    setNotice(result?.source === 'supabase' ? (status === 'PUBLISHED' ? 'Theme published to storefront.' : 'Draft saved. The live storefront is unchanged.') : result?.error ? `Not saved: ${result.error}` : 'Changes kept in this preview only; not published.')
     window.setTimeout(() => setNotice(''), 2200)
   }
   return <main className="admin-page admin-builder-page">
@@ -81,7 +82,7 @@ export function AdminThemeStudio({ theme, onSave }) {
     <section className="admin-theme-toolbar">
       <div className="admin-theme-toolbar__identity"><span className="admin-theme-mark"><LayoutTemplate size={16}/></span><div><strong>{theme.name}</strong><small>Version {theme.version} · {theme.status}</small></div></div>
       <div className="admin-theme-toolbar__devices"><button className={device === 'desktop' ? 'is-active' : ''} onClick={() => setDevice('desktop')}><Monitor size={14}/> Desktop</button><button className={device === 'mobile' ? 'is-active' : ''} onClick={() => setDevice('mobile')}><Smartphone size={14}/> Mobile</button></div>
-      <div className="admin-theme-toolbar__actions"><button className="admin-icon-button" aria-label="Undo — not available yet" disabled title="Undo is not available yet."><Undo2 size={15}/></button><button className="admin-icon-button" aria-label="Redo — not available yet" disabled title="Redo is not available yet."><Redo2 size={15}/></button><button className="admin-button admin-button--outline" onClick={() => navigate('/admin/theme/menus')}><MenuIcon size={14}/> Menus</button><button className="admin-button admin-button--dark" onClick={save}><Save size={14}/> Save draft</button></div>
+      <div className="admin-theme-toolbar__actions"><button className="admin-icon-button" aria-label="Undo — not available yet" disabled title="Undo is not available yet."><Undo2 size={15}/></button><button className="admin-icon-button" aria-label="Redo — not available yet" disabled title="Redo is not available yet."><Redo2 size={15}/></button><button className="admin-button admin-button--outline" onClick={() => navigate('/admin/theme/menus')}><MenuIcon size={14}/> Menus</button><button className="admin-button admin-button--outline" onClick={() => save('DRAFT')}><Save size={14}/> Save draft</button><button className="admin-button admin-button--dark" onClick={() => save('PUBLISHED')}><PackageCheck size={14}/> Publish</button></div>
     </section>
     <section className="admin-theme-workspace">
       <aside className="admin-theme-pages"><div className="admin-builder-panel-head"><span>PAGES</span><button className="admin-text-button" onClick={() => { const page = { id: `page-${Date.now()}`, name: 'New page', path: '/new-page', status: 'DRAFT', sections: 0, updatedAt: 'Not saved', layout: [] }; setPages(current => [...current, page]); setSelectedPageId(page.id) }}><Plus size={13}/> Add page</button></div><div className="admin-theme-page-list">{pages.map(page => <button key={page.id} className={selectedPageId === page.id ? 'is-active' : ''} onClick={() => setSelectedPageId(page.id)}><span><strong>{page.name}</strong><small>{page.path}</small></span><Status value={page.status}/></button>)}</div><div className="admin-theme-global-link"><SlidersHorizontal size={14}/><div><strong>Global styles</strong><small>Tokens used across every page</small></div><ArrowRight size={14}/></div></aside>

@@ -17,7 +17,7 @@ test('storefront runtime migration provides atomic configuration and secured req
       create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
       create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
     `)
-    for(const file of ['../supabase/schema.sql','../supabase/migrations/20260916_listing_foundation.sql','../supabase/migrations/20260916_scoped_admin.sql','../supabase/migrations/20260916_listing_workspace.sql','../supabase/migrations/20260916_storefront_runtime.sql']) {
+    for(const file of ['../supabase/schema.sql','../supabase/migrations/20260916_listing_foundation.sql','../supabase/migrations/20260916_scoped_admin.sql','../supabase/migrations/20260916_listing_workspace.sql','../supabase/migrations/20260916_storefront_runtime.sql','../supabase/migrations/20260918_cart_validation_quota.sql','../supabase/migrations/20260918_storefront_alignment.sql']) {
       await db.exec(await readFile(new URL(file,import.meta.url),'utf8'))
     }
     const migratedCustom=(await db.query("select custom_fields,template_id from public.pod_products where id='touchline'")).rows[0]
@@ -42,10 +42,16 @@ test('storefront runtime migration provides atomic configuration and secured req
     const savedTheme=(await db.query('select public.pod_save_theme($1::jsonb) theme',[JSON.stringify(theme)])).rows[0].theme
     assert.equal(savedTheme.definition.content.headline,'Runtime')
     assert.equal((await db.query("select count(*)::int n from public.pod_pages where theme_id='runtime-theme'")).rows[0].n,1)
+    const draft={...theme,status:'DRAFT',content:{headline:'Draft only'}}
+    const savedDraft=(await db.query('select public.pod_save_theme($1::jsonb) theme',[JSON.stringify(draft)])).rows[0].theme
+    assert.equal(savedDraft.status,'DRAFT')
+    assert.equal((await db.query("select definition->'content'->>'headline' headline from public.pod_themes where id='runtime-theme'")).rows[0].headline,'Runtime')
 
     await db.exec('reset role')
     const quota=await db.query("select public.pod_consume_api_quota('ai-preview',repeat('a',64)) result")
     assert.equal(quota.rows[0].result.allowed,true)
+    const cartQuota=await db.query("select public.pod_consume_api_quota('cart-validate',repeat('b',64)) result")
+    assert.equal(cartQuota.rows[0].result.allowed,true)
     assert.equal((await db.query("select public from storage.buckets where id='ai-previews'")).rows[0].public,false)
     const columns=(await db.query("select column_name from information_schema.columns where table_name='pod_customization_orders'")).rows.map(row=>row.column_name)
     for(const name of ['variant_id','listing_revision','custom_schema','idempotency_key','session_hash']) assert.ok(columns.includes(name))
