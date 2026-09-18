@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "backend:dev": "node backend/src/server.mjs",
     "backend:start": "node backend/src/server.mjs",
-    "backend:docker": "docker build -f backend/Dockerfile -t jersevo-api ."
+    "backend:docker": "docker build -f backend/Dockerfile -t jersevo-api .",
+    "deploy:cloudrun": "powershell -NoProfile -ExecutionPolicy Bypass -File deploy/cloudrun/deploy.ps1"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.2.6",
