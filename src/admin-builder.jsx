@@ -167,7 +167,7 @@ export function AdminMenus({ menus, onSave }) {
     if (invalid) { setNotice(`Not saved: ${invalid.label || 'Link'} — ${menuTargetProblem(invalid.target, invalid.type)}`); return }
     const invalidImage = allItems.find(item => menuImageProblem(item))
     if (invalidImage) { setNotice(`Not saved: ${invalidImage.label || 'Link'} — ${menuImageProblem(invalidImage)}`); return }
-    const locations = draftMenus.map(menu => normalizeMenuLocation(menu.location)).filter(Boolean)
+    const locations = draftMenus.filter(menu => menu.status !== 'ARCHIVED').map(menu => normalizeMenuLocation(menu.location)).filter(Boolean)
     if (new Set(locations).size !== locations.length) { setNotice('Not saved: each theme location can have one active menu.'); return }
     const result = await onSave?.(draftMenus.map(menu => ({ ...menu, location: normalizeMenuLocation(menu.location) })))
     setNotice(result?.source === 'supabase' ? 'Navigation and menu thumbnails saved.' : result?.error ? `Not saved: ${result.error}` : 'Changes kept in this preview only; not published.')
