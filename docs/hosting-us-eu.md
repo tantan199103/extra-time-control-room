@@ -6,7 +6,7 @@ Audit date: 2026-09-18. Public origin: `https://jersevo.com` (redirects to `http
 
 - Vercel serves the Vite shell and static files through its global CDN. The audit request from Southeast Asia reached the `hkg1` edge POP and returned `X-Vercel-Cache: HIT`; that POP is the cache ingress, not the serverless execution region.
 - The inspected production deployment runs Node functions in `iad1` (Washington, D.C.). This is a good default for the eastern US. EU users still cross the Atlantic for dynamic API requests.
-- The production deployment inspected during this audit does not yet contain `api/payment-config.js` or `api/admin-payment-settings.js`. `/api/payment-config` currently falls through to the SPA shell and returns cacheable HTML. Deploy the current repository before enabling payment settings.
+- Before this release, the production deployment did not contain `api/payment-config.js` or `api/admin-payment-settings.js`; `/api/payment-config` fell through to the SPA shell. The current deployment now includes both routes: `/api/payment-config` returns JSON with `Cache-Control: no-store`, and payment/AI functions are confirmed in `iad1` with 15/30/60-second limits.
 - The live JS bundle is about 594 KB before transfer compression and the CSS bundle is about 168 KB. Vite already splits the Admin and AI Studio routes, but the storefront entry remains large enough to warrant later bundle work.
 - The Supabase project region cannot be inferred reliably from the public project URL, DNS or repository. It must be read in the Supabase Dashboard under project infrastructure/settings. Do not choose multi-region Functions until this is known: putting compute near users but far from PostgreSQL can increase total latency.
 
@@ -34,7 +34,7 @@ Static storefront files are already edge-delivered worldwide. The important unre
 ## Production verification after deployment
 
 1. Run `npm run audit:hosting -- https://www.jersevo.com` twice. The second run should show CDN hits for static assets.
-2. `/api/payment-config` must return JSON with `Cache-Control: no-store`; a `503` JSON response is acceptable until all server Supabase/payment environment variables are configured. HTML is never acceptable for this route.
+2. `/api/payment-config` returns JSON with `Cache-Control: no-store` (`enabled:false` until a provider is intentionally configured). A `503` JSON response is acceptable until all server Supabase/payment environment variables are configured. HTML is never acceptable for this route.
 3. Inspect the deployment with `vercel inspect <deployment-url> --json`. Confirm the payment functions exist and `deployedTo` contains the intended region.
 4. Confirm the Supabase project region in its Dashboard, then benchmark an authenticated read and a small Storage upload from the chosen function region before changing placement.
 5. Keep checkout disabled until order snapshots, inventory reservation, provider-side create/capture, verified idempotent webhooks and Admin order handling are deployed.
