@@ -96,6 +96,10 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     window.addEventListener('popstate', closeMenus)
     return () => window.removeEventListener('popstate', closeMenus)
   }, [])
+  useEffect(() => {
+    document.body.classList.toggle('mobile-menu-open', mobile)
+    return () => document.body.classList.remove('mobile-menu-open')
+  }, [mobile])
   const configured = menuAtLocation(menus,'HEADER')?.items || menuAtLocation(menus,'HEADER_DESKTOP_MOBILE')?.items || []
   const taxonomyItem = {id:'leagues',label:'LEAGUES',target:'/shop',type:'TAXONOMY',children:LEAGUE_TAXONOMY.map(league => ({ id:league.key, label:league.name, target:leaguePath(league), type:'TAXONOMY_LEAGUE', leagueKey:league.key, sport:league.sport, representativeImage:league.media?.src, representativeAlt:league.media?.alt, children:league.teams.slice(0,6).map(team => ({ id:team.slug, label:team.name, target:teamPath(league.key,team), type:'TAXONOMY_TEAM', representativeImage:team.media?.src, representativeAlt:team.media?.alt, representativeFallback:team.media?.fallback })) }))}
   const defaults = [
@@ -506,6 +510,7 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
 
 function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, hidden = false }) {
   const isCustom = path === '/custom' || path === '/studio' || (path.startsWith('/product/') && new URLSearchParams(window.location.search).get('custom') === '1')
+  const routeLeague = path.startsWith('/league/') || path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
   const defaults = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
@@ -514,10 +519,24 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
   ]
   const configured = menuAtLocation(menus,'FIXED_FOOTER_MOBILE')?.items || []
   const items = configured.length ? configured.filter(item => item.target !== '#bag').map(item => { const target=menuTarget(item.target,customProduct); const Icon=/club|member/i.test(`${item.label} ${target}`) ? Ticket : /custom|studio/i.test(`${item.label} ${target}`) ? Sparkles : target === '/' ? House : Grid2X2; return {...item,target,icon:Icon,active:target === '/' ? path === '/' : target.includes('custom=1') ? isCustom : path === target || (target === '/shop' && path.startsWith('/product/') && !isCustom)} }) : defaults
-  return <nav className={`fixed-footer-menu ${hidden ? 'is-hidden' : ''}`} aria-label="Quick navigation" aria-hidden={hidden}>
-    {items.map(item => { const Icon = item.icon; return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
-    <button tabIndex={hidden ? -1 : 0} className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
-  </nav>
+  return <div className={`fixed-footer-stack ${hidden ? 'is-hidden' : ''}`} aria-hidden={hidden}>
+    <nav className="fixed-league-menu" aria-label="League categories" aria-hidden={hidden}>
+      <span className="fixed-league-menu__label">LEAGUES</span>
+      <div className="fixed-league-menu__items">
+        {LEAGUE_TAXONOMY.map(league => {
+          const active = routeLeague?.key === league.key
+          return <button key={league.key} tabIndex={hidden ? -1 : 0} className={active ? 'is-active' : ''} aria-current={active ? 'page' : undefined} onClick={() => navigate(leaguePath(league))}>
+            {league.media?.src && <img src={league.media.src} alt="" loading="lazy" decoding="async" />}
+            <span>{league.name}</span>
+          </button>
+        })}
+      </div>
+    </nav>
+    <nav className="fixed-footer-menu" aria-label="Quick navigation" aria-hidden={hidden}>
+      {items.map(item => { const Icon = item.icon; return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
+      <button tabIndex={hidden ? -1 : 0} className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
+    </nav>
+  </div>
 }
 
 function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptUsed }) {
