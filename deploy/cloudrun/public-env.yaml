@@ -2,4 +2,4 @@ NODE_ENV: production
 ALLOWED_ORIGINS: "https://www.jersevo.com,https://jersevo.com"
 TRUST_PROXY: "true"
 SITE_URL: "https://www.jersevo.com"
-SUPABASE_URL: "https://chqbgntxajnprjrdrsqf.supabase.co"
+SUPABASE_URL: "https://ofetusgarxcwloxxkhnr.supabase.co"
