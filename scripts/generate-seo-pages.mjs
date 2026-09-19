@@ -48,14 +48,14 @@ async function loadProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (base && key) {
     try {
-      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(price,inventory,status,sku),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=updated_at.desc&limit=5000`
+      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=updated_at.desc&limit=5000`
       const rows = await fetchRows(query, key)
       if (Array.isArray(rows)) return rows.map(normalizeProduct)
     } catch (error) {
       // Older deployments may not have the gate column yet. In that case only
       // rows carrying the explicit structured status can be generated.
       try {
-        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,inventory,sku,taxonomy,media,pod_product_variants(price,inventory,status,sku),updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=5000`
+        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=5000`
         const legacyRows = await fetchRows(legacyQuery, key)
         return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct)
       } catch (legacyError) {
@@ -81,7 +81,7 @@ async function loadBlockedProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!base || !key) return []
   try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(price,inventory,status,sku),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=updated_at.desc&limit=5000`
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=updated_at.desc&limit=5000`
     const rows = await fetchRows(query, key)
     return (Array.isArray(rows) ? rows : []).map(normalizeProduct)
   } catch (error) {

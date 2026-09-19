@@ -31,6 +31,7 @@ test('SEO build creates initial HTML for product pages and protects private rout
   assert.match(generator, /Generated \$\{products\.length\} indexable product pages/)
   assert.match(generator, /blocked product pages/)
   assert.match(generator, /variant=\$\{encodeURIComponent\(variant\.id\)\}/)
+  assert.match(generator, /pod_product_variants\(id,price,compare_at,inventory,status,sku,option_values,image\)/)
   assert.match(generator, /Jersevo operates the Extra Time storefront/)
   assert.equal(vercel.headers.find(rule => rule.source === '/admin').headers[0].value, 'noindex, nofollow')
   assert.equal(vercel.headers.find(rule => rule.source === '/account/(.*)').headers[0].value, 'noindex, nofollow')
@@ -42,6 +43,7 @@ test('client route metadata marks unavailable and private routes noindex', async
   assert.match(main, /noindex,nofollow/)
   assert.match(main, /VITE_SITE_URL \|\| 'https:\/\/www\.jersevo\.com'/)
   assert.match(main, /AggregateRating/)
+  assert.match(main, /variant=\$\{encodeURIComponent\(variant\.id\)\}/)
 })
 
 test('launch trust desk includes warranty coverage and crawlable metadata', async () => {
