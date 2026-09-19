@@ -7,6 +7,27 @@ const MAX_LINES = 100
 const QUOTE_TTL_MS = 15 * 60 * 1000
 const money = value => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100
 
+const US_SUBDIVISIONS = new Map([
+  ['ALABAMA','AL'],['ALASKA','AK'],['ARIZONA','AZ'],['ARKANSAS','AR'],['CALIFORNIA','CA'],['COLORADO','CO'],['CONNECTICUT','CT'],['DELAWARE','DE'],['DISTRICT OF COLUMBIA','DC'],['FLORIDA','FL'],['GEORGIA','GA'],['HAWAII','HI'],['IDAHO','ID'],['ILLINOIS','IL'],['INDIANA','IN'],['IOWA','IA'],['KANSAS','KS'],['KENTUCKY','KY'],['LOUISIANA','LA'],['MAINE','ME'],['MARYLAND','MD'],['MASSACHUSETTS','MA'],['MICHIGAN','MI'],['MINNESOTA','MN'],['MISSISSIPPI','MS'],['MISSOURI','MO'],['MONTANA','MT'],['NEBRASKA','NE'],['NEVADA','NV'],['NEW HAMPSHIRE','NH'],['NEW JERSEY','NJ'],['NEW MEXICO','NM'],['NEW YORK','NY'],['NORTH CAROLINA','NC'],['NORTH DAKOTA','ND'],['OHIO','OH'],['OKLAHOMA','OK'],['OREGON','OR'],['PENNSYLVANIA','PA'],['RHODE ISLAND','RI'],['SOUTH CAROLINA','SC'],['SOUTH DAKOTA','SD'],['TENNESSEE','TN'],['TEXAS','TX'],['UTAH','UT'],['VERMONT','VT'],['VIRGINIA','VA'],['WASHINGTON','WA'],['WEST VIRGINIA','WV'],['WISCONSIN','WI'],['WYOMING','WY'],
+  ['AMERICAN SAMOA','AS'],['GUAM','GU'],['NORTHERN MARIANA ISLANDS','MP'],['PUERTO RICO','PR'],['US VIRGIN ISLANDS','VI'],['U.S. VIRGIN ISLANDS','VI']
+].flatMap(([name, code]) => [[name, code], [code, code]]))
+
+const CA_SUBDIVISIONS = new Map([
+  ['ALBERTA','AB'],['BRITISH COLUMBIA','BC'],['MANITOBA','MB'],['NEW BRUNSWICK','NB'],['NEWFOUNDLAND AND LABRADOR','NL'],['NORTHWEST TERRITORIES','NT'],['NOVA SCOTIA','NS'],['NUNAVUT','NU'],['ONTARIO','ON'],['PRINCE EDWARD ISLAND','PE'],['QUEBEC','QC'],['SASKATCHEWAN','SK'],['YUKON','YT']
+].flatMap(([name, code]) => [[name, code], [code, code]]))
+
+function normalizeSubdivision(country, value) {
+  const raw = safeText(value, 120)
+  if (!['US', 'CA'].includes(country)) return raw
+  const normalized = raw.toUpperCase().replace(/\s+/g, ' ').trim()
+  const code = (country === 'US' ? US_SUBDIVISIONS : CA_SUBDIVISIONS).get(normalized)
+  if (!code) {
+    const label = country === 'US' ? 'US state or territory' : 'Canadian province or territory'
+    throw Object.assign(new Error(`Choose a valid ${label} before continuing to PayPal.`), { status: 422, code: 'INVALID_SHIPPING_REGION' })
+  }
+  return code
+}
+
 export const SHIPPING_METHODS = Object.freeze({
   STANDARD: { code: 'STANDARD', label: 'Standard tracked', amount: 8, eta: '5–8 business days' },
   EXPRESS: { code: 'EXPRESS', label: 'Express tracked', amount: 18, eta: '2–4 business days' }
@@ -90,10 +111,12 @@ export function normalizeShipping(input = {}, { requireAddress = true } = {}) {
   const address1 = safeText(input.address1, 240)
   const address2 = safeText(input.address2, 240)
   const city = safeText(input.city, 120)
-  const state = safeText(input.state, 120)
+  const rawState = safeText(input.state, 120)
+  const state = rawState ? normalizeSubdivision(country, rawState) : ''
   const postalCode = safeText(input.postalCode, 40)
   if (!country) throw Object.assign(new Error('Choose a delivery country.'), { status: 422 })
   if (requireAddress && (!address1 || !city || !postalCode)) throw Object.assign(new Error('Complete your country, address, city and postal code.'), { status: 422 })
+  if (requireAddress && ['US', 'CA'].includes(country) && !state) throw Object.assign(new Error(`Choose a valid ${country === 'US' ? 'US state or territory' : 'Canadian province or territory'} before continuing to PayPal.`), { status: 422, code:'INVALID_SHIPPING_REGION' })
   return { method, country, address1, address2, city, state, postalCode }
 }
 
@@ -294,7 +317,19 @@ export async function createPayPalOrder({ settings, total, currency, orderNumber
   })
   const result = await response.json().catch(() => ({}))
   const approvalUrl = result.links?.find(link => link.rel === 'approve')?.href || ''
-  if (!response.ok || !result.id || !approvalUrl) throw Object.assign(new Error(result.message || 'PayPal did not return a secure approval link.'), { status: 502 })
+  if (!response.ok || !result.id || !approvalUrl) {
+    const issue = safeText(result.details?.[0]?.issue || result.name, 120).toUpperCase()
+    const debugId = safeText(result.debug_id, 120)
+    const messages = {
+      SHIPPING_ADDRESS_INVALID: 'PayPal could not validate the delivery address. Check the street, city, state or province code, postal code and country, then try again.',
+      DUPLICATE_INVOICE_ID: 'This checkout reference was already used. Start a fresh checkout attempt from your bag.',
+      PAYEE_ACCOUNT_RESTRICTED: 'The store PayPal account is not currently able to receive this payment. Please contact support.',
+      PAYEE_NOT_CONSENTED: 'The store PayPal account still requires payment activation. Please contact support.'
+    }
+    console.warn('PayPal order creation rejected', { providerStatus: response.status, issue: issue || 'UNKNOWN', debugId: debugId || null })
+    const status = issue === 'SHIPPING_ADDRESS_INVALID' ? 422 : 502
+    throw Object.assign(new Error(messages[issue] || result.message || 'PayPal did not return a secure approval link.'), { status, code: issue ? `PAYPAL_${issue}` : 'PAYPAL_ORDER_CREATE_FAILED', providerDebugId: debugId || null })
+  }
   let approval
   try { approval = new URL(approvalUrl) } catch { approval = null }
   if (!approval || approval.protocol !== 'https:' || !/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) throw Object.assign(new Error('PayPal returned an invalid approval link.'), { status: 502 })

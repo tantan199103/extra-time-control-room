@@ -7,6 +7,13 @@ const money = (value, currency = 'USD') => {
 }
 const emptyShipping = { method: 'STANDARD', country: 'US', address1: '', address2: '', city: '', state: '', postalCode: '' }
 
+const REGION_OPTIONS = {
+  US: [
+    ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],['AS','American Samoa'],['GU','Guam'],['MP','Northern Mariana Islands'],['PR','Puerto Rico'],['VI','U.S. Virgin Islands']
+  ],
+  CA: [['AB','Alberta'],['BC','British Columbia'],['MB','Manitoba'],['NB','New Brunswick'],['NL','Newfoundland and Labrador'],['NT','Northwest Territories'],['NS','Nova Scotia'],['NU','Nunavut'],['ON','Ontario'],['PE','Prince Edward Island'],['QC','Quebec'],['SK','Saskatchewan'],['YT','Yukon']]
+}
+
 function randomId() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID().replace(/-/g, '')
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`
@@ -129,17 +136,25 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     return () => { active = false }
   }, [cart, shipping.country, shipping.method, initialRoute])
 
-  const updateShipping = (key, value) => setShipping(current => ({ ...current, [key]: value }))
+  const updateShipping = (key, value) => setShipping(current => ({ ...current, [key]: value, ...(key === 'country' ? { state: '' } : {}) }))
   const updateCustomer = (key, value) => setCustomer(current => ({ ...current, [key]: value }))
   const submit = async event => {
     event.preventDefault()
     if (!quote) { setCheckoutError('Complete the delivery country and wait for the secure quote.'); return }
+    let checkoutShipping = shipping
+    const regionOptions = REGION_OPTIONS[shipping.country]
+    if (regionOptions) {
+      const enteredRegion = String(shipping.state || '').trim().toUpperCase()
+      const matchedRegion = regionOptions.find(([code, label]) => code === enteredRegion || label.toUpperCase() === enteredRegion)
+      if (!matchedRegion) { setCheckoutError(`Enter a valid ${shipping.country === 'US' ? 'US state' : 'Canadian province'} name or two-letter code before continuing to PayPal.`); return }
+      checkoutShipping = { ...shipping, state: matchedRegion[0] }
+    }
     if (quote.paymentAvailable === false) { setCheckoutError(quote.paymentMessage || 'Online payment is temporarily unavailable.'); return }
     setSubmitting(true)
     setCheckoutError('')
     try {
       const lineKeys = cart.map(item => item.key || `${item.product.id}:${item.variantId}`)
-      const result = await createCheckout({ cart, shipping, customer, quoteToken: quote.quoteToken, idempotencyKey: checkoutAttempt.idempotencyKey, trackingToken: checkoutAttempt.trackingToken })
+      const result = await createCheckout({ cart, shipping: checkoutShipping, customer, quoteToken: quote.quoteToken, idempotencyKey: checkoutAttempt.idempotencyKey, trackingToken: checkoutAttempt.trackingToken })
       if (result.approvalUrl) {
         let approval
         try { approval = new URL(result.approvalUrl, window.location.origin) } catch { approval = null }
