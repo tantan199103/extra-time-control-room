@@ -255,13 +255,22 @@ export function paypalBaseUrl(environment = 'sandbox') {
 }
 
 export async function paypalAccessToken(environment = 'sandbox', configuredClientId = '') {
-  const clientId = configuredClientId || process.env.PAYPAL_CLIENT_ID
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET
+  // Secrets copied from Secret Manager can carry a trailing newline. PayPal's
+  // Basic-auth token endpoint treats that byte as part of the credential and
+  // responds with invalid_client, so normalize both halves before signing.
+  const clientId = String(configuredClientId || process.env.PAYPAL_CLIENT_ID || '').trim()
+  const clientSecret = String(process.env.PAYPAL_CLIENT_SECRET || '').trim()
   if (!clientId || !clientSecret) throw Object.assign(new Error('PayPal server credentials are missing.'), { status: 503 })
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
   const response = await fetch(`${paypalBaseUrl(environment)}/v1/oauth2/token`, { method: 'POST', headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=client_credentials' })
   const result = await response.json().catch(() => ({}))
-  if (!response.ok || !result.access_token) throw Object.assign(new Error(result.message || 'PayPal could not authorize the payment.'), { status: 502 })
+  if (!response.ok || !result.access_token) {
+    const providerCode = String(result.error || result.name || '').trim().slice(0, 80)
+    const message = providerCode
+      ? `PayPal authorization failed (${providerCode}). Verify the ${String(environment).toLowerCase() === 'live' ? 'Live' : 'Sandbox'} client ID and client secret belong to the same PayPal app.`
+      : String(result.message || 'PayPal could not authorize the payment.')
+    throw Object.assign(new Error(message), { status: 502, code: 'PAYPAL_AUTH_FAILED' })
+  }
   return result.access_token
 }
 
