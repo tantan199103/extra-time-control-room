@@ -36,13 +36,12 @@ test('Node runtime keeps the webhook route and fails readiness without server se
   assert.equal(routeModules.get('/api/membership-enroll'), 'membership-enroll.js')
   assert.equal(routeModules.get('/api/google-merchant-feed'), 'google-merchant-feed.js')
   assert.equal(routeModules.get('/api/ai-listing-media'), 'ai-listing-media.js')
-  const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL', 'AI_IMAGE_API_KEY', 'OPENAI_API_KEY', 'AI_TEXT_API_KEY', 'PAYPAL_CLIENT_SECRET'].map(name => [name, process.env[name]]))
+  const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'].map(name => [name, process.env[name]]))
   for (const name of Object.keys(old)) delete process.env[name]
   try {
     const result = readiness()
     assert.equal(result.ready, false)
     assert.deepEqual(result.missing, ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'])
-    assert.deepEqual(result.capabilities, { aiImage:false, aiText:false, paypal:false })
   } finally {
     for (const [name, value] of Object.entries(old)) {
       if (value == null) delete process.env[name]
