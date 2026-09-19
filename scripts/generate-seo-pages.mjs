@@ -64,6 +64,28 @@ async function loadProducts() {
   return buildFallbackCatalog(fallbackProducts).map(normalizeProduct)
 }
 
+// Published rows that fail the SEO gate still need a deterministic HTML
+// response with `noindex`. Without this companion query, a direct request to
+// an old published-but-blocked handle would fall through to the SPA shell,
+// whose homepage metadata says `index,follow` before the client can resolve
+// the route. These rows are never included in the shop ItemList or sitemap.
+async function loadBlockedProducts() {
+  const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  if (!base || !key) return []
+  try {
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(price,inventory,status,sku),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=updated_at.desc&limit=5000`
+    const rows = await fetchRows(query, key)
+    return (Array.isArray(rows) ? rows : []).map(normalizeProduct)
+  } catch (error) {
+    // Older databases may not have the gate column yet. The indexable query
+    // already has a legacy fallback; there is no safe blocked-row fallback in
+    // that schema, so simply keep the build successful.
+    console.warn(`[seo] Blocked product pages unavailable; continuing without them. ${error.message}`)
+    return []
+  }
+}
+
 async function loadCollections() {
   const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -158,6 +180,7 @@ async function writePage(path, html) {
 
 const shell = await readFile(join(DIST, 'index.html'), 'utf8')
 const products = await loadProducts()
+const blockedProducts = await loadBlockedProducts()
 const collections = await loadCollections()
 
 const home = pageHtml(shell, {
@@ -180,6 +203,18 @@ for (const product of products) {
     schema:[productSchema(product), breadcrumbSchema([{ name:'Home', url:`${PUBLIC_ORIGIN}/` }, { name:'Shop', url:`${PUBLIC_ORIGIN}/shop` }, { name:product.title, url:`${PUBLIC_ORIGIN}${path}` }])]
   })
   await writePage(path, html)
+}
+
+for (const product of blockedProducts) {
+  const path = `/product/${slug(product.handle)}`
+  await writePage(path, pageHtml(shell, {
+    path,
+    title:`${product.title} — Extra Time`,
+    description:'This product page is not currently available for organic search.',
+    image:product.image,
+    noindex:true,
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(product.title)}</h1><p>This listing is not currently available.</p></main>`
+  }))
 }
 
 const itemList = products.map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
@@ -273,4 +308,4 @@ for (const path of ['/custom', '/studio', '/account', '/account/membership', '/a
   }))
 }
 
-console.log(`[seo] Generated ${products.length} product pages, ${collections.length} collection pages and ${staticPages.length} static pages.`)
+console.log(`[seo] Generated ${products.length} indexable product pages, ${blockedProducts.length} blocked product pages, ${collections.length} collection pages and ${staticPages.length} static pages.`)
