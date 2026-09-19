@@ -39,11 +39,12 @@ become product variants or separate feed rows. They remain fulfillment data.
 ## Identifier policy
 
 The mapper never invents a GTIN. It validates a supplied barcode checksum and
-omits invalid values with a diagnostic warning. For a store-brand/custom item,
-the customer-facing Extra Time store brand and stable variant SKU are used as the MPN only when the item
-is treated as a private-label product; otherwise leave the MPN override blank
-and set the identifier policy in the listing review. `identifier_exists=no` is
-reserved for products where the team is certain no assigned GTIN/MPN exists.
+omits invalid values with a diagnostic warning. An internal SKU is never
+silently promoted to a manufacturer part number (MPN). When no confirmed
+manufacturer-issued GTIN or MPN exists, the row uses `identifier_exists=no`.
+Enter an MPN in the listing's GMC override only when it is verifiable; an
+explicit `identifier_exists=yes` without a valid GTIN or confirmed MPN blocks
+the row instead of sending an unverifiable identifier.
 
 Google's current guidance for custom goods supports `identifier_exists=no`
 when no unique identifier exists, requires apparel `color`, `size`, `gender`

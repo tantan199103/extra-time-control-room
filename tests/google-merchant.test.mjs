@@ -49,12 +49,15 @@ test('normalizes one Merchant Center row per active variant', () => {
   assert.deepEqual(result.items[0].additional_image_link, ['https://cdn.example.test/green-back.webp'])
 })
 
-test('custom products use a store brand and stable SKU MPN without inventing a GTIN', () => {
+test('custom products do not mislabel an internal SKU as a manufacturer identifier', () => {
   const result = normalizeGoogleMerchantItem(product, product.variants[0])
   assert.equal(result.item.brand, 'Extra Time')
-  assert.equal(result.item.mpn, 'ET-GREEN-S')
-  assert.equal(result.item.identifier_exists, 'yes')
+  assert.equal('mpn' in result.item, false)
+  assert.equal(result.item.identifier_exists, 'no')
   assert.equal('gtin' in result.item, false)
+  const confirmed = normalizeGoogleMerchantItem({ ...product, seo:{ ...product.seo, gmc:{ ...product.seo.gmc, mpn:'ET-GREEN-S', identifier_exists:'yes' } } }, product.variants[0])
+  assert.equal(confirmed.item.mpn, 'ET-GREEN-S')
+  assert.equal(confirmed.item.identifier_exists, 'yes')
 })
 
 test('valid GTIN is preserved and invalid GTIN is omitted with a warning', () => {

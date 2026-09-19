@@ -178,8 +178,14 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
   const rawGtin = overrides.gtin || variant?.gtin || variant?.barcode || product?.gtin
   const gtin = normalizedGtin(rawGtin)
   const explicitIdentifier = String(overrides.identifier_exists ?? overrides.identifierExists ?? '').toLowerCase()
-  const identifierExists = explicitIdentifier === 'no' || explicitIdentifier === 'false' ? 'no' : 'yes'
-  const mpn = identifierExists === 'yes' ? plainText(overrides.mpn || variant?.mpn || variant?.sku || product?.mpn || product?.sku, 70) : ''
+  const confirmedMpn = plainText(overrides.mpn || variant?.mpn || product?.mpn, 70)
+  // An internal SKU is not automatically a manufacturer part number. Custom
+  // goods without an assigned GTIN/MPN must be sent with identifier_exists=no;
+  // an admin can opt into a confirmed MPN in the listing's GMC overrides.
+  const identifierExists = explicitIdentifier === 'no' || explicitIdentifier === 'false'
+    ? 'no'
+    : (gtin || confirmedMpn || explicitIdentifier === 'yes' || explicitIdentifier === 'true' ? 'yes' : 'no')
+  const mpn = identifierExists === 'yes' ? confirmedMpn : ''
   const customizable = array(product?.custom_fields || product?.customFields).length > 0 || /personalized|custom/i.test(`${product?.type || ''} ${title}`)
   const warnings = []
   const blockReasons = []
@@ -201,7 +207,9 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
   if (gender.inferred) warnings.push('GENDER_INFERRED')
   if (ageGroup.inferred) warnings.push('AGE_GROUP_INFERRED')
   if (!brand) blockReasons.push('MISSING_BRAND')
-  if (identifierExists === 'yes' && !gtin && !mpn) blockReasons.push('MISSING_PRODUCT_IDENTIFIER')
+  if (explicitIdentifier === 'yes' || explicitIdentifier === 'true') {
+    if (!gtin && !confirmedMpn) blockReasons.push('MISSING_PRODUCT_IDENTIFIER')
+  }
   if (!array(product?.media).some(item => String(item?.type || '').toUpperCase() === 'IMAGE')) warnings.push('NO_ADDITIONAL_PRODUCT_IMAGES')
 
   const item = {
