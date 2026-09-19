@@ -16,6 +16,10 @@ test('league taxonomy exposes stable league and team URLs', () => {
     '/assets/leagues/fangear-reference/nba.webp',
     '/assets/leagues/fangear-reference/mls.webp'
   ])
+  assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/fangear-reference/teams/nfl/arizona-cardinals.webp')
+  assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/fangear-reference/teams/mlb/new-york-yankees.webp')
+  assert.equal(findTeam('mls', 'sporting-kc').media.src, '/assets/leagues/fangear-reference/teams/mls/sporting-kc.webp')
+  assert.equal(findTeam('nba', 'los-angeles-lakers').media.fallback, true)
 })
 
 test('taxonomy matching accepts nested catalog fields and stays selective', () => {

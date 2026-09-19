@@ -1,4 +1,5 @@
 import { leagueMedia } from './league-media.js'
+import { teamMedia } from './team-media.js'
 
 /**
  * Curated league/team taxonomy used by the storefront navigation and SEO
@@ -33,7 +34,7 @@ export const LEAGUE_TAXONOMY = [
       ['pittsburgh-steelers', 'Pittsburgh Steelers'], ['san-francisco-49ers', 'San Francisco 49ers'],
       ['seattle-seahawks', 'Seattle Seahawks'], ['tampa-bay-buccaneers', 'Tampa Bay Buccaneers'],
       ['tennessee-titans', 'Tennessee Titans'], ['washington-commanders', 'Washington Commanders']
-    ].map(([slug, name]) => ({ slug, name }))
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('nfl', slug, name) }))
   },
   {
     key: 'mlb',
@@ -57,7 +58,7 @@ export const LEAGUE_TAXONOMY = [
       ['st-louis-cardinals', 'St. Louis Cardinals'], ['tampa-bay-rays', 'Tampa Bay Rays'],
       ['texas-rangers', 'Texas Rangers'], ['toronto-blue-jays', 'Toronto Blue Jays'],
       ['washington-nationals', 'Washington Nationals']
-    ].map(([slug, name]) => ({ slug, name }))
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('mlb', slug, name) }))
   },
   {
     key: 'nba',
@@ -81,7 +82,7 @@ export const LEAGUE_TAXONOMY = [
       ['portland-trail-blazers', 'Portland Trail Blazers'], ['sacramento-kings', 'Sacramento Kings'],
       ['san-antonio-spurs', 'San Antonio Spurs'], ['toronto-raptors', 'Toronto Raptors'],
       ['utah-jazz', 'Utah Jazz'], ['washington-wizards', 'Washington Wizards']
-    ].map(([slug, name]) => ({ slug, name }))
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('nba', slug, name) }))
   },
   {
     key: 'mls',
@@ -101,7 +102,7 @@ export const LEAGUE_TAXONOMY = [
       ['seattle-sounders', 'Seattle Sounders FC'], ['sporting-kc', 'Sporting Kansas City'],
       ['st-louis-city', 'St. Louis CITY SC'], ['toronto-fc', 'Toronto FC'],
       ['vancouver-whitecaps', 'Vancouver Whitecaps FC']
-    ].map(([slug, name]) => ({ slug, name }))
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('mls', slug, name) }))
   }
 ]
 
