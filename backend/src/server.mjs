@@ -18,9 +18,15 @@ const routeModules = new Map([
   ['/api/admin-customizations', 'admin-customizations.js'],
   ['/api/admin-orders', 'admin-orders.js'],
   ['/api/admin-payment-settings', 'admin-payment-settings.js'],
-  // Checkout quotes are normally reached through the Supabase Edge gateway,
-  // but keeping the same route on the Node runtime gives the hybrid client a
-  // safe direct fallback when the Edge origin is unavailable.
+  // These light routes can move back behind Supabase Edge once the production
+  // project has its functions provisioned. Keep them on this runtime meanwhile
+  // so storefront validation and membership never fall through to a stale
+  // Vercel function or an unprovisioned Edge endpoint.
+  ['/api/cart-validate', 'cart-validate.js'],
+  ['/api/member-quote', 'member-quote.js'],
+  ['/api/membership-enroll', 'membership-enroll.js'],
+  // Signed checkout quotes stay beside creation and capture so all three use
+  // the same inventory, signing secret and payment configuration.
   ['/api/checkout-quote', 'checkout-quote.js'],
   ['/api/checkout-create', 'checkout-create.js'],
   ['/api/payment-capture', 'payment-capture.js'],

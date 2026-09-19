@@ -5,12 +5,7 @@ api/*.js
 !api/sitemap.js
 !api/_security.js
 !api/_membership.js
-# Edge Functions are not deployed in this production project yet. Keep the
-# equivalent lightweight handlers available on Vercel until the Edge gateway
-# is provisioned; this prevents cart/member routes from falling through to
-# Cloud Run's unknown-route response.
-!api/cart-validate.js
-!api/member-quote.js
-!api/membership-enroll.js
+# Edge Functions are not deployed in the production Supabase project yet.
+# Cloud Run owns the equivalent light routes until that gateway is provisioned.
 backend/
 supabase/functions/

@@ -27,6 +27,9 @@ test('routing keeps server-only credentials out of the browser client', async ()
 test('Node runtime keeps the webhook route and fails readiness without server secrets', () => {
   assert.equal(routeModules.get('/api/payment-webhook'), 'payment-webhook.js')
   assert.equal(routeModules.get('/api/checkout-quote'), 'checkout-quote.js')
+  assert.equal(routeModules.get('/api/cart-validate'), 'cart-validate.js')
+  assert.equal(routeModules.get('/api/member-quote'), 'member-quote.js')
+  assert.equal(routeModules.get('/api/membership-enroll'), 'membership-enroll.js')
   const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'].map(name => [name, process.env[name]]))
   for (const name of Object.keys(old)) delete process.env[name]
   try {
