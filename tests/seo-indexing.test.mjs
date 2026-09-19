@@ -30,6 +30,7 @@ test('SEO build creates initial HTML for product pages and protects private rout
   assert.match(generator, /Product/)
   assert.match(generator, /Generated \$\{products\.length\} indexable product pages/)
   assert.match(generator, /blocked product pages/)
+  assert.match(generator, /variant=\$\{encodeURIComponent\(variant\.id\)\}/)
   assert.match(generator, /Jersevo operates the Extra Time storefront/)
   assert.equal(vercel.headers.find(rule => rule.source === '/admin').headers[0].value, 'noindex, nofollow')
   assert.equal(vercel.headers.find(rule => rule.source === '/account/(.*)').headers[0].value, 'noindex, nofollow')

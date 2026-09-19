@@ -24,7 +24,14 @@ function normalizeProduct(row) {
   const price = Number(row.price) > 0 ? Number(row.price) : (prices.length ? Math.min(...prices) : 0)
   const inventory = Number.isFinite(Number(row.inventory)) ? Number(row.inventory) : variants.reduce((total, item) => total + Number(item.inventory || 0), 0)
   const handle = text(row.handle || row.id, title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
-  return { handle, title, description, image, price, inventory, sku:text(row.sku || variants[0]?.sku), updatedAt:row.updated_at || row.updatedAt || '', taxonomy:row.taxonomy || {}, seoStatus:String(row.seo_status || row.seo?.status || '').toUpperCase() }
+  return {
+    handle, title, description, image, price, inventory, sku:text(row.sku || variants[0]?.sku),
+    variants:variants.map(item => ({
+      id:text(item.id), sku:text(item.sku), price:Number(item.price), compareAt:Number(item.compare_at ?? item.compareAt),
+      inventory:Number(item.inventory || 0), status:String(item.status || '').toUpperCase(), image:absolute(item.image || image), values:item.option_values || item.values || {}
+    })),
+    updatedAt:row.updated_at || row.updatedAt || '', taxonomy:row.taxonomy || {}, seoStatus:String(row.seo_status || row.seo?.status || '').toUpperCase()
+  }
 }
 
 async function fetchRows(path, key, query = '') {
@@ -108,6 +115,19 @@ async function loadCollections() {
 
 function productSchema(product) {
   const canonical = `${PUBLIC_ORIGIN}/product/${slug(product.handle)}`
+  const variantOffers = (product.variants || [])
+    .filter(variant => Number.isFinite(Number(variant.price)) && Number(variant.price) > 0)
+    .map(variant => {
+      const price = Number(variant.price)
+      const url = `${canonical}?variant=${encodeURIComponent(variant.id)}`
+      return {
+        '@type':'Offer', url, priceCurrency:'USD', price:price.toFixed(2),
+        availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,
+        itemCondition:'https://schema.org/NewCondition',
+        ...(variant.sku ? { sku:variant.sku } : {}),
+        seller:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', url:`${PUBLIC_ORIGIN}/`, email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } }
+      }
+    })
   const schema = {
     '@context':'https://schema.org',
     '@type':'Product',
@@ -118,11 +138,8 @@ function productSchema(product) {
     url:canonical,
     brand:{ '@type':'Brand', name:'Extra Time' },
     category:'Apparel & Accessories > Clothing > Jerseys',
-    offers:{
-      '@type':'Offer',
-      url:canonical,
-      priceCurrency:'USD',
-      price:product.price.toFixed(2),
+    offers:variantOffers.length > 1 ? variantOffers : {
+      '@type':'Offer', url:canonical, priceCurrency:'USD', price:product.price.toFixed(2),
       availability:`https://schema.org/${product.inventory > 0 ? 'InStock' : 'OutOfStock'}`,
       itemCondition:'https://schema.org/NewCondition',
       seller:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', url:`${PUBLIC_ORIGIN}/`, email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } }
