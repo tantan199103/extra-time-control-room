@@ -9,6 +9,7 @@
     "build": "vite build",
     "postbuild": "node scripts/postbuild.mjs",
     "audit:hosting": "node scripts/audit-hosting.mjs",
+    "audit:gmc": "node scripts/audit-gmc-feed.mjs",
     "import:fangear": "node scripts/import-fangear-catalog.mjs",
     "dev:extension": "vite build --config extension/vite.config.js --mode development --watch",
     "build:extension": "vite build --config extension/vite.config.js",

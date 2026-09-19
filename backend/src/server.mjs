@@ -34,7 +34,11 @@ const routeModules = new Map([
   ['/api/payment-webhook', 'payment-webhook.js'],
   ['/api/order-track', 'order-track.js'],
   ['/api/render-artwork', 'render-artwork.js'],
-  ['/api/payment-config', 'payment-config.js']
+  ['/api/payment-config', 'payment-config.js'],
+  // Public, read-only Google Merchant Center source. The handler still uses
+  // the server-only Supabase key so draft and blocked catalogue rows never
+  // leak into the feed.
+  ['/api/google-merchant-feed', 'google-merchant-feed.js']
 ])
 
 const loadedHandlers = new Map()

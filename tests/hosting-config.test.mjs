@@ -13,7 +13,9 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
   }
   assert.deepEqual(config.functions, {
     'api/sitemap.js': { maxDuration: 15 },
-  }, 'the sitemap stays on Vercel while application API routes are proxied to Cloud Run')
+    'api/google-merchant-feed.js': { maxDuration: 15 },
+  }, 'the sitemap and public Merchant feed stay on Vercel while application API routes are proxied to Cloud Run')
+  assert.ok(config.rewrites.some(rule => rule.source === '/api/google-merchant-feed' && rule.destination === '/api/google-merchant-feed.js'))
 })
 
 test('static assets are cacheable while API responses remain no-store', async () => {

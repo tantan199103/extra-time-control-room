@@ -30,6 +30,7 @@ test('Node runtime keeps the webhook route and fails readiness without server se
   assert.equal(routeModules.get('/api/cart-validate'), 'cart-validate.js')
   assert.equal(routeModules.get('/api/member-quote'), 'member-quote.js')
   assert.equal(routeModules.get('/api/membership-enroll'), 'membership-enroll.js')
+  assert.equal(routeModules.get('/api/google-merchant-feed'), 'google-merchant-feed.js')
   const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'].map(name => [name, process.env[name]]))
   for (const name of Object.keys(old)) delete process.env[name]
   try {

@@ -24,7 +24,7 @@ This version signals the intended market with `lang="en-US"`, `og:locale=en_US`,
 2. Use URL Inspection on `/`, `/shop` and three published `/product/:handle` URLs. Confirm that the rendered HTML contains the product heading, canonical `www` URL, Product JSON-LD and crawlable WebP images.
 3. Run Google's Rich Results Test against product URLs. Fix any price/availability mismatch before requesting indexing.
 4. Request indexing for the home, shop and top product URLs after the first production deploy. Search Console status is the source of truth; a sitemap submission does not guarantee immediate indexing.
-5. When server-side checkout, stock reservation and verified payment webhooks are live, create a Google Merchant Center product feed and connect it to the same canonical product URLs. Until then, Product markup can help understanding/snippets, but Merchant listing eligibility and purchase availability must not be claimed.
+5. The normalized Google Merchant Center feed is available at `/api/google-merchant-feed` (XML, with `?format=tsv` and `?format=json` diagnostics). It is restricted to `PUBLISHED` + `INDEXABLE` listings and active variants, and uses the same canonical product URLs, live prices and stock. Run `npm run audit:gmc` before scheduling the source in Merchant Center; review image, shipping, returns and identifier diagnostics first.
 
 ## Content work that still affects ranking
 

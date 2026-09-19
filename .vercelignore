@@ -3,6 +3,7 @@
 # Serverless Functions, which keeps the Hobby plan below its function cap.
 api/*.js
 !api/sitemap.js
+!api/google-merchant-feed.js
 !api/_security.js
 !api/_membership.js
 # Edge Functions are not deployed in the production Supabase project yet.

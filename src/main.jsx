@@ -715,7 +715,13 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const options = product.options || []
   const sizeName = optionNameLike(product,['size'])
   const initial = { ...(savedDraft?.selections || {}) }
+  // Merchant Center links each size/color offer to the same PDP with a stable
+  // variant query parameter. Resolve it before the saved browser draft so a
+  // shopper arriving from a product listing sees the advertised variation.
+  const requestedVariantId = new URLSearchParams(window.location.search).get('variant')
+  const requestedVariant = requestedVariantId ? (product.variants || []).find(variant => String(variant.id) === requestedVariantId) : null
   if (sizeName && savedDraft?.size) initial[sizeName] = savedDraft.size
+  if (requestedVariant?.values) Object.assign(initial, requestedVariant.values)
   const [selections,setSelections] = useState(() => {
     const next = initialSelections(product,initial)
     options.forEach(option => { if (option.values.length === 1) next[option.name] = option.values[0] })

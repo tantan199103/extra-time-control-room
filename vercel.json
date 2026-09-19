@@ -5,7 +5,8 @@
   "framework": "vite",
   "regions": ["iad1"],
   "functions": {
-    "api/sitemap.js": { "maxDuration": 15 }
+    "api/sitemap.js": { "maxDuration": 15 },
+    "api/google-merchant-feed.js": { "maxDuration": 15 }
   },
   "headers": [
     {
@@ -78,6 +79,7 @@
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/api/google-merchant-feed", "destination": "/api/google-merchant-feed.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

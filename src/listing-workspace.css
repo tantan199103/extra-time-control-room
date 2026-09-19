@@ -65,6 +65,11 @@
 .listing-subsection__head { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
 .listing-subsection__head h3 { margin:6px 0 0; font:800 24px/.85 var(--headline); }
 .listing-subsection__head p { margin:7px 0 0; color:var(--admin-muted); font-size:9px; }
+.listing-merchant-subsection { background:linear-gradient(90deg,rgba(248,240,74,.12),transparent 70%); padding-left:14px; padding-right:14px; margin-left:-14px; margin-right:-14px; }
+.listing-merchant-status { padding:6px 8px; border:1px solid var(--admin-line); color:var(--admin-muted); font:700 8px var(--body); letter-spacing:.08em; white-space:nowrap; }
+.listing-merchant-status.is-ready { border-color:#4c9d5a; color:#286b35; background:#e3e7df; }
+.listing-merchant-status.is-blocked { border-color:var(--admin-signal); color:var(--admin-signal); background:#eee0dd; }
+.listing-merchant-help { display:block; margin-top:12px; color:var(--admin-muted); font-size:8px; line-height:1.5; }
 .listing-search-preview { margin:18px 0 3px; padding:17px 19px; background:#fff; border:1px solid var(--admin-line); display:grid; gap:5px; }
 .listing-search-preview span { color:#457054; font-size:8px; }.listing-search-preview strong { color:#3151a2; font:500 17px Arial,sans-serif; }.listing-search-preview p { margin:0; max-width:620px; color:#555; font:400 10px/1.4 Arial,sans-serif; }
 .listing-block-add { display:flex; flex-wrap:wrap; gap:5px; justify-content:flex-end; }
