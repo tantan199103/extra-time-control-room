@@ -20,6 +20,10 @@ import {
   ShoppingBag,
   Sparkles,
   SlidersHorizontal,
+  ShieldCheck,
+  PackageCheck,
+  CircleHelp,
+  Globe2,
   Ticket,
   X
 } from 'lucide-react'
@@ -38,6 +42,12 @@ const AiStudio = lazy(() => import('./AiStudio'))
 
 const money = value => `$${value.toFixed(0)}`
 const initialCatalog = buildFallbackCatalog(fallbackProducts)
+const BUSINESS_DETAILS = Object.freeze({
+  legalName:'Jersevo',
+  brand:'Extra Time',
+  email:'support@jersevo.com',
+  location:'Texas, United States'
+})
 
 function readSession(key, fallback = null) {
   try { return JSON.parse(window.sessionStorage.getItem(key) || 'null') || fallback } catch { return fallback }
@@ -496,14 +506,15 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
       <div className="footer__links">
         {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`)}>Custom lab</button></div>}
-        <div><span>STORIES</span><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/#custom')}>How custom works</button></div>
+        <div><span>STUDIO</span><button onClick={() => navigate('/about')}>About Extra Time</button><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/journal')}>Journal</button></div>
         <div><span>LEAGUES</span>{LEAGUE_TAXONOMY.map(league => <button key={league.key} onClick={() => navigate(leaguePath(league))}>{league.name} collections</button>)}</div>
         <div><span>90+ CLUB</span><button onClick={() => navigate('/membership')}>Membership</button><button onClick={() => navigate('/membership#join')}>Plans & benefits</button><button onClick={() => navigate('/membership#account')}>Member account</button></div>
-        <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button onClick={() => navigate('/track-order')}>Track an order</button><button onClick={() => navigate('/shipping')}>Shipping</button><button onClick={() => navigate('/returns')}>Returns</button></div>
-        <div><span>FOLLOW · COMING SOON</span><button disabled title="Official Instagram link is not configured">Instagram</button><button disabled title="Official TikTok link is not configured">TikTok</button><button disabled title="The journal has not been published">Journal</button></div>
+        <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button onClick={() => navigate('/track-order')}>Track an order</button><button onClick={() => navigate('/shipping')}>Shipping</button><button onClick={() => navigate('/returns')}>Returns</button><button onClick={() => navigate('/warranty')}>Warranty</button></div>
+        <div><span>TRUST</span><button onClick={() => navigate('/privacy')}>Privacy</button><button onClick={() => navigate('/terms')}>Terms</button><button onClick={() => navigate('/warranty')}>Warranty</button><button onClick={() => navigate('/accessibility')}>Accessibility</button></div>
+        <div><span>FOLLOW · COMING SOON</span><button disabled title="Official Instagram link is not configured">Instagram</button><button disabled title="Official TikTok link is not configured">TikTok</button></div>
       </div>
       <div className="footer__wordmark">EXTRA TIME<span>+</span></div>
-      <div className="footer__legal"><span>© 2026 EXTRA TIME STUDIO</span><span><button onClick={() => navigate('/privacy')}>PRIVACY</button> · <button onClick={() => navigate('/terms')}>TERMS</button> · <button onClick={() => navigate('/accessibility')}>ACCESSIBILITY</button></span><span>MADE FOR THE GAME AFTER THE GAME.</span></div>
+      <div className="footer__legal"><span>© 2026 JERSEVO · EXTRA TIME</span><span><button onClick={() => navigate('/privacy')}>PRIVACY</button> · <button onClick={() => navigate('/terms')}>TERMS</button> · <button onClick={() => navigate('/accessibility')}>ACCESSIBILITY</button></span><span><a href={`mailto:${BUSINESS_DETAILS.email}`}>{BUSINESS_DETAILS.email}</a> · {BUSINESS_DETAILS.location}</span></div>
     </footer>
   )
 }
@@ -779,7 +790,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{option.name === sizeName && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] || 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${value}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : value}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'} · {selectedVariant.sku}</p>}
         {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>AI direction attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached AI direction"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Edit more with AI</strong><small>Create one coordinated direction from this exact listing image.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
-        <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>Tracked delivery · Final artwork review · 14-day standard returns</small></div>
+        <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>Tracked delivery · Final artwork review · 30-day standard returns</small></div>
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div>
         <div className="pdp__shipping-card"><div><strong>Ships across the US</strong><span>Free shipping on orders over $100</span></div><div><strong>30-day standard returns</strong><span>Personalized orders are reviewed before production</span></div><button onClick={() => navigate('/shipping')}>VIEW SHIPPING DETAILS <ArrowRight size={14}/></button></div>
@@ -810,16 +821,137 @@ function VaultPage() {
   )
 }
 
+const TRUST_PAGES = {
+  shipping: {
+    eyebrow:'The trust desk / delivery',
+    title:'On the way.',
+    accent:'With a plan.',
+    intro:'Tracked delivery, clear hand-offs and a live quote before you pay. The checkout estimate is always the final word for your destination.',
+    image:'/assets/hero-tunnel.webp',
+    imageAlt:'A football player walking through a lit stadium tunnel before a match.',
+    facts:[['US standard','5–8 business days'],['Express option','2–4 business days'],['Free threshold','$100+ in the US'],['Tracking','Sent at carrier hand-off']],
+    sections:[
+      {heading:'Quote first. Promise second.',body:'Shipping is calculated from the destination, order contents and selected speed. Checkout shows the live delivery charge, tax treatment and estimated window before payment is confirmed.',list:['Standard tracked delivery is the default option where available.','Express delivery is shown only when the destination and current production queue support it.','The order confirmation keeps the destination and selected method attached to the order.']},
+      {heading:'How the clock works',body:'The delivery window starts after the order is confirmed. Standard pieces move into preparation first; personalized pieces enter production after the artwork direction has been reviewed.',list:['Payment provider confirmation creates the order.','The studio reviews personalization before production begins.','Tracking appears in the order status page after the carrier accepts the parcel.']},
+      {heading:'Current destinations',body:'The launch checkout currently supports the United States, Canada, United Kingdom, Australia, Singapore, Vietnam, Germany, France and Japan. Availability, taxes and rates can change by destination.',list:['If your country is not shown, do not pay through a different route.','Use the private tracking link for order questions; the order token keeps details out of public URLs.']}
+    ],
+    faqs:[['What is the free-shipping threshold?','US orders over $100 qualify for free standard shipping. The checkout quote confirms eligibility after the address and cart are validated.'],['Can I change my address?','Send the request before the order is handed to the carrier. After hand-off, the carrier rules control any redirect or address correction.'],['Do personalized pieces take longer?','They can. Artwork is reviewed before production, and checkout or the order status page is the source of truth for the current estimate.']]
+  },
+  returns: {
+    eyebrow:'The trust desk / returns',
+    title:'No surprises.',
+    accent:'Just the right fit.',
+    intro:'We want the piece to feel right when it arrives. This page separates standard returns, defects and personalized work so the next step is clear.',
+    image:'/assets/jersey-oxblood.webp',
+    imageAlt:'Oxblood Extra Time football jersey hanging against a dark studio background.',
+    facts:[['Standard pieces','30-day return window'],['Condition','Unused, unworn, unwashed'],['Personalized work','Review before production'],['Defects','Contact us promptly']],
+    sections:[
+      {heading:'Standard pieces',body:'Eligible standard pieces can be returned within 30 days of delivery when they are unused, unworn and in original condition. The item must be packaged safely so it can travel back without damage.',list:['Start from the order status page and keep the order number ready.','Return shipping and any refund timing are confirmed during the return review.','Refunds go back through the original payment provider after inspection.']},
+      {heading:'Personalized work',body:'Names, numbers, photos and other approved artwork are made for one order. Review the artwork direction carefully before approval; once production begins, a change-of-mind return may not be available.',list:['Spelling and sizing are the customer’s responsibility after approval.','A production issue, wrong item or transit damage is handled separately from a change-of-mind return.','Do not send a replacement or second payment before the studio confirms the next step.']},
+      {heading:'Damage or wrong item',body:'Photograph the package and piece as soon as you notice an issue. Keep the packaging until the review is complete; it helps the studio and carrier investigate the hand-off.',list:['Use the private order link so the correct order record is attached.','Include the order number, a short description and clear photos of the issue.']}
+    ],
+    faqs:[['When does the 30-day window start?','The window starts on the delivery date recorded by the carrier. If a parcel is split, each item is considered from its own delivery date.'],['Are sale items returnable?','The checkout and order record show any item-specific restriction before payment. If no restriction is shown, the standard eligibility rules apply.'],['Can I return a personalized jersey?','A change-of-mind return may not be available once artwork has been approved and production has started. Defects and studio errors are still reviewed.']]
+  },
+  warranty: {
+    eyebrow:'The trust desk / warranty',
+    title:'Made to last.',
+    accent:'Reviewed with care.',
+    intro:'If a piece arrives with a manufacturing defect or a studio mistake, we want a clear path to review it. This page explains what to document, what is normally covered and what happens next.',
+    image:'/assets/jersey-black.webp',
+    imageAlt:'Black Extra Time football jersey photographed in a high-contrast studio.',
+    facts:[['Coverage','Manufacturing and studio errors'],['Timing','Report promptly after delivery'],['Care','Follow the care label'],['Outcome','Repair, replacement or refund review']],
+    sections:[
+      {heading:'What this covers',body:'We review problems that appear to come from production or fulfilment: damaged construction, print or embroidery defects, a wrong item, or an item missing from the shipment. This review is separate from a change-of-mind return.',list:['Keep the item and packaging while the review is open.','Photographs of the full piece and the affected area help the studio compare the order record.','If the studio made the error, we will explain the available remedy before asking you to send anything back.']},
+      {heading:'What is usually not a defect',body:'Normal wear, accidental damage, changes caused by washing outside the care instructions, a fit choice or customer-supplied artwork approved before production may not qualify as a manufacturing defect.',list:['Check the care and fit guidance before washing or altering a piece.','Do not repair, customise or discard an item before the review is complete.','A personalized piece can still be reviewed for a studio or manufacturing error even when change-of-mind returns are unavailable.']},
+      {heading:'How to start a review',body:'Open the private order status link and keep the order number ready. Describe what changed, when you noticed it and whether the packaging was damaged in transit.',list:['Attach clear photos without payment details or unrelated personal information.','Use the private order route so the request is matched to the correct product, size and production record.','The studio may ask for one additional image or a return inspection before confirming the outcome.']},
+      {heading:'What happens next',body:'The team checks the order, payment and fulfilment record, then confirms whether the issue is a production defect, transit damage, wrong item or normal wear. Any repair, replacement or refund is agreed before the next step.',list:['Refunds use the original payment provider when a refund is the approved remedy.','Do not pay a second time or ship a replacement until the studio confirms the instruction.','Your consumer-law rights are not removed by this review process.']}
+    ],
+    faqs:[['Is there a separate warranty period?','The store currently publishes a defect review process rather than a separate fixed warranty term. Report a suspected production or fulfilment problem promptly after delivery so it can be assessed with the order record and applicable consumer law.'],['What evidence should I send?','Include the order number, a short description and clear photos of the full item, the issue and the packaging if it was damaged. Never include card numbers.'],['What if the carrier damaged the parcel?','Keep the packaging and photograph it before disposal. The studio will coordinate the review with the carrier and tell you whether the next step is a replacement, refund or additional inspection.']]
+  },
+  privacy: {
+    eyebrow:'The trust desk / privacy',
+    title:'Your details.',
+    accent:'Handled with care.',
+    intro:'The store needs a few details to make, charge and deliver an order. It should never need more than that to give you a good experience.',
+    image:'/assets/editorial-player.webp',
+    imageAlt:'Football player in an editorial studio portrait wearing an Extra Time jersey.',
+    facts:[['Used for','Orders, delivery and support'],['Payments','Handled by the provider'],['References','Private to the order'],['Public media','Never without permission']],
+    sections:[
+      {heading:'What we collect',body:'Depending on the action, Extra Time may receive your name, email, delivery address, order details, selected size and personalization instructions. Optional reference images stay attached to the private request that needs them.',list:['Cart and session storage keeps the bag working on your device.','Order records keep the details needed for fulfillment, support and legal accounting.','Payment details are entered with the payment provider; the store does not keep full card numbers.']},
+      {heading:'What we do with it',body:'We use information to validate a cart, prepare a quote, create an order, deliver it, prevent abuse and answer support requests. We do not turn customer references into public product media without permission.',list:['Operational providers receive only the information needed for their job.','Staff access is limited to the order and workflow context they need.','AI artwork directions are treated as private order inputs and reviewed before production.']},
+      {heading:'Your choices',body:'You can ask to review or correct the details attached to an order. Some records must remain for fraud prevention, tax or accounting obligations; the team will explain any limit instead of silently ignoring the request.',list:['Email support@jersevo.com or use the private order link for an order-specific question.','Sign out on shared devices and do not upload someone else’s image without their permission.','At launch, the storefront does not load advertising pixels or cross-site analytics; this page will be updated if that changes.','We will update this page when a material privacy practice changes.']},
+      {heading:'Contact for privacy requests',body:'Jersevo operates the Extra Time storefront from Texas, United States. Privacy, correction and deletion requests can be sent to support@jersevo.com.',list:['Include the relevant order number, but never include a full payment card number.','We may need to verify that the request belongs to the customer or account concerned.','A verified mailing address will be added here when the business address is finalised.']}
+    ],
+    faqs:[['Does Extra Time sell customer data?','No. Customer order details and references are used to operate the store, not sold as an audience list.'],['How are reference images handled?','They remain private to the relevant customization request and are used to review the requested artwork direction.'],['How do I request a correction?','Use the order status link or account session and include the order number so the request can be matched safely.']]
+  },
+  terms: {
+    eyebrow:'The trust desk / terms',
+    title:'Read the fine print.',
+    accent:'Then make it yours.',
+    intro:'A clear purchase flow matters more than clever wording. These terms explain what happens from the first click to the final hand-off.',
+    image:'/assets/jersey-black.webp',
+    imageAlt:'Black Extra Time football jersey photographed in a high-contrast studio.',
+    facts:[['Currency','USD at checkout'],['Order state','Pending until verified payment'],['Personalization','Approved before production'],['Affiliation','Independent fan apparel']],
+    sections:[
+      {heading:'The purchase contract',body:'Product information, available variants, price, taxes and shipping are shown before payment. An order is pending while the provider confirms payment; it becomes confirmed only after a verified provider response.',list:['A browser return alone is not proof of payment.','If stock, price or a provider response changes, the order may pause for review.','The order status page is the record to use when a payment result is unclear.']},
+      {heading:'Personalization and content',body:'You confirm the spelling, number, size and artwork direction you submit. Do not upload content that you do not have permission to use, that impersonates another person or that infringes a team, league or creator’s rights.',list:['The studio may refuse or pause a request that is unlawful, unsafe or impossible to produce.','Artwork approval is a production checkpoint, not a promise that every requested mark is an official logo or affiliation.','Extra Time is independent fan apparel and is not an official team or league store.']},
+      {heading:'Prices, availability and changes',body:'Small-batch products can sell out. We may correct an obvious listing error, retire a product or update a policy before a new order is placed. A material change to an existing confirmed order is handled with the customer rather than hidden in the interface.',list:['Taxes and shipping are calculated for the checkout destination.','The payment provider’s terms also apply to the payment step.','The published policy pages are part of the pre-purchase information set.']},
+      {heading:'Business and support',body:'Jersevo operates the Extra Time storefront from Texas, United States. Questions about an order, these terms or a policy can be sent to support@jersevo.com.',list:['Extra Time is the storefront brand; Jersevo is the business name supplied for the operator.','Do not send payment card numbers or account passwords by email.','A verified mailing and return address is provided through the applicable support or return process when required.']}
+    ],
+    faqs:[['When is my order confirmed?','After the payment provider returns a verified result and the server records the order as paid. The browser’s success page is not enough on its own.'],['Can Extra Time use my custom design publicly?','Not by default. Customer references and order directions stay private unless you separately give permission for a case study or editorial feature.'],['Are team names and logos official?','No. Extra Time is an independent fan-apparel studio. Product pages should make that distinction clear.']]
+  },
+  accessibility: {
+    eyebrow:'The trust desk / access',
+    title:'Everyone gets in.',
+    accent:'Every step matters.',
+    intro:'The store is built for keyboard, touch and assistive technology. If a route or control blocks you, the issue belongs with us—not with you.',
+    image:'/assets/jersey-white.webp',
+    imageAlt:'White Extra Time football jersey shown clearly against a pale studio background.',
+    facts:[['Keyboard','Visible focus and usable controls'],['Screen readers','Labels and meaningful headings'],['Motion','Reduced-motion friendly'],['Contrast','Text and controls checked']],
+    sections:[
+      {heading:'How the interface is built',body:'Navigation uses real buttons and links, headings follow the page structure and important product images include descriptive alternative text. Forms keep labels next to the fields they describe.',list:['The cart, checkout and order tracking flows can be reached without a pointer.','Focus is kept inside open dialogs and returned to the control that opened them.','Private account, checkout and order routes are excluded from public indexing.']},
+      {heading:'Motion and media',body:'Motion supports an action rather than competing with the content. Decorative imagery is not the only way to understand a product or policy, and reduced-motion preferences are respected where the browser exposes them.',list:['Product images include an alt description or are marked decorative when they add no information.','Video controls remain native and are not required to complete a purchase.','Error and success states use text as well as colour.']},
+      {heading:'If something is blocked',body:'Note the page URL, the action you were trying to complete and the device or assistive technology involved. Use the order status or account route when the issue concerns an existing purchase.',list:['Do not include payment card details in a support request.','A screenshot can help explain a visual issue, but it is optional.','We prioritise checkout, account access and order tracking barriers first.']}
+    ],
+    faqs:[['Can I shop without a mouse?','Yes. Header navigation, product options, the bag and checkout use keyboard-operable controls with visible focus states.'],['Are product photos described?','Published product and taxonomy images receive alt text from the catalogue or a safe fallback. Decorative marks are hidden from assistive technology.'],['How do I report a barrier?','Use the order status or account route for an existing purchase and include the page URL and action that failed.']]
+  },
+  journal: {
+    eyebrow:'The journal / behind the drop',
+    title:'The stories stay.',
+    accent:'The shirts move on.',
+    intro:'A small archive of the references, rituals and late-match details that shape each Extra Time release.',
+    image:'/assets/editorial-player.webp',
+    imageAlt:'Editorial portrait of a football player wearing a dark Extra Time jersey.',
+    facts:[['Field notes','Design references'],['Drop archive','Past stories'],['Studio view','Material and fit'],['Next issue','When the next story is ready']],
+    sections:[
+      {heading:'The tunnel before the noise',body:'The first reference is always the moment before the match: the walk, the floodlights and the quiet confidence of a shirt that has not met the pitch yet.',list:['Explore the current drop for the pieces built from this season’s visual language.','The Vault keeps past stories visible without pretending they are still available.']},
+      {heading:'Made for the game after the game',body:'Extra Time designs for the memory that stays after the final whistle. Names, numbers, colour and small references make a piece personal without turning it into a costume.',list:['Read the product story before choosing a standard or personalized version.','Use the size guide and care notes before adding a piece to the bag.']},
+      {heading:'A living archive',body:'New entries will be published when there is a real story to tell. Until then, the shop, league pages and Vault are the most useful ways to explore the studio.',list:['Browse by league or team to find the collection route.','Join 90+ Club for early access to selected drops.']}
+    ],
+    faqs:[['How often is the journal updated?','When a real studio story is ready. The page will not pretend that a placeholder is a finished editorial.'],['Can I submit a story?','The studio is not accepting a public submission form yet. Keep an eye on the current drop and account updates for future releases.'],['Where can I find older releases?','The Vault keeps selected past drops as an archive; sold-out pieces are not represented as available inventory.']]
+  }
+}
+
+function AboutPage() {
+  return <main className="about-page">
+    <div className="about-breadcrumb-wrap"><Breadcrumbs items={[{ label:'About the studio' }]}/></div><section className="about-hero"><div className="about-hero__copy"><span>EXTRA TIME / THE STUDIO</span><h1>Football memories,<br /><em>made wearable.</em></h1><p>Extra Time is an independent fan-apparel studio for the moments that stay after the final whistle. We build small-batch jerseys, considered personalization and stories with a point of view.</p><div className="about-hero__actions"><button className="button button--acid" onClick={() => navigate('/shop')}>SHOP THE DROP <ArrowRight size={16}/></button><button className="button-link" onClick={() => navigate('/shipping')}>READ THE TRUST DESK <ArrowRight size={16}/></button></div></div><figure className="about-hero__media"><img src="/assets/hero-tunnel.webp" alt="Football player walking through a lit stadium tunnel before a match." loading="eager" fetchPriority="high" decoding="async"/><figcaption><span>FIELD NOTE / 001</span><strong>The moment before the noise.</strong></figcaption></figure></section>
+    <section className="about-principles"><div><span>WHAT WE KEEP</span><h2>THE DETAIL<br />AFTER 90.</h2></div><div className="about-principles__grid"><article><b>01</b><h3>Designed, not copied</h3><p>We start from a feeling, a place or a piece of match-day memory. The result is fan apparel with its own language.</p></article><article><b>02</b><h3>Small batches, clear stock</h3><p>Published inventory is real. When a story leaves the shop, the Vault keeps the record without pretending it is still for sale.</p></article><article><b>03</b><h3>Personal, with a checkpoint</h3><p>Names, numbers and references are reviewed before production. You see the important details before they become permanent.</p></article></div></section>
+    <section className="about-split"><div className="about-split__media"><img src="/assets/editorial-player.webp" alt="Editorial football portrait in an Extra Time jersey."/><span>STUDIO VIEW / 90+</span></div><div className="about-split__copy"><span>THE WORKFLOW</span><h2>ONE PIECE.<br /><em>ONE MEMORY.</em></h2><p>Choose a published piece, follow the fit and care notes, then add only the details that make it yours. Checkout keeps the price, delivery estimate and payment status visible at every step.</p><ul><li><Check size={15}/> Secure provider checkout; no full card number stored by the store.</li><li><Check size={15}/> Tracked delivery with a private order status link.</li><li><Check size={15}/> Artwork review before a personalized order enters production.</li></ul><button className="button button--dark" onClick={() => navigate('/custom')}>ENTER CUSTOM LAB <ArrowRight size={16}/></button></div></section>
+    <section className="about-business"><span>THE OPERATOR</span><div><strong>{BUSINESS_DETAILS.legalName}</strong><p>{BUSINESS_DETAILS.legalName} operates the {BUSINESS_DETAILS.brand} storefront from {BUSINESS_DETAILS.location}. For orders, privacy or policy questions, email <a href={`mailto:${BUSINESS_DETAILS.email}`}>{BUSINESS_DETAILS.email}</a>.</p></div></section><section className="about-not-affiliated"><Globe2 size={20}/><div><span>INDEPENDENT BY DESIGN</span><h2>FOR SUPPORTERS.<br />NOT AN OFFICIAL TEAM STORE.</h2><p>Extra Time makes independent fan apparel. Team and league references describe the collection route and supporter culture; they do not imply endorsement or affiliation.</p></div></section>
+  </main>
+}
+
 function PolicyPage({ type }) {
-  const content = {
-    privacy:['Privacy','We collect only the details needed to prepare orders, respond to requests and operate the store. Customer references and AI previews are stored for a limited review period and are never used as public product media without permission.'],
-    terms:['Terms','Product availability, production timing and final pricing are confirmed before payment. Personalized work enters production only after the customer has approved the artwork direction.'],
-    accessibility:['Accessibility','Extra Time is designed for keyboard, touch and assistive-technology use. If any part of the store prevents access, contact the studio with the page and action you were trying to complete.'],
-    shipping:['Shipping','Standard delivery timing, eligible destinations and production windows are confirmed before payment. The live rate and destination rules will be shown during checkout.'],
-    returns:['Returns','Standard pieces can be returned within 14 days in unused condition. Personalized work is reviewed before production and may be excluded after artwork approval.'],
-    journal:['Journal','The Extra Time journal is being assembled from the stories behind each drop. Visit the current collection while new entries are prepared.']
-  }[type]
-  return <main className="policy-page"><span>EXTRA TIME / STORE POLICY</span><h1>{content[0]}</h1><p>{content[1]}</p><h2>What to expect</h2><p>Checkout shows the live delivery estimate before payment. Orders enter production only after a verified provider confirmation, and personalized work receives a human artwork review.</p><button className="button button--dark" onClick={() => navigate('/shop')}>BACK TO THE DROP</button></main>
+  const page = TRUST_PAGES[type] || TRUST_PAGES.shipping
+  const [openFaq,setOpenFaq] = useState(0)
+  useEffect(() => setOpenFaq(0), [type])
+  const policyLinks = [['shipping','Shipping'],['returns','Returns'],['privacy','Privacy'],['terms','Terms'],['accessibility','Accessibility']]
+  return <main className={`policy-page policy-page--${type}`}>
+    <div className="policy-breadcrumb-wrap"><Breadcrumbs items={[{ label:'Trust desk', href:'/shipping' }, { label:page.title.replace('.', '') }]}/></div><section className="policy-hero"><div className="policy-hero__copy"><span>{page.eyebrow}</span><h1>{page.title}<br /><em>{page.accent}</em></h1><p>{page.intro}</p><div className="policy-hero__actions"><button className="button button--dark" onClick={() => navigate('/shop')}>SHOP THE DROP <ArrowRight size={16}/></button><button className="button-link" onClick={() => navigate('/track-order')}>TRACK AN ORDER <ArrowRight size={16}/></button></div></div><figure className="policy-hero__media"><img src={page.image} alt={page.imageAlt} loading="eager" fetchPriority="high" decoding="async"/><figcaption><span>EXTRA TIME / TRUST DESK</span><strong>Clear answers before you commit.</strong></figcaption></figure></section>
+    <section className="policy-facts" aria-label={`${page.title} at a glance`}>{page.facts.map(([label,value],index) => <div key={label}><span>{String(index + 1).padStart(2,'0')}</span><strong>{label}</strong><small>{value}</small></div>)}</section><section className="policy-contact" aria-label="Jersevo business contact"><span>BUSINESS CONTACT</span><div><strong>{BUSINESS_DETAILS.legalName}</strong><p>Operator of {BUSINESS_DETAILS.brand} · {BUSINESS_DETAILS.location}</p></div><a href={`mailto:${BUSINESS_DETAILS.email}`}>{BUSINESS_DETAILS.email}<ArrowRight size={15}/></a></section>
+    <section className="policy-layout"><aside className="policy-rail"><div><span>IN THIS DESK</span>{policyLinks.map(([key,label]) => <button key={key} className={type === key ? 'is-active' : ''} onClick={() => navigate(`/${key}`)}>{label}<ArrowRight size={14}/></button>)}<button className={type === 'warranty' ? 'is-active' : ''} onClick={() => navigate('/warranty')}>Warranty<ArrowRight size={14}/></button><button className={type === 'journal' ? 'is-active' : ''} onClick={() => navigate('/journal')}>Journal<ArrowRight size={14}/></button></div><div className="policy-rail__note"><ShieldCheck size={18}/><strong>Built for a confident checkout.</strong><span>Payment is verified server-side, private order links protect status details and publishing never happens by accident.</span></div></aside><article className="policy-article"><div className="policy-article__intro"><span>{type === 'journal' ? 'READ THE STORY' : 'READ BEFORE YOU ORDER'}</span><h2>{type === 'journal' ? 'The useful version of the story.' : 'The short version first.'}</h2><p>{type === 'privacy' ? 'A privacy page should tell you what happens to your details, not bury the answer under legal fog.' : type === 'terms' ? 'These are the operating rules for product, payment and personalization. If a detail matters to the order, it appears before payment.' : type === 'warranty' ? 'A warranty page should separate a production problem from normal wear and give you a safe next action.' : 'Use the sections below to find the decision that matters to you.'}</p></div>{page.sections.map(section => <section className="policy-section" key={section.heading}><h3>{section.heading}</h3><p>{section.body}</p><ul>{section.list.map(item => <li key={item}><Check size={15}/><span>{item}</span></li>)}</ul></section>)}<section className="policy-faq"><div className="policy-faq__heading"><CircleHelp size={19}/><div><span>QUICK ANSWERS</span><h3>Still deciding?</h3></div></div>{page.faqs.map(([question,answer],index) => <div className={`policy-faq__item ${openFaq === index ? 'is-open' : ''}`} key={question}><button onClick={() => setOpenFaq(openFaq === index ? -1 : index)} aria-expanded={openFaq === index}><span>{question}</span><ChevronDown size={16}/></button>{openFaq === index && <p>{answer}</p>}</div>)}</section><div className="policy-article__footer"><PackageCheck size={18}/><span>Need order-specific help? Use the private tracking link, then return to the <button onClick={() => navigate('/shop')}>current drop</button>.</span></div></article></section>
+    <StorefrontTrust compact/>
+  </main>
 }
 
 function NotFound() {
@@ -848,14 +980,25 @@ function useRouteMetadata({ path, product, collection, league, team }) {
     const collectionTitle = collection?.seo?.title || collection?.name
     const taxonomyTitle = team?.name || league?.name
     const withBrand = value => /extra time/i.test(value || '') ? value : `${value} — Extra Time`
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable'
-    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.')
+    const routeMeta = {
+      '/about':['About the studio — Extra Time','Meet Extra Time, an independent fan-apparel studio making small-batch football jerseys and considered personalization.'],
+      '/shipping':['Shipping and delivery — Extra Time',TRUST_PAGES.shipping.intro],
+      '/returns':['Returns and personalized-order policy — Extra Time',TRUST_PAGES.returns.intro],
+      '/warranty':['Warranty and defect review — Extra Time',TRUST_PAGES.warranty.intro],
+      '/privacy':['Privacy and customer data — Extra Time',TRUST_PAGES.privacy.intro],
+      '/terms':['Store terms — Extra Time',TRUST_PAGES.terms.intro],
+      '/accessibility':['Accessibility — Extra Time',TRUST_PAGES.accessibility.intro],
+      '/journal':['The Journal — Extra Time',TRUST_PAGES.journal.intro]
+    }[path]
+    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
+    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
     const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`
     const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
     const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team))
     const indexable = !privateRoute && !unresolvedRoute
-    const image = product?.image || collection?.hero || `${publicOrigin}/assets/hero-tunnel.webp`
+    const routePage = routeMeta ? TRUST_PAGES[path.slice(1)] : null
+    const image = product?.image || collection?.hero || routePage?.image || `${publicOrigin}/assets/hero-tunnel.webp`
     const absoluteImage = new URL(image,publicOrigin).toString()
     document.documentElement.lang='en-US'
     document.title=indexable ? title : `${title} · Extra Time`
@@ -876,14 +1019,31 @@ function useRouteMetadata({ path, product, collection, league, team }) {
         const prices=(product.variants || []).map(row=>Number(row.price)).filter(value=>Number.isFinite(value) && value>0)
         const lowest=prices.length ? Math.min(...prices) : Number(product.price || 0)
         const inventory=Number(product.inventory || 0)
-        const variantOffers=(product.variants || []).filter(variant => Number.isFinite(Number(variant.price)) && Number(variant.price) > 0).slice(0,80).map(variant => ({'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:Number(variant.price).toFixed(2),sku:variant.sku,availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:'Extra Time',url:`${publicOrigin}/`}}))
-        const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:variantOffers.length > 1 ? variantOffers : {'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:'Extra Time',url:`${publicOrigin}/`}}}
+        const variantOffers=(product.variants || []).filter(variant => Number.isFinite(Number(variant.price)) && Number(variant.price) > 0).slice(0,80).map(variant => ({'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:Number(variant.price).toFixed(2),sku:variant.sku,availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`}}))
+        const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:variantOffers.length > 1 ? variantOffers : {'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`,email:BUSINESS_DETAILS.email,address:{'@type':'PostalAddress',addressRegion:'TX',addressCountry:'US'}}}}
         if(Number(product.rating)>0 && Number(product.reviews)>0) productSchema.aggregateRating={'@type':'AggregateRating',ratingValue:Number(product.rating).toFixed(1),reviewCount:Number(product.reviews)}
         schema.textContent=JSON.stringify([productSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
       } else if (collection) {
         const canonicalCollection=`${publicOrigin}/collection/${encodeURIComponent(collection.handle || collection.id)}`
         breadcrumb.push({'@type':'ListItem',position:2,name:collection.name,item:canonicalCollection})
         schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:collection.name,description:collection.description,url:canonicalCollection,image:collection.hero ? [new URL(collection.hero,publicOrigin).toString()] : undefined,inLanguage:'en-US'},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
+      } else if (routeMeta) {
+        const routePageSchema = {
+          '@context':'https://schema.org',
+          '@type':'WebPage',
+          name:title,
+          description,
+          url:canonical,
+          image:absoluteImage,
+          inLanguage:'en-US',
+          isPartOf:{ '@type':'WebSite', url:`${publicOrigin}/`, name:'Extra Time' },
+          publisher:{ '@type':'Organization', name:BUSINESS_DETAILS.legalName, alternateName:BUSINESS_DETAILS.brand, email:BUSINESS_DETAILS.email, address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } }
+        }
+        const routeBreadcrumb=[
+          {'@type':'ListItem',position:1,name:'Home',item:`${publicOrigin}/`},
+          {'@type':'ListItem',position:2,name:title.replace(/\s+—\s+Extra Time$/i,'') || 'Trust desk',item:canonical}
+        ]
+        schema.textContent=JSON.stringify([routePageSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:routeBreadcrumb}])
       } else {
         const canonicalTaxonomy = `${publicOrigin}${team ? teamPath(league.key,team) : leaguePath(league)}`
         breadcrumb.push({'@type':'ListItem',position:2,name:'Leagues',item:`${publicOrigin}/shop`})
@@ -1149,7 +1309,8 @@ function App() {
   else if (path === '/track-order') page = <OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout}/>
   else if (path.startsWith('/order/')) { const orderPublicId = decodeURIComponent(path.split('/').slice(2).join('/')); const trackingToken = new URLSearchParams(search).get('token') || ''; page = <OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout} initialPublicId={orderPublicId} initialToken={trackingToken}/> }
   else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
-  else if (['/privacy','/terms','/accessibility','/shipping','/returns','/journal'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
+  else if (path === '/about') page = <AboutPage/>
+  else if (['/privacy','/terms','/accessibility','/shipping','/returns','/warranty','/journal'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
   else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
   else page = <NotFound/>
   return (

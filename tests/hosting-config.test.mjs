@@ -11,8 +11,9 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
     assert.ok(settings.maxDuration > 0 && settings.maxDuration <= 60, `${pattern} must have a bounded duration`)
     await access(new URL(`../${pattern}`, import.meta.url))
   }
-  assert.equal(config.functions['api/payment-config.js'].maxDuration, 15)
-  assert.equal(config.functions['api/admin-payment-settings.js'].maxDuration, 30)
+  assert.deepEqual(config.functions, {
+    'api/sitemap.js': { maxDuration: 15 },
+  }, 'the sitemap stays on Vercel while application API routes are proxied to Cloud Run')
 })
 
 test('static assets are cacheable while API responses remain no-store', async () => {

@@ -90,7 +90,7 @@ function productSchema(product) {
       price:product.price.toFixed(2),
       availability:`https://schema.org/${product.inventory > 0 ? 'InStock' : 'OutOfStock'}`,
       itemCondition:'https://schema.org/NewCondition',
-      seller:{ '@type':'Organization', name:'Extra Time', url:`${PUBLIC_ORIGIN}/` }
+      seller:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', url:`${PUBLIC_ORIGIN}/`, email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } }
     }
   }
   if (product.sku) schema.sku = product.sku
@@ -218,20 +218,24 @@ for (const league of LEAGUE_TAXONOMY) {
 }
 
 const staticPages = [
+  ['/about', 'About the studio — Extra Time', 'Meet Extra Time, an independent fan-apparel studio making small-batch football jerseys and considered personalization.', '/assets/hero-tunnel.webp'],
   ['/membership', '90+ Club membership — Extra Time', 'Join 90+ Club for eligible member pricing, shipping benefits and early access to selected Extra Time drops.'],
   ['/vault', 'The Vault — Extra Time', 'Explore the archive of Extra Time football jersey stories and past drops.'],
-  ['/privacy', 'Privacy — Extra Time', 'Read how Extra Time handles customer details, references and AI preview data.'],
-  ['/terms', 'Terms — Extra Time', 'Review Extra Time product, personalization and production terms.'],
-  ['/accessibility', 'Accessibility — Extra Time', 'Extra Time is designed for keyboard, touch and assistive technology use.'],
-  ['/shipping', 'Shipping — Extra Time', 'Review Extra Time production windows, delivery destinations and shipping expectations.'],
-  ['/returns', 'Returns — Extra Time', 'Review Extra Time returns terms for standard and personalized pieces.'],
-  ['/journal', 'Journal — Extra Time', 'Stories behind Extra Time football jersey drops and the moments they remember.']
+  ['/privacy', 'Privacy and customer data — Extra Time', 'Extra Time uses customer details to prepare, charge and deliver orders while keeping references private to the relevant request.'],
+  ['/terms', 'Store terms — Extra Time', 'Review Extra Time product, payment, personalization and production terms before placing an order.'],
+  ['/accessibility', 'Accessibility — Extra Time', 'Extra Time is built for keyboard, touch and assistive technology, with clear headings, labels and visible focus.'],
+  ['/shipping', 'Shipping and delivery — Extra Time', 'Tracked delivery, live checkout quotes and clear hand-offs for Extra Time orders in the US and supported destinations.'],
+  ['/returns', 'Returns and personalized-order policy — Extra Time', 'Review the 30-day standard return window, defect review and rules for personalized pieces before ordering.'],
+  ['/warranty', 'Warranty and defect review — Extra Time', 'Learn how Extra Time reviews manufacturing defects, fulfilment errors, transit damage and personalized-order issues.','/assets/jersey-black.webp'],
+  ['/journal', 'The Journal — Extra Time', 'Explore the references, rituals and late-match details behind Extra Time football jersey drops.']
 ]
-for (const [path, title, description] of staticPages) {
+for (const [path, title, description, pageImage = '/assets/hero-tunnel.webp'] of staticPages) {
+  const pageHeading = title.replace(' — Extra Time', '')
+  const publicContact = `<section><h2>Jersevo</h2><p>Jersevo operates the Extra Time storefront from Texas, United States. For order, privacy or policy questions, email <a href="mailto:support@jersevo.com">support@jersevo.com</a>.</p></section>`
   await writePage(path, pageHtml(shell, {
-    path, title, description, image:absolute('/assets/hero-tunnel.webp'),
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(title.replace(' — Extra Time', ''))}</h1><p>${escapeHtml(description)}</p></main>`,
-    schema:{ '@context':'https://schema.org', '@type':'WebPage', name:title, description, url:`${PUBLIC_ORIGIN}${path}`, inLanguage:'en-US' }
+    path, title, description, image:absolute(pageImage),
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(pageHeading)}</h1><p>${escapeHtml(description)}</p>${publicContact}</main>`,
+    schema:{ '@context':'https://schema.org', '@type':'WebPage', name:title, description, url:`${PUBLIC_ORIGIN}${path}`, inLanguage:'en-US', publisher:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } } }
   }))
 }
 

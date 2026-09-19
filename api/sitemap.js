@@ -7,7 +7,20 @@ export default async function handler(request,response) {
   if(request.method !== 'GET') return response.status(405).send('Method not allowed')
   const configuredOrigin = process.env.SITE_URL || 'https://www.jersevo.com'
   const origin = new URL(configuredOrigin).origin
-  const urls=[{path:'/',priority:'1.0'},{path:'/shop',priority:'0.9'},{path:'/membership',priority:'0.7'},{path:'/vault',priority:'0.6'}]
+  const urls=[
+    {path:'/',priority:'1.0'},
+    {path:'/shop',priority:'0.9'},
+    {path:'/about',priority:'0.7'},
+    {path:'/membership',priority:'0.7'},
+    {path:'/vault',priority:'0.6'},
+    {path:'/journal',priority:'0.5'},
+    {path:'/shipping',priority:'0.5'},
+    {path:'/returns',priority:'0.5'},
+    {path:'/warranty',priority:'0.5'},
+    {path:'/privacy',priority:'0.4'},
+    {path:'/terms',priority:'0.4'},
+    {path:'/accessibility',priority:'0.3'}
+  ]
   for(const league of LEAGUE_TAXONOMY){
     urls.push({path:leaguePath(league),priority:'0.7'})
     for(const team of league.teams) urls.push({path:teamPath(league.key,team),priority:'0.6'})

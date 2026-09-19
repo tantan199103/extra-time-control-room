@@ -79,6 +79,14 @@ export async function consumeQuota(client, action, identityHash) {
   return data
 }
 
+// Supabase's PostgREST builders are thenable, but do not expose a native
+// `.catch()` method until they are awaited. Use this for non-critical cleanup
+// calls so a failed best-effort operation cannot turn a valid request into a
+// runtime TypeError.
+export async function bestEffort(operation) {
+  try { await operation } catch {}
+}
+
 export function handleApiError(response, error, fallback = 'Request failed.') {
   if (error?.retryAfter) response.setHeader('Retry-After', String(error.retryAfter))
   return sendJson(response, Number(error?.status) || 500, { error:error instanceof Error ? error.message : fallback })

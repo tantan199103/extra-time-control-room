@@ -1,5 +1,5 @@
 import { hashToken, buildCheckoutQuote, createPayPalOrder, getPaymentContext, normalizeCheckoutLines, normalizeCustomer, normalizeShipping, orderNumber, quoteFingerprint, verifyQuoteToken } from './_checkout.js'
-import { consumeQuota, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
+import { bestEffort, consumeQuota, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 
 function siteOrigin(request) {
   const configured = process.env.SITE_URL || process.env.VITE_SITE_URL || String(process.env.ALLOWED_ORIGINS || '').split(',')[0]
@@ -36,7 +36,7 @@ export default async function handler(request, response) {
     const body = readBody(request, 70000)
     const client = serverSupabase()
     await consumeQuota(client, 'checkout-create', requestIdentity(request, 'checkout-create'))
-    await client.rpc('pod_expire_pending_orders').catch(() => {})
+    await bestEffort(client.rpc('pod_expire_pending_orders'))
     const customer = normalizeCustomer(body.customer || {})
     const shipping = normalizeShipping(body.shipping || {})
     const idempotencyKey = safeText(body.idempotencyKey, 180)
@@ -111,12 +111,12 @@ export default async function handler(request, response) {
         throw Object.assign(new Error('Paddle checkout is unavailable for these physical products. Select PayPal in payment settings.'), { status: 501 })
       }
     } catch (providerError) {
-      await client.rpc('pod_finalize_order_payment', { p_order_id: order.id, p_payment_state: 'FAILED', p_provider_payment_id: null, p_provider_event_id: `provider-create-${order.id}`, p_event_payload: { stage: 'PROVIDER_CREATE' } }).catch(() => {})
+      await bestEffort(client.rpc('pod_finalize_order_payment', { p_order_id: order.id, p_payment_state: 'FAILED', p_provider_payment_id: null, p_provider_event_id: `provider-create-${order.id}`, p_event_payload: { stage: 'PROVIDER_CREATE' } }))
       throw providerError
     }
     const { error: updateError } = await client.from('pod_orders').update({ provider_order_id: provider.id, metadata: { ...(order.metadata || {}), approvalUrl: provider.approvalUrl || provider.checkoutUrl || null } }).eq('id', order.id)
     if (updateError) {
-      await client.rpc('pod_finalize_order_payment', { p_order_id: order.id, p_payment_state: 'FAILED', p_provider_payment_id: null, p_provider_event_id: `provider-link-${order.id}`, p_event_payload: { stage: 'PROVIDER_LINK' } }).catch(() => {})
+      await bestEffort(client.rpc('pod_finalize_order_payment', { p_order_id: order.id, p_payment_state: 'FAILED', p_provider_payment_id: null, p_provider_event_id: `provider-link-${order.id}`, p_event_payload: { stage: 'PROVIDER_LINK' } }))
       throw updateError
     }
     return sendJson(response, 201, { order: { publicId: order.order_number, token: rawTrackingToken, status: order.status, paymentStatus: order.payment_status, total: Number(order.grand_total), currency: order.currency }, provider: settings.provider, providerOrderId: provider.id, approvalUrl: provider.approvalUrl || provider.checkoutUrl || null, replayed: false })

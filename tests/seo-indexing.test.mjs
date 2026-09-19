@@ -10,6 +10,9 @@ test('initial HTML exposes US indexable metadata and canonical site signals', as
   assert.match(html, /hreflang="en-US"/)
   assert.match(html, /application\/ld\+json/)
   assert.match(html, /"areaServed".*United States/s)
+  assert.match(html, /"legalName": "Jersevo"/)
+  assert.match(html, /support@jersevo\.com/)
+  assert.match(html, /"addressRegion": "TX"/)
 })
 
 test('robots and sitemap use the canonical production host', async () => {
@@ -18,6 +21,7 @@ test('robots and sitemap use the canonical production host', async () => {
   assert.match(robots, /Sitemap: https:\/\/www\.jersevo\.com\/sitemap\.xml/)
   assert.match(sitemap, /https:\/\/www\.jersevo\.com/)
   assert.match(sitemap, /X-Robots-Tag/)
+  for (const route of ['/about', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility', '/journal']) assert.match(sitemap, new RegExp(`path:'${route}'`))
 })
 
 test('SEO build creates initial HTML for product pages and protects private routes', async () => {
@@ -25,6 +29,7 @@ test('SEO build creates initial HTML for product pages and protects private rout
   const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'))
   assert.match(generator, /Product/)
   assert.match(generator, /Generated \$\{products\.length\} product pages/)
+  assert.match(generator, /Jersevo operates the Extra Time storefront/)
   assert.equal(vercel.headers.find(rule => rule.source === '/admin').headers[0].value, 'noindex, nofollow')
   assert.equal(vercel.headers.find(rule => rule.source === '/account/(.*)').headers[0].value, 'noindex, nofollow')
 })
@@ -35,4 +40,18 @@ test('client route metadata marks unavailable and private routes noindex', async
   assert.match(main, /noindex,nofollow/)
   assert.match(main, /VITE_SITE_URL \|\| 'https:\/\/www\.jersevo\.com'/)
   assert.match(main, /AggregateRating/)
+})
+
+test('launch trust desk includes warranty coverage and crawlable metadata', async () => {
+  const main = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
+  const model = await readFile(new URL('../src/lib/storefront-model.js', import.meta.url), 'utf8')
+  const generator = await readFile(new URL('../scripts/generate-seo-pages.mjs', import.meta.url), 'utf8')
+  assert.match(main, /\/warranty','\/journal/)
+  assert.match(main, /Warranty and defect review — Extra Time/)
+  assert.match(main, /Manufacturing and studio errors/)
+  assert.match(model, /'\/warranty'/)
+  assert.match(generator, /\['\/warranty'/)
+  assert.match(main, /legalName:'Jersevo'/)
+  assert.match(main, /support@jersevo\.com/)
+  assert.match(main, /Texas, United States/)
 })

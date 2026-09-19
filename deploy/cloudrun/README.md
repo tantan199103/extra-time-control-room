@@ -6,6 +6,11 @@ continues to provide database, auth, storage and lightweight Edge Functions.
 
 ## 1. Google Cloud setup
 
+The production project created for this deployment is `jersevo-api-production-2026`
+in `My Billing Account 1` (`0176F8-68149B-CB8A3A`). The first deployed service
+is `jersevo-api` in `us-central1`, with the temporary URL
+`https://jersevo-api-491431089950.us-central1.run.app`.
+
 Install Google Cloud CLI, then authenticate and select a billing-enabled
 project:
 
@@ -56,11 +61,17 @@ The service is configured with 1 vCPU, 1 GiB memory, 300-second request timeout,
 scale-to-zero and a maximum of 10 instances. Adjust these after observing real
 traffic and AI latency.
 
+The production service uses the dedicated runtime identity
+`jersevo-api-runtime@jersevo-api-production-2026.iam.gserviceaccount.com`.
+It has Secret Manager access only on the secrets mounted by this service,
+rather than project-wide secret access.
+
 ## 4. Custom domain and Tenten DNS
 
 After deployment, use the Cloud Run console or `gcloud beta run domain-mappings`
 to map `api.jersevo.com`, then add the exact DNS records Google provides in the
-Tenten DNS panel. Do not guess an A record from the Vercel IP. Cloud Run's
+Tenten DNS panel. For this service Google provided `api CNAME ghs.googlehosted.com.`.
+Do not guess an A record from the Vercel IP. Cloud Run's
 default `run.app` URL is available for smoke testing before DNS is changed.
 
 For production, Google recommends a global external Application Load Balancer
@@ -92,3 +103,7 @@ https://api.jersevo.com/ready
 
 `/ready` must return HTTP 200 before enabling live payment settings. Test a
 PayPal sandbox create → approve → capture → duplicate webhook sequence first.
+
+Production smoke test (2026-09-19): `/health` and `/ready` return HTTP 200 on
+both the Cloud Run URL and `https://api.jersevo.com`; the custom-domain
+certificate is provisioned and the mapping is routable.
