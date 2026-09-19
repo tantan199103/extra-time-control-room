@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { listingMediaSlot } from '../src/lib/listing-media.js'
 
-const json = (response, status, body) => response.status(status).setHeader('Content-Type', 'application/json').json(body)
+const json = (response, status, body) => response.status(status).setHeader('Content-Type', 'application/json').setHeader('Cache-Control', 'no-store').json(body)
 const FORBIDDEN_PUBLIC_PATTERN = /(?:https?:\/\/|www\.)[^\s<>"')]+|(?:\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|co|fan|fun)(?:\/[^\s<>"')]+)?)|fangearsport|apikey\.(?:fun|fan)|openai|gpt-image-2|source\s*url/gi
 const text = (value, limit) => String(value || '')
   .replace(/<script[\s\S]*?<\/script>/gi, ' ')
