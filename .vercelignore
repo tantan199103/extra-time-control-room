@@ -4,6 +4,8 @@
 api/*.js
 !api/sitemap.js
 !api/google-merchant-feed.js
+!api/ai-listing-copy.js
+!api/ai-listing-media.js
 !api/_security.js
 !api/_membership.js
 # Edge Functions are not deployed in the production Supabase project yet.

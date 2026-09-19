@@ -5,14 +5,17 @@
 | Traffic | Runtime | Routes |
 | --- | --- | --- |
 | Lightweight, database-authoritative | Supabase Edge Functions | `cart-validate`, `member-quote`, `checkout-quote`, `membership-enroll` |
-| Upload/image/AI/payment/admin | Node (`api.jersevo.com`) | customer upload, AI preview/copy, customization, checkout quote fallback/create, payment capture/cancel/webhook, order tracking, admin APIs |
+| Upload/image/payment/admin | Node (`api.jersevo.com`) | customer upload, AI preview, customization, checkout quote fallback/create, payment capture/cancel/webhook, order tracking, admin APIs |
+| Admin listing AI | Vercel serverless (`/api`) | controlled editorial media generation and PRODUCT STORY/SEO copy; the two bounded functions use the server-only Vercel AI key and never expose it to the browser |
 | SEO shell | Vercel | Vite static output and `sitemap.xml` |
 
 The browser only sees the two public origins. Supabase service-role, AI and
 payment secrets stay in Edge/Node environment variables. The existing `api/`
 handlers remain in the repository so local tests and rollback are possible;
-`.vercelignore` keeps them out of the Vercel production bundle. Vercel rewrites
-`/api/*` to `https://api.jersevo.com/api/*` as a last-resort compatibility path.
+`.vercelignore` keeps the remaining handlers out of the Vercel production
+bundle. Vercel serves the two listing-AI handlers directly with a bounded
+60-second runtime, then rewrites the remaining `/api/*` traffic to
+`https://api.jersevo.com/api/*` as a last-resort compatibility path.
 
 ## Supabase Edge Functions
 
@@ -79,8 +82,10 @@ VITE_BACKEND_URL=https://api.jersevo.com
 ```
 
 After changing variables, redeploy the frontend. Verify in the browser network
-panel that cart/member/quote calls use the Supabase Functions URL and upload,
-AI, admin, checkout-create and payment calls use `api.jersevo.com`.
+panel that cart/member/quote calls use the Supabase Functions URL, listing AI
+calls use the same-origin Vercel `/api/ai-listing-*` handlers, and upload,
+customer AI preview, admin, checkout-create and payment calls use
+`api.jersevo.com`.
 
 ## Safe rollout
 

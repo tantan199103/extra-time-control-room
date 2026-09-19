@@ -5,7 +5,9 @@
  * - VITE_SUPABASE_FUNCTIONS_URL (https://<project>.supabase.co/functions/v1)
  * - VITE_BACKEND_URL (https://api.example.com)
  *
- * When either origin is absent, the original same-origin /api route remains
+ * Listing AI routes intentionally remain same-origin so they can use the
+ * bounded Vercel serverless functions with the server-only AI key. When either
+ * origin is absent, the original same-origin /api route remains
  * available.  That makes local development and a staged rollback predictable.
  */
 
@@ -20,8 +22,6 @@ export const EDGE_FUNCTION_ROUTES = Object.freeze(new Set([
 export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/customer-upload',
   '/api/ai-preview',
-  '/api/ai-listing-copy',
-  '/api/ai-listing-media',
   '/api/customization-order',
   '/api/admin-customizations',
   '/api/admin-orders',

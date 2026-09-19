@@ -6,7 +6,9 @@
   "regions": ["iad1"],
   "functions": {
     "api/sitemap.js": { "maxDuration": 15 },
-    "api/google-merchant-feed.js": { "maxDuration": 15 }
+    "api/google-merchant-feed.js": { "maxDuration": 15 },
+    "api/ai-listing-copy.js": { "maxDuration": 60 },
+    "api/ai-listing-media.js": { "maxDuration": 60 }
   },
   "headers": [
     {

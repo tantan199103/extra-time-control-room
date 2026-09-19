@@ -14,7 +14,9 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
   assert.deepEqual(config.functions, {
     'api/sitemap.js': { maxDuration: 15 },
     'api/google-merchant-feed.js': { maxDuration: 15 },
-  }, 'the sitemap and public Merchant feed stay on Vercel while application API routes are proxied to Cloud Run')
+    'api/ai-listing-copy.js': { maxDuration: 60 },
+    'api/ai-listing-media.js': { maxDuration: 60 },
+  }, 'SEO/feed and the bounded AI listing tools stay on Vercel while the remaining application API routes are proxied to Cloud Run')
   assert.ok(config.rewrites.some(rule => rule.source === '/api/google-merchant-feed' && rule.destination === '/api/google-merchant-feed.js'))
 })
 
@@ -28,6 +30,8 @@ test('static assets are cacheable while API responses remain no-store', async ()
 test('AI upstream timeouts leave room before the 60-second function limit', async () => {
   const preview = await readFile(new URL('../api/ai-preview.js', import.meta.url), 'utf8')
   const copy = await readFile(new URL('../api/ai-listing-copy.js', import.meta.url), 'utf8')
+  const media = await readFile(new URL('../api/ai-listing-media.js', import.meta.url), 'utf8')
   assert.match(preview, /AbortSignal\.timeout\(55000\)/)
   assert.match(copy, /UPSTREAM_TIMEOUT_MS = 55000/)
+  assert.match(media, /UPSTREAM_TIMEOUT_MS = 55_000/)
 })

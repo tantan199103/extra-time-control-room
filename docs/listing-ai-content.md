@@ -40,7 +40,9 @@ licensing, shipping promises or reviews.
 
 ## Server settings
 
-The Node runtime needs the same server-only values as the existing AI preview:
+The listing-copy and editorial-media handlers are deployed as bounded Vercel
+serverless functions. They need the following server-only values in the
+production Vercel environment (the browser never receives them):
 
 ```text
 AI_IMAGE_API_URL=https://api.apikey.fan/v1/images/edits
@@ -53,7 +55,10 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 Never prefix these secrets with `VITE_`. The browser only sends an authenticated
-admin token to `/api/ai-listing-media` and `/api/ai-listing-copy`.
+admin token to `/api/ai-listing-media` and `/api/ai-listing-copy`. The Node
+runtime keeps the same routes available for a future consolidated deployment;
+if those routes move back to Cloud Run, mount the same secret there before
+removing the Vercel functions.
 
 ## Operating sequence
 

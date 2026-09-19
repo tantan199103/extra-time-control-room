@@ -10,12 +10,14 @@ test('hybrid API routes resolve light calls to Supabase and heavy calls to Node'
   assert.equal(resolveApiTarget('/api/customer-upload', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/customer-upload')
   assert.equal(resolveApiTarget('/api/checkout-quote', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/checkout-quote')
   assert.equal(resolveApiTarget('/api/payment-webhook', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/payment-webhook')
-  assert.equal(resolveApiTarget('/api/ai-listing-media', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/ai-listing-media')
+  assert.equal(resolveApiTarget('/api/ai-listing-copy', { backendOrigin: 'https://api.jersevo.com' }), '/api/ai-listing-copy')
+  assert.equal(resolveApiTarget('/api/ai-listing-media', { backendOrigin: 'https://api.jersevo.com' }), '/api/ai-listing-media')
   assert.equal(resolveApiTarget('/api/cart-validate', {}), '/api/cart-validate')
   assert.equal(isEdgeRoute('/api/checkout-quote'), false)
   assert.equal(isEdgeRoute('/api/member-quote'), true)
   assert.equal(isNodeBackendRoute('/api/ai-preview'), true)
-  assert.equal(isNodeBackendRoute('/api/ai-listing-media'), true)
+  assert.equal(isNodeBackendRoute('/api/ai-listing-copy'), false)
+  assert.equal(isNodeBackendRoute('/api/ai-listing-media'), false)
 })
 
 test('routing keeps server-only credentials out of the browser client', async () => {
@@ -34,12 +36,13 @@ test('Node runtime keeps the webhook route and fails readiness without server se
   assert.equal(routeModules.get('/api/membership-enroll'), 'membership-enroll.js')
   assert.equal(routeModules.get('/api/google-merchant-feed'), 'google-merchant-feed.js')
   assert.equal(routeModules.get('/api/ai-listing-media'), 'ai-listing-media.js')
-  const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'].map(name => [name, process.env[name]]))
+  const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL', 'AI_IMAGE_API_KEY', 'OPENAI_API_KEY', 'AI_TEXT_API_KEY', 'PAYPAL_CLIENT_SECRET'].map(name => [name, process.env[name]]))
   for (const name of Object.keys(old)) delete process.env[name]
   try {
     const result = readiness()
     assert.equal(result.ready, false)
     assert.deepEqual(result.missing, ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'])
+    assert.deepEqual(result.capabilities, { aiImage:false, aiText:false, paypal:false })
   } finally {
     for (const [name, value] of Object.entries(old)) {
       if (value == null) delete process.env[name]
