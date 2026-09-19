@@ -46,9 +46,9 @@ test('HTML sanitizer keeps semantic content and removes source links/wrappers', 
 })
 
 test('plain public text removes source URLs, editor artifacts and brand references', () => {
-  const clean = sanitizePublicText('FGS PRO · Add your name. https://fangearsport.com/product/demo gtx-trans')
+  const clean = sanitizePublicText('FGS PRO · Name &#038; number. https://fangearsport.com/product/demo gtx-trans')
   assert.equal(/fangear|gtx-trans|https?:/i.test(clean), false)
-  assert.match(clean, /Add your name/)
+  assert.match(clean, /Name & number/)
 })
 
 test('product normalization creates draft listing, 70 percent lock and stable IDs', () => {
@@ -87,3 +87,26 @@ test('handle collisions are deterministic and collection plan stays draft', () =
   assert.ok(collections.some(collection => collection.name === 'NFL'))
 })
 
+test('wildcard source variations expand into complete option combinations', () => {
+  const product = {
+    id: 99,
+    name: 'Wildcard jersey',
+    slug: 'wildcard-jersey',
+    prices: { price: '5900', regular_price: '5900', currency_minor_unit: 2 },
+    attributes: [
+      { name: 'Fit Type', terms: [{ name: 'Kids', slug: 'kids' }] },
+      { name: 'Size', terms: [{ name: 'S', slug: 's' }, { name: 'M', slug: 'm' }] }
+    ],
+    variations: [{ id: 100, attributes: [{ name: 'Fit Type', value: 'kids' }] }],
+    images: [],
+    categories: [],
+    tags: [],
+    is_in_stock: true
+  }
+  const item = normalizeSourceProduct(product, { usedHandles: new Set(), usedSkus: new Set() })
+  assert.deepEqual(item.listing.variants.map(variant => variant.values), [
+    { 'Fit Type': 'Kids', Size: 'S' },
+    { 'Fit Type': 'Kids', Size: 'M' }
+  ])
+  assert.equal(new Set(item.listing.variants.map(variant => variant.sku)).size, 2)
+})

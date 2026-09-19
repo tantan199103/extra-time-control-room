@@ -24,6 +24,11 @@ const FIELD_PRESETS = Object.freeze({
   photo: { key: 'photo', label: 'Photo', type: 'photo', required: false, placeholder: '', maxLength: null, help: 'Optional customer reference photo.' }
 })
 
+function decodeNumericEntity(entity, code, radix) {
+  const point = Number.parseInt(code, radix)
+  return Number.isInteger(point) && point >= 0 && point <= 0x10ffff ? String.fromCodePoint(point) : entity
+}
+
 const htmlEntity = value => String(value || '')
   .replace(/&nbsp;/gi, ' ')
   .replace(/&amp;/gi, '&')
@@ -31,6 +36,8 @@ const htmlEntity = value => String(value || '')
   .replace(/&#0*39;|&apos;/gi, "'")
   .replace(/&lt;/gi, '<')
   .replace(/&gt;/gi, '>')
+  .replace(/&#x([0-9a-f]+);/gi, (entity, code) => decodeNumericEntity(entity, code, 16))
+  .replace(/&#([0-9]+);/g, (entity, code) => decodeNumericEntity(entity, code, 10))
 
 export function stableHash(value, length = 20) {
   return createHash('sha256').update(String(value || '')).digest('hex').slice(0, length)
@@ -215,6 +222,13 @@ function generatedSku(productId, variantId, values, used) {
   return sku
 }
 
+function expandOptionCombinations(options, selectedValues) {
+  return options.reduce((combinations, option) => {
+    const candidates = selectedValues[option.name] ? [selectedValues[option.name]] : option.values
+    return combinations.flatMap(combination => candidates.map(value => ({ ...combination, [option.name]: value })))
+  }, [{}])
+}
+
 export function normalizeSourceProduct(product, { categories = [], variationDetails = new Map(), usedHandles = new Set(), usedSkus = new Set() } = {}) {
   const sourceId = Number(product.id)
   const productId = stableId('listing', `fangear-product:${sourceId}`)
@@ -239,7 +253,7 @@ export function normalizeSourceProduct(product, { categories = [], variationDeta
   })).filter(option => option.values.length).slice(0, 3)
   const optionAttributes = new Map(attributes.map(attribute => [normalizeOptionName(attribute.name), attribute]))
   const sourceVariations = Array.isArray(product.variations) && product.variations.length ? product.variations : [{ id: `${sourceId}-base`, attributes: [] }]
-  const variants = sourceVariations.map((variation, index) => {
+  const expandedVariants = sourceVariations.flatMap((variation, index) => {
     const values = {}
     for (const item of variation.attributes || []) {
       const name = normalizeOptionName(item.name)
@@ -252,10 +266,11 @@ export function normalizeSourceProduct(product, { categories = [], variationDeta
     const variantPriceValue = variantMoney.price ?? price
     const variantCompareAt = variantMoney.compareAt != null && variantMoney.compareAt > variantPriceValue ? variantMoney.compareAt : null
     const inventory = detail ? (detail.is_in_stock ? Math.max(1, Number(detail.low_stock_remaining || 1)) : 0) : (product.is_in_stock ? 1 : 0)
-    return {
-      id: stableId('variant', `${sourceId}:${variation.id || index}`),
-      sku: generatedSku(productId, variation.id || index, values, usedSkus),
-      values,
+    const combinations = expandOptionCombinations(options, values)
+    return combinations.map(combination => ({
+      id: stableId('variant', combinations.length === 1 ? `${sourceId}:${variation.id || index}` : `${sourceId}:${variation.id || index}:${JSON.stringify(combination)}`),
+      sku: generatedSku(productId, variation.id || index, combination, usedSkus),
+      values: combination,
       price: variantPriceValue,
       compareAt: variantCompareAt,
       cost: null,
@@ -264,7 +279,14 @@ export function normalizeSourceProduct(product, { categories = [], variationDeta
       barcode: '',
       status: 'DRAFT',
       image: null
-    }
+    }))
+  })
+  const seenCombinations = new Set()
+  const variants = expandedVariants.filter(variant => {
+    const key = JSON.stringify(options.map(option => [option.name, variant.values[option.name]]))
+    if (seenCombinations.has(key)) return false
+    seenCombinations.add(key)
+    return true
   })
   const primarySourceImage = product.images?.[0]
   const media = (product.images || []).map((image, index) => ({

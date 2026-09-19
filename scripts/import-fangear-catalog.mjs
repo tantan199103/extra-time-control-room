@@ -22,7 +22,9 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const maxProducts = Math.max(0, Number(process.env.FANGEAR_PRODUCT_LIMIT || 0))
 const mediaPerProduct = Math.max(0, Number(process.env.FANGEAR_MEDIA_LIMIT_PER_PRODUCT || 12))
+const mediaConcurrency = Math.max(1, Number(process.env.FANGEAR_MEDIA_CONCURRENCY || 4))
 const variationConcurrency = Math.max(1, Number(process.env.FANGEAR_VARIATION_CONCURRENCY || 8))
+const includeVariationDetails = String(process.env.FANGEAR_FETCH_VARIATION_DETAILS || 'true').toLowerCase() !== 'false'
 const requestTimeoutMs = Math.max(2_000, Number(process.env.FANGEAR_REQUEST_TIMEOUT_MS || 30_000))
 const outputPath = process.env.FANGEAR_IMPORT_REPORT || resolve('artifacts', 'fangear-import-report.json')
 
@@ -35,12 +37,14 @@ function argValue(name, fallback = '') {
 const dryRun = !hasArg('--write')
 const includeMedia = hasArg('--media') || (hasArg('--write') && String(process.env.FANGEAR_IMPORT_MEDIA || 'true').toLowerCase() !== 'false')
 const limit = Math.max(0, Number(argValue('--limit', maxProducts)) || 0)
+const sourceId = Math.max(0, Number(argValue('--source-id', 0)) || 0)
 
 function usage() {
   console.log(`Fangear catalog importer\n\n` +
-    `  node scripts/import-fangear-catalog.mjs [--dry-run] [--limit N] [--write] [--media]\n\n` +
+    `  node scripts/import-fangear-catalog.mjs [--dry-run] [--limit N] [--source-id ID] [--write] [--media]\n\n` +
     `Defaults to a read-only dry run. --write requires FANGEAR_SOURCE_AUTHORIZED=true,\n` +
-    `SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Imported products stay DRAFT.`)
+    `SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Imported products stay DRAFT.\n` +
+    `--source-id safely retries one product without rewriting collection membership.`)
 }
 
 if (hasArg('--help') || hasArg('-h')) { usage(); process.exit(0) }
@@ -166,14 +170,26 @@ async function hydrateCollectionMedia(client, collection, errors) {
 async function saveListings(client, items, errors) {
   let imported = 0
   const importedIds = new Set()
-  for (const item of items) {
+  const existingRevisions = new Map()
+  for (let offset = 0; offset < items.length; offset += 100) {
+    const ids = items.slice(offset, offset + 100).map(item => item.listing.id)
+    const { data, error } = await client.from('pod_products').select('id,updated_at').in('id', ids)
+    if (error) {
+      errors.push({ kind: 'listing-resume', error: error.message })
+      break
+    }
+    for (const row of data || []) existingRevisions.set(row.id, row.updated_at)
+  }
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index]
     if (publicListingHasSourceReferences(item.listing)) {
       errors.push({ kind: 'privacy', sourceId: item.sourceId, error: 'Public listing still contains a source/backlink or AI reference.' })
       continue
     }
-    const { error } = await client.rpc('pod_save_listing', { listing: buildListingInput(item.listing), expected_updated_at: null })
+    const { error } = await client.rpc('pod_save_listing', { listing: buildListingInput(item.listing), expected_updated_at: existingRevisions.get(item.listing.id) || null })
     if (error) errors.push({ kind: 'listing', sourceId: item.sourceId, id: item.listing.id, error: error.message })
     else { imported += 1; importedIds.add(item.listing.id) }
+    if ((index + 1) % 50 === 0 || index + 1 === items.length) console.log(`Saved listings ${index + 1}/${items.length} · successful ${imported} · errors ${errors.length}`)
   }
   return { count: imported, importedIds }
 }
@@ -196,9 +212,9 @@ async function saveCollections(client, collections, errors, importedIds = null) 
   return payload.length
 }
 
-async function saveImportAudit(client, items, collections, errors) {
+async function saveImportAudit(client, items, collections, errors, importedIds = null) {
   const rows = [
-    ...items.map(item => ({
+    ...items.filter(item => !importedIds || importedIds.has(item.listing.id)).map(item => ({
       source: SOURCE_HOST,
       source_entity_id: String(item.sourceId),
       entity_type: 'PRODUCT',
@@ -215,32 +231,46 @@ async function saveImportAudit(client, items, collections, errors) {
       source_categories: [sanitizePublicText(collection.name)]
     }))
   ]
-  if (!rows.length) return
-  const { error } = await client.from('pod_catalog_imports').upsert(rows, { onConflict: 'source,source_entity_id,entity_type' })
-  if (error) errors.push({ kind: 'audit', error: error.message })
+  for (let offset = 0; offset < rows.length; offset += 250) {
+    const { error } = await client.from('pod_catalog_imports').upsert(rows.slice(offset, offset + 250), { onConflict: 'source,source_entity_id,entity_type' })
+    if (error) errors.push({ kind: 'audit', error: error.message })
+  }
 }
 
 export async function run() {
   assertSourcePermission()
-  console.log(`${dryRun ? 'Dry run' : 'Write run'} · source ${API_BASE} · products ${limit || 'all'} · media ${includeMedia ? 'on' : 'off'}`)
+  const productScope = sourceId ? `source ID ${sourceId}` : (limit || 'all')
+  console.log(`${dryRun ? 'Dry run' : 'Write run'} · source ${API_BASE} · products ${productScope} · media ${includeMedia ? 'on' : 'off'} · variation details ${includeVariationDetails ? 'on' : 'off'}`)
   const categories = await fetchAll('products/categories')
-  const sourceProducts = await fetchAll('products', { limitRows: limit })
+  const sourceProducts = sourceId
+    ? [(await fetchJson(`products/${sourceId}`)).data]
+    : await fetchAll('products', { limitRows: limit })
   console.log(`Fetched ${categories.length} categories and ${sourceProducts.length} products.`)
-  const variationResult = await fetchVariationDetails(sourceProducts)
+  const variationResult = includeVariationDetails
+    ? await fetchVariationDetails(sourceProducts)
+    : { details: new Map(), attempted: sourceProducts.reduce((count, product) => count + (product.variations || []).length, 0), failed: [] }
   const usedHandles = new Set()
   const usedSkus = new Set()
   const errors = [...variationResult.failed.map(error => ({ kind: 'variation', error }))]
   let items = sourceProducts.map(product => normalizeSourceProduct(product, { categories, variationDetails: variationResult.details, usedHandles, usedSkus }))
-  const collections = buildCollectionPlan(categories, sourceProducts)
+  const collections = sourceId ? [] : buildCollectionPlan(categories, sourceProducts)
   let client = null
   if (!dryRun) {
     if (!supabaseUrl || !serviceRoleKey) throw new Error('Write mode requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Keep the service key server-side; never place it in VITE_* variables.')
     client = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
-    items = []
-    for (const product of sourceProducts) {
-      const item = normalizeSourceProduct(product, { categories, variationDetails: variationResult.details, usedHandles, usedSkus })
-      items.push(await hydrateProductMedia(client, item, errors))
-    }
+    const normalizedItems = items
+    let mediaCompleted = 0
+    const hydrationResults = await mapConcurrent(normalizedItems, mediaConcurrency, async item => {
+      const hydrated = await hydrateProductMedia(client, item, errors)
+      mediaCompleted += 1
+      if (mediaCompleted % 50 === 0 || mediaCompleted === normalizedItems.length) console.log(`Prepared media ${mediaCompleted}/${normalizedItems.length} products · errors ${errors.length}`)
+      return { item: hydrated }
+    })
+    items = hydrationResults.map((result, index) => {
+      if (!result?.error) return result.item
+      errors.push({ kind: 'media-product', sourceId: normalizedItems[index].sourceId, error: result.error })
+      return normalizedItems[index]
+    })
     for (let index = 0; index < collections.length; index += 1) collections[index] = await hydrateCollectionMedia(client, collections[index], errors)
   }
   const report = importReport({ products: items, collections, errors, variationDetailsFetched: variationResult.details.size })
@@ -252,7 +282,7 @@ export async function run() {
     const listingResult = await saveListings(client, items, errors)
     report.importedListings = listingResult.count
     report.importedCollections = await saveCollections(client, collections, errors, listingResult.importedIds)
-    await saveImportAudit(client, items, collections, errors)
+    await saveImportAudit(client, items, collections, errors, listingResult.importedIds)
   }
   report.errors = errors
   await mkdir(resolve(outputPath, '..'), { recursive: true })
