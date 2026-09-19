@@ -6,11 +6,12 @@ import { readiness, routeModules } from '../backend/src/server.mjs'
 
 test('hybrid API routes resolve light calls to Supabase and heavy calls to Node', () => {
   assert.equal(resolveApiTarget('/api/cart-validate', { edgeOrigin: 'https://project.supabase.co/functions/v1', backendOrigin: 'https://api.jersevo.com' }), 'https://project.supabase.co/functions/v1/cart-validate')
-  assert.equal(resolveApiTarget('/api/checkout-quote?x=1', { edgeOrigin: 'https://project.supabase.co/functions/v1' }), 'https://project.supabase.co/functions/v1/checkout-quote?x=1')
+  assert.equal(resolveApiTarget('/api/checkout-quote?x=1', { edgeOrigin: 'https://project.supabase.co/functions/v1', backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/checkout-quote?x=1')
   assert.equal(resolveApiTarget('/api/customer-upload', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/customer-upload')
   assert.equal(resolveApiTarget('/api/checkout-quote', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/checkout-quote')
   assert.equal(resolveApiTarget('/api/payment-webhook', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/payment-webhook')
   assert.equal(resolveApiTarget('/api/cart-validate', {}), '/api/cart-validate')
+  assert.equal(isEdgeRoute('/api/checkout-quote'), false)
   assert.equal(isEdgeRoute('/api/member-quote'), true)
   assert.equal(isNodeBackendRoute('/api/ai-preview'), true)
 })

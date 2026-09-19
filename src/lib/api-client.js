@@ -14,7 +14,6 @@ const viteEnv = import.meta.env || {}
 export const EDGE_FUNCTION_ROUTES = Object.freeze(new Set([
   '/api/cart-validate',
   '/api/member-quote',
-  '/api/checkout-quote',
   '/api/membership-enroll'
 ]))
 
@@ -26,8 +25,9 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/admin-customizations',
   '/api/admin-orders',
   '/api/admin-payment-settings',
-  // Direct Node fallback for the signed quote endpoint. When an Edge origin
-  // is configured, EDGE_FUNCTION_ROUTES still wins in resolveApiTarget().
+  // Keep the signed checkout quote on the same Node runtime as checkout
+  // creation and capture. This avoids stale Edge deployments producing a
+  // different price/session result from the payment runtime.
   '/api/checkout-quote',
   '/api/checkout-create',
   '/api/payment-capture',
