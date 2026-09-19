@@ -1,3 +1,5 @@
+import { leagueMedia } from './league-media.js'
+
 /**
  * Curated league/team taxonomy used by the storefront navigation and SEO
  * landing pages. Product rows may use either `league`/`team` or the nested
@@ -13,6 +15,7 @@ export const LEAGUE_TAXONOMY = [
     name: 'NFL',
     sport: 'Football',
     description: 'Custom football jerseys and game-day layers for NFL fans.',
+    media: leagueMedia('nfl'),
     teams: [
       ['arizona-cardinals', 'Arizona Cardinals'], ['atlanta-falcons', 'Atlanta Falcons'],
       ['baltimore-ravens', 'Baltimore Ravens'], ['buffalo-bills', 'Buffalo Bills'],
@@ -37,6 +40,7 @@ export const LEAGUE_TAXONOMY = [
     name: 'MLB',
     sport: 'Baseball',
     description: 'Personalized baseball jerseys and fan gear for the season.',
+    media: leagueMedia('mlb'),
     teams: [
       ['arizona-diamondbacks', 'Arizona Diamondbacks'], ['atlanta-braves', 'Atlanta Braves'],
       ['baltimore-orioles', 'Baltimore Orioles'], ['boston-red-sox', 'Boston Red Sox'],
@@ -60,6 +64,7 @@ export const LEAGUE_TAXONOMY = [
     name: 'NBA',
     sport: 'Basketball',
     description: 'Basketball-inspired custom jerseys and fanwear.',
+    media: leagueMedia('nba'),
     teams: [
       ['atlanta-hawks', 'Atlanta Hawks'], ['boston-celtics', 'Boston Celtics'],
       ['brooklyn-nets', 'Brooklyn Nets'], ['charlotte-hornets', 'Charlotte Hornets'],
@@ -83,6 +88,7 @@ export const LEAGUE_TAXONOMY = [
     name: 'MLS',
     sport: 'Soccer',
     description: 'Soccer fanwear with custom names, numbers and team colorways.',
+    media: leagueMedia('mls'),
     teams: [
       ['atlanta-united', 'Atlanta United FC'], ['austin-fc', 'Austin FC'],
       ['charlotte-fc', 'Charlotte FC'], ['chicago-fire', 'Chicago Fire FC'],

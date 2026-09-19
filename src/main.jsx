@@ -334,8 +334,12 @@ function TaxonomyLanding({ league, team, products, onQuickView }) {
   const title = team?.name || league?.name || 'League collections'
   const description = team ? `${team.name} fan gear and custom jersey styles, curated for game day.` : league?.description || 'Browse custom fan gear by league, sport and team.'
   const teams = league?.teams || []
+  const media = league?.media
   return <main className="taxonomy-page">
-    <section className="taxonomy-hero"><Breadcrumbs items={[{ label:'Leagues', href:'/shop' }, ...(league ? [{ label:league.name, href:leaguePath(league) }] : []), ...(team ? [{ label:team.name }] : [])]}/><p>{team ? `${league?.name || 'TEAM'} / TEAM COLLECTION` : 'LEAGUE / TEAM COLLECTIONS'}</p><h1>{title.toUpperCase()}</h1><div><p>{description}</p><span>{filtered.length} {filtered.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span></div></section>
+    <section className={`taxonomy-hero ${media ? 'taxonomy-hero--with-media' : ''}`}>
+      <div className="taxonomy-hero__copy"><Breadcrumbs items={[{ label:'Leagues', href:'/shop' }, ...(league ? [{ label:league.name, href:leaguePath(league) }] : []), ...(team ? [{ label:team.name }] : [])]}/><p>{team ? `${league?.name || 'TEAM'} / TEAM COLLECTION` : 'LEAGUE / TEAM COLLECTIONS'}</p><h1>{title.toUpperCase()}</h1><div><p>{description}</p><span>{filtered.length} {filtered.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span></div></div>
+      {media && <figure className="taxonomy-hero__media"><div className="taxonomy-hero__media-frame"><img src={media.src} alt={media.alt} loading="eager" decoding="async" /></div><figcaption>{team ? `${media.label} / TEAM COLLECTION` : `${media.label} / LEAGUE COLLECTION`}</figcaption></figure>}
+    </section>
     {league && <section className="taxonomy-team-nav"><div><span>EXPLORE {league.name}</span><a href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>All {league.name}</a></div><div>{teams.map(item => <a key={item.slug} className={team?.slug === item.slug ? 'is-active' : ''} href={teamPath(league.key,item)} onClick={event => { event.preventDefault(); navigate(teamPath(league.key,item)) }}>{item.name}</a>)}</div></section>}
     <StorefrontTrust compact />
     <section className="taxonomy-products section">{filtered.length ? <div className="product-grid">{filtered.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>More {title} gear is on the way.</h2><p>Browse the full catalog while this collection grows.</p><button onClick={() => navigate('/shop')}>SHOP ALL PRODUCTS</button></div>}</section>
@@ -401,7 +405,7 @@ function PlayerDiscovery({ customProduct }) {
 }
 
 function LeagueDiscovery() {
-  return <section className="league-discovery section" id="leagues"><div className="section-title-row"><h2>FIND YOUR<br />COLORS.</h2><p>Start with the league.<br />Stay for the team connection.</p></div><div className="league-discovery__grid">{LEAGUE_TAXONOMY.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}><span>{league.name}</span><small>{league.sport}</small><ArrowRight size={16}/></a>)}</div></section>
+  return <section className="league-discovery section" id="leagues"><div className="section-title-row"><h2>FIND YOUR<br />COLORS.</h2><p>Start with the league.<br />Stay for the team connection.</p></div><div className="league-discovery__grid">{LEAGUE_TAXONOMY.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}><div className="league-discovery__media">{league.media && <img src={league.media.src} alt="" loading="lazy" decoding="async" />}</div><span>{league.name}</span><small>{league.sport}</small><ArrowRight size={16}/></a>)}</div></section>
 }
 
 function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '' }) {
