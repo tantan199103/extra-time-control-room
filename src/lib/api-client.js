@@ -21,6 +21,7 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/customer-upload',
   '/api/ai-preview',
   '/api/ai-listing-copy',
+  '/api/ai-listing-media',
   '/api/customization-order',
   '/api/admin-customizations',
   '/api/admin-orders',

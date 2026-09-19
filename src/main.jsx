@@ -30,6 +30,7 @@ import {
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
 import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
+import { listingMediaRole } from './lib/listing-media'
 import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
 import MembershipPage from './MembershipPage'
@@ -695,16 +696,25 @@ function CustomFieldControl({ field, value, onChange, productId }) {
 function ProductContentBlocks({ product }) {
   if (!product.contentBlocks?.length) return <section className="pdp-editorial-fallback"><img src={product.image} alt={product.alt}/><div><span>THE DESIGN STORY</span><h2>{product.subtitle || product.name}</h2><p>{product.description || product.story}</p></div></section>
   const media = new Map((product.media || []).map(item => [item.id,item]))
+  const mediaRoles = new Map((product.media || []).map(item => [listingMediaRole(item),item]).filter(([role]) => role))
   return <section className="pdp-content"><div className="pdp-content__label">PRODUCT STORY / {product.name}</div>{product.contentBlocks.map(block => {
-    const asset = media.get(block.mediaId)
+    const asset = media.get(block.mediaId) || mediaRoles.get(block.mediaRole)
     const url = block.url || asset?.url
     if (block.type === 'heading') return <h2 key={block.id}>{block.content}</h2>
     if (block.type === 'paragraph') return <p key={block.id}>{block.content}</p>
     if (block.type === 'quote') return <blockquote key={block.id}>{block.content}</blockquote>
-    if (block.type === 'image' && url) return <figure key={block.id}><img src={url} alt={asset?.alt || `${product.name} story detail`}/></figure>
+    if (block.type === 'image' && url) return <figure key={block.id}><img src={url} alt={asset?.alt || `${product.name} story detail`}/>{block.content && <figcaption>{block.content}</figcaption>}</figure>
     if (block.type === 'video' && url) return <video key={block.id} src={url} controls preload="metadata"/>
     return null
   })}</section>
+}
+
+function ProductStorySignals({ product }) {
+  const seo = product.seo || {}
+  const valueProps = Array.isArray(seo.valueProps) ? seo.valueProps.filter(Boolean).slice(0, 6) : []
+  const differentiators = Array.isArray(seo.differentiators) ? seo.differentiators.filter(Boolean).slice(0, 6) : []
+  if (!valueProps.length && !differentiators.length) return null
+  return <section className="pdp-story-signals"><div className="pdp-story-signals__intro"><span>THE REASON TO KEEP IT</span><h2>Value in the details.</h2><p>One design, understood from the story through to the final personal touch.</p></div><div className="pdp-story-signals__groups">{valueProps.length > 0 && <div><span>VALUE / WHAT YOU RECEIVE</span>{valueProps.map((item, index) => <article key={`value-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}{differentiators.length > 0 && <div><span>DIFFERENCE / WHAT MAKES IT DISTINCT</span>{differentiators.map((item, index) => <article key={`difference-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}</div></section>
 }
 
 function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account }) {
@@ -803,7 +813,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <details open><summary>THE PRODUCT <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing and the live delivery estimate are shown before checkout. Standard pieces can be returned within 30 days; personalized work is reviewed before production.</p></details><details><summary>CARE & FIT <Plus/></summary><p>Use the size guide before ordering. Wash inside out on a cool cycle and hang dry to protect printed names and numbers.</p></details>
       </aside>
     </div>
-    <ProductContentBlocks product={product}/>
+    <ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
     {productLeague && <section className="pdp-taxonomy-links"><span>KEEP EXPLORING</span><div><a href={leaguePath(productLeague)} onClick={event => { event.preventDefault(); navigate(leaguePath(productLeague)) }}>{productLeague.name} collections <ArrowRight size={14}/></a>{productTeam && <a href={teamPath(productLeague.key,productTeam)} onClick={event => { event.preventDefault(); navigate(teamPath(productLeague.key,productTeam)) }}>{productTeam.name} gear <ArrowRight size={14}/></a>}</div></section>}
     <StorefrontTrust />
     <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>

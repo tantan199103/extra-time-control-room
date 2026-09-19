@@ -8,6 +8,8 @@ const listing = await readFile(new URL('../src/ListingWorkspace.jsx', import.met
 const variants = await readFile(new URL('../src/VariantMatrix.jsx', import.meta.url), 'utf8')
 const adapter = await readFile(new URL('../src/lib/supabase.js', import.meta.url), 'utf8')
 const aiRoute = await readFile(new URL('../api/ai-listing-copy.js', import.meta.url), 'utf8')
+const mediaRoute = await readFile(new URL('../api/ai-listing-media.js', import.meta.url), 'utf8')
+const storefront = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
 
 test('admin buttons either have an action or explicitly explain their unavailable state', () => {
   for (const [file, source] of [['admin.jsx', admin], ['admin-builder.jsx', builder], ['ListingWorkspace.jsx', listing], ['VariantMatrix.jsx', variants]]) {
@@ -33,6 +35,14 @@ test('legacy template workflow is removed from admin navigation and data loading
 test('listing workspace exposes the complete product operating flow', () => {
   for (const label of ['Story & SEO','Media','Variations & price','Custom fields','Organization']) assert.match(listing, new RegExp(label.replace('&','&')))
   assert.match(listing, /requestAiListingCopy/)
+  assert.match(listing, /requestAiListingMedia/)
+  assert.match(listing, /Generate 5 model views/)
+  assert.match(listing, /Generate custom guide/)
+  assert.match(listing, /Primary keyword/)
+  assert.match(listing, /Verified differences/)
+  assert.match(listing, /Image caption/)
+  assert.match(listing, /imagePlan/)
+  assert.match(storefront, /ProductStorySignals/)
   assert.match(listing, /uploadProductMedia/)
   assert.match(listing, /Content blocks/)
   assert.match(listing, /70%/)
@@ -48,6 +58,9 @@ test('media upload, AI writer and bulk pricing keep dangerous authority server-s
   assert.match(aiRoute, /extra_time_role !== 'admin'/)
   assert.match(aiRoute, /AI_TEXT_API_KEY/)
   assert.match(aiRoute, /image_url/)
+  assert.match(mediaRoute, /listingMediaSlot/)
+  assert.match(mediaRoute, /sanitizeImagePrivacyMetadata/)
+  assert.match(mediaRoute, /requireAdmin/)
   for (const action of ['SET_PRICE','ADD_PRICE','PERCENT_PRICE','SET_COMPARE','SET_COST','SET_STOCK','SET_STATUS']) assert.match(variants,new RegExp(action))
 })
 

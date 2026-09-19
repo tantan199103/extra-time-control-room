@@ -3,12 +3,13 @@ import {
   ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, ChevronDown, Copy, Eye, FileText,
   GripVertical, Image as ImageIcon, Layers3, Link2, ListFilter, LoaderCircle, Lock,
   MessageSquareText, PackageCheck, Plus, Save, SearchCheck, Sparkles, Trash2, Upload,
-  Video, WandSparkles, X
+  Video, WandSparkles, X, RefreshCw
 } from 'lucide-react'
 import VariantMatrix from './VariantMatrix'
 import { createProductDraft, customFieldPresets, duplicateProductDraft, productCompleteness, slugify } from './lib/catalog-model'
 import { googleMerchantReadiness } from './lib/google-merchant'
-import { requestAiListingCopy, saveAdminProduct, uploadProductMedia } from './lib/supabase'
+import { requestAiListingCopy, requestAiListingMedia, saveAdminProduct, uploadProductMedia } from './lib/supabase'
+import { CUSTOM_GUIDE_SLOT_ID, LISTING_MEDIA_SLOTS, MODEL_MEDIA_SLOT_IDS, listingMediaRole } from './lib/listing-media'
 import './listing-workspace.css'
 
 const navigate = path => {
@@ -39,9 +40,49 @@ function WorkspaceHeader({ draft, dirty, saving, previewProduct, onSave, onPubli
   return <header className="listing-workspace__header"><button className="listing-workspace__back" onClick={() => navigate('/admin/catalog')}><ArrowLeft size={15}/> Products</button><div className="listing-workspace__identity"><span>{draft._persisted ? 'LISTING' : 'UNSAVED DRAFT'} / {draft.sku}</span><h1>{draft.title || 'Untitled listing'}</h1></div><div className="listing-workspace__actions"><span className={`listing-dirty ${dirty ? 'is-dirty' : ''}`}><i/>{dirty ? 'Unsaved changes' : 'Up to date'}</span><button className="admin-button admin-button--outline" onClick={onDuplicate}><Copy size={14}/> Duplicate</button><button className="admin-button admin-button--outline" disabled={!previewProduct} title={previewProduct ? 'Open the current published storefront listing.' : 'Publish this listing before opening its storefront page.'} onClick={() => previewProduct && window.open(`/product/${previewProduct.handle || previewProduct.id}`, '_blank', 'noopener,noreferrer')}><Eye size={14}/> Preview</button><button className="admin-button admin-button--outline" disabled={saving} onClick={() => onSave()}><Save size={14}/>{saving ? 'Saving…' : 'Save changes'}</button><button className="admin-button admin-button--dark" disabled={saving || draft.status === 'ARCHIVED'} onClick={onPublish}><PackageCheck size={14}/> Publish</button></div></header>
 }
 
+function AiBriefFields({ brief, setBrief }) {
+  const update = (key, value) => setBrief(current => ({ ...current, [key]:value }))
+  return <div className="listing-form-grid listing-ai__brief-fields">
+    <SelectField label="Output language" value={brief.language} onChange={value => update('language',value)}><option>English</option><option>Vietnamese</option></SelectField>
+    <Field label="Editorial tone" value={brief.tone} onChange={value => update('tone',value)} placeholder="Editorial, direct, emotionally precise"/>
+    <Field label="Primary keyword" value={brief.primaryKeyword} onChange={value => update('primaryKeyword',value)} placeholder="personalized football jersey" hint="One phrase describing the main search intent."/>
+    <Field label="Search intent" value={brief.searchIntent} onChange={value => update('searchIntent',value)} placeholder="football memory gift, custom jersey"/>
+    <div className="listing-form-grid__wide"><Field label="Secondary keywords" type="textarea" rows={2} value={brief.secondaryKeywords} onChange={value => update('secondaryKeywords',value)} placeholder="custom football jersey, matchday shirt, personalized sportswear" hint="Comma-separated; the writer uses only relevant phrases."/></div>
+    <Field label="Verified customer value" type="textarea" rows={3} value={brief.valueProps} onChange={value => update('valueProps',value)} placeholder="What the customer receives, how the artwork stays locked, what can be entered…"/>
+    <Field label="Verified differences" type="textarea" rows={3} value={brief.differentiators} onChange={value => update('differentiators',value)} placeholder="The visual symbol, local reference, detail or design choice that makes this listing distinct…"/>
+    <div className="listing-form-grid__wide"><Field label="Creative direction" type="textarea" rows={4} value={brief.direction} onChange={value => update('direction',value)} placeholder="Describe the visual symbols, match, place, emotion and factual details the copy must preserve."/></div>
+  </div>
+}
+
+function AiSuggestionDetails({ suggestion }) {
+  const rows = [
+    ['SEO title', suggestion.seoTitle],
+    ['SEO description', suggestion.seoDescription],
+    ['Primary keyword', suggestion.primaryKeyword],
+    ['Secondary keywords', (suggestion.secondaryKeywords || []).join(' · ')],
+    ['Value points', (suggestion.valueProps || []).join(' · ')],
+    ['Differences', (suggestion.differentiators || []).join(' · ')],
+    ['Suggested tags', (suggestion.tags || []).join(' · ')]
+  ]
+  return <><dl>{rows.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || '—'}</dd></div>)}</dl>{suggestion.imagePlan?.length > 0 && <div className="listing-ai__image-plan"><span>Image plan</span>{suggestion.imagePlan.map(item => <p key={`${item.role}-${item.caption}`}><b>{item.role}</b><em>{item.caption || 'Use this frame to support the product story.'}</em></p>)}</div>}</>
+}
+
+function SeoSignals({ seo, onChange }) {
+  const update = (key, value) => onChange({ ...seo, [key]:value })
+  const secondary = Array.isArray(seo.secondaryKeywords) ? seo.secondaryKeywords.join(', ') : (seo.secondaryKeywords || '')
+  const valueProps = Array.isArray(seo.valueProps) ? seo.valueProps.join('\n') : (seo.valueProps || '')
+  const differentiators = Array.isArray(seo.differentiators) ? seo.differentiators.join('\n') : (seo.differentiators || '')
+  return <>
+    <Field label="Primary keyword" value={seo.primaryKeyword || ''} onChange={value => update('primaryKeyword',value)} placeholder="personalized football jersey" hint="One clear phrase; keep it natural in the opening story."/>
+    <Field label="Secondary keywords" type="textarea" rows={3} value={secondary} onChange={value => update('secondaryKeywords',value.split(',').map(item => item.trim()).filter(Boolean))} placeholder="custom football jersey, football memory gift" hint="Comma-separated supporting phrases."/>
+    <Field label="Customer value points" type="textarea" rows={3} value={valueProps} onChange={value => update('valueProps',value.split('\n').map(item => item.trim()).filter(Boolean))} placeholder="One verified value per line"/>
+    <Field label="Design differences" type="textarea" rows={3} value={differentiators} onChange={value => update('differentiators',value.split('\n').map(item => item.trim()).filter(Boolean))} placeholder="One factual difference per line"/>
+  </>
+}
+
 function StoryPanel({ draft, update }) {
   const [aiOpen, setAiOpen] = useState(false)
-  const [brief, setBrief] = useState({ language:'English', tone:'Editorial, direct, emotionally precise', direction:'', searchIntent:'' })
+  const [brief, setBrief] = useState(() => ({ language:'English', tone:'Editorial, direct, emotionally precise', direction:'', searchIntent:'', primaryKeyword:draft.seo?.primaryKeyword || '', secondaryKeywords:Array.isArray(draft.seo?.secondaryKeywords) ? draft.seo.secondaryKeywords.join(', ') : (draft.seo?.secondaryKeywords || ''), valueProps:Array.isArray(draft.seo?.valueProps) ? draft.seo.valueProps.join('\n') : (draft.seo?.valueProps || ''), differentiators:Array.isArray(draft.seo?.differentiators) ? draft.seo.differentiators.join('\n') : (draft.seo?.differentiators || '') }))
   const [generating, setGenerating] = useState(false)
   const [aiError, setAiError] = useState('')
   const [suggestion, setSuggestion] = useState(null)
@@ -63,32 +104,105 @@ function StoryPanel({ draft, update }) {
   }
   const applySuggestion = () => {
     if (!suggestion) return
-    update(null, current => ({
-      ...current,
-      title:suggestion.title || current.title,
-      handle:current._persisted ? current.handle : slugify(suggestion.title || current.title),
-      subtitle:suggestion.subtitle || current.subtitle,
-      story:suggestion.subtitle || current.story,
-      description:suggestion.description || current.description,
-      seo:{ ...current.seo, title:suggestion.seoTitle, description:suggestion.seoDescription, keywords:suggestion.keywords },
-      tags:[...new Set([...(current.tags || []),...(suggestion.tags || [])])],
-      contentBlocks:suggestion.contentBlocks?.length ? suggestion.contentBlocks : current.contentBlocks,
-      aiMetadata:{ ...(current.aiMetadata || {}), copy:{ generatedAt:suggestion.generatedAt, language:suggestion.language } }
-    }))
+    update(null, current => {
+      const media = current.media || []
+      const resolveImageBlock = block => {
+        const role = listingMediaRole({ role:block.mediaRole })
+        const asset = media.find(item => listingMediaRole(item) === role)
+        return asset ? { ...block, mediaRole:role, mediaId:asset.id, url:asset.url } : null
+      }
+      const resolvedBlocks = (suggestion.contentBlocks || []).map(block => {
+        if (block.type !== 'image') return block
+        return resolveImageBlock(block)
+      }).filter(Boolean)
+      const imageRoles = new Set(resolvedBlocks.filter(block => block.type === 'image').map(block => block.mediaRole))
+      const plannedImages = (suggestion.imagePlan || []).map((plan, index) => {
+        const role = listingMediaRole({ role:plan.role })
+        if (!role || imageRoles.has(role)) return null
+        const block = resolveImageBlock({ id:`ai-image-${Date.now()}-${index}`, type:'image', content:plan.caption || '', mediaRole:role })
+        if (block) imageRoles.add(role)
+        return block
+      }).filter(Boolean)
+      const storyBlocks = [...resolvedBlocks, ...plannedImages]
+      const primaryKeyword = suggestion.primaryKeyword || current.seo?.primaryKeyword || ''
+      const secondaryKeywords = suggestion.secondaryKeywords || current.seo?.secondaryKeywords || []
+      return {
+        ...current,
+        title:suggestion.title || current.title,
+        handle:current._persisted ? current.handle : slugify(suggestion.title || current.title),
+        subtitle:suggestion.subtitle || current.subtitle,
+        story:suggestion.subtitle || current.story,
+        description:suggestion.description || current.description,
+        seo:{ ...current.seo, title:suggestion.seoTitle, description:suggestion.seoDescription, keywords:suggestion.keywords, primaryKeyword, secondaryKeywords, valueProps:suggestion.valueProps, differentiators:suggestion.differentiators, imagePlan:suggestion.imagePlan },
+        tags:[...new Set([...(current.tags || []),...(suggestion.tags || [])])],
+        contentBlocks:storyBlocks.length ? storyBlocks : current.contentBlocks,
+        aiMetadata:{ ...(current.aiMetadata || {}), copy:{ generatedAt:suggestion.generatedAt, language:suggestion.language } }
+      }
+    })
     setSuggestion(null); setAiOpen(false)
   }
   return <section className="listing-section listing-story"><div className="listing-section__heading"><div><span>Product story spine</span><h2>Make the design understandable.</h2><p>Write one source story first. Storefront copy, SEO and rich content should reinforce it rather than repeat unrelated claims.</p></div><button className="listing-ai-trigger" onClick={() => setAiOpen(value => !value)}><WandSparkles size={17}/>{aiOpen ? 'Close AI writer' : 'Write with AI'}</button></div>
-    {aiOpen && <div className="listing-ai"><div className="listing-ai__intro"><Sparkles size={19}/><div><strong>AI listing writer</strong><span>The main listing image is sent as a visual reference when it has a public HTTPS URL. Suggestions never overwrite fields until you apply them.</span></div></div><div className="listing-form-grid"><SelectField label="Output language" value={brief.language} onChange={value => setBrief(current => ({...current,language:value}))}><option>English</option><option>Vietnamese</option></SelectField><Field label="Tone" value={brief.tone} onChange={value => setBrief(current => ({...current,tone:value}))}/><Field label="Search intent" value={brief.searchIntent} onChange={value => setBrief(current => ({...current,searchIntent:value}))} placeholder="personalized football jersey, match memory…"/><div className="listing-form-grid__wide"><Field label="Creative direction" type="textarea" rows={4} value={brief.direction} onChange={value => setBrief(current => ({...current,direction:value}))} placeholder="Describe the visual symbols, match, place, emotion and factual details the copy must preserve."/></div></div><button className="listing-ai__generate" disabled={generating} onClick={generate}>{generating ? <LoaderCircle className="is-spinning" size={15}/> : <Sparkles size={15}/>} {generating ? 'Reading the story…' : 'Generate title, story & SEO'}</button>{aiError && <p className="listing-ai__error" role="alert">{aiError}</p>}{suggestion && <div className="listing-ai__result"><div><span>AI DRAFT / REVIEW BEFORE APPLYING</span><button onClick={() => setSuggestion(null)} aria-label="Discard AI draft"><X size={15}/></button></div><h3>{suggestion.title}</h3><strong>{suggestion.subtitle}</strong><p>{suggestion.description}</p><dl><div><dt>SEO title</dt><dd>{suggestion.seoTitle}</dd></div><div><dt>SEO description</dt><dd>{suggestion.seoDescription}</dd></div><div><dt>Suggested tags</dt><dd>{suggestion.tags.join(' · ') || '—'}</dd></div></dl><button onClick={applySuggestion}><Check size={14}/> Apply this draft</button></div>}</div>}
+    {aiOpen && <div className="listing-ai"><div className="listing-ai__intro"><Sparkles size={19}/><div><strong>AI listing writer</strong><span>The main listing image is sent as a visual reference when it has a public HTTPS URL. Suggestions never overwrite fields until you apply them.</span></div></div><AiBriefFields brief={brief} setBrief={setBrief}/><button className="listing-ai__generate" disabled={generating} onClick={generate}>{generating ? <LoaderCircle className="is-spinning" size={15}/> : <Sparkles size={15}/>} {generating ? 'Reading the story…' : 'Generate title, story & SEO'}</button>{aiError && <p className="listing-ai__error" role="alert">{aiError}</p>}{suggestion && <div className="listing-ai__result"><div><span>AI DRAFT / REVIEW BEFORE APPLYING</span><button onClick={() => setSuggestion(null)} aria-label="Discard AI draft"><X size={15}/></button></div><h3>{suggestion.title}</h3><strong>{suggestion.subtitle}</strong><p>{suggestion.description}</p><AiSuggestionDetails suggestion={suggestion}/><button onClick={applySuggestion}><Check size={14}/> Apply this draft</button></div>}</div>}
 
     <div className="listing-form-grid listing-form-grid--story"><div className="listing-form-grid__wide"><Field label="Product title" value={draft.title} onChange={value => update('title',value)} maxLength={120} hint={`${(draft.title || '').length}/120 · Main product name shown across the storefront.`}/></div><Field label="URL handle" value={draft.handle} onChange={value => update('handle',slugify(value))} hint="Lowercase URL path; keep stable after publishing."/><Field label="Short story line" value={draft.subtitle || ''} onChange={value => update('subtitle',value)} maxLength={180} hint={`${(draft.subtitle || '').length}/180 · Used on product cards and the opening section.`}/><div className="listing-form-grid__wide"><Field label="Design story" type="textarea" rows={9} value={draft.description} onChange={value => update('description',value)} placeholder="What happened, what the visual symbols mean, and why this piece exists…" hint="Factual source narrative for customers and AI tools."/></div></div>
 
-    <div className="listing-subsection"><div className="listing-subsection__head"><div><span>Search preview</span><h3>SEO metadata</h3></div><SearchCheck size={19}/></div><div className="listing-form-grid"><Field label="SEO title" value={seo.title || ''} onChange={value => update('seo',{...seo,title:value})} maxLength={60} hint={`${(seo.title || '').length}/60`}/><Field label="SEO description" type="textarea" rows={4} value={seo.description || ''} onChange={value => update('seo',{...seo,description:value})} maxLength={160} hint={`${(seo.description || '').length}/160`}/><div className="listing-form-grid__wide"><Field label="Keywords" value={(seo.keywords || []).join(', ')} onChange={value => update('seo',{...seo,keywords:value.split(',').map(item => item.trim()).filter(Boolean)})} placeholder="football memory, personalized jersey, extra time"/></div></div><div className="listing-search-preview"><span>{window.location.origin}/product/{draft.handle}</span><strong>{seo.title || draft.title || 'Product title'}</strong><p>{seo.description || draft.subtitle || 'Add a concise search description for this listing.'}</p></div></div>
+    <div className="listing-subsection"><div className="listing-subsection__head"><div><span>Search preview</span><h3>SEO metadata</h3></div><SearchCheck size={19}/></div><div className="listing-form-grid"><Field label="SEO title" value={seo.title || ''} onChange={value => update('seo',{...seo,title:value})} maxLength={60} hint={`${(seo.title || '').length}/60`}/><Field label="SEO description" type="textarea" rows={4} value={seo.description || ''} onChange={value => update('seo',{...seo,description:value})} maxLength={160} hint={`${(seo.description || '').length}/160`}/><div className="listing-form-grid__wide"><Field label="Keywords" value={(seo.keywords || []).join(', ')} onChange={value => update('seo',{...seo,keywords:value.split(',').map(item => item.trim()).filter(Boolean)})} placeholder="football memory, personalized jersey, extra time"/></div><SeoSignals seo={seo} onChange={value => update('seo',value)}/></div><div className="listing-search-preview"><span>{window.location.origin}/product/{draft.handle}</span><strong>{seo.title || draft.title || 'Product title'}</strong><p>{seo.description || draft.subtitle || 'Add a concise search description for this listing.'}</p></div></div>
 
-    <div className="listing-subsection"><div className="listing-subsection__head"><div><span>Rich product page</span><h3>Content blocks</h3><p>Build the long-form product story and insert uploaded images or video between paragraphs.</p></div><div className="listing-block-add"><button onClick={() => addBlock('heading')}>+ Heading</button><button onClick={() => addBlock('paragraph')}>+ Text</button><button onClick={() => addBlock('quote')}>+ Quote</button><button onClick={() => addBlock('image')}>+ Image</button><button onClick={() => addBlock('video')}>+ Video</button></div></div><div className="listing-blocks">{blocks.map((block,index) => <article key={block.id} className="listing-block"><div className="listing-block__rail"><GripVertical size={15}/><span>{blockLabels[block.type] || block.type}</span><button disabled={index === 0} title={index === 0 ? 'This block is already first.' : 'Move block up'} onClick={() => moveBlock(index,-1)}><ArrowUp size={13}/></button><button disabled={index === blocks.length - 1} title={index === blocks.length - 1 ? 'This block is already last.' : 'Move block down'} onClick={() => moveBlock(index,1)}><ArrowDown size={13}/></button><button onClick={() => removeBlock(block.id)} aria-label="Remove content block"><Trash2 size={13}/></button></div>{['heading','paragraph','quote'].includes(block.type) ? <textarea rows={block.type === 'heading' ? 2 : 5} value={block.content || ''} onChange={event => updateBlock(block.id,{content:event.target.value})} placeholder={`Write ${blockLabels[block.type].toLowerCase()}…`}/> : <><label><span>Choose uploaded {block.type}</span><select value={block.mediaId || ''} onChange={event => { const media=draft.media.find(item => item.id === event.target.value); updateBlock(block.id,{mediaId:event.target.value,url:media?.url || ''}) }}><option value="">Select media</option>{(draft.media || []).filter(item => item.type === block.type.toUpperCase()).map(item => <option key={item.id} value={item.id}>{item.filename || item.alt || item.id}</option>)}</select><ChevronDown size={13}/></label>{block.url && (block.type === 'image' ? <img src={block.url} alt="Content block preview"/> : <video src={block.url} controls preload="metadata"/>)}</>}</article>)}{!blocks.length && <div className="listing-empty-inline"><FileText size={20}/><span>Add structured blocks to tell the design story beyond the short description.</span></div>}</div></div>
+    <div className="listing-subsection"><div className="listing-subsection__head"><div><span>Rich product page</span><h3>Content blocks</h3><p>Build the long-form product story and insert uploaded images or video between paragraphs.</p></div><div className="listing-block-add"><button onClick={() => addBlock('heading')}>+ Heading</button><button onClick={() => addBlock('paragraph')}>+ Text</button><button onClick={() => addBlock('quote')}>+ Quote</button><button onClick={() => addBlock('image')}>+ Image</button><button onClick={() => addBlock('video')}>+ Video</button></div></div><div className="listing-blocks">{blocks.map((block,index) => <article key={block.id} className="listing-block"><div className="listing-block__rail"><GripVertical size={15}/><span>{blockLabels[block.type] || block.type}</span><button disabled={index === 0} title={index === 0 ? 'This block is already first.' : 'Move block up'} onClick={() => moveBlock(index,-1)}><ArrowUp size={13}/></button><button disabled={index === blocks.length - 1} title={index === blocks.length - 1 ? 'This block is already last.' : 'Move block down'} onClick={() => moveBlock(index,1)}><ArrowDown size={13}/></button><button onClick={() => removeBlock(block.id)} aria-label="Remove content block"><Trash2 size={13}/></button></div>{['heading','paragraph','quote'].includes(block.type) ? <textarea rows={block.type === 'heading' ? 2 : 5} value={block.content || ''} onChange={event => updateBlock(block.id,{content:event.target.value})} placeholder={`Write ${blockLabels[block.type].toLowerCase()}…`}/> : <><label><span>Choose uploaded {block.type}</span><select value={block.mediaId || ''} onChange={event => { const media=draft.media.find(item => item.id === event.target.value); updateBlock(block.id,{mediaId:event.target.value,url:media?.url || ''}) }}><option value="">Select media</option>{(draft.media || []).filter(item => item.type === block.type.toUpperCase()).map(item => <option key={item.id} value={item.id}>{item.filename || item.alt || item.id}</option>)}</select><ChevronDown size={13}/></label>{block.type === 'image' && <Field label="Image caption" value={block.content || ''} onChange={value => updateBlock(block.id,{content:value})} placeholder="Explain the value, detail or difference shown"/>}{block.url && (block.type === 'image' ? <img src={block.url} alt="Content block preview"/> : <video src={block.url} controls preload="metadata"/>)}</>}</article>)}{!blocks.length && <div className="listing-empty-inline"><FileText size={20}/><span>Add structured blocks to tell the design story beyond the short description.</span></div>}</div></div>
   </section>
 }
 
-function MediaPanel({ draft, update }) {
+function EditorialMediaSet({ draft, update, onNotice, dirty }) {
+  const [busy, setBusy] = useState('')
+  const [batchGenerating, setBatchGenerating] = useState(false)
+  const [progress, setProgress] = useState({ done:0, total:MODEL_MEDIA_SLOT_IDS.length })
+  const [error, setError] = useState('')
+  const media = draft.media || []
+  const slotAsset = slot => media.find(item => listingMediaRole(item) === slot.id)
+  const attach = (slot, generated) => update(null, current => {
+    const previous = (current.media || []).find(item => listingMediaRole(item) === slot.id)
+    const nextMedia = [...(current.media || []).filter(item => listingMediaRole(item) !== slot.id), generated.media]
+    const nextBlocks = (current.contentBlocks || []).map(block => (block.mediaRole === slot.id || block.mediaId === previous?.id)
+      ? { ...block, mediaRole:slot.id, mediaId:generated.media.id, url:generated.media.url }
+      : block)
+    return { ...current, media:nextMedia, image:current.image || generated.media.url, contentBlocks:nextBlocks }
+  })
+  const generateOne = async slot => {
+    if (!draft._persisted) { setError('Save the listing once before generating editorial media.'); return false }
+    if (dirty) { setError('Save the listing first so the generator uses the current primary image.'); return false }
+    setBusy(slot.id); setError('')
+    try {
+      const result = await requestAiListingMedia(draft, slot.id)
+      attach(slot, result)
+      return true
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Editorial image generation failed.')
+      return false
+    } finally { setBusy('') }
+  }
+  const generateModels = async () => {
+    if (!draft._persisted) { setError('Save the listing once before generating editorial media.'); return }
+    if (dirty) { setError('Save the listing first so the generator uses the current primary image.'); return }
+    const slots = LISTING_MEDIA_SLOTS.filter(slot => MODEL_MEDIA_SLOT_IDS.includes(slot.id) && !slotAsset(slot))
+    if (!slots.length) { onNotice('All five model views are already attached.'); return }
+    setError(''); setBusy('models'); setBatchGenerating(true); setProgress({ done:0, total:slots.length })
+    let failures = 0
+    for (let index = 0; index < slots.length; index += 1) {
+      const slot = slots[index]
+      setBusy(slot.id)
+      try { const result = await requestAiListingMedia(draft, slot.id); attach(slot, result) } catch { failures += 1 }
+      setProgress({ done:index + 1, total:slots.length })
+    }
+    setBusy(''); setBatchGenerating(false)
+    if (failures) setError(`${failures} model view${failures === 1 ? '' : 's'} failed. You can retry only the missing views.`)
+    else onNotice(`${slots.length} model view${slots.length === 1 ? '' : 's'} generated. Review the set, then save the listing.`)
+  }
+  const guideSlot = LISTING_MEDIA_SLOTS.find(slot => slot.id === CUSTOM_GUIDE_SLOT_ID)
+  const guide = guideSlot && slotAsset(guideSlot)
+  return <section className="listing-editorial-set"><div className="listing-subsection__head"><div><span>Controlled image generation</span><h3>Build the product story in six frames.</h3><p>Every frame uses the exact primary listing image as reference. Five model views show value and context; one guide explains the allowed custom fields.</p></div><Sparkles size={19}/></div>{draft.image ? <div className="listing-editorial-set__reference"><img src={draft.image} alt="Primary listing reference"/><span>PRIMARY LISTING IMAGE / EXACT REFERENCE</span></div> : <p className="listing-notice is-error" role="alert">Add a primary listing image before generating editorial media.</p>}<div className="listing-editorial-set__actions"><button className="listing-primary-action" disabled={Boolean(busy) || !draft._persisted || !draft.image} title={!draft._persisted ? 'Save this listing before generating editorial media.' : !draft.image ? 'Add a primary listing image first.' : 'Generate the missing model views one at a time.'} onClick={generateModels}>{batchGenerating ? <><LoaderCircle className="is-spinning" size={15}/> Generating {progress.done}/{progress.total}</> : <><ImageIcon size={15}/> Generate 5 model views</>}</button><button className="listing-secondary-action" disabled={Boolean(busy) || !draft._persisted || !draft.image || Boolean(guide)} title={!draft._persisted ? 'Save this listing before generating editorial media.' : !draft.image ? 'Add a primary listing image first.' : guide ? 'The custom guide is already attached.' : 'Generate the customisation guide.'} onClick={() => guideSlot && generateOne(guideSlot)}>{busy === CUSTOM_GUIDE_SLOT_ID ? <><LoaderCircle className="is-spinning" size={15}/> Generating guide…</> : <><FileText size={15}/> {guide ? 'Guide attached' : 'Generate custom guide'}</>}</button></div>{error && <p className="listing-notice is-error" role="alert">{error}</p>}<div className="listing-editorial-set__grid">{LISTING_MEDIA_SLOTS.map(slot => { const asset = slotAsset(slot); const isBusy = busy === slot.id; return <article key={slot.id} className={`listing-editorial-slot ${asset ? 'is-ready' : ''}`}><div className="listing-editorial-slot__visual">{asset ? <img src={asset.url} alt={asset.alt || slot.alt}/> : <><span>{slot.group === 'model' ? 'MODEL' : 'GUIDE'}</span><strong>{slot.shortLabel}</strong></>}{isBusy && <i><LoaderCircle className="is-spinning" size={18}/></i>}<b>{asset ? 'READY' : 'EMPTY'}</b></div><div className="listing-editorial-slot__body"><strong>{slot.label}</strong><small>{asset ? asset.alt : slot.alt}</small>{asset && <button disabled={Boolean(busy)} onClick={() => generateOne(slot)} title="Regenerate this frame using the current primary image."><RefreshCw size={12}/> Regenerate</button>}</div></article>})}</div><small className="listing-editorial-set__help">Generated frames are editorial previews, not proof of a physical sample when the primary image is a 2D mockup. Review the garment, text and color before publishing; generated files are stripped of provider metadata and stay unpublished until you save them.</small></section>
+}
+
+function MediaPanel({ draft, update, dirty }) {
   const inputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [notice, setNotice] = useState('')
@@ -113,7 +227,7 @@ function MediaPanel({ draft, update }) {
     setNotice('Removed from this listing. The stored file is retained so published references are not broken.')
   }
   const move = (index,direction) => { const target=index+direction; if(target<0||target>=media.length)return; const next=[...media]; [next[index],next[target]]=[next[target],next[index]]; update('media',next) }
-  return <section className="listing-section listing-media"><div className="listing-section__heading"><div><span>Listing media library</span><h2>Show the real piece.</h2><p>Upload production photos and product video directly. The primary image is also the reference used by customer AI editing.</p></div><><input ref={inputRef} className="listing-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple onChange={upload}/><button className="listing-primary-action" disabled={uploading} onClick={() => inputRef.current?.click()}>{uploading ? <LoaderCircle className="is-spinning" size={16}/> : <Upload size={16}/>} {uploading ? 'Uploading…' : 'Upload media'}</button></></div><div className="listing-media-rules"><span><ImageIcon size={15}/> Images: JPG, PNG, WebP, AVIF · up to 15 MB</span><span><Video size={15}/> Video: MP4, WebM · up to 80 MB</span><span><Lock size={15}/> Removing a tile only detaches it from this listing</span></div>{notice && <p className={notice.startsWith('Upload failed:') ? 'listing-notice is-error' : 'listing-notice'} role={notice.startsWith('Upload failed:') ? 'alert' : 'status'}>{notice}</p>}<div className="listing-media-grid">{media.map((item,index) => <article key={item.id} className={`listing-media-card ${draft.image === item.url ? 'is-primary' : ''}`}><div className="listing-media-card__visual">{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <img src={item.url} alt={item.alt || ''}/>}<span>{item.type}</span>{draft.image === item.url && <strong>PRIMARY</strong>}</div><div className="listing-media-card__body"><p>{item.filename || 'Uploaded media'}</p><Field label="Alt text" value={item.alt || ''} onChange={value => updateMedia(item.id,{alt:value})} placeholder="Describe what is visible" hint="Needed for accessibility and image search."/><div><button disabled={item.type !== 'IMAGE' || draft.image === item.url} title={item.type !== 'IMAGE' ? 'Only images can be the primary listing reference.' : draft.image === item.url ? 'This is already the primary image.' : 'Use as primary listing image'} onClick={() => update('image',item.url)}><Check size={13}/> Set primary</button><button disabled={index === 0} title={index === 0 ? 'Already first.' : 'Move earlier'} onClick={() => move(index,-1)}><ArrowLeft size={13}/></button><button disabled={index === media.length-1} title={index === media.length-1 ? 'Already last.' : 'Move later'} onClick={() => move(index,1)}><ArrowRight size={13}/></button><button onClick={() => remove(item)} aria-label="Detach media"><Trash2 size={13}/></button></div></div></article>)}{!media.length && <button className="listing-media-empty" onClick={() => inputRef.current?.click()}><Upload size={23}/><strong>Upload the first product image</strong><span>Use a real mockup or production photo. Add a short video after the image set.</span></button>}</div><div className="listing-subsection"><div className="listing-subsection__head"><div><span>Fallback reference</span><h3>Primary image URL</h3></div><Link2 size={18}/></div><Field label="Public image URL" value={draft.image || ''} onChange={value => update('image',value)} hint="Useful for an existing CDN asset. Uploading above is recommended."/></div></section>
+  return <section className="listing-section listing-media"><div className="listing-section__heading"><div><span>Listing media library</span><h2>Show the real piece.</h2><p>Upload production photos and product video directly. The primary image is also the reference used by customer AI editing.</p></div><><input ref={inputRef} className="listing-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple onChange={upload}/><button className="listing-primary-action" disabled={uploading} onClick={() => inputRef.current?.click()}>{uploading ? <LoaderCircle className="is-spinning" size={16}/> : <Upload size={16}/>} {uploading ? 'Uploading…' : 'Upload media'}</button></></div><div className="listing-media-rules"><span><ImageIcon size={15}/> Images: JPG, PNG, WebP, AVIF · up to 15 MB</span><span><Video size={15}/> Video: MP4, WebM · up to 80 MB</span><span><Lock size={15}/> Removing a tile only detaches it from this listing</span></div>{notice && <p className={notice.startsWith('Upload failed:') ? 'listing-notice is-error' : 'listing-notice'} role={notice.startsWith('Upload failed:') ? 'alert' : 'status'}>{notice}</p>}<EditorialMediaSet draft={draft} update={update} dirty={dirty} onNotice={setNotice}/><div className="listing-media-grid">{media.map((item,index) => <article key={item.id} className={`listing-media-card ${draft.image === item.url ? 'is-primary' : ''}`}><div className="listing-media-card__visual">{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <img src={item.url} alt={item.alt || ''}/>}<span>{item.type}</span>{draft.image === item.url && <strong>PRIMARY</strong>}</div><div className="listing-media-card__body"><p>{item.filename || 'Uploaded media'}</p><Field label="Alt text" value={item.alt || ''} onChange={value => updateMedia(item.id,{alt:value})} placeholder="Describe what is visible" hint="Needed for accessibility and image search."/><div><button disabled={item.type !== 'IMAGE' || draft.image === item.url} title={item.type !== 'IMAGE' ? 'Only images can be the primary listing reference.' : draft.image === item.url ? 'This is already the primary image.' : 'Use as primary listing image'} onClick={() => update('image',item.url)}><Check size={13}/> Set primary</button><button disabled={index === 0} title={index === 0 ? 'Already first.' : 'Move earlier'} onClick={() => move(index,-1)}><ArrowLeft size={13}/></button><button disabled={index === media.length-1} title={index === media.length-1 ? 'Already last.' : 'Move later'} onClick={() => move(index,1)}><ArrowRight size={13}/></button><button onClick={() => remove(item)} aria-label="Detach media"><Trash2 size={13}/></button></div></div></article>)}{!media.length && <button className="listing-media-empty" onClick={() => inputRef.current?.click()}><Upload size={23}/><strong>Upload the first product image</strong><span>Use a real mockup or production photo. Add a short video after the image set.</span></button>}</div><div className="listing-subsection"><div className="listing-subsection__head"><div><span>Fallback reference</span><h3>Primary image URL</h3></div><Link2 size={18}/></div><Field label="Public image URL" value={draft.image || ''} onChange={value => update('image',value)} hint="Useful for an existing CDN asset. Uploading above is recommended."/></div></section>
 }
 
 function CustomFieldsPanel({ draft, update }) {
@@ -187,5 +301,5 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
     navigate(`/admin/products/${copy.id}`)
   }
   if(!sourceProduct) return <main className="admin-page"><h1>Listing not found</h1><button onClick={() => navigate('/admin/catalog')}>Back to products</button></main>
-  return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update}/>} {active==='media'&&<MediaPanel draft={draft} update={update}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving||draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span></div>}</main>
+  return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update}/>} {active==='media'&&<MediaPanel draft={draft} update={update} dirty={dirty}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving||draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span></div>}</main>
 }

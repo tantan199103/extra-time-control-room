@@ -181,8 +181,16 @@ export async function requestAiListingCopy(product, brief = {}) {
     body:JSON.stringify({
       product:{
         title:product.title, subtitle:product.subtitle, description:product.description, type:product.type,
-        productGroup:product.productGroup, tags:product.tags, image:product.image,
-        media:(product.media || []).slice(0,8).map(item => ({ type:item.type, url:item.url, alt:item.alt })),
+        productGroup:product.productGroup, taxonomy:product.taxonomy || {}, tags:product.tags, image:product.image,
+        seo:{
+          title:product.seo?.title || '', description:product.seo?.description || '',
+          primaryKeyword:product.seo?.primaryKeyword || '',
+          secondaryKeywords:Array.isArray(product.seo?.secondaryKeywords) ? product.seo.secondaryKeywords : [],
+          valueProps:Array.isArray(product.seo?.valueProps) ? product.seo.valueProps : [],
+          differentiators:Array.isArray(product.seo?.differentiators) ? product.seo.differentiators : []
+        },
+        media:(product.media || []).slice(0,12).map(item => ({ type:item.type, url:item.url, alt:item.alt, role:item.role || item.mediaRole })),
+        contentBlocks:(product.contentBlocks || []).slice(0,12).map(block => ({ type:block.type, content:block.content, mediaRole:block.mediaRole })),
         customFields:(product.customFields || []).map(field => field.label)
       },
       brief
@@ -190,6 +198,21 @@ export async function requestAiListingCopy(product, brief = {}) {
   })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error || 'AI copy could not be generated.')
+  return result
+}
+
+export async function requestAiListingMedia(product, slot, direction = '') {
+  if (!supabase) throw new Error('Supabase is not configured. Editorial image generation needs an authenticated admin session.')
+  const { data:{ session }, error:sessionError } = await supabase.auth.getSession()
+  if (sessionError || !session?.access_token) throw new Error('Your admin session expired. Sign in again before generating media.')
+  const response = await apiFetch('/api/ai-listing-media', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${session.access_token}` },
+    body:JSON.stringify({ productId:product.id, slot, direction:String(direction || '').slice(0,500) })
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'Editorial image generation failed.')
+  if (!result.media?.url) throw new Error('The generated image did not return a usable URL.')
   return result
 }
 

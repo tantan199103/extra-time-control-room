@@ -14,6 +14,7 @@ const routeModules = new Map([
   ['/api/customer-upload', 'customer-upload.js'],
   ['/api/ai-preview', 'ai-preview.js'],
   ['/api/ai-listing-copy', 'ai-listing-copy.js'],
+  ['/api/ai-listing-media', 'ai-listing-media.js'],
   ['/api/customization-order', 'customization-order.js'],
   ['/api/admin-customizations', 'admin-customizations.js'],
   ['/api/admin-orders', 'admin-orders.js'],
