@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog } from '../src/lib/storefront-model.js'
-import { LEAGUE_TAXONOMY, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
+import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
@@ -24,11 +24,11 @@ function normalizeProduct(row) {
   const price = Number(row.price) > 0 ? Number(row.price) : (prices.length ? Math.min(...prices) : 0)
   const inventory = Number.isFinite(Number(row.inventory)) ? Number(row.inventory) : variants.reduce((total, item) => total + Number(item.inventory || 0), 0)
   const handle = text(row.handle || row.id, title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
-  return { handle, title, description, image, price, inventory, sku:text(row.sku || variants[0]?.sku), updatedAt:row.updated_at || row.updatedAt || '' }
+  return { handle, title, description, image, price, inventory, sku:text(row.sku || variants[0]?.sku), updatedAt:row.updated_at || row.updatedAt || '', taxonomy:row.taxonomy || {}, seoStatus:String(row.seo_status || row.seo?.status || '').toUpperCase() }
 }
 
-async function fetchPublishedRows(path, key) {
-  const response = await fetch(`${path}&status=eq.PUBLISHED`, {
+async function fetchRows(path, key, query = '') {
+  const response = await fetch(`${path}${query}`, {
     headers: { apikey:key, Authorization:`Bearer ${key}`, Accept:'application/json' },
     signal:AbortSignal.timeout(8000)
   })
@@ -41,11 +41,24 @@ async function loadProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (base && key) {
     try {
-      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,inventory,updated_at&order=updated_at.desc`
-      const rows = await fetchPublishedRows(query, key)
-      if (Array.isArray(rows) && rows.length) return rows.map(normalizeProduct)
+      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(price,inventory,status,sku),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=updated_at.desc&limit=5000`
+      const rows = await fetchRows(query, key)
+      if (Array.isArray(rows)) return rows.map(normalizeProduct)
     } catch (error) {
-      console.warn(`[seo] Live catalogue unavailable; using fallback products. ${error.message}`)
+      // Older deployments may not have the gate column yet. In that case only
+      // rows carrying the explicit structured status can be generated.
+      try {
+        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,image,seo,inventory,sku,taxonomy,media,pod_product_variants(price,inventory,status,sku),updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=5000`
+        const legacyRows = await fetchRows(legacyQuery, key)
+        return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct)
+      } catch (legacyError) {
+        // A configured production database that is temporarily unavailable is
+        // not permission to publish the bundled demo catalogue. Return an
+        // empty set so the build keeps only the homepage/static trust pages;
+        // fallback products are reserved for local builds without Supabase.
+        console.warn(`[seo] Live catalogue unavailable; skipping product pages. ${legacyError.message}`)
+        return []
+      }
     }
   }
   return buildFallbackCatalog(fallbackProducts).map(normalizeProduct)
@@ -56,15 +69,15 @@ async function loadCollections() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!base || !key) return []
   try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_collections?select=handle,name,description,hero_image,seo,updated_at&order=updated_at.desc`
-    const rows = await fetchPublishedRows(query, key)
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_collections?select=handle,name,description,hero_image,seo,updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=1000`
+    const rows = await fetchRows(query, key)
     return (Array.isArray(rows) ? rows : []).map(row => ({
       handle:text(row.handle || row.id),
       title:text(row.seo?.title || row.name, 'Extra Time collection'),
       description:text(row.seo?.description || row.description, 'Explore the latest Extra Time football jersey collection.'),
       image:absolute(row.hero_image || '/assets/hero-tunnel.webp'),
       updatedAt:row.updated_at || ''
-    })).filter(row => row.handle)
+    })).filter(row => row.handle && String((rows.find(item => item.handle === row.handle)?.seo || {}).status || '').toUpperCase() === 'INDEXABLE')
   } catch (error) {
     console.warn(`[seo] Live collections unavailable; product pages will still be generated. ${error.message}`)
     return []
@@ -192,25 +205,39 @@ for (const collection of collections) {
 }
 
 // Taxonomy pages are generated from the same source used by the runtime mega
-// menu. This keeps the navigation graph crawlable even when the live catalog
-// is empty or Supabase is temporarily unavailable.
+// menu, but only become indexable when the live catalogue has enough distinct
+// products behind the route. Empty/near-empty pages remain reachable in the
+// app and carry noindex metadata.
+const taxonomyCounts = new Map()
+for (const product of products) {
+  const league = String(product.taxonomy?.league || '').toLowerCase()
+  if (!league) continue
+  taxonomyCounts.set(`league:${league}`, (taxonomyCounts.get(`league:${league}`) || 0) + 1)
+  const team = normalizeTeamSlug(league, product.taxonomy?.team || '')
+  if (team) taxonomyCounts.set(`team:${league}/${team}`, (taxonomyCounts.get(`team:${league}/${team}`) || 0) + 1)
+}
+const TAXONOMY_MIN_PRODUCTS = 6
 for (const league of LEAGUE_TAXONOMY) {
   const path = leaguePath(league)
+  const leagueIndexable = (taxonomyCounts.get(`league:${league.key}`) || 0) >= TAXONOMY_MIN_PRODUCTS
   await writePage(path, pageHtml(shell, {
     path,
     title:`${league.name} custom fan gear — Extra Time`,
     description:league.description,
     image:absolute('/assets/editorial-player.webp'),
+    noindex:!leagueIndexable,
     fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} custom fan gear</h1><p>${escapeHtml(league.description)}</p><ul>${league.teams.slice(0, 12).map(team => `<li><a href="${teamPath(league.key, team)}">${escapeHtml(team.name)}</a></li>`).join('')}</ul></main>`,
     schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} custom fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } }
   }))
   for (const team of league.teams) {
     const teamPage = teamPath(league.key, team)
+    const teamIndexable = (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) >= TAXONOMY_MIN_PRODUCTS
     await writePage(teamPage, pageHtml(shell, {
       path:teamPage,
       title:`${team.name} custom fan gear — Extra Time`,
       description:`Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.`,
       image:absolute('/assets/editorial-player.webp'),
+      noindex:!teamIndexable,
       fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} custom fan gear</h1><p>Shop ${escapeHtml(team.name)} custom fan gear and personalized jerseys with tracked US delivery.</p><p><a href="${path}">Browse all ${escapeHtml(league.name)} collections</a></p></main>`,
       schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} custom fan gear`, description:`Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.`, url:`${PUBLIC_ORIGIN}${teamPage}`, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } }
     }))

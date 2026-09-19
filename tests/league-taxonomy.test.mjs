@@ -11,14 +11,14 @@ test('league taxonomy exposes stable league and team URLs', () => {
   assert.equal(teamPath(nfl.key, packers), '/team/nfl/green-bay-packers')
   assert.ok(LEAGUE_TAXONOMY.every(league => league.teams.length > 0))
   assert.deepEqual(LEAGUE_TAXONOMY.map(league => league.media?.src), [
-    '/assets/leagues/fangear-reference/nfl.webp',
-    '/assets/leagues/fangear-reference/mlb.webp',
-    '/assets/leagues/fangear-reference/nba.webp',
-    '/assets/leagues/fangear-reference/mls.webp'
+    '/assets/leagues/marks/nfl.webp',
+    '/assets/leagues/marks/mlb.webp',
+    '/assets/leagues/marks/nba.webp',
+    '/assets/leagues/marks/mls.webp'
   ])
-  assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/fangear-reference/teams/nfl/arizona-cardinals.webp')
-  assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/fangear-reference/teams/mlb/new-york-yankees.webp')
-  assert.equal(findTeam('mls', 'sporting-kc').media.src, '/assets/leagues/fangear-reference/teams/mls/sporting-kc.webp')
+  assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/marks/teams/nfl/arizona-cardinals.webp')
+  assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/marks/teams/mlb/new-york-yankees.webp')
+  assert.equal(findTeam('mls', 'sporting-kc').media.src, '/assets/leagues/marks/teams/mls/sporting-kc.webp')
   assert.equal(findTeam('nba', 'los-angeles-lakers').media.fallback, true)
 })
 

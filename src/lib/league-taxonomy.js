@@ -101,7 +101,11 @@ export const LEAGUE_TAXONOMY = [
       ['philadelphia-union', 'Philadelphia Union'], ['portland-timbers', 'Portland Timbers'],
       ['seattle-sounders', 'Seattle Sounders FC'], ['sporting-kc', 'Sporting Kansas City'],
       ['st-louis-city', 'St. Louis CITY SC'], ['toronto-fc', 'Toronto FC'],
-      ['vancouver-whitecaps', 'Vancouver Whitecaps FC']
+      ['vancouver-whitecaps', 'Vancouver Whitecaps FC'], ['cf-montreal', 'CF Montréal'],
+      ['colorado-rapids', 'Colorado Rapids'], ['columbus-crew', 'Columbus Crew'],
+      ['dc-united', 'D.C. United'], ['houston-dynamo', 'Houston Dynamo FC'],
+      ['new-england-revolution', 'New England Revolution'], ['real-salt-lake', 'Real Salt Lake'],
+      ['san-diego-fc', 'San Diego FC'], ['san-jose-earthquakes', 'San Jose Earthquakes']
     ].map(([slug, name]) => ({ slug, name, media: teamMedia('mls', slug, name) }))
   }
 ]
@@ -109,8 +113,45 @@ export const LEAGUE_TAXONOMY = [
 export const TAXONOMY_LEAGUE_BY_KEY = new Map(LEAGUE_TAXONOMY.map(league => [league.key, league]))
 export const TAXONOMY_TEAM_BY_SLUG = new Map(LEAGUE_TAXONOMY.flatMap(league => league.teams.map(team => [`${league.key}/${team.slug}`, { ...team, leagueKey: league.key, leagueName: league.name }])))
 
+// Source catalogues frequently append the legal/team suffix to a slug. Keep
+// those aliases at the taxonomy boundary so imported products, menu links and
+// SEO pages all resolve to one canonical URL.
+export const TEAM_SLUG_ALIASES = Object.freeze({
+  mls: Object.freeze({
+    'atlanta-united-fc': 'atlanta-united',
+    'chicago-fire-fc': 'chicago-fire',
+    'inter-miami-cf': 'inter-miami',
+    'minnesota-united-fc': 'minnesota-united',
+    'orlando-city-sc': 'orlando-city',
+    'seattle-sounders-fc': 'seattle-sounders',
+    'sporting-kansas-city': 'sporting-kc',
+    'st-louis-city-sc': 'st-louis-city',
+    'vancouver-whitecaps-fc': 'vancouver-whitecaps'
+  }),
+  // These clubs are present in the imported catalogue but were absent from
+  // the first curated navigation pass. They are still normalized here so a
+  // future curated page can be added without another data migration.
+  mls_additional: Object.freeze({
+    'cf-montreal': 'cf-montreal',
+    'colorado-rapids': 'colorado-rapids',
+    'columbus-crew': 'columbus-crew',
+    'd-c-united': 'dc-united',
+    'houston-dynamo-fc': 'houston-dynamo',
+    'new-england-revolution': 'new-england-revolution',
+    'real-salt-lake': 'real-salt-lake',
+    'san-diego-fc': 'san-diego-fc',
+    'san-jose-earthquakes': 'san-jose-earthquakes'
+  })
+})
+
 export function taxonomySlug(value) {
   return String(value || '').trim().toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+export function normalizeTeamSlug(leagueKey, value) {
+  const league = taxonomySlug(leagueKey)
+  const slug = taxonomySlug(value)
+  return TEAM_SLUG_ALIASES[league]?.[slug] || TEAM_SLUG_ALIASES.mls_additional?.[slug] || slug
 }
 
 export function leaguePath(league) { return `/league/${taxonomySlug(league.key || league.slug || league.name)}` }
@@ -124,7 +165,7 @@ export function findLeague(value) {
 export function findTeam(leagueKey, value) {
   const league = findLeague(leagueKey)
   if (!league) return null
-  const slug = taxonomySlug(value)
+  const slug = normalizeTeamSlug(league.key, value)
   const team = league.teams.find(item => item.slug === slug || taxonomySlug(item.name) === slug)
   return team ? { ...team, leagueKey: league.key, leagueName: league.name } : null
 }
@@ -132,7 +173,7 @@ export function findTeam(leagueKey, value) {
 export function productTaxonomyValues(product = {}) {
   const nested = product.taxonomy || {}
   const league = product.league || product.leagueKey || nested.league || nested.leagueKey || ''
-  const team = product.team || product.teamSlug || nested.team || nested.teamSlug || ''
+  const team = normalizeTeamSlug(league, product.team || product.teamSlug || nested.team || nested.teamSlug || '')
   const tags = Array.isArray(product.tags) ? product.tags : Array.isArray(nested.tags) ? nested.tags : []
   const haystack = [product.name, product.title, product.description, product.story, product.productGroup, league, team, ...tags].filter(Boolean).join(' ').toLowerCase()
   return { league: String(league), team: String(team), tags, haystack }
@@ -141,7 +182,7 @@ export function productTaxonomyValues(product = {}) {
 export function productMatchesTaxonomy(product, { league = '', team = '' } = {}) {
   const values = productTaxonomyValues(product)
   const leagueNeedle = taxonomySlug(league)
-  const teamNeedle = taxonomySlug(team)
+  const teamNeedle = normalizeTeamSlug(league, team)
   const leagueMatch = !leagueNeedle || taxonomySlug(values.league) === leagueNeedle || values.haystack.includes(leagueNeedle.replace(/-/g, ' '))
   const teamMatch = !teamNeedle || taxonomySlug(values.team) === teamNeedle || values.haystack.includes(teamNeedle.replace(/-/g, ' '))
   return leagueMatch && teamMatch

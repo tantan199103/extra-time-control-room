@@ -2,6 +2,7 @@
 export const isAdminUser = user => Boolean(user?.id && user?.app_metadata?.extra_time_role === 'admin')
 
 const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo'])
+export const SEO_STATUSES = Object.freeze(['BLOCKED', 'READY', 'INDEXABLE'])
 const uuid = () => globalThis.crypto.randomUUID()
 const cleanTag = value => String(value || '').trim().toLowerCase().replace(/\s+/g, '-')
 const moneyValue = value => value === '' || value == null ? null : Number(value)
@@ -86,9 +87,16 @@ export function productCompleteness(product) {
     { key:'media', label:'Primary image', done:Boolean(product.image?.trim()) },
     { key:'variants', label:'Active variation', done:Boolean((product.variants || []).some(row => row.status === 'ACTIVE')) },
     { key:'seo', label:'SEO metadata', done:Boolean(product.seo?.title?.trim() && product.seo?.description?.trim()) },
+    { key:'seoGate', label:'SEO review gate', done:product.seoStatus === 'INDEXABLE' },
     { key:'organization', label:'Catalogue routing', done:Boolean(product.type?.trim() && (product.tags || []).length) }
   ]
-  return { checks, completed:checks.filter(item => item.done).length, total:checks.length, percent:Math.round(checks.filter(item => item.done).length / checks.length * 100) }
+  // SEO gate is deliberately reported as a separate readiness signal. It is
+  // not folded into the editorial completeness percentage so existing admin
+  // workflows keep the same meaning while a listing can still be complete
+  // enough for commerce and remain blocked from search until reviewed.
+  const completenessChecks = checks.filter(item => item.key !== 'seoGate')
+  const completed = completenessChecks.filter(item => item.done).length
+  return { checks, completed, total:completenessChecks.length, percent:Math.round(completed / completenessChecks.length * 100) }
 }
 
 export function normalizeProduct(row, persisted = true) {
@@ -121,6 +129,15 @@ export function normalizeProduct(row, persisted = true) {
     customFields,
     personalization: customFields.map(field => field.label),
     seo: row.seo && typeof row.seo === 'object' ? row.seo : {},
+    seoStatus: SEO_STATUSES.includes(String(row.seo_status || row.seoStatus || row.seo?.status || '').toUpperCase())
+      ? String(row.seo_status || row.seoStatus || row.seo?.status).toUpperCase()
+      : (String(row.status || '').toUpperCase() === 'PUBLISHED' ? 'READY' : 'BLOCKED'),
+    seoQualityScore: Math.max(0, Math.min(100, Number(row.seo_quality_score ?? row.seoQualityScore ?? row.seo?.quality_score ?? 0) || 0)),
+    seoBlockReasons: Array.isArray(row.seo_block_reasons ?? row.seoBlockReasons ?? row.seo?.block_reasons)
+      ? (row.seo_block_reasons ?? row.seoBlockReasons ?? row.seo?.block_reasons)
+      : [],
+    seoReviewedAt: row.seo_reviewed_at ?? row.seoReviewedAt ?? null,
+    seoPublishedAt: row.seo_published_at ?? row.seoPublishedAt ?? null,
     aiMetadata: row.ai_metadata ?? row.aiMetadata ?? {},
     options: row.pod_product_options ? [...row.pod_product_options].sort((a,b) => a.sort_order - b.sort_order).map(option => ({
       id: option.id, name: option.name,
@@ -149,7 +166,8 @@ export function createProductDraft() {
   return normalizeProduct({ id, handle: id, title: 'Untitled listing', description: '', subtitle: '',
     price: 0, status: 'DRAFT', type: 'READY TO SHIP', image: '', color: '',
     inventory: 0, artwork_lock: 100, personalization: [], custom_fields: [], media: [], content_blocks: [],
-    tags: [], product_group: '', taxonomy: {}, seo: {}, ai_metadata: {}, options: [], variants: [],
+    tags: [], product_group: '', taxonomy: {}, seo: {}, seo_status: 'BLOCKED', seo_quality_score: 0,
+    seo_block_reasons: [], ai_metadata: {}, options: [], variants: [],
     sku: `ET-${token.slice(0,8).toUpperCase()}` }, false)
 }
 
@@ -208,6 +226,8 @@ export function validateListing(product) {
   if (!money(product.price)) errors.push('Price must be a non-negative number.')
   if (product.compareAt !== '' && product.compareAt != null && (!money(product.compareAt) || Number(product.compareAt) < Number(product.price))) errors.push('Compare-at price cannot be lower than the selling price.')
   if (!['DRAFT','PUBLISHED','ARCHIVED'].includes(product.status)) errors.push('Invalid publish status.')
+  if (!SEO_STATUSES.includes(String(product.seoStatus || product.seo?.status || 'BLOCKED').toUpperCase())) errors.push('Invalid SEO status.')
+  if (String(product.seoStatus || product.seo?.status || '').toUpperCase() === 'INDEXABLE' && product.status !== 'PUBLISHED') errors.push('Only published listings can be indexable.')
   if (!Array.isArray(product.media) || !Array.isArray(product.contentBlocks) || !Array.isArray(product.tags) || !Array.isArray(product.customFields)) errors.push('Media, content, tags and custom fields must be lists.')
   const customKeys = new Set()
   for (const field of product.customFields || []) {
@@ -267,7 +287,16 @@ export function buildListingInput(product) {
     artwork_lock: Number(product.artworkLock ?? 100), personalization: customFields.map(field => field.label),
     media: product.media || [], content_blocks: product.contentBlocks || [], tags:[...new Set((product.tags || []).map(cleanTag).filter(Boolean))],
     product_group: product.productGroup || '', taxonomy: product.taxonomy || {}, custom_fields:customFields,
-    seo: product.seo || {}, ai_metadata:product.aiMetadata || {},
+    seo: {
+      ...(product.seo || {}),
+      status: String(product.seoStatus || product.seo?.status || 'BLOCKED').toUpperCase(),
+      quality_score: Math.max(0, Math.min(100, Number(product.seoQualityScore ?? product.seo?.quality_score ?? 0) || 0)),
+      block_reasons: Array.isArray(product.seoBlockReasons) ? product.seoBlockReasons : (Array.isArray(product.seo?.block_reasons) ? product.seo.block_reasons : [])
+    },
+    seo_status: String(product.seoStatus || product.seo?.status || 'BLOCKED').toUpperCase(),
+    seo_quality_score: Math.max(0, Math.min(100, Number(product.seoQualityScore ?? product.seo?.quality_score ?? 0) || 0)),
+    seo_block_reasons: Array.isArray(product.seoBlockReasons) ? product.seoBlockReasons : (Array.isArray(product.seo?.block_reasons) ? product.seo.block_reasons : []),
+    ai_metadata:product.aiMetadata || {},
     inventory: (product.variants || []).filter(row => row.status === 'ACTIVE').reduce((sum,row) => sum + Number(row.inventory || 0), 0),
     options: (product.options || []).map(option => ({ name: option.name.trim(), values: option.values.map(value => String(value).trim()) })),
     variants: (product.variants || []).map(variant => ({ id: variant.id, sku: variant.sku.trim(),

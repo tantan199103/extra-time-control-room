@@ -1,23 +1,17 @@
 import { leagueMedia } from './league-media.js'
 
 /**
- * Fangear's team asset slugs do not always match the storefront taxonomy
- * slug (mostly MLS suffixes). Keep those translation rules in one place so
- * menu links and team landing pages never need to know the source URL shape.
+ * Team asset slugs do not always match the storefront taxonomy slug (mostly
+ * MLS suffixes). Keep those translation rules in one place so menu links and
+ * team landing pages never need to know the storage path shape.
  */
-const SOURCE_SLUG_OVERRIDES = Object.freeze({
-  mls: Object.freeze({
-    'atlanta-united': 'atlanta-united-fc',
-    'chicago-fire': 'chicago-fire-fc',
-    'inter-miami': 'inter-miami-cf',
-    'minnesota-united': 'minnesota-united-fc',
-    'orlando-city': 'orlando-city-sc',
-    'seattle-sounders': 'seattle-sounders-fc',
-    'sporting-kc': 'sporting-kansas-city',
-    'st-louis-city': 'st-louis-city-sc',
-    'vancouver-whitecaps': 'vancouver-whitecaps-fc'
-  })
-})
+// These newly normalised MLS teams do not yet have a local logo asset. Use
+// the league mark until an owned asset is supplied; never emit a broken URL.
+const MISSING_LOCAL_ART = new Set([
+  'mls/cf-montreal', 'mls/colorado-rapids', 'mls/columbus-crew',
+  'mls/dc-united', 'mls/houston-dynamo', 'mls/new-england-revolution',
+  'mls/real-salt-lake', 'mls/san-diego-fc', 'mls/san-jose-earthquakes'
+])
 
 export function teamMedia(leagueKey, teamSlug, teamName = teamSlug) {
   const league = String(leagueKey || '').toLowerCase()
@@ -31,13 +25,13 @@ export function teamMedia(leagueKey, teamSlug, teamName = teamSlug) {
     return parent ? { ...parent, alt: `${name} / NBA league mark`, label: name, fallback: true } : null
   }
   if (!['mlb', 'nfl', 'mls'].includes(league) || !slug) return null
-
-  const sourceSlug = SOURCE_SLUG_OVERRIDES[league]?.[slug] || slug
+  if (MISSING_LOCAL_ART.has(`${league}/${slug}`)) {
+    return parent ? { ...parent, alt: `${name} / ${league.toUpperCase()} league mark`, label: name, fallback: true } : null
+  }
   return {
-    src: `/assets/leagues/fangear-reference/teams/${league}/${slug}.webp`,
+    src: `/assets/leagues/marks/teams/${league}/${slug}.webp`,
     alt: `${name} logo`,
     label: name,
-    sourceUrl: `https://fangearsport.com/wp-content/themes/flatsome-child/assets/fgs/teams/${league}/${sourceSlug}-${league}-logo.webp`,
     fallback: false
   }
 }
