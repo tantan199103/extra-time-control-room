@@ -94,7 +94,15 @@ function rateAllowed(request, pathname) {
 function readiness() {
   const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL']
   const missing = required.filter(name => !String(process.env[name] || '').trim())
-  return { ready: missing.length === 0, missing }
+  return {
+    ready: missing.length === 0,
+    missing,
+    capabilities:{
+      aiImage:Boolean(String(process.env.AI_IMAGE_API_KEY || process.env.OPENAI_API_KEY || '').trim()),
+      aiText:Boolean(String(process.env.AI_TEXT_API_KEY || '').trim()),
+      paypal:Boolean(String(process.env.PAYPAL_CLIENT_SECRET || '').trim())
+    }
+  }
 }
 
 function responseAdapter(nodeResponse) {
@@ -167,7 +175,7 @@ async function handle(nodeRequest, nodeResponse) {
     const state = readiness()
     nodeResponse.setHeader('Content-Type', 'application/json; charset=utf-8')
     nodeResponse.statusCode = state.ready ? 200 : 503
-    nodeResponse.end(JSON.stringify({ ok: state.ready, service: 'jersevo-api', missing: state.missing }))
+    nodeResponse.end(JSON.stringify({ ok: state.ready, service: 'jersevo-api', missing: state.missing, capabilities:state.capabilities }))
     return
   }
 

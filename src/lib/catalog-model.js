@@ -44,7 +44,15 @@ export function normalizeCustomFields(fields = []) {
       placeholder: String(input.placeholder || ''),
       maxLength: input.maxLength === '' || input.maxLength == null ? null : Math.max(1, Number(input.maxLength) || 1),
       help: String(input.help || ''),
-      options: Array.isArray(input.options) ? input.options.map(value => String(value).trim()).filter(Boolean) : []
+      options: Array.isArray(input.options) ? input.options.map(value => String(value).trim()).filter(Boolean) : [],
+      previewRegion: (() => {
+        if (!input.previewRegion || typeof input.previewRegion !== 'object' || Array.isArray(input.previewRegion)) return null
+        const x=Math.max(0,Math.min(99,Number(input.previewRegion.x) || 0))
+        const y=Math.max(0,Math.min(99,Number(input.previewRegion.y) || 0))
+        const width=Math.max(1,Math.min(100-x,Number(input.previewRegion.width) || 1))
+        const height=Math.max(1,Math.min(100-y,Number(input.previewRegion.height) || 1))
+        return { x,y,width,height }
+      })()
     }
   })
 }

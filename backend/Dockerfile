@@ -11,6 +11,7 @@ COPY src/lib/payment-config.js ./src/lib/payment-config.js
 COPY src/lib/google-merchant.js ./src/lib/google-merchant.js
 COPY src/lib/listing-media.js ./src/lib/listing-media.js
 COPY src/lib/image-privacy.js ./src/lib/image-privacy.js
+COPY src/lib/customization-ai.js ./src/lib/customization-ai.js
 COPY backend/src ./backend/src
 
 EXPOSE 8787
