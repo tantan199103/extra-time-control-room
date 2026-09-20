@@ -58,9 +58,15 @@ async function requireAdmin(request) {
   const token = String(request.headers?.authorization || '').replace(/^Bearer\s+/i, '')
   if (!token) throw Object.assign(new Error('Admin sign-in is required.'), { status:401 })
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
-  if (!url || !anonKey) throw Object.assign(new Error('Supabase server settings are missing.'), { status:503 })
-  const client = createClient(url, anonKey, { global:{ headers:{ Authorization:`Bearer ${token}` } }, auth:{ persistSession:false, autoRefreshToken:false } })
+  // Cloud Run intentionally keeps only the server-side service-role key. The
+  // anon key belongs to browser clients and is not required to validate a
+  // bearer session here because auth.getUser(token) verifies the supplied JWT
+  // explicitly. Keep anon-key fallbacks for Vercel/local compatibility, but do
+  // not make the server route fail merely because a public browser key is not
+  // configured in the backend runtime.
+  const authKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !authKey) throw Object.assign(new Error('Supabase server settings are missing.'), { status:503 })
+  const client = createClient(url, authKey, { global:{ headers:{ Authorization:`Bearer ${token}` } }, auth:{ persistSession:false, autoRefreshToken:false } })
   const { data, error } = await client.auth.getUser(token)
   if (error || !data?.user) throw Object.assign(new Error('The admin session is invalid or expired.'), { status:401 })
   if (data.user.app_metadata?.extra_time_role !== 'admin') throw Object.assign(new Error('Extra Time admin permission is required.'), { status:403 })
