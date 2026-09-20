@@ -44,7 +44,7 @@ test('newsletter endpoint is routed to the server and stores explicit consent on
   const [route, server, migration, main] = await Promise.all([
     readFile(new URL('../api/newsletter-subscribe.js', import.meta.url),'utf8'),
     readFile(new URL('../backend/src/server.mjs', import.meta.url),'utf8'),
-    readFile(new URL('../supabase/migrations/20260925_newsletter_subscribers.sql', import.meta.url),'utf8'),
+    readFile(new URL('../supabase/migrations/202609250001_newsletter_subscribers.sql', import.meta.url),'utf8'),
     readFile(new URL('../src/main.jsx', import.meta.url),'utf8')
   ])
   assert.match(route, /body\.consent !== true/)

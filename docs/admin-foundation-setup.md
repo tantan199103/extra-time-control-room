@@ -16,7 +16,7 @@ Hai migration foundation và scoped admin đã được áp dụng trên Supabas
 ## Quy trình kích hoạt / tham khảo cho môi trường mới
 
 1. Mở đúng project Supabase của website, kiểm tra/backup dữ liệu trước thay đổi schema.
-2. Chạy lần lượt `supabase/migrations/20260916_listing_foundation.sql` và `supabase/migrations/20260916_scoped_admin.sql`, không chạy lại file seed `schema.sql` trên production.
+2. Chạy lần lượt `supabase/migrations/20260916_listing_foundation.sql` và `supabase/migrations/202609160002_scoped_admin.sql`, không chạy lại file seed `schema.sql` trên production.
 3. Migration bổ sung SKU ở listing, các ràng buộc chống trùng, RPC atomic và quyền ghi audit log của admin. Nó không cấp role cho user, không xóa hay seed lại catalogue. Nếu dữ liệu cũ có SKU/tổ hợp trùng, unique index sẽ báo lỗi và transaction migration dừng; cần xử lý dữ liệu trùng trước, không bỏ ràng buộc.
 4. Chủ project chuẩn bị một tài khoản **Supabase Auth của ứng dụng**, không phải chỉ tài khoản đăng nhập dashboard Supabase. Sau xác nhận đúng tài khoản, thêm `app_metadata.extra_time_role = admin` bằng công cụ quản trị tin cậy, giữ nguyên metadata khác; không dùng `user_metadata` và không đưa service-role key vào trình duyệt.
 5. Người quản trị tự đăng nhập tại `/admin`. Không gửi mật khẩu/API key trong chat.

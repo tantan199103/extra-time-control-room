@@ -21,10 +21,10 @@ test('listing migration and transaction run against isolated PostgreSQL', async 
     const migration=await readFile(new URL('../supabase/migrations/20260916_listing_foundation.sql',import.meta.url),'utf8')
     await db.exec(migration)
     await db.exec(migration)
-    const scopedMigration=await readFile(new URL('../supabase/migrations/20260916_scoped_admin.sql',import.meta.url),'utf8')
+    const scopedMigration=await readFile(new URL('../supabase/migrations/202609160002_scoped_admin.sql',import.meta.url),'utf8')
     await db.exec(scopedMigration)
     await db.exec(scopedMigration)
-    const workspaceMigration=await readFile(new URL('../supabase/migrations/20260916_listing_workspace.sql',import.meta.url),'utf8')
+    const workspaceMigration=await readFile(new URL('../supabase/migrations/202609160001_listing_workspace.sql',import.meta.url),'utf8')
     await db.exec(workspaceMigration)
     await db.exec(workspaceMigration)
     await db.exec(`grant usage on schema public,auth to authenticated,anon;

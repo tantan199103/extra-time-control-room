@@ -1,6 +1,6 @@
 -- Cart validation quota for the server-authoritative storefront check.
 -- Keep this as a forward migration so production installs that already ran
--- 20260916_storefront_runtime.sql receive the new action as well.
+-- 202609160003_storefront_runtime.sql receive the new action as well.
 begin;
 
 create or replace function public.pod_consume_api_quota(requested_action text, requested_identity_hash text)

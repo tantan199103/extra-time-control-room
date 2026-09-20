@@ -134,7 +134,7 @@ export async function saveAdminProduct(product) {
   const { data, error } = await supabase.rpc('pod_save_listing', {
     listing: buildListingInput(product), expected_updated_at: product._persisted ? product.updatedAt : null
   })
-  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Listing migration is not installed. Apply 20260916_listing_workspace.sql before saving. Nothing was saved.' : error.message }
+  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Listing migration is not installed. Apply 202609160001_listing_workspace.sql before saving. Nothing was saved.' : error.message }
   return { data:normalizeProduct(data), source:'supabase', error:null }
 }
 

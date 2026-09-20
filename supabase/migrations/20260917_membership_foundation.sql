@@ -1,5 +1,5 @@
 -- 90+ Club membership foundation.
--- Apply after 20260916_storefront_runtime.sql so pod_is_admin() is available.
+-- Apply after 202609160003_storefront_runtime.sql so pod_is_admin() is available.
 begin;
 
 create table if not exists public.pod_customer_profiles (
@@ -147,6 +147,32 @@ alter table public.pod_member_policy_acceptances enable row level security;
 alter table public.pod_memberships enable row level security;
 alter table public.pod_membership_enrollment_requests enable row level security;
 alter table public.pod_membership_events enable row level security;
+
+-- The production project may have received the baseline schema through the SQL
+-- editor before migrations were linked. Replacing policies keeps this migration
+-- safe to replay while preserving the same access contract.
+drop policy if exists "public reads published membership program" on public.pod_membership_programs;
+drop policy if exists "public reads active membership prices" on public.pod_membership_prices;
+drop policy if exists "public reads published membership policy" on public.pod_membership_policy_versions;
+drop policy if exists "customers read own profile" on public.pod_customer_profiles;
+drop policy if exists "customers create own profile" on public.pod_customer_profiles;
+drop policy if exists "customers update own profile" on public.pod_customer_profiles;
+drop policy if exists "customers read own memberships" on public.pod_memberships;
+drop policy if exists "customers read own enrollment requests" on public.pod_membership_enrollment_requests;
+drop policy if exists "customers create pending enrollment requests" on public.pod_membership_enrollment_requests;
+drop policy if exists "customers read own policy acceptance" on public.pod_member_policy_acceptances;
+drop policy if exists "customers accept own policy" on public.pod_member_policy_acceptances;
+drop policy if exists "customers read own membership events" on public.pod_membership_events;
+drop policy if exists "admins manage customer profiles" on public.pod_customer_profiles;
+drop policy if exists "admins manage membership programs" on public.pod_membership_programs;
+drop policy if exists "admins manage membership prices" on public.pod_membership_prices;
+drop policy if exists "admins manage membership rules" on public.pod_membership_discount_rules;
+drop policy if exists "admins manage membership policies" on public.pod_membership_policy_versions;
+drop policy if exists "admins read policy acceptances" on public.pod_member_policy_acceptances;
+drop policy if exists "admins manage memberships" on public.pod_memberships;
+drop policy if exists "admins manage enrollment requests" on public.pod_membership_enrollment_requests;
+drop policy if exists "admins read membership events" on public.pod_membership_events;
+drop policy if exists "admins create membership events" on public.pod_membership_events;
 
 create policy "public reads published membership program" on public.pod_membership_programs
   for select using (status='PUBLISHED');

@@ -1,5 +1,5 @@
 -- Commerce checkout and order tracking.
--- Apply after 20260918_payment_settings.sql. Payment confirmation is always
+-- Apply after 202609180003_payment_settings.sql. Payment confirmation is always
 -- server-side: a browser can create a pending order, but only a verified
 -- provider capture/webhook can move it to PAID/CONFIRMED.
 begin;

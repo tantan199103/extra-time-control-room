@@ -1,5 +1,5 @@
 -- Trusted server-side catalogue import support.
--- Apply only after 20260916_scoped_admin.sql and 20260920_menu_navigation_media.sql.
+-- Apply only after 202609160002_scoped_admin.sql and 20260920_menu_navigation_media.sql.
 -- The service-role key remains server-only; this migration does not grant browser access.
 begin;
 

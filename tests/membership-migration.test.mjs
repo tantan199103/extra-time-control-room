@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { PGlite } from '@electric-sql/pglite'
 
-const files=['../supabase/schema.sql','../supabase/migrations/20260916_listing_foundation.sql','../supabase/migrations/20260916_scoped_admin.sql','../supabase/migrations/20260916_listing_workspace.sql','../supabase/migrations/20260916_storefront_runtime.sql','../supabase/migrations/20260917_membership_foundation.sql']
+const files=['../supabase/schema.sql','../supabase/migrations/20260916_listing_foundation.sql','../supabase/migrations/202609160002_scoped_admin.sql','../supabase/migrations/202609160001_listing_workspace.sql','../supabase/migrations/202609160003_storefront_runtime.sql','../supabase/migrations/20260917_membership_foundation.sql']
 
 test('membership migration seeds the offer and enforces customer/admin authority',async t=>{
   const db=new PGlite()
