@@ -280,6 +280,8 @@ function MediaPanel({ draft, update, dirty }) {
 function PreviewRegionEditor({ field, image, onChange }) {
   const region = normalizePreviewRegion(field.previewRegion)
   const [drawing,setDrawing] = useState(null)
+  const [drawMode,setDrawMode] = useState(false)
+  const figureRef = useRef(null)
   const supported = field.type !== 'photo' && field.type !== 'textarea'
   if (!supported) return <div className="listing-region-disabled"><Lock size={14}/><span>This field is for studio review only. It cannot trigger an automatic image edit.</span></div>
   const setRegion = patch => {
@@ -291,18 +293,48 @@ function PreviewRegionEditor({ field, image, onChange }) {
     next.y = Math.max(0, Math.min(100 - next.height, Number(next.y) || 0))
     onChange({ previewRegion:next })
   }
-  const moveRegion = event => {
-    if (!region) return
-    const bounds = event.currentTarget.getBoundingClientRect()
-    const centerX = (event.clientX - bounds.left) / bounds.width * 100
-    const centerY = (event.clientY - bounds.top) / bounds.height * 100
-    setRegion({ x:centerX - region.width / 2, y:centerY - region.height / 2 })
+  const pointFromEvent = event => {
+    const bounds = figureRef.current?.getBoundingClientRect()
+    if (!bounds || !bounds.width || !bounds.height) return null
+    return {
+      x:Math.max(0, Math.min(100, (event.clientX - bounds.left) / bounds.width * 100)),
+      y:Math.max(0, Math.min(100, (event.clientY - bounds.top) / bounds.height * 100))
+    }
+  }
+  const beginDrawing = event => {
+    if (!image || (!drawMode && !region) || event.button !== 0) return
+    const point = pointFromEvent(event)
+    if (!point) return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    setDrawing({ startX:point.x, startY:point.y, x:point.x, y:point.y, width:0, height:0 })
+    event.preventDefault()
+  }
+  const updateDrawing = event => {
+    if (!drawing) return
+    const point = pointFromEvent(event)
+    if (!point) return
+    const x = Math.min(drawing.startX, point.x)
+    const y = Math.min(drawing.startY, point.y)
+    setDrawing({ ...drawing, x, y, width:Math.abs(point.x - drawing.startX), height:Math.abs(point.y - drawing.startY) })
+  }
+  const finishDrawing = event => {
+    if (!drawing) return
+    const point = pointFromEvent(event) || { x:drawing.x + drawing.width, y:drawing.y + drawing.height }
+    const x = Math.min(drawing.startX, point.x)
+    const y = Math.min(drawing.startY, point.y)
+    const width = Math.abs(point.x - drawing.startX)
+    const height = Math.abs(point.y - drawing.startY)
+    setDrawing(null)
+    if (width < 1 || height < 1) return
+    setDrawMode(false)
+    onChange({ previewRegion:{ x, y, width:Math.min(width,100 - x), height:Math.min(height,100 - y) } })
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
   }
   return <div className={`listing-region-editor ${field.type === 'logo' ? 'is-logo' : ''} ${region ? 'is-enabled' : ''}`}>
-    <div className="listing-region-editor__head"><div><strong>{field.type === 'logo' ? 'Approved logo slot' : 'Exact image edit area'}</strong><span>{region ? (field.type === 'logo' ? 'The original customer logo stays exact inside this rectangle. Click the image to reposition it.' : 'Only this rectangle may change. Click the image to reposition it.') : 'Preview stays disabled until a designer defines this field’s exact area.'}</span></div>{region ? <button onClick={() => onChange({previewRegion:null})}><X size={13}/> Disable</button> : <button onClick={() => setRegion({x:35,y:35,width:30,height:15})}><Plus size={13}/> Define area</button>}</div>
-    {region && <div className="listing-region-editor__body">
-      {image ? <figure onPointerDown={moveRegion}><img src={image} alt={`Position the ${field.label || field.key} edit area`}/><i style={{ left:`${region.x}%`, top:`${region.y}%`, width:`${region.width}%`, height:`${region.height}%` }}><span>{field.label || field.key}</span></i></figure> : <div className="listing-region-editor__missing"><ImageIcon size={19}/><span>Add a primary image before positioning this area.</span></div>}
-      <div className="listing-region-coordinates">{[['x','Left'],['y','Top'],['width','Width'],['height','Height']].map(([key,label]) => <label key={key}><span>{label} %</span><input type="number" min={key === 'x' || key === 'y' ? 0 : 1} max="100" step="1" value={Math.round(region[key] * 10) / 10} onChange={event => setRegion({[key]:Number(event.target.value)})}/></label>)}</div>
+    <div className="listing-region-editor__head"><div><strong>{field.type === 'logo' ? 'Approved logo slot' : 'Exact image edit area'}</strong><span>{region ? (field.type === 'logo' ? 'Drag across the image to redraw the exact logo rectangle. The original artwork stays locked outside it.' : 'Drag across the image to redraw the only rectangle where this field may change.') : drawMode ? 'Drag from one corner to the other. Nothing is saved until a rectangle is drawn.' : 'Preview stays disabled until a designer draws this field’s exact area on the source image.'}</span></div>{region ? <button onClick={() => { setDrawMode(false); onChange({previewRegion:null}) }}><X size={13}/> Disable</button> : drawMode ? <button onClick={() => setDrawMode(false)}><X size={13}/> Cancel</button> : <button disabled={!image} title={!image ? 'Add a primary image before defining an edit area.' : 'Draw the exact editable area on the source image.'} onClick={() => image && setDrawMode(true)}><Plus size={13}/> Draw area</button>}</div>
+    {(region || drawMode) && <div className="listing-region-editor__body">
+      {image ? <figure ref={figureRef} onPointerDown={beginDrawing} onPointerMove={updateDrawing} onPointerUp={finishDrawing} onPointerCancel={() => setDrawing(null)} onDragStart={event => event.preventDefault()}><img src={image} alt={`Draw the ${field.label || field.key} edit area`}/>{(drawing || region) && <i style={{ left:`${(drawing || region).x}%`, top:`${(drawing || region).y}%`, width:`${(drawing || region).width}%`, height:`${(drawing || region).height}%` }}><span>{field.label || field.key}</span></i>}</figure> : <div className="listing-region-editor__missing"><ImageIcon size={19}/><span>Add a primary image before positioning this area.</span></div>}
+      {region && <div className="listing-region-coordinates">{[['x','Left'],['y','Top'],['width','Width'],['height','Height']].map(([key,label]) => <label key={key}><span>{label} %</span><input type="number" min={key === 'x' || key === 'y' ? 0 : 1} max="100" step="1" value={Math.round(region[key] * 10) / 10} onChange={event => setRegion({[key]:Number(event.target.value)})}/></label>)}</div>}
     </div>}
   </div>
 }
