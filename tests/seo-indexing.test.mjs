@@ -35,6 +35,8 @@ test('SEO build creates initial HTML for product pages and protects private rout
   assert.match(generator, /Jersevo operates the Extra Time storefront/)
   assert.match(generator, /Jersevo \| Custom Football Jerseys Made Personal/)
   assert.match(generator, /Jersevo makes designer-led custom football jerseys/)
+  assert.match(generator, /Shop personalized jerseys/)
+  assert.match(generator, /Create your jersey/)
   assert.equal(vercel.headers.find(rule => rule.source === '/admin').headers[0].value, 'noindex, nofollow')
   assert.equal(vercel.headers.find(rule => rule.source === '/account/(.*)').headers[0].value, 'noindex, nofollow')
 })
