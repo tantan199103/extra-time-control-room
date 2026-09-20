@@ -32,15 +32,18 @@ import { products as fallbackProducts, searchGroups, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
 import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { listingMediaRole } from './lib/listing-media'
-import { createCustomizationOrder, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
+import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
-import MembershipPage from './MembershipPage'
-import CheckoutPage from './CheckoutPage'
-import OrderTrackingPage from './OrderTrackingPage'
+import { productPreviewReadiness } from './lib/customization-ai'
+import { seoDescription } from './lib/seo-text'
+import { apiFetch } from './lib/api-client'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
 const AiStudio = lazy(() => import('./AiStudio'))
+const MembershipPage = lazy(() => import('./MembershipPage'))
+const CheckoutPage = lazy(() => import('./CheckoutPage'))
+const OrderTrackingPage = lazy(() => import('./OrderTrackingPage'))
 
 const money = value => `$${value.toFixed(0)}`
 const initialCatalog = buildFallbackCatalog(fallbackProducts)
@@ -117,12 +120,18 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     {id:'shop',label:'SHOP',target:'/shop',children:[]},
     {id:'custom',label:'CUSTOM LAB',target:'/custom',children:[]}
   ]
-  // League discovery is intentionally kept out of the primary header. A
-  // product page should lead with the product decision, not a second menu
-  // system; the footer owns the visual league index instead.
-  const filteredLinks = (configured.length ? configured : defaults)
-    .filter(item => !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
-  const links = filteredLinks.length ? filteredLinks : defaults
+  const taxonomyLink = {
+    id:'leagues', label:'LEAGUES', target:'/shop', type:'TAXONOMY',
+    children:LEAGUE_TAXONOMY.map(league => ({
+      id:`league-${league.key}`, label:league.name, target:leaguePath(league), type:'LEAGUE', sport:league.sport,
+      representativeImage:league.media?.src || '', representativeAlt:league.media?.alt || '',
+      children:league.teams.map(team => ({ id:`team-${league.key}-${team.slug}`, label:team.name, target:teamPath(league.key,team), type:'TEAM', representativeImage:team.media?.src || '', representativeFallback:Boolean(team.media?.fallback) }))
+    }))
+  }
+  const baseLinks = configured.length ? configured : defaults
+  const links = baseLinks.some(item => item.type === 'TAXONOMY' || /league/i.test(item.label || ''))
+    ? baseLinks
+    : [baseLinks[0], taxonomyLink, ...baseLinks.slice(1)].filter(Boolean)
   const hasVaultLink = links.some(item => menuTarget(item.target, customProduct) === '/vault')
   const hasClubLink = links.some(item => menuTarget(item.target, customProduct) === '/membership')
   const openLink = item => {
@@ -248,7 +257,7 @@ function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quot
             <div className="cart-items">
               {cart.map(item => { const lineKey=item.key || cartLineKey(item); const clubLine=quoteMap.get(lineKey); const publicTotal=Number(item.unitPrice ?? item.product.price)*item.qty; return <div className="cart-item" key={lineKey}>
                 <img src={item.product.image} alt="" />
-                <div><h3>{item.product.name}</h3><p>{Object.entries(item.options || {}).map(([name,value]) => `${name} ${value}`).join(' · ') || item.sku || 'Default variation'}</p>{item.customization && <div className="cart-item__custom"><span>{Object.entries(item.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key}: ${value}`).join(' · ') || 'Custom request'}</span>{item.customization.note && <small>Note: {item.customization.note}</small>}{item.customization.aiPreviewUrl && <small>Visual preview attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)} aria-label={`Decrease ${item.product.name}`}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)} aria-label={`Increase ${item.product.name}`}><Plus size={14} /></button></div></div>
+                <div><h3>{item.product.name}</h3><p>{Object.entries(item.options || {}).map(([name,value]) => `${name} ${value}`).join(' · ') || item.sku || 'Default variation'}</p>{item.customization && <div className="cart-item__custom"><span>{Object.entries(item.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key}: ${/^https?:\/\//i.test(String(value)) ? 'attached' : value}`).join(' · ') || 'Custom request'}</span>{item.customization.note && <small>Note: {item.customization.note}</small>}{item.customization.aiPreviewUrl && <small>Visual preview attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)} aria-label={`Decrease ${item.product.name}`}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)} aria-label={`Increase ${item.product.name}`}><Plus size={14} /></button></div></div>
                 <strong className={clubLine?.discount>0?'cart-member-price':''}>{clubLine?.discount>0&&<del>{money(publicTotal)}</del>}{money(clubLine?.lineTotal ?? publicTotal)}{clubLine?.discount>0&&<small>90+ CLUB</small>}</strong>
               </div>})}
             </div>
@@ -270,7 +279,7 @@ function ButtonLink({ children, light = false, onClick, className = '' }) {
 function Hero({ content = {} }) {
   return (
     <section className="hero">
-      <img src="/assets/hero-tunnel.webp" alt="A player entering a rain-soaked stadium from a dark tunnel" />
+      <img src="/assets/hero-tunnel.webp" alt="A player entering a rain-soaked stadium from a dark tunnel" width="1672" height="941" loading="eager" fetchPriority="high" decoding="async" />
       <div className="hero__wash" />
       <div className="hero__time" aria-hidden="true">90<span>+</span></div>
       <div className="hero__content">
@@ -495,11 +504,31 @@ function Manifesto() {
 }
 
 function Newsletter() {
+  const [email,setEmail] = useState('')
+  const [consent,setConsent] = useState(false)
+  const [status,setStatus] = useState({ state:'idle', message:'' })
+  const submit = async event => {
+    event.preventDefault()
+    if (!consent) { setStatus({state:'error',message:'Please confirm that you want Extra Time email updates.'}); return }
+    setStatus({state:'loading',message:'Joining the list…'})
+    try {
+      const response = await apiFetch('/api/newsletter-subscribe',{ method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,consent,source:'storefront-newsletter',company:''}) })
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(body.error || 'Email registration is temporarily unavailable.')
+      setStatus({state:'success',message:'You are on the early-access list. We will email you when early access opens.'})
+      setEmail(''); setConsent(false)
+    } catch (error) { setStatus({state:'error',message:error instanceof Error ? error.message : 'Email registration failed.'}) }
+  }
   return (
     <section className="newsletter">
       <span className="newsletter__number">90<sup>+</sup></span>
       <div><p>NEXT DROP / EARLY ACCESS</p><h2>BE THERE<br />BEFORE THE<br />WHISTLE.</h2></div>
-      <div className="newsletter__success"><Lock/><strong>EARLY ACCESS OPENS SOON.</strong><span>Email registration is not connected yet. Explore the current drop while we get it ready.</span><button className="button-link" onClick={() => navigate('/shop')}>SHOP THE DROP <ArrowRight size={17}/></button></div>
+      <form onSubmit={submit} aria-label="Join the Extra Time early-access list">
+        <label htmlFor="newsletter-email">EMAIL ADDRESS</label>
+        <div><input id="newsletter-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" required/><button aria-label="Join early access" disabled={status.state === 'loading'}><ArrowRight size={20}/></button></div>
+        <label className="newsletter__consent"><input type="checkbox" checked={consent} onChange={event => setConsent(event.target.checked)}/><span>I agree to receive Extra Time product and early-access emails. I can unsubscribe at any time.</span></label>
+        <p className={status.state === 'error' ? 'is-error' : ''} role={status.state === 'error' ? 'alert' : 'status'}>{status.message || 'Only launch and drop updates. Your email is not sold to advertisers.'}</p>
+      </form>
     </section>
   )
 }
@@ -691,18 +720,36 @@ function SizeFinder({ open, onClose, onRecommend }) {
   )
 }
 
-function CustomFieldControl({ field, value, onChange, productId }) {
+function CustomFieldControl({ field, value, assetRef, onChange, productId, preview, onLogoPreview }) {
   const [uploading,setUploading] = useState(false)
+  const [processing,setProcessing] = useState('')
   const [error,setError] = useState('')
   const common = { value:value || '', onChange:event => onChange(event.target.value), placeholder:field.placeholder || '', maxLength:field.maxLength || undefined, required:field.required }
   const upload = async event => {
     const file = event.target.files?.[0]
     if (!file) return
     setUploading(true); setError('')
-    try { const result = await uploadCustomerReference(file,productId,field.key); onChange(result.imageUrl,result.storage) }
+    try {
+      const result = await uploadCustomerReference(file,productId,field.key,field.type)
+      onChange(result.imageUrl,result.storage)
+      if(field.type === 'logo'){
+        setProcessing('exact')
+        const exact = await createExactLogoPreview({productId,fieldKey:field.key,assetRef:result.storage,treatment:field.logoTreatment || 'EXACT'})
+        onLogoPreview?.(exact,field)
+      }
+    }
     catch(caught) { setError(caught instanceof Error ? caught.message : 'Upload failed.') }
-    finally { setUploading(false); event.target.value='' }
+    finally { setUploading(false);setProcessing('');event.target.value='' }
   }
+  const aiFinish = async event => {
+    event.preventDefault()
+    if(!assetRef){setError('Upload a logo first.');return}
+    setProcessing('ai');setError('')
+    try { const result=await createAiLogoPreview({productId,fieldKey:field.key,assetRef,treatment:field.logoTreatment === 'EXACT' ? 'FABRIC' : field.logoTreatment});onLogoPreview?.(result,field) }
+    catch(caught){setError(caught instanceof Error?caught.message:'AI logo finish failed. The exact placement is still available.')}
+    finally{setProcessing('')}
+  }
+  if(field.type === 'logo') return <div className="is-wide pdp-logo-field"><span>{field.label}{field.required&&<b>Required</b>}<small>{field.help||'Private customer logo'}</small></span><div className="pdp-logo-upload">{value?<img src={value} alt={`${field.label} uploaded logo`}/>:<div className="pdp-logo-upload__mark">90+</div>}<div><strong>{uploading?'Preparing logo…':processing==='exact'?'Building exact placement…':value?'Logo ready':'Upload your badge'}</strong><small>PNG, SVG, JPG or WebP · max 8 MB</small>{value&&<em>Background normalized · proportions preserved</em>}</div><input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" aria-label={`Upload ${field.label || 'team logo'}`} disabled={Boolean(uploading||processing)} onChange={upload}/></div>{value&&<button type="button" className="pdp-logo-remove" onClick={() => { onChange('',null);setError('') }}>Remove logo</button>}{preview?.fieldKey===field.key&&<div className="pdp-logo-preview"><img src={preview.imageUrl} alt="Logo placed in the approved artwork area"/><span><strong>{preview.mode==='ai-logo-finish'?'AI fabric finish':'Exact logo placement'}</strong><small>{preview.mode==='ai-logo-finish'?'Original logo overlaid and locked':'Production-safe placement'}</small></span></div>}{value&&field.allowAiFinish!==false&&<button type="button" className="pdp-logo-ai" disabled={Boolean(processing||uploading)} onClick={aiFinish}><Sparkles size={14}/><span><strong>{processing==='ai'?'Applying fabric finish…':'Try AI fabric finish'}</strong><small>Only the approved logo area can change.</small></span><ArrowRight size={14}/></button>}{error&&<em className="pdp-logo-error">{error}</em>}</div>
   return <label className={field.type === 'textarea' || field.type === 'photo' ? 'is-wide' : ''}><span>{field.label}{field.required && <b>Required</b>}<small>{field.help || 'Customer detail'}</small></span>{field.type === 'textarea' ? <textarea {...common}/> : field.type === 'select' ? <select {...common}><option value="">Choose…</option>{(field.options || []).map(option => <option key={option}>{option}</option>)}</select> : field.type === 'photo' ? <div className="pdp-custom__photo">{value && <img src={value} alt={`${field.label} reference`}/>}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload}/><strong>{uploading ? 'Uploading reference…' : value ? 'Replace photo' : 'Upload photo'}</strong><small>JPG, PNG or WebP · max 2 MB</small>{error && <em>{error}</em>}</div> : <input {...common} type="text" inputMode={field.type === 'number' ? 'numeric' : 'text'}/>}</label>
 }
 
@@ -733,7 +780,7 @@ function ProductStorySignals({ product }) {
 function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account }) {
   const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
   const savedAi = readSession('extra-time-ai-preview')
-  const aiPreview = savedAi?.productId === product.id && (!savedAi.expiresAt || savedAi.expiresAt > Date.now()) ? savedAi : null
+  const initialPreview = savedAi?.productId === product.id && (!savedAi.expiresAt || savedAi.expiresAt > Date.now()) ? savedAi : null
   const customFields = product.customFields || []
   const options = product.options || []
   const sizeName = optionNameLike(product,['size'])
@@ -752,7 +799,8 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   })
   const [galleryIndex,setGalleryIndex] = useState(0)
   const [finder,setFinder] = useState(false)
-  const [personalized,setPersonalized] = useState(Boolean(customFields.length && (startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || aiPreview)))
+  const [attachedPreview,setAttachedPreview] = useState(initialPreview)
+  const [personalized,setPersonalized] = useState(Boolean(customFields.length && (startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || initialPreview)))
   const [customValues,setCustomValues] = useState(savedDraft?.values || {})
   const [assetRefs,setAssetRefs] = useState(savedDraft?.assetRefs || {})
   const [customNote,setCustomNote] = useState(savedDraft?.note || '')
@@ -760,6 +808,10 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const [customError,setCustomError] = useState('')
   const [submitting,setSubmitting] = useState(false)
   const [added,setAdded] = useState(false)
+  const [logoConsent,setLogoConsent] = useState(Boolean(savedDraft?.logoConsent))
+  const previewReadiness = productPreviewReadiness(customFields)
+  const hasStructuredPreview = previewReadiness.enabled
+  const hasUploadedLogo = customFields.some(field => field.type === 'logo' && customValues[field.key])
   const completeSelection = options.every(option => selections[option.name])
   const selectedVariant = completeSelection ? (product.variants || []).find(variant => options.every(option => variant.values?.[option.name] === selections[option.name])) : options.length ? null : product.variants?.[0]
   const displayVariant = selectedVariant || resolveVariant(product,selections) || product.variants?.find(variant => Number(variant.inventory || 0) > 0) || product.variants?.[0]
@@ -769,8 +821,8 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const swatchColor = value => ({black:'#111111',white:'#eeeeea',chalk:'#eeeeea',oxblood:'#711e25',red:'#b52b2b',blue:'#244c89',navy:'#15233d',green:'#315c43',purple:'#5f3a78'}[String(value).toLowerCase()] || String(value))
   useEffect(() => { if (startPersonalized && customFields.length) setPersonalized(true) }, [startPersonalized,customFields.length])
   useEffect(() => {
-    try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues,assetRefs,note:customNote,selections,requestKey })) } catch {}
-  }, [product.id,customValues,assetRefs,customNote,selections,requestKey])
+    try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues,assetRefs,note:customNote,selections,requestKey,logoConsent })) } catch {}
+  }, [product.id,customValues,assetRefs,customNote,selections,requestKey,logoConsent])
   const chooseOrderType = enabled => {
     setPersonalized(enabled); setCustomError(''); setAdded(false)
     const url = new URL(window.location.href)
@@ -781,10 +833,15 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const chooseOption = (name,value) => { setSelections(current => ({...current,[name]:value})); setAdded(false); setCustomError('') }
   const updateCustom = (field,rawValue,assetRef = null) => {
     const value = field.type === 'number' ? String(rawValue).replace(/\D/g,'') : String(rawValue)
-    setCustomValues(current => ({...current,[field.key]:field.type === 'photo' ? value : value.slice(0,field.maxLength || 500)})); setCustomError(''); setAdded(false)
-    if(field.type === 'photo')setAssetRefs(current => assetRef ? {...current,[field.key]:assetRef} : Object.fromEntries(Object.entries(current).filter(([key])=>key!==field.key)))
+    setCustomValues(current => ({...current,[field.key]:['photo','logo'].includes(field.type) ? value : value.slice(0,field.maxLength || 500)})); setCustomError(''); setAdded(false)
+    if(['photo','logo'].includes(field.type))setAssetRefs(current => assetRef ? {...current,[field.key]:assetRef} : Object.fromEntries(Object.entries(current).filter(([key])=>key!==field.key)))
+    if(field.type === 'logo'){
+      setLogoConsent(false)
+      setAttachedPreview(current => current?.fieldKey === field.key ? null : current)
+    }
   }
-  const openAi = () => { navigate(`/studio?product=${product.handle || product.id}`) }
+  const attachLogoPreview=(result,field)=>{const preview={productId:product.id,fieldKey:field.key,previewId:result.previewId,imageUrl:result.imageUrl,storage:result.storage,prompt:result.direction||`${field.label}: verified customer logo`,mode:result.mode,expiresAt:Date.now()+Number(result.expiresIn||86400)*1000};setAttachedPreview(preview);setGalleryIndex(0);setAdded(false);try{window.sessionStorage.setItem('extra-time-ai-preview',JSON.stringify(preview))}catch{}}
+  const openAi = () => { if (previewReadiness.enabled) navigate(`/studio?product=${product.handle || product.id}`) }
   const add = async () => {
     if (!selectedVariant) { if (sizeName && !selections[sizeName]) setFinder(true); else setCustomError('Choose every product option before adding to your bag.'); return }
     if (soldOut) { setCustomError('This variation is sold out. Choose another option.'); return }
@@ -792,19 +849,21 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     const missing = customFields.filter(field => field.required && !String(customValues[field.key] || '').trim())
     if (missing.length) { setCustomError(`Complete: ${missing.map(field => field.label).join(', ')}.`); return }
     const fields = Object.fromEntries(customFields.map(field => [field.key,String(customValues[field.key] || '').trim()]))
-    if (!Object.values(fields).some(Boolean) && !customNote.trim() && !aiPreview) { setCustomError('Add at least one detail, a studio note, or an AI direction.'); return }
+    const hasLogo=customFields.some(field=>field.type==='logo'&&fields[field.key])
+    if(hasLogo&&!logoConsent){setCustomError('Confirm that you own or have permission to use the uploaded logo.');return}
+    if (!Object.values(fields).some(Boolean) && !customNote.trim() && !attachedPreview) { setCustomError('Add at least one detail, a studio note, or a visual preview.'); return }
     setSubmitting(true); setCustomError('')
     try {
-      const result = await createCustomizationOrder({ sessionId:getCustomerSessionId(),idempotencyKey:requestKey,productId:product.id,variantId:selectedVariant.id,fields,assetRefs,note:customNote.trim(),aiPreviewId:aiPreview?.previewId || null,aiPreviewUrl:aiPreview?.imageUrl || null,aiPrompt:aiPreview?.prompt || null })
-      const customization = { requestId:result.data.id, fields, note:customNote.trim(), aiPreviewUrl:aiPreview?.imageUrl || null, aiPrompt:aiPreview?.prompt || null }
-      onAdd({...product,image:aiPreview?.imageUrl || displayVariant?.image || product.image},{variant:selectedVariant,options:selections,customization})
+      const result = await createCustomizationOrder({ sessionId:getCustomerSessionId(),idempotencyKey:requestKey,productId:product.id,variantId:selectedVariant.id,fields,assetRefs,note:customNote.trim(),aiPreviewId:attachedPreview?.previewId || null,aiPreviewUrl:attachedPreview?.imageUrl || null,aiPrompt:attachedPreview?.prompt || null,logoConsent })
+      const customization = { requestId:result.data.id, fields, note:customNote.trim(), aiPreviewUrl:attachedPreview?.imageUrl || null, aiPrompt:attachedPreview?.prompt || null, hasLogo, logoConsent }
+      onAdd({...product,image:attachedPreview?.imageUrl || displayVariant?.image || product.image},{variant:selectedVariant,options:selections,customization})
       setAdded(true)
       setRequestKey(`request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
     } catch(caught) { setCustomError(caught instanceof Error ? caught.message : 'The custom request could not be saved.') }
     finally { setSubmitting(false) }
   }
   const media = (product.media?.length ? product.media : [{id:'primary',type:'IMAGE',url:product.image,alt:product.alt}]).filter(item => item.url)
-  const gallery = aiPreview ? [{id:'ai-preview',type:'IMAGE',url:aiPreview.imageUrl,alt:'Attached AI direction'},...media] : media
+  const gallery = attachedPreview ? [{id:'custom-preview',type:'IMAGE',url:attachedPreview.imageUrl,alt:'Attached personalization preview'},...media] : media
   const taxonomy = productTaxonomyValues(product)
   const productLeague = findLeague(taxonomy.league)
   const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
@@ -818,7 +877,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{option.name === sizeName && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] || 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${value}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : value}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}><i/>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'}</p>}
-        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>Visual preview attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Preview these details</strong><small>Check name, number and colour without writing a prompt.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
+        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={openAi} disabled={!hasStructuredPreview} title={hasStructuredPreview ? 'Open the exact-image preview.' : 'A designer must approve at least one exact edit area first.'}><Sparkles size={16}/><span><strong>{hasStructuredPreview ? 'Preview name, number and colour' : 'Visual preview awaiting designer setup'}</strong><small>{hasStructuredPreview ? `Check ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} without writing a prompt.` : 'You can still submit personalization for studio review; automatic image editing is disabled.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>{personalized ? 'Your editable fields are reviewed before production.' : 'Ships after your variation is confirmed.'}</small></div>
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div>
@@ -1019,7 +1078,8 @@ function useRouteMetadata({ path, product, collection, league, team }) {
       '/journal':['The Journal — Extra Time',TRUST_PAGES.journal.intro]
     }[path]
     const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
-    const description = product?.seo?.description || product?.description || product?.story || collection?.seo?.description || collection?.description || (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const description = seoDescription(rawDescription, '', 160)
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
     const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`
     const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
@@ -1030,7 +1090,7 @@ function useRouteMetadata({ path, product, collection, league, team }) {
     const absoluteImage = new URL(image,publicOrigin).toString()
     document.documentElement.lang='en-US'
     document.title=indexable ? title : `${title} · Extra Time`
-    setMeta('description',description.slice(0,180)); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name','Extra Time',true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description.slice(0,200),true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description.slice(0,200)); setMeta('twitter:image',absoluteImage)
+    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name','Extra Time',true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
     setLink('canonical',canonical); setLink('alternate',canonical,{hreflang:'en-US'}); setLink('alternate',canonical,{hreflang:'x-default'})
     let schema=document.getElementById('route-structured-data')
     if(indexable && (product || collection || league)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
@@ -1047,7 +1107,7 @@ function useRouteMetadata({ path, product, collection, league, team }) {
         const prices=(product.variants || []).map(row=>Number(row.price)).filter(value=>Number.isFinite(value) && value>0)
         const lowest=prices.length ? Math.min(...prices) : Number(product.price || 0)
         const inventory=Number(product.inventory || 0)
-        const variantOffers=(product.variants || []).filter(variant => Number.isFinite(Number(variant.price)) && Number(variant.price) > 0).slice(0,80).map(variant => ({'@type':'Offer',url:`${canonicalProduct}?variant=${encodeURIComponent(variant.id)}`,priceCurrency:'USD',price:Number(variant.price).toFixed(2),sku:variant.sku,availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`}}))
+        const variantOffers=(product.variants || []).filter(variant => variant.status === 'ACTIVE' && Number.isFinite(Number(variant.price)) && Number(variant.price) > 0).slice(0,80).map(variant => ({'@type':'Offer',url:`${canonicalProduct}?variant=${encodeURIComponent(variant.id)}`,priceCurrency:'USD',price:Number(variant.price).toFixed(2),sku:variant.sku,availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`}}))
         const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:variantOffers.length > 1 ? variantOffers : {'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`,email:BUSINESS_DETAILS.email,address:{'@type':'PostalAddress',addressRegion:'TX',addressCountry:'US'}}}}
         if(Number(product.rating)>0 && Number(product.reviews)>0) productSchema.aggregateRating={'@type':'AggregateRating',ratingValue:Number(product.rating).toFixed(1),reviewCount:Number(product.reviews)}
         schema.textContent=JSON.stringify([productSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
@@ -1332,10 +1392,10 @@ function App() {
     page = requested ? <ProductPage key={requested.id} product={requested} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized account={account}/> : <NotFound/>
   }
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
-  else if (path === '/membership' || path === '/account/membership') page = <MembershipPage account={account} onAccountChange={setAccount}/>
-  else if (path === '/checkout') page = <CheckoutPage cart={cart} account={account} onNavigate={navigate} onClearCart={clearCart} onPaymentConfirmed={completeCheckout} initialRoute={route}/>
-  else if (path === '/track-order') page = <OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout}/>
-  else if (path.startsWith('/order/')) { const orderPublicId = decodeURIComponent(path.split('/').slice(2).join('/')); const trackingToken = new URLSearchParams(search).get('token') || ''; page = <OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout} initialPublicId={orderPublicId} initialToken={trackingToken}/> }
+  else if (path === '/membership' || path === '/account/membership') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the club…</p></div>}><MembershipPage account={account} onAccountChange={setAccount}/></Suspense>
+  else if (path === '/checkout') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening secure checkout…</p></div>}><CheckoutPage cart={cart} account={account} onNavigate={navigate} onClearCart={clearCart} onPaymentConfirmed={completeCheckout} initialRoute={route}/></Suspense>
+  else if (path === '/track-order') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening order status…</p></div>}><OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout}/></Suspense>
+  else if (path.startsWith('/order/')) { const orderPublicId = decodeURIComponent(path.split('/').slice(2).join('/')); const trackingToken = new URLSearchParams(search).get('token') || ''; page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening order status…</p></div>}><OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout} initialPublicId={orderPublicId} initialToken={trackingToken}/></Suspense> }
   else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
   else if (path === '/about') page = <AboutPage/>
   else if (['/privacy','/terms','/accessibility','/shipping','/returns','/warranty','/journal'].includes(path)) page=<PolicyPage type={path.slice(1)}/>

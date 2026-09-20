@@ -1,8 +1,10 @@
 // Scope store permissions separately from other apps sharing the Supabase project.
 export const isAdminUser = user => Boolean(user?.id && user?.app_metadata?.extra_time_role === 'admin')
 
-const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo'])
+const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo', 'logo'])
+const LOGO_TREATMENTS = new Set(['EXACT', 'FABRIC', 'VINTAGE', 'MONOCHROME'])
 export const SEO_STATUSES = Object.freeze(['BLOCKED', 'READY', 'INDEXABLE'])
+const RIGHTS_REVIEW_TERMS = /\b(?:official|authentic|licensed|replica|nike|adidas|marvel|disney|spider[- ]?man)\b/i
 const uuid = () => globalThis.crypto.randomUUID()
 const cleanTag = value => String(value || '').trim().toLowerCase().replace(/\s+/g, '-')
 const moneyValue = value => value === '' || value == null ? null : Number(value)
@@ -14,9 +16,20 @@ export const customFieldPresets = [
   { key:'year', label:'Year', type:'number', required:false, placeholder:'2026', maxLength:4, help:'A four-digit season or memory.' },
   { key:'color', label:'Colour note', type:'text', required:false, placeholder:'BLACK / PURPLE', maxLength:20, help:'A colour request when this design permits it.' },
   { key:'photo', label:'Photo', type:'photo', required:false, placeholder:'', maxLength:null, help:'Optional customer reference photo.' },
+  { key:'teamLogo', label:'Team logo', type:'logo', required:false, placeholder:'', maxLength:null, help:'Optional logo placed inside the designer-approved badge area.', previewRegion:null, allowAiFinish:true, requiresConsent:true, logoTreatment:'EXACT' },
   { key:'printText', label:'Printed message', type:'text', required:false, placeholder:'RELENTLESS', maxLength:28, help:'Short copy printed on the piece.' },
   { key:'note', label:'Studio note', type:'textarea', required:false, placeholder:'Production notes…', maxLength:500, help:'Freeform direction for the studio.' }
 ]
+
+export function catalogLegalReview(product = {}) {
+  const taxonomy = product.taxonomy && typeof product.taxonomy === 'object' ? product.taxonomy : {}
+  const title = String(product.title || product.name || '')
+  const reasons = []
+  if (taxonomy.league || taxonomy.team) reasons.push('LEAGUE_OR_TEAM_REFERENCE')
+  if (RIGHTS_REVIEW_TERMS.test(title) || RIGHTS_REVIEW_TERMS.test((product.tags || []).join(' '))) reasons.push('TRADEMARK_OR_AFFILIATION_LANGUAGE')
+  const status = String(product.aiMetadata?.catalogReview?.status || '').toUpperCase()
+  return { required:reasons.length > 0, approved:!reasons.length || status === 'APPROVED', reasons, status:status || 'PENDING' }
+}
 
 export function slugify(value, fallback = 'untitled-listing') {
   const slug = String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -45,6 +58,10 @@ export function normalizeCustomFields(fields = []) {
       maxLength: input.maxLength === '' || input.maxLength == null ? null : Math.max(1, Number(input.maxLength) || 1),
       help: String(input.help || ''),
       options: Array.isArray(input.options) ? input.options.map(value => String(value).trim()).filter(Boolean) : [],
+      allowAiFinish: input.type === 'logo' ? input.allowAiFinish !== false : false,
+      requiresConsent: input.type === 'logo' ? input.requiresConsent !== false : false,
+      logoTreatment: input.type === 'logo' ? (LOGO_TREATMENTS.has(String(input.logoTreatment || 'EXACT').toUpperCase()) ? String(input.logoTreatment || 'EXACT').toUpperCase() : 'EXACT') : null,
+      minWidth: input.type === 'logo' ? Math.max(256, Math.min(4000, Number(input.minWidth) || 800)) : null,
       previewRegion: (() => {
         if (!input.previewRegion || typeof input.previewRegion !== 'object' || Array.isArray(input.previewRegion)) return null
         const x=Math.max(0,Math.min(99,Number(input.previewRegion.x) || 0))
@@ -64,9 +81,11 @@ function legacyPersonalizationFields(fields = [], productType = '') {
   fields.forEach(field => {
     if (field && typeof field === 'object') { keys.push(field); return }
     const label = String(field || '').toUpperCase()
+    const isLogo = label.includes('LOGO') || label.includes('BADGE') || label.includes('CREST')
     if (label.includes('NAME')) add('name')
     if (label.includes('NUMBER')) add('number')
-    if (label.includes('TEAM') || label.includes('CITY')) add('teamCity')
+    if (isLogo) add('teamLogo')
+    else if (label.includes('TEAM') || label.includes('CITY')) add('teamCity')
     if (label.includes('YEAR')) add('year')
     if (label.includes('COLOUR') || label.includes('COLOR')) add('color')
     if (label.includes('PHOTO')) add('photo')
@@ -242,6 +261,9 @@ export function validateListing(product) {
     if (!field.label?.trim() || !field.key?.trim() || customKeys.has(field.key)) errors.push('Custom fields need unique keys and labels.')
     if (!CUSTOM_TYPES.has(field.type)) errors.push(`Invalid custom field type for ${field.label || field.key || 'field'}.`)
     if (field.type === 'select' && !field.options?.length) errors.push(`${field.label || 'Select field'} needs at least one option.`)
+    if (field.type === 'logo' && !LOGO_TREATMENTS.has(String(field.logoTreatment || 'EXACT').toUpperCase())) errors.push(`${field.label || 'Logo'} has an invalid finish treatment.`)
+    if (field.type === 'logo' && (!Number.isInteger(Number(field.minWidth)) || Number(field.minWidth) < 256 || Number(field.minWidth) > 4000)) errors.push(`${field.label || 'Logo'} needs a minimum size between 256 and 4000 pixels.`)
+    if (field.type === 'logo' && product.status === 'PUBLISHED' && !field.previewRegion) errors.push(`${field.label || 'Logo'} needs a designer-approved logo area.`)
     customKeys.add(field.key)
   }
   const options = product.options || []
@@ -279,6 +301,8 @@ export function validateListing(product) {
     if (!String(product.seo?.title || '').trim() || !String(product.seo?.description || '').trim()) errors.push('SEO title and description are required before publishing.')
     if (!String(product.type || '').trim() || !(product.tags || []).length) errors.push('Product type and at least one catalogue tag are required before publishing.')
     if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) errors.push('At least one priced, in-stock active variant is required before publishing.')
+    const legal = catalogLegalReview(product)
+    if (legal.required && !legal.approved) errors.push(`Rights and affiliation review required before publishing (${legal.reasons.join(', ')}). Mark the admin review as approved only after verifying the source and wording.`)
   }
   return [...new Set(errors)]
 }

@@ -4,7 +4,10 @@ import { consumeQuota, enforceSameOrigin, handleApiError, readBody, requestIdent
 function publicCustomization(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const sourceFields = value.fields && typeof value.fields === 'object' && !Array.isArray(value.fields) ? value.fields : {}
-  const fields = Object.fromEntries(Object.entries(sourceFields).slice(0, 30).map(([key, raw]) => [safeText(key, 80), safeText(raw, 500)]).filter(([key, raw]) => key && raw))
+  const fields = Object.fromEntries(Object.entries(sourceFields).slice(0, 30).map(([key, raw]) => {
+    const value = safeText(raw, 500)
+    return [safeText(key, 80), /^https?:\/\//i.test(value) ? 'Private asset attached' : value]
+  }).filter(([key, raw]) => key && raw))
   const note = safeText(value.note, 500)
   const hasAiPreview = Boolean(value.hasAiPreview)
   return Object.keys(fields).length || note || hasAiPreview ? { fields, note, hasAiPreview } : null

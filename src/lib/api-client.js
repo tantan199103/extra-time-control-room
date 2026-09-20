@@ -21,6 +21,8 @@ export const EDGE_FUNCTION_ROUTES = Object.freeze(new Set([
 
 export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/customer-upload',
+  '/api/logo-preview',
+  '/api/ai-logo-preview',
   '/api/ai-preview',
   '/api/customization-order',
   '/api/admin-customizations',
@@ -37,7 +39,8 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/order-track',
   '/api/render-artwork',
   '/api/payment-config',
-  '/api/google-merchant-feed'
+  '/api/google-merchant-feed',
+  '/api/newsletter-subscribe'
 ]))
 
 function cleanOrigin(value) {

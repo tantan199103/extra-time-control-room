@@ -61,7 +61,7 @@ function fieldValue(field, raw) {
 
 function previewDirection(listing, body) {
   const schema = Array.isArray(listing.custom_fields) ? listing.custom_fields : []
-  const editable = schema.filter(field => field.type !== 'photo' && field.type !== 'textarea')
+  const editable = schema.filter(field => !['photo','logo','textarea'].includes(field.type))
   const incomingValues = body.values && typeof body.values === 'object' && !Array.isArray(body.values) ? body.values : {}
   const allowedKeys = new Set(editable.map(field => field.key))
   if (Object.keys(incomingValues).some(key => !allowedKeys.has(key))) throw Object.assign(new Error('The preview contains a field this listing does not allow.'), { status:422 })
@@ -141,7 +141,7 @@ export default async function handler(request, response) {
     if (!productId) throw Object.assign(new Error('Choose a published listing first.'), { status:422 })
     const listing = await publishedListing(client, productId)
     if (!listing?.image) throw Object.assign(new Error('This published listing has no AI reference image.'), { status:404 })
-    const editableFields = (Array.isArray(listing.custom_fields) ? listing.custom_fields : []).filter(field => field.type !== 'photo' && field.type !== 'textarea' && normalizePreviewRegion(field.previewRegion))
+    const editableFields = (Array.isArray(listing.custom_fields) ? listing.custom_fields : []).filter(field => !['photo','logo','textarea'].includes(field.type) && normalizePreviewRegion(field.previewRegion))
     if (!editableFields.length) throw Object.assign(new Error('This product does not yet have designer-approved edit areas.'), { status:422 })
 
     const apiKey = process.env.AI_IMAGE_API_KEY || process.env.OPENAI_API_KEY

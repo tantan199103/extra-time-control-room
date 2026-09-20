@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
+import { assertCustomerAsset } from './_logo-request.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
-  if (field.type === 'photo') {
+  if (field.type === 'photo' || field.type === 'logo') {
     const url = safeText(raw, 1200)
     if (!/^https:\/\//i.test(url)) throw Object.assign(new Error(`${field.label} must be an uploaded HTTPS image.`), { status:422 })
     return url
@@ -55,12 +56,17 @@ export default async function handler(request, response) {
     const note = safeText(body.note, 500)
     const aiPrompt = safeText(body.aiPrompt, 1200)
     const incomingAssetRefs = body.assetRefs && typeof body.assetRefs === 'object' && !Array.isArray(body.assetRefs) ? body.assetRefs : {}
-    const photoKeys = new Set(schema.filter(field => field.type === 'photo').map(field => field.key))
+    const assetKeys = new Set(schema.filter(field => ['photo','logo'].includes(field.type)).map(field => field.key))
     const assetRefs = {}
     for (const [key,raw] of Object.entries(incomingAssetRefs)) {
-      const bucket=safeText(raw?.bucket,80), path=safeText(raw?.path,700)
-      if(!photoKeys.has(key) || bucket!=='customer-references' || !path.startsWith(`${product.id}/${identityHash.slice(0,16)}/`)) throw Object.assign(new Error('A customer reference does not belong to this request.'),{status:422})
-      assetRefs[key]={bucket,path}
+      const field = schema.find(item => item.key === key)
+      if (!assetKeys.has(key) || !field) throw Object.assign(new Error('A customer reference does not belong to this request.'), { status:422 })
+      try {
+        assetRefs[key] = assertCustomerAsset(product.id, identityHash, raw, { kind:field.type })
+      } catch (error) {
+        if (error?.status) throw error
+        throw Object.assign(new Error('A customer reference does not belong to this request.'), { status:422 })
+      }
     }
     const aiPreviewId = safeText(body.aiPreviewId,180)
     const aiPreviewUrl = safeText(body.aiPreviewUrl, 1600)
@@ -72,6 +78,15 @@ export default async function handler(request, response) {
       if(jobError)throw jobError
       if(!job)throw Object.assign(new Error('The AI preview does not belong to this request.'),{status:422})
       aiPreviewStorage={bucket:'ai-previews',path:job.storage_path,jobId:job.id}
+    }
+    const logoFields = schema.filter(field => field.type === 'logo' && fields[field.key])
+    const logoConsent = body.logoConsent === true
+    if (logoFields.some(field => field.requiresConsent !== false) && !logoConsent) {
+      throw Object.assign(new Error('Confirm that you own or have permission to use the uploaded logo.'), { status:422 })
+    }
+    for (const field of logoFields) {
+      if (!assetRefs[field.key]) throw Object.assign(new Error(`${field.label || 'Logo'} must use the securely uploaded logo asset.`), { status:422 })
+      if (!field.previewRegion) throw Object.assign(new Error(`${field.label || 'Logo'} has no designer-approved placement area.`), { status:422 })
     }
     if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
 
@@ -89,6 +104,7 @@ export default async function handler(request, response) {
       aiPreviewUrl:aiPreviewUrl || null,
       aiPreviewStorage,
       aiPrompt:aiPrompt || null,
+      logoConsent:logoFields.length ? { accepted:logoConsent, acceptedAt:new Date().toISOString(), fieldKeys:logoFields.map(field => field.key) } : null,
       source:aiPreviewUrl ? 'ai-assisted-product-page' : 'product-page'
     }
     const order = {

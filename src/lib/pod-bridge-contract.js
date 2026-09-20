@@ -1,3 +1,5 @@
+import { normalizePreviewRegion } from './customization-ai.js'
+
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u200B-\u200D\u202A-\u202E\u2066-\u2069\uFEFF]/g
 
 export const POD_BRIDGE_PROTOCOL_VERSION = '1.0'
@@ -42,7 +44,8 @@ export function slugifyBridge(value, fallback = 'asset') {
 function normalizeCustomField(field, index) {
   const input = field && typeof field === 'object' ? field : { label: field }
   const key = slugifyBridge(input.key || input.label || `field-${index + 1}`, `field-${index + 1}`).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
-  const type = ['text', 'number', 'textarea', 'select', 'photo'].includes(input.type) ? input.type : 'text'
+  const type = ['text', 'number', 'textarea', 'select', 'photo', 'logo'].includes(input.type) ? input.type : 'text'
+  const previewRegion = type === 'logo' ? normalizePreviewRegion(input.previewRegion) : null
   return {
     id: text(input.id, 120) || `bridge-field-${index + 1}`,
     key,
@@ -52,7 +55,12 @@ function normalizeCustomField(field, index) {
     placeholder: text(input.placeholder, 180),
     maxLength: input.maxLength === '' || input.maxLength == null ? null : Math.max(1, Math.min(2000, Number(input.maxLength) || 1)),
     help: text(input.help, 400),
-    options: list(input.options, 30, 120)
+    options: list(input.options, 30, 120),
+    allowAiFinish: type === 'logo' ? input.allowAiFinish !== false : false,
+    requiresConsent: type === 'logo' ? input.requiresConsent !== false : false,
+    logoTreatment: type === 'logo' ? text(input.logoTreatment, 24).toUpperCase() || 'EXACT' : null,
+    minWidth: type === 'logo' ? Math.max(256, Math.min(4000, Number(input.minWidth) || 800)) : null,
+    previewRegion
   }
 }
 

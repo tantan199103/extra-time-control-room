@@ -88,12 +88,18 @@ export function normalizeCheckoutLines(lines) {
 function sanitizeCustomization(value) {
   if (!value) return null
   const fieldsSource = value.fields && typeof value.fields === 'object' && !Array.isArray(value.fields) ? value.fields : {}
-  const fields = Object.fromEntries(Object.entries(fieldsSource).slice(0, 30).map(([key, raw]) => [safeText(key, 80), safeText(raw, 500)]).filter(([key]) => key))
+  const fields = Object.fromEntries(Object.entries(fieldsSource).slice(0, 30).map(([key, raw]) => {
+    const value = safeText(raw, 500)
+    // Customer uploads are private storage assets. Keep checkout/order
+    // snapshots useful without persisting short-lived signed URLs or any
+    // arbitrary external image URL in the commerce payload.
+    return [safeText(key, 80), /^https?:\/\//i.test(value) ? 'Private asset attached' : value]
+  }).filter(([key]) => key))
   const note = safeText(value.note, 500)
   const requestId = safeText(value.requestId, 180)
   const aiPreviewUrl = safeText(value.aiPreviewUrl, 1600)
   if (aiPreviewUrl && !/^https:\/\//i.test(aiPreviewUrl)) throw Object.assign(new Error('A customization preview must use a secure URL.'), { status: 422 })
-  return { fields, note, requestId: requestId || null, aiPreviewUrl: aiPreviewUrl || null }
+  return { fields, note, requestId: requestId || null, aiPreviewUrl: aiPreviewUrl || null, hasLogo:Boolean(value.hasLogo), logoConsent:Boolean(value.logoConsent) }
 }
 
 export function normalizeCustomer(input = {}) {

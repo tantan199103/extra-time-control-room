@@ -18,6 +18,19 @@ export function normalizePreviewRegion(region) {
   return normalized.width >= 1 && normalized.height >= 1 ? normalized : null
 }
 
+export function productPreviewReadiness(fields = []) {
+  const supported = (Array.isArray(fields) ? fields : []).filter(field => !['photo', 'textarea'].includes(field?.type))
+  const ready = supported.filter(field => normalizePreviewRegion(field?.previewRegion))
+  const missing = supported.filter(field => !normalizePreviewRegion(field?.previewRegion))
+  return {
+    enabled: ready.length > 0,
+    readyCount: ready.length,
+    supportedCount: supported.length,
+    readyFields: ready,
+    missingFields: missing
+  }
+}
+
 export function buildExactPreviewDirection({ title, details = [] } = {}) {
   const requestedDetails = details
     .map(item => ({ label:clean(item?.label, 80), value:clean(item?.value, 500), region:normalizePreviewRegion(item?.region) }))

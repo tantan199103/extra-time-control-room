@@ -12,6 +12,8 @@ const requestCounters = new Map()
 
 const routeModules = new Map([
   ['/api/customer-upload', 'customer-upload.js'],
+  ['/api/logo-preview', 'logo-preview.js'],
+  ['/api/ai-logo-preview', 'ai-logo-preview.js'],
   ['/api/ai-preview', 'ai-preview.js'],
   ['/api/ai-listing-copy', 'ai-listing-copy.js'],
   ['/api/ai-listing-media', 'ai-listing-media.js'],
@@ -39,7 +41,8 @@ const routeModules = new Map([
   // Public, read-only Google Merchant Center source. The handler still uses
   // the server-only Supabase key so draft and blocked catalogue rows never
   // leak into the feed.
-  ['/api/google-merchant-feed', 'google-merchant-feed.js']
+  ['/api/google-merchant-feed', 'google-merchant-feed.js'],
+  ['/api/newsletter-subscribe', 'newsletter-subscribe.js']
 ])
 
 const loadedHandlers = new Map()

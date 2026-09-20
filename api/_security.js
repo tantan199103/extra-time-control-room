@@ -69,11 +69,12 @@ export function requestIdentity(request, sessionId) {
 }
 
 export async function consumeQuota(client, action, identityHash) {
-  const { data, error } = await client.rpc('pod_consume_api_quota', { requested_action:action, requested_identity_hash:identityHash })
+  const quotaAction = ['logo-preview','ai-logo-preview'].includes(action) ? 'ai-preview' : action
+  const { data, error } = await client.rpc('pod_consume_api_quota', { requested_action:quotaAction, requested_identity_hash:identityHash })
   if (error) throw Object.assign(new Error('Request protection is not ready. Apply the storefront runtime migration.'), { status:503 })
   if (!data?.allowed) {
     const retryAfter = Math.max(1, Number(data?.retry_after_seconds || 3600))
-    const error = Object.assign(new Error(`Too many ${action === 'ai-preview' ? 'AI previews' : action === 'cart-validate' ? 'cart checks' : 'requests'}. Try again later.`), { status:429, retryAfter })
+    const error = Object.assign(new Error(`Too many ${['ai-preview','logo-preview','ai-logo-preview'].includes(action) ? 'visual previews' : action === 'cart-validate' ? 'cart checks' : 'requests'}. Try again later.`), { status:429, retryAfter })
     throw error
   }
   return data

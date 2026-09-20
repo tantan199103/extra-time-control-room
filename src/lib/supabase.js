@@ -42,19 +42,36 @@ export function getCustomerSessionId() {
   }
 }
 
-export async function uploadCustomerReference(file, productId, fieldKey) {
-  if (!file || !/^image\/(?:png|jpe?g|webp)$/i.test(file.type) || file.size > 2 * 1024 * 1024) throw new Error('Use a JPG, PNG or WebP image smaller than 2 MB.')
+export async function uploadCustomerReference(file, productId, fieldKey, kind = 'photo') {
+  const logo = kind === 'logo'
+  const accepted = logo ? /^image\/(?:png|jpe?g|webp|svg\+xml)$/i : /^image\/(?:png|jpe?g|webp)$/i
+  const limit = logo ? 8 * 1024 * 1024 : 2 * 1024 * 1024
+  if (!file || !accepted.test(file.type) || file.size > limit) throw new Error(`Use a ${logo ? 'PNG, SVG, JPG or WebP logo' : 'JPG, PNG or WebP image'} smaller than ${limit / 1024 / 1024} MB.`)
   const dataUrl = await new Promise((resolve,reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result)
     reader.onerror = () => reject(new Error('The selected image could not be read.'))
     reader.readAsDataURL(file)
   })
-  const response = await apiFetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, dataUrl }) })
+  const response = await apiFetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, kind:logo ? 'logo' : 'photo', dataUrl }) })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error || 'The reference image could not be uploaded.')
   return result
 }
+
+async function requestLogoPreview(path, { productId, fieldKey, assetRef, treatment = 'EXACT' }) {
+  const response = await apiFetch(path, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, assetRef, treatment })
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || (path.includes('ai-logo') ? 'AI logo finish failed.' : 'Logo preview failed.'))
+  return result
+}
+
+export const createExactLogoPreview = input => requestLogoPreview('/api/logo-preview', input)
+export const createAiLogoPreview = input => requestLogoPreview('/api/ai-logo-preview', input)
 
 export async function fetchStorefrontCatalog(fallback = []) {
   if (!supabase) return import.meta.env.DEV ? previewResult(fallback) : { data:[], source:'unavailable', error:'Live catalogue is not configured.' }
@@ -199,6 +216,14 @@ export async function requestAiListingCopy(product, brief = {}) {
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error || 'AI copy could not be generated.')
   return result
+}
+
+// Full review uses the same authenticated, server-only AI writer but asks it
+// to inspect every text block and every public listing image. Keeping this as
+// a named operation makes the admin intent explicit and leaves the ordinary
+// copy draft flow lightweight.
+export async function requestAiListingReview(product, brief = {}) {
+  return requestAiListingCopy(product, { ...brief, reviewMode:'FULL_AUDIT' })
 }
 
 export async function requestAiListingMedia(product, slot, direction = '') {
@@ -442,7 +467,9 @@ function checkoutLines(cart = []) {
       requestId: item.customization.requestId || null,
       fields: item.customization.fields || {},
       note: item.customization.note || '',
-      aiPreviewUrl: item.customization.aiPreviewUrl || null
+      aiPreviewUrl: item.customization.aiPreviewUrl || null,
+      hasLogo: Boolean(item.customization.hasLogo),
+      logoConsent: Boolean(item.customization.logoConsent)
     } : null
   }))
 }
