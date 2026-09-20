@@ -39,8 +39,7 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/order-track',
   '/api/render-artwork',
   '/api/payment-config',
-  '/api/google-merchant-feed',
-  '/api/newsletter-subscribe'
+  '/api/google-merchant-feed'
 ]))
 
 function cleanOrigin(value) {

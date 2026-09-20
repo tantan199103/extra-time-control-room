@@ -20,7 +20,7 @@ test('hybrid API routes resolve light calls to Supabase and heavy calls to Node'
   assert.equal(isNodeBackendRoute('/api/ai-preview'), true)
   assert.equal(isNodeBackendRoute('/api/logo-preview'), true)
   assert.equal(isNodeBackendRoute('/api/ai-logo-preview'), true)
-  assert.equal(isNodeBackendRoute('/api/newsletter-subscribe'), true)
+  assert.equal(isNodeBackendRoute('/api/newsletter-subscribe'), false)
   assert.equal(isNodeBackendRoute('/api/ai-listing-copy'), false)
   assert.equal(isNodeBackendRoute('/api/ai-listing-media'), false)
 })
