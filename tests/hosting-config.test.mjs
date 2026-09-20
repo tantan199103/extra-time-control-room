@@ -16,8 +16,10 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
     'api/google-merchant-feed.js': { maxDuration: 15 },
     'api/ai-listing-copy.js': { maxDuration: 60 },
     'api/ai-listing-media.js': { maxDuration: 60 },
+    'api/newsletter-subscribe.js': { maxDuration: 15 },
   }, 'SEO/feed and the bounded AI listing tools stay on Vercel while the remaining application API routes are proxied to Cloud Run')
   assert.ok(config.rewrites.some(rule => rule.source === '/api/google-merchant-feed' && rule.destination === '/api/google-merchant-feed.js'))
+  assert.ok(config.rewrites.some(rule => rule.source === '/api/newsletter-subscribe' && rule.destination === '/api/newsletter-subscribe.js'))
 })
 
 test('static assets are cacheable while API responses remain no-store', async () => {

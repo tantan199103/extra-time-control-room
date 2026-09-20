@@ -283,11 +283,35 @@ function Hero({ content = {} }) {
       <div className="hero__wash" />
       <div className="hero__time" aria-hidden="true">90<span>+</span></div>
       <div className="hero__content">
-        <p>{content.eyebrow || 'THE 90+ COLLECTION · DROP 01'}</p>
-        <h1>{content.headline ? content.headline.toUpperCase() : <>EVERY JERSEY<br />HOLDS A MEMORY.<br /><span>MAKE YOURS.</span></>}</h1>
-        <div className="hero__actions"><button className="button button--light" onClick={() => navigate('/shop')}>{content.button || 'SHOP THE DROP'}</button><ButtonLink light onClick={() => document.querySelector('#story')?.scrollIntoView({ behavior: 'smooth' })}>DISCOVER THE STORY</ButtonLink></div>
+        <p>{content.eyebrow || 'PERSONALIZED JERSEYS · DESIGNED FOR YOUR STORY'}</p>
+        <h1>{content.headline ? content.headline.toUpperCase() : <>YOUR JERSEY.<br />YOUR STORY.<br /><span>MAKE IT PERSONAL.</span></>}</h1>
+        <p className="hero__lede">{content.supporting || 'Designer-led football jerseys customized with your name, number, colors and memories.'}</p>
+        <div className="hero__actions"><button className="button button--light" onClick={() => navigate('/product/touchline?custom=1')}>{content.button || 'CREATE YOUR JERSEY'}</button><ButtonLink light onClick={() => navigate('/shop')}>SHOP DESIGNS</ButtonLink></div>
+        <span className="hero__brand-line">Football memories, made wearable.</span>
       </div>
       <div className="hero__meta"><span>DESIGNED FOR THE MINUTES<br />THAT STAY WITH YOU.</span><button onClick={() => document.querySelector('#drop')?.scrollIntoView({ behavior: 'smooth' })}>SCROLL TO KICK OFF <ArrowDown size={16}/></button></div>
+    </section>
+  )
+}
+
+function HomePath({ customProduct }) {
+  const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
+  return (
+    <section className="home-path" id="how-it-works" aria-labelledby="home-path-heading">
+      <div className="home-path__intro">
+        <span>DESIGNED BY US · PERSONALIZED BY YOU</span>
+        <h2 id="home-path-heading">PICK A DESIGN.<br /><em>MAKE IT YOURS.</em></h2>
+        <p>Choose an original jersey, add the details that matter and preview your piece before it reaches the pitch.</p>
+        <div className="home-path__actions">
+          <button className="button button--dark" onClick={() => navigate('/shop')}>SHOP PERSONALIZED JERSEYS <ArrowRight size={16}/></button>
+          <ButtonLink onClick={() => navigate(customTarget)}>START WITH YOUR DETAILS</ButtonLink>
+        </div>
+      </div>
+      <ol className="home-path__steps">
+        <li><span>01</span><div><strong>Choose a design</strong><p>Small-batch artwork with a fixed point of view.</p></div></li>
+        <li><span>02</span><div><strong>Add your details</strong><p>Name, number, team or city, year and colour.</p></div></li>
+        <li><span>03</span><div><strong>Preview, then order</strong><p>See the personalization before secure checkout.</p></div></li>
+      </ol>
     </section>
   )
 }
@@ -326,7 +350,7 @@ function ProductCard({ product, onQuickView }) {
         <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
       </button>
       <button className="product-card__info" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
-        <span><strong>{product.name}</strong><small>{product.meta}</small></span>
+        <span><strong>{product.name}</strong><small>{product.meta}</small><em>{product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP'}</em></span>
         <span className="product-card__price"><strong>{maxPrice > Number(product.price) ? `FROM ${money(product.price)}` : money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</span>
       </button>
       {product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}
@@ -420,13 +444,13 @@ function StoryExplorer({ product }) {
 
 function PlayerDiscovery({ customProduct }) {
   const cards = [
-    { name: 'THE CAPTAIN', count: 12, img: '/assets/hero-tunnel.webp', pos: '68%' },
-    { name: 'THE PLAYMAKER', count: 9, img: '/assets/editorial-player.webp', pos: '50%' },
+    { name: 'FAMILY', count: 12, img: '/assets/hero-tunnel.webp', pos: '68%' },
+    { name: 'HOMETOWN', count: 9, img: '/assets/editorial-player.webp', pos: '50%' },
     { name: 'YOUR NAME', count: '∞', img: '/assets/jersey-white.webp', pos: '50%' }
   ]
   return (
     <section className="players-section section" id="players">
-      <div className="section-title-row"><h2>WHO DO YOU<br />PLAY FOR?</h2><p>Find a shirt by the role you remember,<br />not just the name on the back.</p></div>
+      <div className="section-title-row"><h2>SHOP BY<br />STORY.</h2><p>Find a shirt by the moment behind it,<br />not only the name on the back.</p></div>
       <div className="player-grid">{cards.map((card, index) => <button key={card.name} onClick={() => index === 2 ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} {card.count === '∞' ? 'POSSIBILITIES' : 'STORIES'} <ArrowRight size={15}/></small></span></button>)}</div>
     </section>
   )
@@ -639,8 +663,9 @@ function Home({ onQuickView, products, theme, collections = [] }) {
   const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,4) : products.slice(0,4)
   const renderBlock = id => ({
     hero:<Hero key="hero" content={theme?.content}/>,
+    'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
-    rail:<ProductRail key="rail" onQuickView={onQuickView} items={merchandised}/>,
+    rail:<ProductRail key="rail" title="TRENDING DESIGNS" onQuickView={onQuickView} items={merchandised}/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues"/>,
@@ -649,8 +674,12 @@ function Home({ onQuickView, products, theme, collections = [] }) {
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
   }[id] || null)
-  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','drop','rail','story','players','custom-cta','vault','manifesto','newsletter']
+  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','home-path','rail','custom-cta','drop','story','players','leagues','vault','manifesto','newsletter']
   const homeBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
+  if (!homeBlocks.includes('home-path')) {
+    const heroIndex = homeBlocks.indexOf('hero')
+    homeBlocks.splice(heroIndex >= 0 ? heroIndex + 1 : 0, 0, 'home-path')
+  }
   return <>{homeBlocks.map(renderBlock)}</>
 }
 
