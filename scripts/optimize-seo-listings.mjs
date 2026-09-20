@@ -8,6 +8,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
+import { truncateSeoText } from '../src/lib/seo-text.js'
 
 const TARGET_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ofetusgarxcwloxxkhnr.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TARGET_SERVICE_KEY || ''
@@ -156,7 +157,7 @@ function makeSeoTitle(product, taxonomy) {
 
 function makeSeoDescription(description, product, taxonomy) {
   const prefix = taxonomy.team ? `${teamLabel(taxonomy.team)} ${leagueLabel(taxonomy.league)} fanwear.` : `${leagueLabel(taxonomy.league) || 'Extra Time'} fanwear.`
-  return trimTo(`${prefix} ${description}`, 175, 145)
+  return truncateSeoText(`${prefix} ${description}`, 160, 110)
 }
 
 function makeBlocks(product, description, facts) {

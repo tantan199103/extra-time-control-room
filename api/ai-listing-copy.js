@@ -191,15 +191,29 @@ export default async function handler(request, response) {
     ].map(item => [item.url, item]).filter(([url]) => url)).values()].slice(0, 10)
     for (const image of references.slice(0, 10)) content.push({ type:'image_url', image_url:{ url:image.url, detail:'low' } })
     const headers = { Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json' }
+    let visionUsed = references.length > 0
     let upstream = await fetch(apiUrl, {
       method:'POST', headers,
       body:JSON.stringify({ model, temperature:0.65, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] }),
       signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
     })
     let payload = await upstream.json().catch(() => ({}))
-    // Some OpenAI-compatible gateways do not expose response_format or vision on
-    // every text model. Retry once with the same guarded brief as plain text.
+    // Some OpenAI-compatible gateways do not expose response_format. Retry with
+    // the same multimodal content first so a full audit never silently drops
+    // its image evidence.
     if (!upstream.ok && [400,415,422].includes(upstream.status)) {
+      upstream = await fetch(apiUrl, {
+        method:'POST', headers,
+        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content }] }),
+        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+      })
+      payload = await upstream.json().catch(() => ({}))
+    }
+    // A few text-only gateways reject multimodal messages altogether. A normal
+    // copy draft may still use a guarded text-only fallback; FULL_AUDIT must
+    // fail instead of claiming it inspected images it never received.
+    if (!upstream.ok && [400,415,422].includes(upstream.status) && !fullAudit && visionUsed) {
+      visionUsed = false
       upstream = await fetch(apiUrl, {
         method:'POST', headers,
         body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
@@ -212,7 +226,7 @@ export default async function handler(request, response) {
     const suggestion = normalizeSuggestion(raw, language)
     // Never trust a model-generated count; report the exact number of image
     // references that this request actually sent to the vision model.
-    suggestion.audit.reviewedImageCount = references.length
+    suggestion.audit.reviewedImageCount = visionUsed ? references.length : 0
     if (!suggestion.title || !suggestion.description) return json(response, 502, { error:'AI returned an incomplete listing draft. Try a more specific direction.' })
     return json(response, 200, { suggestion, model, mode:fullAudit ? 'FULL_AUDIT' : 'COPY_DRAFT' })
   } catch (error) {

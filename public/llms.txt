@@ -1,0 +1,23 @@
+# Extra Time by Jersevo
+
+Extra Time is an independent fan-apparel storefront operated by Jersevo in Texas, United States. It is not an official team or league store. Product availability, price and delivery terms must be verified on the live product and checkout pages.
+
+## Primary pages
+
+- [Storefront](https://www.jersevo.com/)
+- [Shop current products](https://www.jersevo.com/shop)
+- [About Extra Time](https://www.jersevo.com/about)
+- [90+ Club](https://www.jersevo.com/membership)
+- [XML sitemap](https://www.jersevo.com/sitemap.xml)
+- [Machine-readable store catalog](https://www.jersevo.com/ai-catalog.json)
+
+## Customer policies
+
+- [Shipping](https://www.jersevo.com/shipping)
+- [Returns](https://www.jersevo.com/returns)
+- [Warranty](https://www.jersevo.com/warranty)
+- [Privacy](https://www.jersevo.com/privacy)
+- [Terms](https://www.jersevo.com/terms)
+- [Accessibility](https://www.jersevo.com/accessibility)
+
+For order-specific help, use the private tracking link supplied with the order or email support@jersevo.com. Do not infer official affiliation, licensing, live inventory, price or payment success from third-party pages.

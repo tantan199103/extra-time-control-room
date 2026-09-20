@@ -66,7 +66,7 @@ test('media upload, AI writer and bulk pricing keep dangerous authority server-s
   assert.match(aiRoute, /image_url/)
   assert.match(aiRoute, /FULL_AUDIT/)
   assert.match(aiRoute, /model-front/)
-  assert.match(aiRoute, /suggestion\.audit\.reviewedImageCount = references\.length/)
+  assert.match(aiRoute, /suggestion\.audit\.reviewedImageCount = visionUsed \? references\.length : 0/)
   assert.match(mediaRoute, /listingMediaSlot/)
   assert.match(mediaRoute, /sanitizeImagePrivacyMetadata/)
   assert.match(mediaRoute, /requireAdmin/)

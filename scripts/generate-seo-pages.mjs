@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog } from '../src/lib/storefront-model.js'
 import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
+import { seoDescription } from '../src/lib/seo-text.js'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
@@ -17,18 +18,18 @@ const slug = value => encodeURIComponent(String(value || '').trim())
 
 function normalizeProduct(row) {
   const title = text(row.title || row.name, 'Extra Time football jersey')
-  const description = text(row.seo?.description || row.description || row.subtitle || row.story, `A designer-led ${title} football jersey from Extra Time.`)
+  const description = seoDescription(row.seo?.description, text(row.description || row.subtitle || row.story, `A designer-led ${title} football jersey from Extra Time.`), 160)
   const image = absolute(row.image || row.media?.find?.(item => item.type === 'IMAGE')?.url || '/assets/hero-tunnel.webp')
   const variants = Array.isArray(row.pod_product_variants) ? row.pod_product_variants : Array.isArray(row.variants) ? row.variants : []
   const prices = variants.map(item => Number(item.price)).filter(Number.isFinite).filter(value => value > 0)
   const price = Number(row.price) > 0 ? Number(row.price) : (prices.length ? Math.min(...prices) : 0)
-  const inventory = Number.isFinite(Number(row.inventory)) ? Number(row.inventory) : variants.reduce((total, item) => total + Number(item.inventory || 0), 0)
+  const inventory = variants.filter(item => String(item.status || '').toUpperCase() === 'ACTIVE').reduce((total, item) => total + Math.max(0,Number(item.inventory || 0) - Number(item.reserved_inventory || 0)), 0)
   const handle = text(row.handle || row.id, title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
   return {
     handle, title, description, image, price, inventory, sku:text(row.sku || variants[0]?.sku),
     variants:variants.map(item => ({
       id:text(item.id), sku:text(item.sku), price:Number(item.price), compareAt:Number(item.compare_at ?? item.compareAt),
-      inventory:Number(item.inventory || 0), status:String(item.status || '').toUpperCase(), image:absolute(item.image || image), values:item.option_values || item.values || {}
+      inventory:Math.max(0,Number(item.inventory || 0) - Number(item.reserved_inventory || 0)), status:String(item.status || '').toUpperCase(), image:absolute(item.image || image), values:item.option_values || item.values || {}
     })),
     updatedAt:row.updated_at || row.updatedAt || '', taxonomy:row.taxonomy || {}, seoStatus:String(row.seo_status || row.seo?.status || '').toUpperCase()
   }
@@ -48,14 +49,14 @@ async function loadProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (base && key) {
     try {
-      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=updated_at.desc&limit=5000`
+      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=updated_at.desc&limit=5000`
       const rows = await fetchRows(query, key)
       if (Array.isArray(rows)) return rows.map(normalizeProduct)
     } catch (error) {
       // Older deployments may not have the gate column yet. In that case only
       // rows carrying the explicit structured status can be generated.
       try {
-        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=5000`
+        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=5000`
         const legacyRows = await fetchRows(legacyQuery, key)
         return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct)
       } catch (legacyError) {
@@ -81,7 +82,7 @@ async function loadBlockedProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!base || !key) return []
   try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=updated_at.desc&limit=5000`
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=updated_at.desc&limit=5000`
     const rows = await fetchRows(query, key)
     return (Array.isArray(rows) ? rows : []).map(normalizeProduct)
   } catch (error) {
@@ -116,7 +117,7 @@ async function loadCollections() {
 function productSchema(product) {
   const canonical = `${PUBLIC_ORIGIN}/product/${slug(product.handle)}`
   const variantOffers = (product.variants || [])
-    .filter(variant => Number.isFinite(Number(variant.price)) && Number(variant.price) > 0)
+    .filter(variant => variant.status === 'ACTIVE' && Number.isFinite(Number(variant.price)) && Number(variant.price) > 0)
     .map(variant => {
       const price = Number(variant.price)
       const url = `${canonical}?variant=${encodeURIComponent(variant.id)}`
@@ -138,7 +139,7 @@ function productSchema(product) {
     url:canonical,
     brand:{ '@type':'Brand', name:'Extra Time' },
     category:'Apparel & Accessories > Clothing > Jerseys',
-    offers:variantOffers.length > 1 ? variantOffers : {
+    offers:variantOffers.length ? (variantOffers.length === 1 ? variantOffers[0] : variantOffers) : {
       '@type':'Offer', url:canonical, priceCurrency:'USD', price:product.price.toFixed(2),
       availability:`https://schema.org/${product.inventory > 0 ? 'InStock' : 'OutOfStock'}`,
       itemCondition:'https://schema.org/NewCondition',
@@ -170,17 +171,19 @@ function pageHtml(shell, { path, title, description, image, noindex = false, fal
     .replace(/<html[^>]*>/i, '<html lang="en-US">')
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`)
     .replace(/<link\s+rel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${escapeHtml(canonical)}" />`)
-  html = upsertMeta(html, 'name', 'description', description.slice(0, 180))
+    .replace(/<link\s+rel=["']preload["'][^>]*id=["']route-lcp-image["'][^>]*>/i, `<link rel="preload" as="image" href="${escapeHtml(image)}" fetchpriority="high" id="route-lcp-image" />`)
+  const metaDescription = seoDescription(description, '', 160)
+  html = upsertMeta(html, 'name', 'description', metaDescription)
   html = upsertMeta(html, 'name', 'robots', noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
   html = upsertMeta(html, 'name', 'googlebot', noindex ? 'noindex,nofollow' : 'index,follow')
   html = upsertMeta(html, 'property', 'og:title', title)
-  html = upsertMeta(html, 'property', 'og:description', description.slice(0, 200))
+  html = upsertMeta(html, 'property', 'og:description', metaDescription)
   html = upsertMeta(html, 'property', 'og:url', canonical)
   html = upsertMeta(html, 'property', 'og:image', image)
   html = upsertMeta(html, 'property', 'og:image:alt', title)
   html = upsertMeta(html, 'property', 'og:type', path.startsWith('/product/') ? 'product' : 'website')
   html = upsertMeta(html, 'name', 'twitter:title', title)
-  html = upsertMeta(html, 'name', 'twitter:description', description.slice(0, 200))
+  html = upsertMeta(html, 'name', 'twitter:description', metaDescription)
   html = upsertMeta(html, 'name', 'twitter:image', image)
   html = html.replace(/<link\s+rel=["']alternate["'][^>]*hreflang=["'](?:en-US|x-default)["'][^>]*>\s*/gi, '')
   const structured = schema ? `    <script type="application/ld+json" id="route-structured-data">${JSON.stringify(schema)}</script>\n` : ''

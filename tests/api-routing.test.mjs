@@ -20,6 +20,7 @@ test('hybrid API routes resolve light calls to Supabase and heavy calls to Node'
   assert.equal(isNodeBackendRoute('/api/ai-preview'), true)
   assert.equal(isNodeBackendRoute('/api/logo-preview'), true)
   assert.equal(isNodeBackendRoute('/api/ai-logo-preview'), true)
+  assert.equal(isNodeBackendRoute('/api/newsletter-subscribe'), true)
   assert.equal(isNodeBackendRoute('/api/ai-listing-copy'), false)
   assert.equal(isNodeBackendRoute('/api/ai-listing-media'), false)
 })
@@ -40,6 +41,7 @@ test('Node runtime keeps the webhook route and fails readiness without server se
   assert.equal(routeModules.get('/api/membership-enroll'), 'membership-enroll.js')
   assert.equal(routeModules.get('/api/google-merchant-feed'), 'google-merchant-feed.js')
   assert.equal(routeModules.get('/api/ai-listing-media'), 'ai-listing-media.js')
+  assert.equal(routeModules.get('/api/newsletter-subscribe'), 'newsletter-subscribe.js')
   const old = Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'].map(name => [name, process.env[name]]))
   for (const name of Object.keys(old)) delete process.env[name]
   try {

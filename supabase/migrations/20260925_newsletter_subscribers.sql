@@ -23,6 +23,8 @@ returns jsonb language plpgsql security definer set search_path = '' as $$
 declare quota integer; minutes integer; window_start timestamptz; hits integer; retry_seconds integer;
 begin
   if requested_action='newsletter-subscribe' then quota:=5; minutes:=60;
+  elsif requested_action='logo-preview' then quota:=20; minutes:=60;
+  elsif requested_action='ai-logo-preview' then quota:=5; minutes:=60;
   elsif requested_action='ai-preview' then quota:=5; minutes:=60;
   elsif requested_action='customization-order' then quota:=20; minutes:=60;
   elsif requested_action='customer-upload' then quota:=10; minutes:=60;

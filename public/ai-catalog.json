@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "store": {
+    "name": "Extra Time",
+    "legalName": "Jersevo",
+    "url": "https://www.jersevo.com/",
+    "locale": "en-US",
+    "currency": "USD",
+    "supportEmail": "support@jersevo.com",
+    "description": "Independent fan-apparel studio producing designer-led jerseys and considered personalization."
+  },
+  "catalog": {
+    "shop": "https://www.jersevo.com/shop",
+    "sitemap": "https://www.jersevo.com/sitemap.xml",
+    "merchantFeed": "https://api.jersevo.com/api/google-merchant-feed"
+  },
+  "policies": {
+    "shipping": "https://www.jersevo.com/shipping",
+    "returns": "https://www.jersevo.com/returns",
+    "warranty": "https://www.jersevo.com/warranty",
+    "privacy": "https://www.jersevo.com/privacy",
+    "terms": "https://www.jersevo.com/terms",
+    "accessibility": "https://www.jersevo.com/accessibility"
+  },
+  "updated": "2026-09-20"
+}

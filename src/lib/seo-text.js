@@ -14,7 +14,10 @@ export function looksTruncatedSeoText(value) {
   return Boolean(text && !terminalPunctuation.test(text) && (text.length >= 155 || suspiciousEnding.test(text)))
 }
 
-export function truncateSeoText(value, maxLength = 160, minSentenceLength = 90) {
+// A complete sentence is preferable to a longer clipped fragment. Keep the
+// lower bound modest because concise product descriptions (especially for
+// apparel) can be perfectly useful at 60–90 characters.
+export function truncateSeoText(value, maxLength = 160, minSentenceLength = 60) {
   const text = cleanSeoText(value)
   if (text.length <= maxLength) return text
   const window = text.slice(0, maxLength + 1)

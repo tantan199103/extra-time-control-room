@@ -70,7 +70,9 @@ test('product cards expose quick view and never quick-add sold-out variants', ()
   assert.match(source, /<QuickView/)
 })
 
-test('product navigation keeps leagues in the footer index instead of a permanent second bar', () => {
+test('league discovery is available from the header mega menu and footer index', () => {
+  assert.match(source, /label:'LEAGUES'/)
+  assert.match(source, /type:'TAXONOMY'/)
   assert.match(source, /className="footer__leagues"/)
   assert.match(source, /className="footer__league-grid"/)
   assert.match(source, /id:'leagues', label:'Leagues'/)

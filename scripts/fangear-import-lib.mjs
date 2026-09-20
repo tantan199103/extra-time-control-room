@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { seoDescription } from '../src/lib/seo-text.js'
 
 export const SOURCE_HOST = 'fangearsport.com'
 export const IMPORT_ARTWORK_LOCK = 70
@@ -321,7 +322,7 @@ export function normalizeSourceProduct(product, { categories = [], variationDeta
     customFields,
     seo: {
       title: title.slice(0, 60),
-      description: description.slice(0, 180)
+      description: seoDescription(description, '', 160)
     },
     aiMetadata: {},
     inventory: variants.reduce((sum, variant) => sum + variant.inventory, 0),
@@ -360,7 +361,7 @@ export function buildCollectionPlan(categories = [], products = []) {
       heroImageSourceUrl: category.image?.src || '',
       heroImageAlt: sanitizePublicText(category.image?.alt || name),
       sortMode: 'MANUAL',
-      seo: { title: name.slice(0, 60), description: sanitizePublicText(category.description || name).slice(0, 180) },
+      seo: { title: name.slice(0, 60), description: seoDescription(sanitizePublicText(category.description || name), '', 160) },
       products: collectionProducts,
       taxonomy: mapped.taxonomy
     }
