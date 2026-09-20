@@ -14,7 +14,7 @@ test('membership is reachable from storefront, product, account and app navigati
   assert.match(main,/path === '\/membership'/)
   assert.match(main,/90\+ CLUB/)
   assert.match(main,/pdp__club/)
-  assert.match(main,/id: 'club'/)
+  assert.match(main,/id: 'leagues'/)
   assert.match(main,/membership#account/)
 })
 

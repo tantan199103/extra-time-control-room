@@ -25,6 +25,7 @@ import {
   CircleHelp,
   Globe2,
   Ticket,
+  Trophy,
   X
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
@@ -112,13 +113,16 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     return () => document.body.classList.remove('mobile-menu-open')
   }, [mobile])
   const configured = menuAtLocation(menus,'HEADER')?.items || menuAtLocation(menus,'HEADER_DESKTOP_MOBILE')?.items || []
-  const taxonomyItem = {id:'leagues',label:'LEAGUES',target:'/shop',type:'TAXONOMY',children:LEAGUE_TAXONOMY.map(league => ({ id:league.key, label:league.name, target:leaguePath(league), type:'TAXONOMY_LEAGUE', leagueKey:league.key, sport:league.sport, representativeImage:league.media?.src, representativeAlt:league.media?.alt, children:league.teams.slice(0,6).map(team => ({ id:team.slug, label:team.name, target:teamPath(league.key,team), type:'TAXONOMY_TEAM', representativeImage:team.media?.src, representativeAlt:team.media?.alt, representativeFallback:team.media?.fallback })) }))}
   const defaults = [
     {id:'shop',label:'SHOP',target:'/shop',children:[]},
-    taxonomyItem,
     {id:'custom',label:'CUSTOM LAB',target:'/custom',children:[]}
   ]
-  const links = configured.length ? (configured.some(item => item.type === 'TAXONOMY' || /league/i.test(item.label || '')) ? configured.map(item => (item.type === 'TAXONOMY' || /league/i.test(item.label || '') ? { ...item, type:'TAXONOMY', children:taxonomyItem.children } : item)) : [...configured.slice(0,1),taxonomyItem,...configured.slice(1)]) : defaults
+  // League discovery is intentionally kept out of the primary header. A
+  // product page should lead with the product decision, not a second menu
+  // system; the footer owns the visual league index instead.
+  const filteredLinks = (configured.length ? configured : defaults)
+    .filter(item => !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
+  const links = filteredLinks.length ? filteredLinks : defaults
   const hasVaultLink = links.some(item => menuTarget(item.target, customProduct) === '/vault')
   const hasClubLink = links.some(item => menuTarget(item.target, customProduct) === '/membership')
   const openLink = item => {
@@ -501,14 +505,22 @@ function Newsletter() {
 }
 
 function Footer({ openSizeGuide, menus = [], customProduct }) {
-  const configured = menuAtLocation(menus,'FOOTER')?.items || []
+  const configured = (menuAtLocation(menus,'FOOTER')?.items || []).filter(item => !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
   return (
     <footer>
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
+      <section className="footer__leagues" aria-label="Browse by league">
+        <div className="footer__leagues-copy"><span>LEAGUES</span><p>Start with the competition.<br />Stay for the team connection.</p></div>
+        <div className="footer__league-grid">
+          {LEAGUE_TAXONOMY.map(league => <button key={league.key} onClick={() => navigate(leaguePath(league))}>
+            <span className="footer__league-icon">{league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <Trophy size={18}/>}</span>
+            <span><strong>{league.name}</strong><small>{league.sport}</small></span><ArrowRight size={15}/>
+          </button>)}
+        </div>
+      </section>
       <div className="footer__links">
         {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`)}>Custom lab</button></div>}
         <div><span>STUDIO</span><button onClick={() => navigate('/about')}>About Extra Time</button><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/journal')}>Journal</button></div>
-        <div><span>LEAGUES</span>{LEAGUE_TAXONOMY.map(league => <button key={league.key} onClick={() => navigate(leaguePath(league))}>{league.name} collections</button>)}</div>
         <div><span>90+ CLUB</span><button onClick={() => navigate('/membership')}>Membership</button><button onClick={() => navigate('/membership#join')}>Plans & benefits</button><button onClick={() => navigate('/membership#account')}>Member account</button></div>
         <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button onClick={() => navigate('/track-order')}>Track an order</button><button onClick={() => navigate('/shipping')}>Shipping</button><button onClick={() => navigate('/returns')}>Returns</button><button onClick={() => navigate('/warranty')}>Warranty</button></div>
         <div><span>TRUST</span><button onClick={() => navigate('/privacy')}>Privacy</button><button onClick={() => navigate('/terms')}>Terms</button><button onClick={() => navigate('/warranty')}>Warranty</button><button onClick={() => navigate('/accessibility')}>Accessibility</button></div>
@@ -521,31 +533,32 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
 }
 
 function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, hidden = false }) {
+  const [leagueOpen, setLeagueOpen] = useState(false)
   const isCustom = path === '/custom' || path === '/studio' || (path.startsWith('/product/') && new URLSearchParams(window.location.search).get('custom') === '1')
   const routeLeague = path.startsWith('/league/') || path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
+  useEffect(() => { setLeagueOpen(false) }, [path])
+  useEffect(() => { if (hidden) setLeagueOpen(false) }, [hidden])
   const defaults = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
+    { id: 'leagues', label: 'Leagues', target: '#leagues', icon: Trophy, active: Boolean(routeLeague) || leagueOpen },
     { id: 'custom', label: 'Custom', target: `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`, icon: Sparkles, active: isCustom },
-    { id: 'club', label: 'Club', target: '/membership', icon: Ticket, active: path === '/membership' }
   ]
   const configured = menuAtLocation(menus,'FIXED_FOOTER_MOBILE')?.items || []
-  const items = configured.length ? configured.filter(item => item.target !== '#bag').map(item => { const target=menuTarget(item.target,customProduct); const Icon=/club|member/i.test(`${item.label} ${target}`) ? Ticket : /custom|studio/i.test(`${item.label} ${target}`) ? Sparkles : target === '/' ? House : Grid2X2; return {...item,target,icon:Icon,active:target === '/' ? path === '/' : target.includes('custom=1') ? isCustom : path === target || (target === '/shop' && path.startsWith('/product/') && !isCustom)} }) : defaults
+  const configuredItems = configured.filter(item => item.target !== '#bag').map(item => { const target=menuTarget(item.target,customProduct); const Icon=/league/i.test(`${item.label} ${target}`) ? Trophy : /club|member/i.test(`${item.label} ${target}`) ? Ticket : /custom|studio/i.test(`${item.label} ${target}`) ? Sparkles : target === '/' ? House : Grid2X2; return {...item,target,icon:Icon,active:/league/i.test(`${item.label} ${target}`) ? Boolean(routeLeague) || leagueOpen : target === '/' ? path === '/' : target.includes('custom=1') ? isCustom : path === target || (target === '/shop' && path.startsWith('/product/') && !isCustom)} })
+  const leagueItem = { id:'leagues', label:'Leagues', target:'#leagues', icon:Trophy, active:Boolean(routeLeague) || leagueOpen }
+  const items = configuredItems.length
+    ? (configuredItems.some(item => item.id === 'leagues' || /league/i.test(`${item.label} ${item.target}`)) ? configuredItems : (() => { const clubIndex = configuredItems.findIndex(item => /club|member/i.test(`${item.label} ${item.target}`)); if (clubIndex >= 0) return configuredItems.map((item,index) => index === clubIndex ? leagueItem : item); return [...configuredItems.slice(0,3), leagueItem].slice(0,4) })())
+    : defaults
+  const openLeagueMenu = () => setLeagueOpen(current => !current)
   return <div className={`fixed-footer-stack ${hidden ? 'is-hidden' : ''}`} aria-hidden={hidden}>
-    <nav className="fixed-league-menu" aria-label="League categories" aria-hidden={hidden}>
-      <span className="fixed-league-menu__label">LEAGUES</span>
-      <div className="fixed-league-menu__items">
-        {LEAGUE_TAXONOMY.map(league => {
-          const active = routeLeague?.key === league.key
-          return <button key={league.key} tabIndex={hidden ? -1 : 0} className={active ? 'is-active' : ''} aria-current={active ? 'page' : undefined} onClick={() => navigate(leaguePath(league))}>
-            {league.media?.src && <img src={league.media.src} alt="" loading="lazy" decoding="async" />}
-            <span>{league.name}</span>
-          </button>
-        })}
-      </div>
-    </nav>
+    {leagueOpen && <div className="fixed-league-panel" role="menu" aria-label="League categories">
+      {LEAGUE_TAXONOMY.map(league => <button key={league.key} role="menuitem" tabIndex={hidden ? -1 : 0} className={routeLeague?.key === league.key ? 'is-active' : ''} onClick={() => { setLeagueOpen(false); navigate(leaguePath(league)) }}>
+        <span className="fixed-league-panel__icon">{league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <Trophy size={16}/>}</span><span><strong>{league.name}</strong><small>{league.sport}</small></span><ArrowRight size={14}/>
+      </button>)}
+    </div>}
     <nav className="fixed-footer-menu" aria-label="Quick navigation" aria-hidden={hidden}>
-      {items.map(item => { const Icon = item.icon; return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active ? 'page' : undefined} onClick={() => navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
+      {items.map(item => { const Icon = item.icon; const isLeague = item.id === 'leagues' || /league/i.test(`${item.label} ${item.target}`); return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active && !isLeague ? 'page' : undefined} aria-expanded={isLeague ? leagueOpen : undefined} onClick={() => isLeague ? openLeagueMenu() : navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
       <button tabIndex={hidden ? -1 : 0} className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
     </nav>
   </div>
@@ -802,20 +815,19 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
       <div className="pdp__gallery" onScroll={event => setGalleryIndex(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>{gallery.map((item,index) => <figure key={`${item.id}-${index}`} className={index > 0 && index % 3 === 0 ? 'wide' : ''}>{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <img src={item.url} alt={item.alt || `${product.name} view ${index+1}`}/>}<span>{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span></figure>)}</div>
       <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       <aside className="pdp__info">
-        {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div><button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={16}/><span><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'90+ Club member pricing':'Members save 20–40% on eligible pieces'}</strong><small>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your secure price is calculated in the bag.':'See the season pass and shipping benefit.'}</small></span><ArrowRight size={16}/></button>
+        {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{option.name === sizeName && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] || 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${value}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : value}</button> })}</div></div> })}
-        {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'} · {selectedVariant.sku}</p>}
+        {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}><i/>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'}</p>}
         {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div><label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{aiPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>Visual preview attached</strong><small>Stored securely and reviewed before production.</small></span><img src={aiPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className="pdp-custom__ai" onClick={openAi}><Sparkles size={16}/><span><strong>Preview these details</strong><small>Check name, number and colour without writing a prompt.</small></span><ArrowRight size={16}/></button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
-        <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>Tracked delivery · Final artwork review · 30-day standard returns</small></div>
+        <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>{personalized ? 'Your editable fields are reviewed before production.' : 'Ships after your variation is confirmed.'}</small></div>
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div>
         <div className="pdp__shipping-card"><div><strong>Ships across the US</strong><span>Free shipping on orders over $100</span></div><div><strong>30-day standard returns</strong><span>Personalized orders are reviewed before production</span></div><button onClick={() => navigate('/shipping')}>VIEW SHIPPING DETAILS <ArrowRight size={14}/></button></div>
-        <details open><summary>THE PRODUCT <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing and the live delivery estimate are shown before checkout. Standard pieces can be returned within 30 days; personalized work is reviewed before production.</p></details><details><summary>CARE & FIT <Plus/></summary><p>Use the size guide before ordering. Wash inside out on a cool cycle and hang dry to protect printed names and numbers.</p></details>
+        <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={16}/><span><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'90+ Club member pricing':'Members save 20–40% on eligible pieces'}</strong><small>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your secure price is calculated in the bag.':'See the season pass and shipping benefit.'}</small></span><ArrowRight size={16}/></button>
+        <details><summary>PRODUCT DETAILS <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing and the live delivery estimate are shown before checkout. Standard pieces can be returned within 30 days; personalized work is reviewed before production.</p></details><details><summary>CARE & FIT <Plus/></summary><p>Use the size guide before ordering. Wash inside out on a cool cycle and hang dry to protect printed names and numbers.</p></details>
       </aside>
     </div>
     <ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
-    {productLeague && <section className="pdp-taxonomy-links"><span>KEEP EXPLORING</span><div><a href={leaguePath(productLeague)} onClick={event => { event.preventDefault(); navigate(leaguePath(productLeague)) }}>{productLeague.name} collections <ArrowRight size={14}/></a>{productTeam && <a href={teamPath(productLeague.key,productTeam)} onClick={event => { event.preventDefault(); navigate(teamPath(productLeague.key,productTeam)) }}>{productTeam.name} gear <ArrowRight size={14}/></a>}</div></section>}
-    <StorefrontTrust />
     <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>
     <SizeFinder open={finder} onClose={() => setFinder(false)} onRecommend={value => sizeName && chooseOption(sizeName,value)}/>
     <div className="mobile-sticky-atc"><span><strong>{money(currentPrice)}</strong>{selectedVariant ? `${Object.values(selections).join(' · ')} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</span><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'ADD TO BAG') : 'CHOOSE OPTIONS'}</button></div>

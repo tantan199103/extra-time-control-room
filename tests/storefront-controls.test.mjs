@@ -69,3 +69,12 @@ test('product cards expose quick view and never quick-add sold-out variants', ()
   assert.match(source, /isSellableVariant\(variant\)/)
   assert.match(source, /<QuickView/)
 })
+
+test('product navigation keeps leagues in the footer index instead of a permanent second bar', () => {
+  assert.match(source, /className="footer__leagues"/)
+  assert.match(source, /className="footer__league-grid"/)
+  assert.match(source, /id:'leagues', label:'Leagues'/)
+  assert.match(source, /className="fixed-league-panel"/)
+  assert.doesNotMatch(source, /className="fixed-league-menu"/)
+  assert.match(css, /\.pdp \+ footer/)
+})
