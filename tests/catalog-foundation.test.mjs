@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { isAdminUser, createProductDraft, normalizeProduct, normalizeTemplate, validateListing, buildListingInput, generateVariantMatrix, normalizeCustomFields, duplicateProductDraft, deriveAutomaticTags, productCompleteness, slugify } from '../src/lib/catalog-model.js'
+import { isAdminUser, createProductDraft, normalizeProduct, normalizeTemplate, validateListing, buildListingInput, generateVariantMatrix, normalizeCustomFields, duplicateProductDraft, deriveAutomaticTags, productCompleteness, seoReviewGate, slugify } from '../src/lib/catalog-model.js'
 
 test('new listings have distinct IDs and SKUs', () => {
   const drafts = Array.from({length:30}, createProductDraft)
@@ -74,6 +74,27 @@ test('structured customer fields, catalogue signals and completeness are determi
   assert.deepEqual(deriveAutomaticTags(product),['draft','personalized','memory-jerseys','customizable','has-video','sale','low-stock'])
   assert.equal(productCompleteness(product).percent,40)
   assert.equal(slugify('Áo Kỷ Niệm / 90+'),'ao-ky-niem-90')
+})
+test('SEO review gate stays blocked until content, alt text and a sellable variant are ready', () => {
+  const product = createProductDraft()
+  product.status = 'PUBLISHED'
+  product.title = 'A complete product title'
+  product.description = 'Short copy'
+  product.image = 'https://cdn.test/primary.webp'
+  product.media = [{ id:'m1', type:'IMAGE', url:product.image, alt:'' }]
+  product.seo = { title:'Too short', description:'Too short' }
+  product.variants = [{ id:'v1', sku:'LIVE', values:{}, price:89, inventory:2, status:'ACTIVE' }]
+  const blocked = seoReviewGate(product)
+  assert.equal(blocked.ready, false)
+  assert.ok(blocked.blockers.includes('DESCRIPTION_160_CHARACTERS'))
+  assert.ok(blocked.blockers.includes('ALT_TEXT_REQUIRED_ON_EVERY_IMAGE'))
+  product.description = 'A '.repeat(90)
+  product.seo = { title:'A long enough SEO title for this product page', description:'A '.repeat(65) }
+  product.media[0].alt = 'Black football jersey product image'
+  const ready = seoReviewGate(product)
+  assert.equal(ready.ready, true)
+  product.seoStatus = 'INDEXABLE'
+  assert.deepEqual(validateListing(product).filter(error => error.startsWith('SEO review gate')), [])
 })
 
 test('duplicating a listing creates independent IDs, SKUs and a unique draft handle', () => {

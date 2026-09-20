@@ -209,3 +209,18 @@
 .listing-legal-review { border:1px solid var(--admin-line); padding:16px; background:var(--admin-paper); }
 .listing-legal-review.is-blocked { border-color:#c88878; background:#fbefeb; }
 .listing-legal-review.is-approved { border-color:#8cad91; background:#f1f7ef; }
+.listing-seo-gate { margin-top:22px; padding:16px; border:1px solid var(--admin-line); background:#f4f3ee; }
+.listing-seo-gate.is-blocked { border-color:#c88878; background:#fbefeb; }
+.listing-seo-gate.is-ready { border-color:#8cad91; background:#f1f7ef; }
+.listing-seo-gate__summary { margin:16px 0 10px; display:flex; align-items:baseline; gap:8px; }
+.listing-seo-gate__summary strong { font:800 32px/.8 var(--headline); }
+.listing-seo-gate__summary span { color:var(--admin-muted); font-size:9px; }
+.listing-seo-gate__issues { margin-top:12px; padding-top:10px; border-top:1px solid var(--admin-line); }
+.listing-seo-gate__issues > span { color:var(--admin-muted); font:700 8px var(--body); letter-spacing:.06em; text-transform:uppercase; }
+.listing-seo-gate__issues p { margin:7px 0 0; display:flex; gap:7px; align-items:center; color:#743f35; font-size:9px; }
+.listing-seo-gate__issues p i { width:7px; height:7px; border-radius:50%; background:var(--admin-signal); }
+.listing-seo-gate__actions { margin-top:15px; display:flex; flex-wrap:wrap; gap:6px; }
+.listing-seo-gate__actions button { min-height:32px; padding:0 10px; border:1px solid var(--admin-line); font:700 8px var(--body); }
+.listing-seo-gate__actions button.is-active { background:var(--admin-ink); color:#fff; border-color:var(--admin-ink); }
+.listing-seo-gate__actions button:disabled { opacity:.45; cursor:not-allowed; }
+.listing-seo-gate__reviewed { display:block; margin-top:11px; color:var(--admin-muted); font-size:8px; }

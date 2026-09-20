@@ -5,7 +5,10 @@ import { dirname, resolve } from 'node:path'
 const backendDir = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(backendDir, '../..')
 const port = Number(process.env.PORT || 8787)
-const maxBodyBytes = Math.max(1, Number(process.env.BACKEND_MAX_BODY_BYTES || 20 * 1024 * 1024))
+// Product image uploads arrive as base64 JSON before they are resized by
+// Sharp.  A 15 MB source expands to roughly 20 MB, so leave headroom for the
+// JSON envelope and auth headers while keeping the endpoint bounded.
+const maxBodyBytes = Math.max(1, Number(process.env.BACKEND_MAX_BODY_BYTES || 32 * 1024 * 1024))
 const rateWindowMs = Math.max(10_000, Number(process.env.BACKEND_RATE_WINDOW_MS || 60_000))
 const rateLimit = Math.max(10, Number(process.env.BACKEND_RATE_LIMIT || 180))
 const requestCounters = new Map()
@@ -17,6 +20,7 @@ const routeModules = new Map([
   ['/api/ai-preview', 'ai-preview.js'],
   ['/api/ai-listing-copy', 'ai-listing-copy.js'],
   ['/api/ai-listing-media', 'ai-listing-media.js'],
+  ['/api/admin-product-upload', 'admin-product-upload.js'],
   ['/api/customization-order', 'customization-order.js'],
   ['/api/admin-customizations', 'admin-customizations.js'],
   ['/api/admin-orders', 'admin-orders.js'],

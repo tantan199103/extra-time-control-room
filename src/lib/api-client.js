@@ -29,6 +29,7 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   // runtime, which has the AI_TEXT_API_KEY and a 300-second request budget.
   '/api/ai-listing-copy',
   '/api/ai-listing-media',
+  '/api/admin-product-upload',
   '/api/customization-order',
   '/api/admin-customizations',
   '/api/admin-orders',

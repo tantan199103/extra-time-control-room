@@ -31,6 +31,40 @@ export function catalogLegalReview(product = {}) {
   return { required:reasons.length > 0, approved:!reasons.length || status === 'APPROVED', reasons, status:status || 'PENDING' }
 }
 
+/**
+ * Deterministic SEO approval gate shared by the editor and save validation.
+ * Search/indexing is never enabled just because an operator picked a value in
+ * a select; every blocker must be resolved first.
+ */
+export function seoReviewGate(product = {}) {
+  const blockers = []
+  const warnings = []
+  const title = String(product.title || product.name || '').trim()
+  const description = String(product.description || '').trim()
+  const seo = product.seo && typeof product.seo === 'object' ? product.seo : {}
+  const seoTitle = String(seo.title || '').trim()
+  const seoDescription = String(seo.description || '').trim()
+  const media = Array.isArray(product.media) ? product.media : []
+  const images = media.filter(item => String(item?.type || '').toUpperCase() === 'IMAGE' && String(item?.url || '').trim())
+  const variants = Array.isArray(product.variants) ? product.variants : []
+  const legal = catalogLegalReview(product)
+
+  if (String(product.status || '').toUpperCase() !== 'PUBLISHED') blockers.push('PUBLISH_LISTING_FIRST')
+  if (!String(product.image || '').trim()) blockers.push('PRIMARY_IMAGE_REQUIRED')
+  if (!title) blockers.push('TITLE_REQUIRED')
+  if (description.length < 160) blockers.push('DESCRIPTION_160_CHARACTERS')
+  if (seoTitle.length < 30 || seoTitle.length > 60) blockers.push('SEO_TITLE_30_60_CHARACTERS')
+  if (seoDescription.length < 120 || seoDescription.length > 160) blockers.push('SEO_DESCRIPTION_120_160_CHARACTERS')
+  if (!images.length) blockers.push('MEDIA_IMAGE_REQUIRED')
+  if (images.some(item => !String(item.alt || '').trim())) blockers.push('ALT_TEXT_REQUIRED_ON_EVERY_IMAGE')
+  if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) blockers.push('PRICED_IN_STOCK_VARIANT_REQUIRED')
+  if (legal.required && !legal.approved) blockers.push('RIGHTS_REVIEW_REQUIRED')
+  if (!seo.primaryKeyword) warnings.push('PRIMARY_KEYWORD_RECOMMENDED')
+  if (!Array.isArray(product.tags) || !product.tags.length) warnings.push('CATALOGUE_TAG_RECOMMENDED')
+  const quality = Math.max(0, Math.round(100 - blockers.length * 12 - warnings.length * 3))
+  return { ready:blockers.length === 0, blockers, warnings, quality, reviewedAt:product.seoReviewedAt || product.aiMetadata?.seoReview?.reviewedAt || null }
+}
+
 export function slugify(value, fallback = 'untitled-listing') {
   const slug = String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
   return slug || fallback
@@ -127,7 +161,13 @@ export function productCompleteness(product) {
 }
 
 export function normalizeProduct(row, persisted = true) {
-  const media = Array.isArray(row.media) ? row.media : []
+  const normalizedTitle = row.title ?? row.name ?? ''
+  const media = (Array.isArray(row.media) ? row.media : []).map((item, index) => {
+    if (!item || String(item.type || '').toUpperCase() !== 'IMAGE' || String(item.alt || '').trim()) return item
+    // Safe, deterministic draft text for legacy uploads. It never guesses
+    // colours, people, teams or visual claims; the admin can refine it.
+    return { ...item, alt:`${normalizedTitle || 'Product'} product image${index ? ` ${index + 1}` : ''}`.slice(0, 240) }
+  })
   const configuredFields = row.custom_fields ?? row.customFields
   const customFieldSource = Array.isArray(configuredFields) && configuredFields.length
     ? configuredFields
@@ -135,8 +175,8 @@ export function normalizeProduct(row, persisted = true) {
   const customFields = normalizeCustomFields(customFieldSource)
   return {
     ...row,
-    name: row.title ?? row.name ?? '',
-    title: row.title ?? row.name ?? '',
+    name: normalizedTitle,
+    title: normalizedTitle,
     handle: row.handle || row.id,
     story: row.subtitle ?? row.story ?? '',
     subtitle: row.subtitle ?? row.story ?? '',
@@ -254,7 +294,10 @@ export function validateListing(product) {
   if (product.compareAt !== '' && product.compareAt != null && (!money(product.compareAt) || Number(product.compareAt) < Number(product.price))) errors.push('Compare-at price cannot be lower than the selling price.')
   if (!['DRAFT','PUBLISHED','ARCHIVED'].includes(product.status)) errors.push('Invalid publish status.')
   if (!SEO_STATUSES.includes(String(product.seoStatus || product.seo?.status || 'BLOCKED').toUpperCase())) errors.push('Invalid SEO status.')
-  if (String(product.seoStatus || product.seo?.status || '').toUpperCase() === 'INDEXABLE' && product.status !== 'PUBLISHED') errors.push('Only published listings can be indexable.')
+  if (String(product.seoStatus || product.seo?.status || '').toUpperCase() === 'INDEXABLE') {
+    const gate = seoReviewGate(product)
+    if (!gate.ready) errors.push(`SEO review gate is not ready: ${gate.blockers.join(', ')}.`)
+  }
   if (!Array.isArray(product.media) || !Array.isArray(product.contentBlocks) || !Array.isArray(product.tags) || !Array.isArray(product.customFields)) errors.push('Media, content, tags and custom fields must be lists.')
   const customKeys = new Set()
   for (const field of product.customFields || []) {
@@ -328,6 +371,8 @@ export function buildListingInput(product) {
     seo_status: String(product.seoStatus || product.seo?.status || 'BLOCKED').toUpperCase(),
     seo_quality_score: Math.max(0, Math.min(100, Number(product.seoQualityScore ?? product.seo?.quality_score ?? 0) || 0)),
     seo_block_reasons: Array.isArray(product.seoBlockReasons) ? product.seoBlockReasons : (Array.isArray(product.seo?.block_reasons) ? product.seo.block_reasons : []),
+    seo_reviewed_at: product.seoReviewedAt || product.aiMetadata?.seoReview?.reviewedAt || null,
+    seo_published_at: product.seoPublishedAt || null,
     ai_metadata:product.aiMetadata || {},
     inventory: (product.variants || []).filter(row => row.status === 'ACTIVE').reduce((sum,row) => sum + Number(row.inventory || 0), 0),
     options: (product.options || []).map(option => ({ name: option.name.trim(), values: option.values.map(value => String(value).trim()) })),

@@ -1,4 +1,5 @@
 NODE_ENV: production
+BACKEND_MAX_BODY_BYTES: "33554432"
 ALLOWED_ORIGINS: "https://www.jersevo.com,https://jersevo.com"
 TRUST_PROXY: "true"
 SITE_URL: "https://www.jersevo.com"

@@ -200,12 +200,32 @@ const mediaTypes = new Map([
   ['video/mp4','VIDEO'], ['video/webm','VIDEO']
 ])
 
+async function fileToDataUrl(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  let binary = ''
+  const chunkSize = 0x8000
+  for (let index = 0; index < bytes.length; index += chunkSize) binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize))
+  return `data:${file.type};base64,${btoa(binary)}`
+}
+
 export async function uploadProductMedia(file, productId) {
   if (!supabase) throw new Error('Supabase is not configured. Media was not uploaded.')
   const type = mediaTypes.get(file?.type)
   if (!type) throw new Error('Use JPG, PNG, WebP, AVIF, MP4 or WebM files.')
   const sizeLimit = type === 'VIDEO' ? 80 * 1024 * 1024 : 15 * 1024 * 1024
   if (!file.size || file.size > sizeLimit) throw new Error(`${type === 'VIDEO' ? 'Video' : 'Image'} must be smaller than ${sizeLimit / 1024 / 1024} MB.`)
+  if (type === 'IMAGE') {
+    const { data:{ session }, error:sessionError } = await supabase.auth.getSession()
+    if (sessionError || !session?.access_token) throw new Error('Your admin session expired. Sign in again before uploading media.')
+    const response = await apiFetch('/api/admin-product-upload', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${session.access_token}` },
+      body:JSON.stringify({ productId, filename:file.name, dataUrl:await fileToDataUrl(file) })
+    })
+    const result = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(result.error || 'The optimized image upload failed.')
+    return result.media
+  }
   const extension = (file.name.split('.').pop() || (type === 'VIDEO' ? 'mp4' : 'webp')).toLowerCase().replace(/[^a-z0-9]/g, '')
   const safeName = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'media'
   const id = globalThis.crypto.randomUUID()

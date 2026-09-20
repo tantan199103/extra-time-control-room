@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import sharp from 'sharp'
 import { listingMediaSlot } from '../src/lib/listing-media.js'
 import { sanitizeImagePrivacyMetadata } from '../src/lib/image-privacy.js'
 import {
@@ -92,6 +93,21 @@ async function cleanGeneratedAsset(asset) {
   return { bytes, type:cleaned.type || asset.type || 'image/png' }
 }
 
+async function optimizeGeneratedAsset(asset) {
+  if (!asset?.bytes?.length) return null
+  const markerText = asset.bytes.toString('latin1').toLowerCase()
+  const hasProvenance = markerText.includes('c2pa') || markerText.includes('jumbf') || markerText.includes('cabx')
+  if (hasProvenance) return { ...asset, optimized:false, provenancePreserved:true }
+  const metadata = await sharp(asset.bytes).metadata()
+  const pipeline = sharp(asset.bytes).rotate().resize({ width:2400, height:2400, fit:'inside', withoutEnlargement:true })
+  const outputType = metadata.hasAlpha ? 'image/png' : 'image/webp'
+  const output = metadata.hasAlpha
+    ? await pipeline.png({ compressionLevel:9, effort:6 }).toBuffer()
+    : await pipeline.webp({ quality:84, effort:5 }).toBuffer()
+  const cleaned = await sanitizeImagePrivacyMetadata(new Blob([output], { type:outputType }))
+  return { bytes:Buffer.from(await cleaned.arrayBuffer()), type:outputType, optimized:true, provenancePreserved:false }
+}
+
 function fieldLabels(listing) {
   const fields = Array.isArray(listing?.custom_fields) ? listing.custom_fields : []
   const labels = [...new Set(fields.map(field => cleanPrompt(field?.label || field?.key, 60)).filter(Boolean))].slice(0, 8)
@@ -140,7 +156,7 @@ export default async function handler(request, response) {
     const payload = await upstream.json().catch(() => ({}))
     if (!upstream.ok) throw Object.assign(new Error(payload.error?.message || payload.message || 'AI provider rejected the editorial image request.'), { status:upstream.status })
     const rawAsset = await generatedAsset(payload.data?.[0])
-    const asset = await cleanGeneratedAsset(rawAsset)
+    const asset = await optimizeGeneratedAsset(await cleanGeneratedAsset(rawAsset))
     if (!asset) throw Object.assign(new Error('AI provider returned no usable editorial image.'), { status:502 })
 
     const mediaId = `generated-${randomUUID()}`
@@ -162,6 +178,8 @@ export default async function handler(request, response) {
       filename:`${String(listing.handle || listing.id).slice(0,48)}-${slot.id}.${extension}`,
       alt:`${slot.alt} for ${title}`.slice(0,240),
       role:slot.id,
+      optimized:Boolean(asset.optimized),
+      provenance:{ source:'AI_GENERATED', aiGenerated:true, provider:'configured-server-provider', model, preserved:Boolean(asset.provenancePreserved) },
       createdAt:new Date().toISOString()
     }
     await bestEffort(client.from('pod_audit_logs').insert({
