@@ -206,3 +206,6 @@
 }
 
 @media(prefers-reduced-motion:reduce){.is-spinning{animation:none;}}
+.listing-legal-review { border:1px solid var(--admin-line); padding:16px; background:var(--admin-paper); }
+.listing-legal-review.is-blocked { border-color:#c88878; background:#fbefeb; }
+.listing-legal-review.is-approved { border-color:#8cad91; background:#f1f7ef; }

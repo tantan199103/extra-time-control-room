@@ -12,3 +12,13 @@ api/*.js
 # Cloud Run owns the equivalent light routes until that gateway is provisioned.
 backend/
 supabase/functions/
+
+# Keep local/build artefacts out of the deployment archive.
+node_modules
+dist
+dist-extension
+artifacts
+.git
+.vercel
+supabase/.temp
+*.local

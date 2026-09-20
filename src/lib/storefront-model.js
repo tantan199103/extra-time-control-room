@@ -11,7 +11,12 @@ export function prepareStorefrontProduct(input, persisted = true) {
     const { bridge: _privateBridgeMetadata, ...media } = item || {}
     return media
   })
-  const variants = (product.variants || []).filter(variant => variant.status === 'ACTIVE')
+  const variants = (product.variants || []).filter(variant => variant.status === 'ACTIVE').map(variant => ({
+    ...variant,
+    // Reserved units are not sellable even though the raw Supabase inventory
+    // column still contains them. Keep the public model aligned with checkout.
+    inventory: Math.max(0, Number(variant.inventory || 0) - Number(variant.reserved_inventory || 0))
+  }))
   const prices = variants.map(variant => Number(variant.price)).filter(Number.isFinite)
   const comparePrices = variants.map(variant => variant.compareAt).filter(value => value != null).map(Number).filter(Number.isFinite)
   const primaryMedia = publicMedia.find(item => item.type === 'IMAGE' && item.url === product.image)
