@@ -276,7 +276,8 @@ function ButtonLink({ children, light = false, onClick, className = '' }) {
   return <button className={`button-link ${light ? 'button-link--light' : ''} ${className}`} onClick={onClick}><span>{children}</span><ArrowRight size={17} /></button>
 }
 
-function Hero({ content = {} }) {
+function Hero({ content = {}, customProduct }) {
+  const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
   return (
     <section className="hero">
       <img src="/assets/hero-tunnel.webp" alt="A player entering a rain-soaked stadium from a dark tunnel" width="1672" height="941" loading="eager" fetchPriority="high" decoding="async" />
@@ -286,7 +287,7 @@ function Hero({ content = {} }) {
         <p>{content.eyebrow || 'PERSONALIZED JERSEYS · DESIGNED FOR YOUR STORY'}</p>
         <h1>{content.headline ? content.headline.toUpperCase() : <>YOUR JERSEY.<br />YOUR STORY.<br /><span>MAKE IT PERSONAL.</span></>}</h1>
         <p className="hero__lede">{content.supporting || 'Designer-led football jerseys customized with your name, number, colors and memories.'}</p>
-        <div className="hero__actions"><button className="button button--light" onClick={() => navigate('/product/touchline?custom=1')}>{content.button || 'CREATE YOUR JERSEY'}</button><ButtonLink light onClick={() => navigate('/shop')}>SHOP DESIGNS</ButtonLink></div>
+        <div className="hero__actions"><button className="button button--light" onClick={() => navigate(customTarget)}>{content.button || 'CREATE YOUR JERSEY'}</button><ButtonLink light onClick={() => navigate('/shop')}>SHOP DESIGNS</ButtonLink></div>
         <span className="hero__brand-line">Football memories, made wearable.</span>
       </div>
       <div className="hero__meta"><span>DESIGNED FOR THE MINUTES<br />THAT STAY WITH YOU.</span><button onClick={() => document.querySelector('#drop')?.scrollIntoView({ behavior: 'smooth' })}>SCROLL TO KICK OFF <ArrowDown size={16}/></button></div>
@@ -662,7 +663,7 @@ function Home({ onQuickView, products, theme, collections = [] }) {
   const primaryCollection = collections[0]
   const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,4) : products.slice(0,4)
   const renderBlock = id => ({
-    hero:<Hero key="hero" content={theme?.content}/>,
+    hero:<Hero key="hero" content={theme?.content} customProduct={customProduct}/>,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
     rail:<ProductRail key="rail" title="TRENDING DESIGNS" onQuickView={onQuickView} items={merchandised}/>,
@@ -1092,10 +1093,11 @@ function setLink(rel, href, extra = {}) {
 function useRouteMetadata({ path, product, collection, league, team }) {
   useEffect(() => {
     const publicOrigin = import.meta.env.VITE_SITE_URL || 'https://www.jersevo.com'
+    const storefrontBrand = 'Jersevo'
     const productTitle = product?.seo?.title || product?.name
     const collectionTitle = collection?.seo?.title || collection?.name
     const taxonomyTitle = team?.name || league?.name
-    const withBrand = value => /extra time/i.test(value || '') ? value : `${value} — Extra Time`
+    const withBrand = value => /(?:extra time|jersevo)/i.test(value || '') ? value : `${value} — ${storefrontBrand}`
     const routeMeta = {
       '/about':['About the studio — Extra Time','Meet Extra Time, an independent fan-apparel studio making small-batch football jerseys and considered personalization.'],
       '/shipping':['Shipping and delivery — Extra Time',TRUST_PAGES.shipping.intro],
@@ -1106,8 +1108,8 @@ function useRouteMetadata({ path, product, collection, league, team }) {
       '/accessibility':['Accessibility — Extra Time',TRUST_PAGES.accessibility.intro],
       '/journal':['The Journal — Extra Time',TRUST_PAGES.journal.intro]
     }[path]
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
-    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/' ? 'Jersevo | Custom Football Jerseys Made Personal' : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
+    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Choose a designer-led football jersey, add your name, number, team or city, and preview your personalized piece before checkout.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
     const description = seoDescription(rawDescription, '', 160)
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
     const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`
@@ -1119,7 +1121,7 @@ function useRouteMetadata({ path, product, collection, league, team }) {
     const absoluteImage = new URL(image,publicOrigin).toString()
     document.documentElement.lang='en-US'
     document.title=indexable ? title : `${title} · Extra Time`
-    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name','Extra Time',true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
+    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name',storefrontBrand,true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
     setLink('canonical',canonical); setLink('alternate',canonical,{hreflang:'en-US'}); setLink('alternate',canonical,{hreflang:'x-default'})
     let schema=document.getElementById('route-structured-data')
     if(indexable && (product || collection || league)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
