@@ -55,10 +55,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 Never prefix these secrets with `VITE_`. The browser only sends an authenticated
-admin token to `/api/ai-listing-media` and `/api/ai-listing-copy`. The Node
-runtime keeps the same routes available for a future consolidated deployment;
-if those routes move back to Cloud Run, mount the same secret there before
-removing the Vercel functions.
+admin token to `/api/ai-listing-media` and `/api/ai-listing-copy`. These routes
+now run on Cloud Run so multimodal requests use the 300-second Node budget;
+keep `AI_TEXT_API_KEY` and `AI_IMAGE_API_KEY` mounted through Secret Manager.
 
 ## Operating sequence
 

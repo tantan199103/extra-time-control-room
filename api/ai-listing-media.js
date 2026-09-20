@@ -12,7 +12,14 @@ import {
   bestEffort
 } from './_security.js'
 
-const UPSTREAM_TIMEOUT_MS = 55_000
+const UPSTREAM_TIMEOUT_MS = Math.min(
+  240_000,
+  Math.max(5_000, Number(process.env.AI_IMAGE_TIMEOUT_MS || (process.env.K_SERVICE ? 240_000 : 55_000)))
+)
+
+function isTimeoutError(error) {
+  return error?.name === 'TimeoutError' || error?.name === 'AbortError' || /aborted due to timeout|timed? out/i.test(String(error?.message || ''))
+}
 const MAX_REFERENCE_BYTES = 16 * 1024 * 1024
 const MAX_GENERATED_BYTES = 20 * 1024 * 1024
 
@@ -166,6 +173,7 @@ export default async function handler(request, response) {
     }))
     return sendJson(response, 200, { productId:listing.id, slot:slot.id, media })
   } catch (error) {
+    if (isTimeoutError(error)) return handleApiError(response, Object.assign(new Error('The AI image provider took too long to finish. Retry once or use a smaller reference image.'), { status:504 }), 'Editorial image generation failed.')
     return handleApiError(response, error, 'Editorial image generation failed.')
   }
 }

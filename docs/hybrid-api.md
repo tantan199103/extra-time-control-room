@@ -83,7 +83,7 @@ VITE_BACKEND_URL=https://api.jersevo.com
 
 After changing variables, redeploy the frontend. Verify in the browser network
 panel that cart/member/quote calls use the Supabase Functions URL, listing AI
-calls use the same-origin Vercel `/api/ai-listing-*` handlers, and upload,
+calls use the authenticated Cloud Run `/api/ai-listing-*` handlers, and upload,
 customer AI preview, admin, checkout-create and payment calls use
 `api.jersevo.com`.
 

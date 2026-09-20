@@ -40,7 +40,19 @@ function safeImageReference(value) {
   }
 }
 
-const UPSTREAM_TIMEOUT_MS = 55000
+// Keep the Vercel fallback below its 60-second ceiling, while allowing the
+// Cloud Run runtime (300-second request timeout) enough time for multimodal
+// listing audits. K_SERVICE is injected by Cloud Run and never comes from the
+// browser. The optional override is bounded so a bad setting cannot outlive
+// the container request budget.
+const UPSTREAM_TIMEOUT_MS = Math.min(
+  240_000,
+  Math.max(5_000, Number(process.env.AI_TEXT_TIMEOUT_MS || (process.env.K_SERVICE ? 240_000 : 55_000)))
+)
+
+function isTimeoutError(error) {
+  return error?.name === 'TimeoutError' || error?.name === 'AbortError' || /aborted due to timeout|timed? out/i.test(String(error?.message || ''))
+}
 
 async function requireAdmin(request) {
   const token = String(request.headers?.authorization || '').replace(/^Bearer\s+/i, '')
@@ -230,6 +242,7 @@ export default async function handler(request, response) {
     if (!suggestion.title || !suggestion.description) return json(response, 502, { error:'AI returned an incomplete listing draft. Try a more specific direction.' })
     return json(response, 200, { suggestion, model, mode:fullAudit ? 'FULL_AUDIT' : 'COPY_DRAFT' })
   } catch (error) {
+    if (isTimeoutError(error)) return json(response, 504, { error:'The AI provider took too long to finish. Retry once; if it repeats, use fewer reference images or a shorter direction.' })
     return json(response, error?.status || 500, { error:error instanceof Error ? error.message : 'AI listing copy failed.' })
   }
 }

@@ -12,8 +12,8 @@ test('hybrid API routes resolve light calls to Supabase and heavy calls to Node'
   assert.equal(resolveApiTarget('/api/ai-logo-preview', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/ai-logo-preview')
   assert.equal(resolveApiTarget('/api/checkout-quote', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/checkout-quote')
   assert.equal(resolveApiTarget('/api/payment-webhook', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/payment-webhook')
-  assert.equal(resolveApiTarget('/api/ai-listing-copy', { backendOrigin: 'https://api.jersevo.com' }), '/api/ai-listing-copy')
-  assert.equal(resolveApiTarget('/api/ai-listing-media', { backendOrigin: 'https://api.jersevo.com' }), '/api/ai-listing-media')
+  assert.equal(resolveApiTarget('/api/ai-listing-copy', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/ai-listing-copy')
+  assert.equal(resolveApiTarget('/api/ai-listing-media', { backendOrigin: 'https://api.jersevo.com' }), 'https://api.jersevo.com/api/ai-listing-media')
   assert.equal(resolveApiTarget('/api/cart-validate', {}), '/api/cart-validate')
   assert.equal(isEdgeRoute('/api/checkout-quote'), false)
   assert.equal(isEdgeRoute('/api/member-quote'), true)
@@ -21,8 +21,8 @@ test('hybrid API routes resolve light calls to Supabase and heavy calls to Node'
   assert.equal(isNodeBackendRoute('/api/logo-preview'), true)
   assert.equal(isNodeBackendRoute('/api/ai-logo-preview'), true)
   assert.equal(isNodeBackendRoute('/api/newsletter-subscribe'), false)
-  assert.equal(isNodeBackendRoute('/api/ai-listing-copy'), false)
-  assert.equal(isNodeBackendRoute('/api/ai-listing-media'), false)
+  assert.equal(isNodeBackendRoute('/api/ai-listing-copy'), true)
+  assert.equal(isNodeBackendRoute('/api/ai-listing-media'), true)
 })
 
 test('routing keeps server-only credentials out of the browser client', async () => {

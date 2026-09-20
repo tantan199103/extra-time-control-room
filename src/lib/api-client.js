@@ -24,6 +24,11 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/logo-preview',
   '/api/ai-logo-preview',
   '/api/ai-preview',
+  // Listing copy/review can include multimodal context and routinely exceeds
+  // the Vercel function ceiling. Keep it on the authenticated Cloud Run
+  // runtime, which has the AI_TEXT_API_KEY and a 300-second request budget.
+  '/api/ai-listing-copy',
+  '/api/ai-listing-media',
   '/api/customization-order',
   '/api/admin-customizations',
   '/api/admin-orders',

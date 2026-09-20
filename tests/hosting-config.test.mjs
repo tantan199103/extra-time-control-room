@@ -17,7 +17,7 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
     'api/ai-listing-copy.js': { maxDuration: 60 },
     'api/ai-listing-media.js': { maxDuration: 60 },
     'api/newsletter-subscribe.js': { maxDuration: 15 },
-  }, 'SEO/feed and the bounded AI listing tools stay on Vercel while the remaining application API routes are proxied to Cloud Run')
+  }, 'SEO/feed stay on Vercel while AI listing tools and the remaining application API routes use Cloud Run')
   assert.ok(config.rewrites.some(rule => rule.source === '/api/google-merchant-feed' && rule.destination === '/api/google-merchant-feed.js'))
   assert.ok(config.rewrites.some(rule => rule.source === '/api/newsletter-subscribe' && rule.destination === '/api/newsletter-subscribe.js'))
 })
@@ -29,11 +29,13 @@ test('static assets are cacheable while API responses remain no-store', async ()
   assert.match(security, /setHeader\('Cache-Control', 'no-store'\)/)
 })
 
-test('AI upstream timeouts leave room before the 60-second function limit', async () => {
+test('AI upstream timeouts keep Vercel bounded and allow the Cloud Run budget', async () => {
   const preview = await readFile(new URL('../api/ai-preview.js', import.meta.url), 'utf8')
   const copy = await readFile(new URL('../api/ai-listing-copy.js', import.meta.url), 'utf8')
   const media = await readFile(new URL('../api/ai-listing-media.js', import.meta.url), 'utf8')
   assert.match(preview, /AbortSignal\.timeout\(55000\)/)
-  assert.match(copy, /UPSTREAM_TIMEOUT_MS = 55000/)
-  assert.match(media, /UPSTREAM_TIMEOUT_MS = 55_000/)
+  assert.match(copy, /process\.env\.K_SERVICE \? 240_000 : 55_000/)
+  assert.match(media, /process\.env\.K_SERVICE \? 240_000 : 55_000/)
+  assert.match(copy, /The AI provider took too long to finish/)
+  assert.match(media, /The AI image provider took too long to finish/)
 })
