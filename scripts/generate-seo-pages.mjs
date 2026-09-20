@@ -205,10 +205,10 @@ const collections = await loadCollections()
 
 const home = pageHtml(shell, {
   path:'/',
-  title:'Extra Time — Football memories, made wearable',
-  description:'Extra Time makes designer-led football jerseys and personalized match-day pieces for supporters in the United States.',
+  title:'Jersevo | Custom Football Jerseys Made Personal',
+  description:'Jersevo makes designer-led custom football jerseys. Choose a design, add your name, number, team or city, then preview your personalized jersey before checkout.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:`<main class="seo-fallback"><h1>Football memories, made wearable.</h1><p>Designer-led jerseys and considered personalization for the moments supporters never forget.</p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav></main>`
+  fallback:`<main class="seo-fallback"><h1>Your jersey. Your story.</h1><p>Jersevo makes designer-led custom football jerseys. Choose a design, add your name, number, team or city, and preview your personalized piece before checkout.</p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
 

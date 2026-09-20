@@ -33,6 +33,8 @@ test('SEO build creates initial HTML for product pages and protects private rout
   assert.match(generator, /variant=\$\{encodeURIComponent\(variant\.id\)\}/)
   assert.match(generator, /pod_product_variants\(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image\)/)
   assert.match(generator, /Jersevo operates the Extra Time storefront/)
+  assert.match(generator, /Jersevo \| Custom Football Jerseys Made Personal/)
+  assert.match(generator, /Jersevo makes designer-led custom football jerseys/)
   assert.equal(vercel.headers.find(rule => rule.source === '/admin').headers[0].value, 'noindex, nofollow')
   assert.equal(vercel.headers.find(rule => rule.source === '/account/(.*)').headers[0].value, 'noindex, nofollow')
 })
