@@ -160,7 +160,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
           <button className="text-action" onClick={openSearch}><Search size={16} /> <span>SEARCH</span></button>
           <button className="text-action desktop-account" onClick={() => navigate('/membership#account')}><CircleUserRound size={16} /> <span>{account?.user ? 'ACCOUNT' : 'SIGN IN'}</span></button>
           {!appInstalled && <button className="text-action header-install" onClick={openInstall} aria-label="Add Extra Time to your home screen"><Download size={16}/><span>APP</span></button>}
-          <button className="text-action" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
+          <button className="text-action header-bag" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
           <IconButton label="Open menu" className="mobile-menu-button" onClick={() => setMobile(true)}><Menu /></IconButton>
         </div>
         {mega && <MegaMenu item={mega} customProduct={customProduct} onNavigate={openLink} />}
@@ -278,19 +278,23 @@ function ButtonLink({ children, light = false, onClick, className = '' }) {
 
 function Hero({ content = {}, customProduct }) {
   const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
+  const legacyHeadline = /minutes nobody forgets/i.test(String(content.headline || ''))
+  const headline = !content.headline || legacyHeadline ? 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.' : String(content.headline)
+  const eyebrow = !content.eyebrow || /drop 01|extra time/i.test(String(content.eyebrow)) ? 'CUSTOM JERSEYS' : content.eyebrow
+  const primaryLabel = !content.button || /explore the drop|create your jersey/i.test(String(content.button)) ? 'START CUSTOMIZING' : content.button
   return (
     <section className="hero">
       <img src="/assets/hero-tunnel.webp" alt="A player entering a rain-soaked stadium from a dark tunnel" width="1672" height="941" loading="eager" fetchPriority="high" decoding="async" />
       <div className="hero__wash" />
       <div className="hero__time" aria-hidden="true">90<span>+</span></div>
       <div className="hero__content">
-        <p>{content.eyebrow || 'PERSONALIZED JERSEYS · DESIGNED FOR YOUR STORY'}</p>
-        <h1>{content.headline ? content.headline.toUpperCase() : <>YOUR JERSEY.<br />YOUR STORY.<br /><span>MAKE IT PERSONAL.</span></>}</h1>
-        <p className="hero__lede">{content.supporting || 'Designer-led football jerseys customized with your name, number, colors and memories.'}</p>
-        <div className="hero__actions"><button className="button button--light" onClick={() => navigate(customTarget)}>{content.button || 'CREATE YOUR JERSEY'}</button><ButtonLink light onClick={() => navigate('/shop')}>SHOP DESIGNS</ButtonLink></div>
+        <p>{eyebrow}</p>
+        <h1>{headline.split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br />}{line.toUpperCase()}</React.Fragment>)}</h1>
+        <p className="hero__lede">{content.supporting || 'Made for fans. Personalized with the details that make it yours.'}</p>
+        <div className="hero__actions"><button className="button button--light" onClick={() => navigate(customTarget)}>{primaryLabel}</button><ButtonLink light onClick={() => navigate('/shop')}>SHOP JERSEYS</ButtonLink></div>
         <span className="hero__brand-line">Football memories, made wearable.</span>
       </div>
-      <div className="hero__meta"><span>DESIGNED FOR THE MINUTES<br />THAT STAY WITH YOU.</span><button onClick={() => document.querySelector('#drop')?.scrollIntoView({ behavior: 'smooth' })}>SCROLL TO KICK OFF <ArrowDown size={16}/></button></div>
+      <div className="hero__meta"><span>DESIGNED FOR THE MINUTES<br />THAT STAY WITH YOU.</span><button onClick={() => document.querySelector('#leagues')?.scrollIntoView({ behavior: 'smooth' })}>EXPLORE THE LEAGUES <ArrowDown size={16}/></button></div>
     </section>
   )
 }
@@ -300,18 +304,19 @@ function HomePath({ customProduct }) {
   return (
     <section className="home-path" id="how-it-works" aria-labelledby="home-path-heading">
       <div className="home-path__intro">
-        <span>DESIGNED BY US · PERSONALIZED BY YOU</span>
-        <h2 id="home-path-heading">PICK A DESIGN.<br /><em>MAKE IT YOURS.</em></h2>
-        <p>Choose an original jersey, add the details that matter and preview your piece before it reaches the pitch.</p>
+        <span>CUSTOM JERSEYS / FOUR SIMPLE STEPS</span>
+        <h2 id="home-path-heading">MAKE IT<br /><em>YOURS.</em></h2>
+        <p>Choose a design, add the details that matter and preview your jersey before it reaches the pitch.</p>
         <div className="home-path__actions">
-          <button className="button button--dark" onClick={() => navigate('/shop')}>SHOP PERSONALIZED JERSEYS <ArrowRight size={16}/></button>
-          <ButtonLink onClick={() => navigate(customTarget)}>START WITH YOUR DETAILS</ButtonLink>
+          <button className="button button--dark" onClick={() => navigate(customTarget)}>START CUSTOMIZING <ArrowRight size={16}/></button>
+          <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
         </div>
       </div>
       <ol className="home-path__steps">
-        <li><span>01</span><div><strong>Choose a design</strong><p>Small-batch artwork with a fixed point of view.</p></div></li>
-        <li><span>02</span><div><strong>Add your details</strong><p>Name, number, team or city, year and colour.</p></div></li>
-        <li><span>03</span><div><strong>Preview, then order</strong><p>See the personalization before secure checkout.</p></div></li>
+        <li><span>01</span><div><strong>Pick a design</strong><p>Designer-led artwork with a fixed point of view.</p></div></li>
+        <li><span>02</span><div><strong>Add your name + number</strong><p>Keep the details that make the piece yours.</p></div></li>
+        <li><span>03</span><div><strong>Preview your jersey</strong><p>Check spelling, placement and the selected colorway.</p></div></li>
+        <li><span>04</span><div><strong>We make it</strong><p>Review the order, then follow the tracked delivery.</p></div></li>
       </ol>
     </section>
   )
@@ -359,10 +364,10 @@ function ProductCard({ product, onQuickView }) {
   )
 }
 
-function ProductRail({ onQuickView, title = 'THE DROP', items = [] }) {
+function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = 'Fan favorites, ready for your details.', items = [], className = '' }) {
   return (
-    <section className="product-section section">
-      <div className="section-title-row"><h2>{title}</h2><ButtonLink onClick={() => navigate('/shop')}>SHOP ALL</ButtonLink></div>
+    <section className={`product-section section ${className}`}>
+      <div className="section-title-row"><div><h2>{title}</h2><p className="product-section__subtitle">{subtitle}</p></div><ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink></div>
       <div className="product-grid">{items.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div>
     </section>
   )
@@ -372,14 +377,19 @@ function Breadcrumbs({ items = [] }) {
   return <nav className="breadcrumbs" aria-label="Breadcrumb"><button onClick={() => navigate('/')}>Home</button>{items.map((item, index) => <React.Fragment key={`${item.label}-${index}`}><span aria-hidden="true">/</span>{item.href ? <button onClick={() => navigate(item.href)}>{item.label}</button> : <strong aria-current="page">{item.label}</strong>}</React.Fragment>)}</nav>
 }
 
-function StorefrontTrust({ compact = false }) {
-  const items = [
+function StorefrontTrust({ compact = false, variant = 'default' }) {
+  const items = variant === 'home' ? [
+    ['MADE TO ORDER', 'Built around your details'],
+    ['CUSTOM NAME + NUMBER', 'Make the back yours'],
+    ['SECURE CHECKOUT', 'Protected payment in USD'],
+    ['TRACKED DELIVERY', 'Clear updates after checkout']
+  ] : [
     ['SHIPPING', 'Free US shipping over $100'],
     ['DELIVERY', 'Tracked delivery with clear updates'],
     ['RETURNS', '30-day standard return window'],
     ['CHECKOUT', 'Secure checkout in USD']
   ]
-  return <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''}`} aria-label="Shipping and shopping assurances">{items.map(([label, copy]) => <div key={label}><span>{label}</span><strong>{copy}</strong></div>)}</section>
+  return <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''} ${variant === 'home' ? 'storefront-trust--home' : ''}`} aria-label="Order and shopping assurances">{items.map(([label, copy]) => <div key={label}><span>{label}</span><strong>{copy}</strong></div>)}</section>
 }
 
 function TaxonomyLanding({ league, team, products, onQuickView }) {
@@ -445,20 +455,22 @@ function StoryExplorer({ product }) {
 
 function PlayerDiscovery({ customProduct }) {
   const cards = [
-    { name: 'FAMILY', count: 12, img: '/assets/hero-tunnel.webp', pos: '68%' },
-    { name: 'HOMETOWN', count: 9, img: '/assets/editorial-player.webp', pos: '50%' },
-    { name: 'YOUR NAME', count: '∞', img: '/assets/jersey-white.webp', pos: '50%' }
+    { name: 'FOR YOU', count: 'PERSONAL', img: '/assets/jersey-white.webp', pos: '50%', custom: true },
+    { name: 'FOR TWO', count: 'MATCHING', img: '/assets/editorial-player.webp', pos: '50%' },
+    { name: 'FOR FAMILY', count: 'TOGETHER', img: '/assets/hero-tunnel.webp', pos: '68%' },
+    { name: 'FOR THE SQUAD', count: 'CUSTOM', img: '/assets/jersey-black.webp', pos: '50%' }
   ]
   return (
     <section className="players-section section" id="players">
-      <div className="section-title-row"><h2>SHOP BY<br />STORY.</h2><p>Find a shirt by the moment behind it,<br />not only the name on the back.</p></div>
-      <div className="player-grid">{cards.map((card, index) => <button key={card.name} onClick={() => index === 2 ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} {card.count === '∞' ? 'POSSIBILITIES' : 'STORIES'} <ArrowRight size={15}/></small></span></button>)}</div>
+      <div className="section-title-row"><div><h2>MADE FOR<br /><em>MORE.</em></h2><p className="intent-section__subtitle">A personalized jersey for game day, the gift, the family photo and every story in between.</p></div><ButtonLink onClick={() => navigate('/shop')}>SHOP BY INTENT</ButtonLink></div>
+      <div className="player-grid">{cards.map(card => <button key={card.name} onClick={() => card.custom ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} <ArrowRight size={15}/></small></span></button>)}</div>
     </section>
   )
 }
 
 function LeagueDiscovery() {
-  return <section className="league-discovery section" id="leagues"><div className="section-title-row"><h2>FIND YOUR<br />COLORS.</h2><p>Start with the league.<br />Stay for the team connection.</p></div><div className="league-discovery__grid">{LEAGUE_TAXONOMY.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}><div className="league-discovery__media">{league.media && <img src={league.media.src} alt="" loading="lazy" decoding="async" />}</div><span>{league.name}</span><small>{league.sport}</small><ArrowRight size={16}/></a>)}</div></section>
+  const leagueMeta = { nfl: 'CUSTOM FOOTBALL', mlb: 'CUSTOM BASEBALL', nba: 'CUSTOM BASKETBALL', mls: 'CUSTOM SOCCER' }
+  return <section className="league-discovery section" id="leagues"><div className="section-title-row"><div><h2>CHOOSE YOUR<br /><em>LEAGUE.</em></h2><p className="league-discovery__lede">Pick a league. Find your team. Make it yours.</p></div><ButtonLink onClick={() => navigate('/shop')}>SHOP ALL LEAGUES</ButtonLink></div><div className="league-discovery__grid">{LEAGUE_TAXONOMY.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}><div className="league-discovery__media"><span className={`league-discovery__sport league-discovery__sport--${league.key}`} aria-hidden="true">{league.key === 'nfl' ? '◒' : league.key === 'mlb' ? '◓' : league.key === 'nba' ? '◉' : '✦'}</span>{league.media && <img src={league.media.src} alt={`${league.name} league mark`} loading="lazy" decoding="async" />}</div><span>{league.name}</span><small>{leagueMeta[league.key] || `CUSTOM ${league.sport.toUpperCase()}`} <ArrowRight size={15}/></small><strong>SHOP {league.name}</strong></a>)}</div></section>
 }
 
 function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '' }) {
@@ -509,6 +521,71 @@ function CustomTeaser({ product }) {
       <div className="custom-teaser__steps"><span>70% / ARTWORK LOCKED</span><span>NAME + NUMBER</span><span>TEAM / CITY · YEAR</span><span>COLOUR · OPTIONAL PHOTO</span></div>
     </section>
   )
+}
+
+function CustomOptions({ product }) {
+  const customTarget = `/product/${product?.handle || product?.id || 'touchline'}?custom=1`
+  const options = [
+    ['NAME', 'Your name, your story.'],
+    ['NUMBER', 'The number that means something.'],
+    ['TEAM / CITY', 'A place to carry with you.'],
+    ['YEAR', 'Mark the season or the memory.'],
+    ['COLOUR', 'Choose the available colorway.'],
+    ['OPTIONAL PHOTO', 'Add a reference when the listing allows it.']
+  ]
+  return (
+    <section className="custom-options section" id="custom-options" aria-labelledby="custom-options-heading">
+      <div className="custom-options__copy">
+        <span>THE PERSONAL LAYER / 30%</span>
+        <h2 id="custom-options-heading">WHAT CAN<br /><em>YOU CHANGE?</em></h2>
+        <p>The artwork, typography and composition stay designer-led. You add only the details the listing was built to hold.</p>
+        <button className="button button--dark" onClick={() => navigate(customTarget)}>EXPLORE CUSTOM OPTIONS <ArrowRight size={16}/></button>
+      </div>
+      <div className="custom-options__stage">
+        <JerseySvg name="YOUR NAME" number="10" teamCity="TEAM / CITY" year="2026" accent="#d72c2c" />
+        <span className="custom-options__callout custom-options__callout--name">NAME<span>YOUR NAME</span></span>
+        <span className="custom-options__callout custom-options__callout--number">NUMBER<span>YOUR NUMBER</span></span>
+        <span className="custom-options__callout custom-options__callout--colour">COLOURWAY<span>AVAILABLE COLORS</span></span>
+      </div>
+      <ul className="custom-options__list">{options.map(([label, copy]) => <li key={label}><strong>{label}</strong><span>{copy}</span></li>)}</ul>
+    </section>
+  )
+}
+
+function QualityProof({ product }) {
+  const target = product ? `/product/${product.handle || product.id}` : '/shop'
+  const details = [
+    ['01', 'SURFACE', 'See the fabric and artwork up close.', '/assets/jersey-white.webp', '42%'],
+    ['02', 'PRINT DETAIL', 'Preview the name and number placement.', '/assets/jersey-black.webp', '50%'],
+    ['03', 'TRIM', 'Look at the collar and sleeve finish.', '/assets/jersey-oxblood.webp', '50%'],
+    ['04', 'FIT + SIZE', 'Use the size guide before you order.', '/assets/jersey-white.webp', '62%']
+  ]
+  return (
+    <section className="quality-proof section" id="quality" aria-labelledby="quality-heading">
+      <div className="quality-proof__head"><div><span>DETAILS BEFORE DECISIONS</span><h2 id="quality-heading">BUILT TO<br /><em>BE WORN.</em></h2></div><div><p>Look closely at the piece you are choosing. Every listing keeps its own artwork language while the personal layer stays clear.</p><ButtonLink onClick={() => navigate(target)}>VIEW A JERSEY</ButtonLink></div></div>
+      <div className="quality-proof__grid">{details.map(([index, label, copy, image, position]) => <button key={index} onClick={() => navigate(target)}><span className="quality-proof__image"><img src={image} alt={`${label.toLowerCase()} detail on a Jersevo jersey`} style={{ objectPosition: `center ${position}` }} /></span><span className="quality-proof__index">{index}</span><strong>{label}</strong><small>{copy}<ArrowRight size={15}/></small></button>)}</div>
+      <div className="quality-proof__trust"><span>MADE TO ORDER</span><span>DESIGNER-LED ARTWORK</span><span>SIZE GUIDANCE</span><span>TRACKED DELIVERY</span></div>
+    </section>
+  )
+}
+
+function CommunityProof() {
+  return (
+    <section className="community-proof section" id="community" aria-labelledby="community-heading">
+      <div className="community-proof__copy"><span>THE PIECE LEAVES THE STUDIO</span><h2 id="community-heading">SEEN IN<br /><em>THE WILD.</em></h2><p>From the first sketch to the first match, a jersey becomes part of the memory around it.</p><div className="community-proof__facts"><span><strong>01</strong>DESIGNER-LED</span><span><strong>02</strong>PERSONALIZED</span><span><strong>03</strong>MADE FOR YOUR MOMENT</span></div><ButtonLink onClick={() => navigate('/shop')}>SHOP THE COLLECTION</ButtonLink></div>
+      <div className="community-proof__collage" aria-label="Editorial jersey photography"><figure className="community-proof__image community-proof__image--large"><img src="/assets/editorial-player.webp" alt="Player wearing a dark jersey on a rainy city court" loading="lazy" /></figure><figure className="community-proof__image community-proof__image--small"><img src="/assets/jersey-white.webp" alt="White jersey detail in the studio" loading="lazy" /></figure><span className="community-proof__stamp">MORE THAN<br />A JERSEY.</span></div>
+    </section>
+  )
+}
+
+function HomeFaq() {
+  const items = [
+    ['What can I personalize?', 'Each listing shows the fields it supports. Most custom pieces use name, number, team or city, year, color and an optional photo; typography and composition stay locked to the design.'],
+    ['Can I preview before checkout?', 'Yes. Start from the product page, add the available details and review the visual preview before you add the piece to your bag.'],
+    ['How do I follow my order?', 'After checkout, use the order-status link to see the latest payment, fulfillment and delivery updates.'],
+    ['Can I return a personalized piece?', 'Review the return policy before ordering. Standard and personalized pieces can have different eligibility rules, so the product and policy pages are the source of truth.']
+  ]
+  return <section className="home-faq section" id="faq" aria-labelledby="faq-heading"><div className="home-faq__heading"><span>HELPFUL ANSWERS</span><h2 id="faq-heading">FREQUENTLY<br />ASKED QUESTIONS.</h2><ButtonLink onClick={() => navigate('/shipping')}>READ THE TRUST DESK</ButtonLink></div><div className="home-faq__items">{items.map(([question, answer]) => <details key={question}><summary><span>{question}</span><Plus size={18}/></summary><p>{answer}</p></details>)}</div></section>
 }
 
 function VaultTeaser() {
@@ -595,8 +672,8 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
   const defaults = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
-    { id: 'leagues', label: 'Leagues', target: '#leagues', icon: Trophy, active: Boolean(routeLeague) || leagueOpen },
     { id: 'custom', label: 'Custom', target: `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`, icon: Sparkles, active: isCustom },
+    { id: 'leagues', label: 'Leagues', target: '#leagues', icon: Trophy, active: Boolean(routeLeague) || leagueOpen },
   ]
   const configured = menuAtLocation(menus,'FIXED_FOOTER_MOBILE')?.items || []
   const configuredItems = configured.filter(item => item.target !== '#bag').map(item => { const target=menuTarget(item.target,customProduct); const Icon=/league/i.test(`${item.label} ${target}`) ? Trophy : /club|member/i.test(`${item.label} ${target}`) ? Ticket : /custom|studio/i.test(`${item.label} ${target}`) ? Sparkles : target === '/' ? House : Grid2X2; return {...item,target,icon:Icon,active:/league/i.test(`${item.label} ${target}`) ? Boolean(routeLeague) || leagueOpen : target === '/' ? path === '/' : target.includes('custom=1') ? isCustom : path === target || (target === '/shop' && path.startsWith('/product/') && !isCustom)} })
@@ -612,7 +689,7 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
       </button>)}
     </div>}
     <nav className="fixed-footer-menu" aria-label="Quick navigation" aria-hidden={hidden}>
-      {items.map(item => { const Icon = item.icon; const isLeague = item.id === 'leagues' || /league/i.test(`${item.label} ${item.target}`); return <button key={item.id} tabIndex={hidden ? -1 : 0} className={item.active ? 'is-active' : ''} aria-current={item.active && !isLeague ? 'page' : undefined} aria-expanded={isLeague ? leagueOpen : undefined} onClick={() => isLeague ? openLeagueMenu() : navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
+      {items.map(item => { const Icon = item.icon; const isLeague = item.id === 'leagues' || /league/i.test(`${item.label} ${item.target}`); const isPrimary = /custom|studio/i.test(`${item.id} ${item.label} ${item.target}`); return <button key={item.id} tabIndex={hidden ? -1 : 0} className={`${item.active ? 'is-active' : ''} ${isPrimary ? 'is-primary' : ''}`} aria-current={item.active && !isLeague ? 'page' : undefined} aria-expanded={isLeague ? leagueOpen : undefined} onClick={() => isLeague ? openLeagueMenu() : navigate(item.target)}><Icon size={18}/><span>{item.label}</span></button> })}
       <button tabIndex={hidden ? -1 : 0} className="fixed-footer-menu__bag" onClick={openCart} aria-label={`Open bag with ${bagCount} items`}><ShoppingBag size={18}/><span>Bag</span><b>{bagCount}</b></button>
     </nav>
   </div>
@@ -658,24 +735,29 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
 }
 
 function Home({ onQuickView, products, theme, collections = [] }) {
-  const featured = products[0]
-  const customProduct = products.find(product => product.customFields?.length) || featured
+  const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
+  const customProduct = products.find(product => product.customFields?.length) || products.find(product => /touchline/i.test(`${product.handle || ''} ${product.name || ''}`)) || featured
   const primaryCollection = collections[0]
   const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,4) : products.slice(0,4)
   const renderBlock = id => ({
     hero:<Hero key="hero" content={theme?.content} customProduct={customProduct}/>,
+    'home-trust':<StorefrontTrust key="home-trust" variant="home" />,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
-    rail:<ProductRail key="rail" title="TRENDING DESIGNS" onQuickView={onQuickView} items={merchandised}/>,
+    rail:<ProductRail key="rail" title="THE STARTING LINEUP." subtitle="Fan favorites, ready for your details." onQuickView={onQuickView} items={merchandised} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues"/>,
     'custom-cta':<CustomTeaser key="custom-cta" product={customProduct}/>,
+    'custom-options':<CustomOptions key="custom-options" product={customProduct}/>,
+    quality:<QualityProof key="quality" product={featured}/>,
+    community:<CommunityProof key="community"/>,
+    faq:<HomeFaq key="faq"/>,
     vault:<VaultTeaser key="vault"/>,
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
   }[id] || null)
-  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','home-path','rail','custom-cta','drop','story','players','leagues','vault','manifesto','newsletter']
+  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','home-trust','leagues','rail','home-path','custom-options','quality','drop','players','community','faq','newsletter']
   const homeBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
   if (!homeBlocks.includes('home-path')) {
     const heroIndex = homeBlocks.indexOf('hero')
@@ -1108,8 +1190,8 @@ function useRouteMetadata({ path, product, collection, league, team }) {
       '/accessibility':['Accessibility — Extra Time',TRUST_PAGES.accessibility.intro],
       '/journal':['The Journal — Extra Time',TRUST_PAGES.journal.intro]
     }[path]
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/' ? 'Jersevo | Custom Football Jerseys Made Personal' : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
-    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Choose a designer-led football jersey, add your name, number, team or city, and preview your personalized piece before checkout.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
+    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
     const description = seoDescription(rawDescription, '', 160)
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
     const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`

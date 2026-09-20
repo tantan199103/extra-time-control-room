@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { adminProducts } from '../admin-data'
-import { adminCollections, adminMenus, adminProductOptions, adminTheme } from '../admin-builder-data'
+import { adminCollections, adminMenus, adminProductOptions, adminTheme, themeBlocks } from '../admin-builder-data'
 import { buildListingInput, normalizeProduct, validateListing } from './catalog-model'
 import { buildMenuTree, prepareStorefrontProduct, resolveMenuImages } from './storefront-model'
 import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
@@ -28,6 +28,46 @@ export const membershipPreview = {
 }
 
 const previewResult = (data, error = null) => ({ data, source: 'preview', error })
+
+// A theme saved before a new homepage section was introduced can still have a
+// non-empty block list.  The storefront deliberately honours an admin's
+// ordering, but it must not silently lose sections that are part of the
+// current system.  Keep persisted blocks first (including custom blocks), then
+// append any newly introduced defaults.  Cloning also prevents an inspector
+// edit from mutating the module-level fallback objects.
+export function mergeThemeBlocks(persisted = [], defaults = themeBlocks) {
+  const source = Array.isArray(persisted) ? persisted.filter(Boolean) : []
+  const fallback = Array.isArray(defaults) ? defaults.filter(Boolean) : []
+  const defaultById = new Map(fallback.map(block => [block.id, block]))
+  const legacyIds = new Set(['custom-cta', 'story', 'vault', 'manifesto'])
+  const modernIds = new Set(fallback.filter(block => !legacyIds.has(block.id)).map(block => block.id))
+  const hasModernBlock = source.some(block => modernIds.has(block.id))
+  const seen = new Set()
+  const merged = []
+  source.forEach(block => {
+    if (!block.id || seen.has(block.id)) return
+    const baseline = defaultById.get(block.id)
+    // Older published definitions used these editorial blocks as the primary
+    // homepage. Once any current-system block is present, keep the old entry
+    // in its saved position for admin visibility but disable it so the public
+    // route cannot mix the two information architectures.
+    const normalized = hasModernBlock && legacyIds.has(block.id) ? { ...block, enabled: false } : block
+    merged.push({ ...(baseline || {}), ...normalized })
+    seen.add(block.id)
+  })
+  fallback.forEach(block => {
+    if (!block.id || seen.has(block.id)) return
+    merged.push({ ...block })
+    seen.add(block.id)
+  })
+  return merged
+}
+
+const normalizeThemePages = (pages = []) => (Array.isArray(pages) ? pages : []).map(page => ({
+  ...page,
+  representativeImage: page.representative_image || page.representativeImage || '',
+  representativeAlt: page.representative_alt || page.representativeAlt || ''
+}))
 
 export function getCustomerSessionId() {
   const key = 'extra-time-customer-session'
@@ -116,8 +156,25 @@ export async function fetchStorefrontTheme(fallback = null) {
   const { data, error } = await supabase.from('pod_themes').select('*, pod_pages(*)').eq('status','PUBLISHED').order('updated_at',{ascending:false}).limit(1).maybeSingle()
   if (error || !data) return previewResult(fallback, error?.message || 'No published theme was returned.')
   const definition = data.definition && typeof data.definition === 'object' ? data.definition : {}
-  const pageRows = data.pod_pages || definition.pages || []
-  return { data:{ ...data, ...definition, tokens:{ ...(fallback?.tokens || {}), ...(data.tokens || {}) }, pages:pageRows.map(page => ({ ...page, representativeImage:page.representative_image || page.representativeImage || '', representativeAlt:page.representative_alt || page.representativeAlt || '' })) }, source:'supabase', error:null }
+  const pageRows = data.pod_pages?.length
+    ? data.pod_pages
+    : definition.pages?.length
+      ? definition.pages
+      : fallback?.pages || adminTheme.pages
+  const persistedBlocks = definition.blocks || data.blocks || fallback?.blocks || []
+  return {
+    data: {
+      ...(fallback || {}),
+      ...data,
+      ...definition,
+      tokens: { ...(adminTheme.tokens || {}), ...(fallback?.tokens || {}), ...(data.tokens || {}) },
+      blocks: mergeThemeBlocks(persistedBlocks),
+      content: { ...(fallback?.content || {}), ...(definition.content || {}), ...(data.content || {}) },
+      pages: normalizeThemePages(pageRows)
+    },
+    source: 'supabase',
+    error: null
+  }
 }
 
 export async function fetchAdminProducts() {
@@ -272,9 +329,9 @@ export async function fetchAdminTheme() {
       ...theme,
       updatedAt: theme.updated_at,
       tokens: { ...adminTheme.tokens, ...(theme.tokens || {}) },
-      blocks:definition.blocks || theme.blocks || [],
+      blocks:mergeThemeBlocks(definition.blocks || theme.blocks || []),
       content:definition.content || theme.content || {},
-      pages: pagesError || !pages?.length ? (definition.pages || adminTheme.pages) : pages.map(page => ({ ...page, representativeImage:page.representative_image || page.representativeImage || '', representativeAlt:page.representative_alt || page.representativeAlt || '', sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout }))
+      pages: pagesError || !pages?.length ? normalizeThemePages(definition.pages || adminTheme.pages) : normalizeThemePages(pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout })))
     },
     source: 'supabase', error: pagesError?.message || null
   }

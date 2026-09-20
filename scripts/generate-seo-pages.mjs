@@ -205,10 +205,10 @@ const collections = await loadCollections()
 
 const home = pageHtml(shell, {
   path:'/',
-  title:'Jersevo | Custom Football Jerseys Made Personal',
-  description:'Jersevo makes designer-led custom football jerseys. Choose a design, add your name, number, team or city, then preview your personalized jersey before checkout.',
+  title:'Custom Jerseys & Personalized Fan Gear | Jersevo',
+  description:'Design custom jerseys and personalized fan gear with your name, number and approved listing options. Browse football, baseball, basketball and soccer-inspired styles at Jersevo.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:`<main class="seo-fallback"><h1>Your jersey. Your story.</h1><p>Jersevo makes designer-led custom football jerseys. Choose a design, add your name, number, team or city, and preview your personalized piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="/product/touchline?custom=1">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav></main>`
+  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="/product/touchline?custom=1">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
 

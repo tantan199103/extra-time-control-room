@@ -13,7 +13,7 @@ export const adminTheme = {
     radius: '0px'
   },
   pages: [
-    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 8, updatedAt: 'Today, 10:12', layout: 'Editorial drop', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Extra Time storefront hero' },
+    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 12, updatedAt: 'Today, 10:12', layout: 'Editorial commerce', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Jersevo custom jersey storefront hero' },
     { id: 'collection', name: 'Collection', path: '/collection', status: 'PUBLISHED', sections: 5, updatedAt: 'Yesterday, 18:42', layout: 'Product grid', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'The 90+ drop' },
     { id: 'product', name: 'Product detail', path: '/product/:handle', status: 'PUBLISHED', sections: 9, updatedAt: 'Yesterday, 16:20', layout: 'Gallery + story', representativeImage: '/assets/jersey-black.webp', representativeAlt: 'Product detail preview' },
     { id: 'custom', name: 'Custom Lab', path: '/custom', status: 'PUBLISHED', sections: 6, updatedAt: 'Sep 12, 2026', layout: 'Form first', representativeImage: '/assets/jersey-white.webp', representativeAlt: 'Custom jersey preview' },
@@ -87,16 +87,20 @@ export const adminProductOptions = {
 export const themeBlocks = [
   { id: 'announcement', type: 'Announcement bar', note: 'Free shipping message', enabled: true },
   { id: 'header', type: 'Header', note: 'Logo, menu and bag', enabled: true },
-  { id: 'hero', type: 'Editorial hero', note: 'Product promise and primary CTA', enabled: true },
-  { id: 'home-path', type: 'Commerce path', note: 'Choose, personalize, preview and order', enabled: true },
-  { id: 'rail', type: 'Trending designs', note: 'Curated products near the top of home', enabled: true },
-  { id: 'manifesto', type: 'Manifesto / story', note: 'The minutes nobody forgets', enabled: true },
-  { id: 'custom-cta', type: 'Custom Lab CTA', note: 'Form-first personalization handoff', enabled: true },
+  { id: 'hero', type: 'Custom jersey hero', note: 'Your name, number and primary CTA', enabled: true },
+  { id: 'home-trust', type: 'Home trust strip', note: 'Made to order, custom, secure and tracked', enabled: true },
+  { id: 'leagues', type: 'League discovery', note: 'Choose a league and shop the route', enabled: true },
+  { id: 'rail', type: 'Starting lineup', note: 'Fan favorites near the top of home', enabled: true },
+  { id: 'home-path', type: 'Make it yours', note: 'Pick, personalize, preview and order', enabled: true },
+  { id: 'custom-options', type: 'Customization options', note: 'Show the controlled 30% personal layer', enabled: true },
+  { id: 'quality', type: 'Detail proof', note: 'Surface, print, trim and fit guidance', enabled: true },
   { id: 'drop', type: 'Drop feature', note: 'Featured current listing', enabled: true },
-  { id: 'story', type: 'Story explorer', note: 'Interactive design memory', enabled: true },
-  { id: 'players', type: 'Shop by story', note: 'Browse by the moment behind the jersey', enabled: true },
-  { id: 'leagues', type: 'League discovery', note: 'Browse by competition and team', enabled: true },
-  { id: 'vault', type: 'Vault teaser', note: 'Archive entry point', enabled: true },
+  { id: 'players', type: 'Shop by intent', note: 'For you, two, family and squad', enabled: true },
+  { id: 'community', type: 'Community proof', note: 'Editorial jersey imagery and story bridge', enabled: true },
+  { id: 'faq', type: 'Homepage FAQ', note: 'Answer custom, preview, tracking and returns questions', enabled: true },
   { id: 'newsletter', type: 'Newsletter', note: 'Email capture', enabled: false },
+  { id: 'story', type: 'Story explorer', note: 'Optional interactive design memory', enabled: false },
+  { id: 'vault', type: 'Vault teaser', note: 'Optional archive entry point', enabled: false },
+  { id: 'manifesto', type: 'Manifesto / story', note: 'Optional brand manifesto', enabled: false },
   { id: 'footer', type: 'Footer', note: 'Footer links and legal', enabled: true }
 ]
