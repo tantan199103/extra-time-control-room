@@ -194,3 +194,25 @@ export function taxonomyProductQuery({ league = '', team = '' } = {}) {
   if (team) params.set('team', taxonomySlug(team))
   return params.toString()
 }
+
+export function teamMascot(fullName = '') {
+  const special = {
+    'Boston Red Sox': 'Red Sox',
+    'Chicago White Sox': 'White Sox',
+    'Toronto Blue Jays': 'Blue Jays',
+    'Portland Trail Blazers': 'Trail Blazers',
+    'Minnesota Timberwolves': 'Timberwolves',
+    'Columbus Crew': 'Crew',
+    'DC United': 'DC United',
+    'Inter Miami CF': 'Miami',
+    'Sporting Kansas City': 'Sporting KC',
+    'New York City FC': 'NYCFC',
+    'New York Red Bulls': 'Red Bulls'
+  }
+  if (special[fullName]) return special[fullName]
+  const parts = String(fullName || '').trim().split(/\s+/)
+  if (!parts.length || !parts[0]) return ''
+  if (parts.length === 1) return parts[0]
+  return parts[parts.length - 1]
+}
+

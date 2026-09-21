@@ -639,13 +639,23 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .taxonomy-hero__copy > div { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding-top:15px; border-top:1px solid var(--ink); }
 .taxonomy-hero__copy > div p { max-width:620px; margin:0; font-size:14px; line-height:1.55; }
 .taxonomy-hero__copy > div span { font:600 10px var(--body); white-space:nowrap; }
-.taxonomy-team-nav { padding:17px 32px 21px; display:grid; grid-template-columns:190px 1fr; gap:24px; border-bottom:1px solid var(--line); background:var(--paper); }
-.taxonomy-team-nav > div:first-child { display:grid; align-content:start; gap:8px; color:var(--muted); font:600 9px var(--body); letter-spacing:.07em; }
-.taxonomy-team-nav > div:first-child a { width:max-content; color:var(--ink); border-bottom:1px solid var(--ink); font-size:11px; letter-spacing:0; }
-.taxonomy-team-nav > div:last-child { display:flex; flex-wrap:wrap; gap:7px 14px; align-items:start; }
-.taxonomy-team-nav > div:last-child a { display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; }
-.taxonomy-team-nav > div:last-child a img { width:18px; height:18px; object-fit:contain; }
-.taxonomy-team-nav > div:last-child a:hover, .taxonomy-team-nav > div:last-child a.is-active { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+.taxonomy-team-nav { padding:18px 32px 22px; display:grid; grid-template-columns:200px 1fr; gap:24px; border-bottom:1px solid var(--line); background:var(--paper); }
+.taxonomy-team-nav__bar { display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+.taxonomy-team-nav__all a { display:inline-flex; align-items:center; gap:7px; width:max-content; color:var(--ink); padding:6px 14px; border-radius:999px; background:var(--chalk); border:1px solid var(--line); font:700 11px var(--body); letter-spacing:.05em; text-decoration:none; transition:all .15s ease; }
+.taxonomy-team-nav__all a:hover { border-color:var(--ink); }
+.taxonomy-team-nav__all a.is-active { background:var(--ink); color:var(--chalk); border-color:var(--ink); }
+.taxonomy-team-nav__league-mark { width:16px; height:16px; object-fit:contain; }
+.taxonomy-team-nav__status { color:var(--muted); font:600 9px var(--body); letter-spacing:.07em; text-transform:uppercase; }
+.taxonomy-team-nav__current strong { color:var(--ink); }
+.taxonomy-team-nav__scroll { display:flex; flex-wrap:wrap; gap:7px 10px; align-items:center; }
+.taxonomy-team-nav__item { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; background:var(--chalk); border:1px solid var(--line); color:var(--muted); font-size:10.5px; font-weight:600; text-decoration:none; transition:all .15s ease; }
+.taxonomy-team-nav__logo { display:flex; align-items:center; justify-content:center; width:20px; height:20px; }
+.taxonomy-team-nav__logo img { width:20px; height:20px; object-fit:contain; }
+.taxonomy-team-nav__name--full { display:inline; }
+.taxonomy-team-nav__name--short { display:none; }
+.taxonomy-team-nav__item:hover { color:var(--ink); border-color:var(--ink); }
+.taxonomy-team-nav__item.is-active { background:var(--ink); color:var(--chalk); border-color:var(--ink); }
+.taxonomy-team-nav__item.is-active .taxonomy-team-nav__name { color:var(--chalk); }
 .taxonomy-related { padding:72px 32px 100px; background:var(--chalk); }
 .taxonomy-related > span { color:var(--signal); font:700 10px var(--body); letter-spacing:.08em; }
 .taxonomy-related > div { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:19px; background:var(--line); }
@@ -1352,14 +1362,21 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .taxonomy-hero__copy > div { display:block; }
   .taxonomy-hero__copy > div p { font-size:12px; }
   .taxonomy-hero__copy > div span { display:block; margin-top:16px; }
-  .taxonomy-team-nav { display:flex !important; align-items:center; padding:6px 8px !important; gap:6px !important; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; border-bottom:1px solid var(--line); }
-  .taxonomy-team-nav::-webkit-scrollbar { display:none; }
-  .taxonomy-team-nav__all a { white-space:nowrap; font:700 9px var(--body); padding:4px 9px; border-radius:999px; background:var(--chalk); border:1px solid var(--line); color:var(--ink); text-decoration:none !important; }
+  .taxonomy-team-nav { display:flex !important; flex-direction:column !important; padding:8px 10px 10px !important; gap:8px !important; border-bottom:1px solid var(--line); background:var(--paper); }
+  .taxonomy-team-nav__bar { display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:space-between !important; gap:8px !important; padding:0 2px !important; }
+  .taxonomy-team-nav__all a { display:inline-flex !important; align-items:center !important; gap:5px !important; height:28px !important; padding:0 10px !important; border-radius:999px !important; background:var(--chalk) !important; border:1px solid var(--line) !important; color:var(--ink) !important; font:750 9.5px var(--body) !important; letter-spacing:.06em !important; white-space:nowrap !important; text-decoration:none !important; }
   .taxonomy-team-nav__all a.is-active { background:var(--ink) !important; color:var(--chalk) !important; border-color:var(--ink) !important; }
-  .taxonomy-team-nav__scroll { display:flex !important; align-items:center; gap:6px !important; margin-top:0 !important; max-height:none !important; overflow:visible !important; }
-  .taxonomy-team-nav__scroll a { display:inline-flex !important; align-items:center; gap:4px; padding:4px 9px; border-radius:999px; background:var(--chalk); border:1px solid var(--line); white-space:nowrap; font:600 9px var(--body); color:var(--muted); text-decoration:none !important; }
-  .taxonomy-team-nav__scroll a.is-active { background:var(--ink) !important; color:var(--chalk) !important; border-color:var(--ink) !important; }
-  .taxonomy-team-nav__scroll a img { width:14px; height:14px; object-fit:contain; }
+  .taxonomy-team-nav__league-mark { width:14px !important; height:14px !important; object-fit:contain !important; }
+  .taxonomy-team-nav__status { font:600 8.5px var(--body) !important; color:var(--muted) !important; letter-spacing:.06em !important; text-transform:uppercase !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; max-width:55vw !important; }
+  .taxonomy-team-nav__current strong { color:var(--signal) !important; font-weight:700 !important; }
+  .taxonomy-team-nav__scroll { display:grid !important; grid-template-rows:repeat(3,38px) !important; grid-auto-flow:column !important; grid-auto-columns:max-content !important; gap:6px 8px !important; overflow-x:auto !important; overflow-y:hidden !important; scrollbar-width:none !important; -webkit-overflow-scrolling:touch !important; padding:2px 2px 4px !important; margin:0 !important; max-height:none !important; }
+  .taxonomy-team-nav__scroll::-webkit-scrollbar { display:none !important; }
+  .taxonomy-team-nav__item { display:inline-flex !important; align-items:center !important; gap:6px !important; height:38px !important; padding:0 10px 0 6px !important; border-radius:999px !important; background:var(--chalk) !important; border:1px solid var(--line) !important; white-space:nowrap !important; font:700 9.5px var(--body) !important; color:var(--ink) !important; text-decoration:none !important; flex:none !important; box-sizing:border-box !important; }
+  .taxonomy-team-nav__item.is-active { background:var(--ink) !important; color:var(--chalk) !important; border-color:var(--ink) !important; box-shadow:0 2px 8px rgba(0,0,0,.16) !important; }
+  .taxonomy-team-nav__logo { display:flex !important; align-items:center !important; justify-content:center !important; width:26px !important; height:26px !important; border-radius:50% !important; background:#fff !important; border:1px solid rgba(0,0,0,.06) !important; padding:2px !important; flex-shrink:0 !important; }
+  .taxonomy-team-nav__logo img { width:22px !important; height:22px !important; object-fit:contain !important; }
+  .taxonomy-team-nav__name--full { display:none !important; }
+  .taxonomy-team-nav__name--short { display:inline !important; }
   .taxonomy-related { padding:50px 16px 76px; }
   .taxonomy-related > div { grid-template-columns:1fr 1fr; }
   .taxonomy-related a { min-height:64px; padding:12px; font-size:17px; }

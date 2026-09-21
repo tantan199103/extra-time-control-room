@@ -36,7 +36,7 @@ import {
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
-import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
+import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamMascot, teamPath } from './lib/league-taxonomy'
 import { listingMediaRole } from './lib/listing-media'
 import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
@@ -613,6 +613,17 @@ function TaxonomyLanding({ league, team, products, onQuickView }) {
   const title = team?.name || league?.name || 'League collections'
   const teams = league?.teams || []
   const media = team?.media || league?.media
+  const teamNavRef = useRef(null)
+
+  useEffect(() => {
+    if (team?.slug && teamNavRef.current) {
+      const activeEl = teamNavRef.current.querySelector('.taxonomy-team-nav__scroll a.is-active')
+      if (activeEl) {
+        activeEl.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+      }
+    }
+  }, [team?.slug])
+
   return (
     <main className="taxonomy-page">
       <section className="catalog-compact-bar" aria-label={`${title} collection`}>
@@ -670,28 +681,54 @@ function TaxonomyLanding({ league, team, products, onQuickView }) {
         </div>
       </section>
       {league && (
-        <section className="taxonomy-team-nav">
-          <div className="taxonomy-team-nav__all">
-            <a
-              href={leaguePath(league)}
-              className={!team ? 'is-active' : ''}
-              onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}
-            >
-              ALL {league.name}
-            </a>
-          </div>
-          <div className="taxonomy-team-nav__scroll">
-            {teams.map(item => (
+        <section ref={teamNavRef} className="taxonomy-team-nav" aria-label={`${league.name} team navigation`}>
+          <div className="taxonomy-team-nav__bar">
+            <div className="taxonomy-team-nav__all">
               <a
-                key={item.slug}
-                className={team?.slug === item.slug ? 'is-active' : ''}
-                href={teamPath(league.key, item)}
-                onClick={event => { event.preventDefault(); navigate(teamPath(league.key, item)) }}
+                href={leaguePath(league)}
+                className={!team ? 'is-active' : ''}
+                onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}
               >
-                {item.media && <img src={item.media.src} alt="" loading="lazy" decoding="async" />}
-                <span>{item.name}</span>
+                {league.media?.src && <img src={league.media.src} alt="" className="taxonomy-team-nav__league-mark" loading="lazy" decoding="async" />}
+                <span>ALL {league.name}</span>
               </a>
-            ))}
+            </div>
+            <div className="taxonomy-team-nav__status">
+              {team ? (
+                <span className="taxonomy-team-nav__current">
+                  TEAM: <strong>{team.name}</strong>
+                </span>
+              ) : (
+                <span className="taxonomy-team-nav__count">{teams.length} TEAMS</span>
+              )}
+            </div>
+          </div>
+          <div className="taxonomy-team-nav__scroll" role="tablist" aria-label={`${league.name} teams`}>
+            {teams.map(item => {
+              const mascot = teamMascot(item.name)
+              const isActive = team?.slug === item.slug
+              return (
+                <a
+                  key={item.slug}
+                  className={`taxonomy-team-nav__item ${isActive ? 'is-active' : ''}`}
+                  href={teamPath(league.key, item)}
+                  title={item.name}
+                  aria-label={item.name}
+                  aria-selected={isActive}
+                  onClick={event => { event.preventDefault(); navigate(teamPath(league.key, item)) }}
+                >
+                  {item.media?.src && (
+                    <span className="taxonomy-team-nav__logo">
+                      <img src={item.media.src} alt="" loading="lazy" decoding="async" />
+                    </span>
+                  )}
+                  <span className="taxonomy-team-nav__name">
+                    <span className="taxonomy-team-nav__name--full">{item.name}</span>
+                    <span className="taxonomy-team-nav__name--short">{mascot}</span>
+                  </span>
+                </a>
+              )
+            })}
           </div>
         </section>
       )}
