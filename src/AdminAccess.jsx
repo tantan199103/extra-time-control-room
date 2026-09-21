@@ -4,6 +4,10 @@ import { isAdminUser } from './lib/catalog-model'
 import './admin-access.css'
 
 const isRecoveryRoute = () => new URLSearchParams(window.location.search).get('recovery') === '1'
+const sessionTimeout = (promise, milliseconds, message = 'The session check timed out.') => Promise.race([
+  promise,
+  new Promise((_, reject) => window.setTimeout(() => reject(new Error(message)), milliseconds))
+])
 
 export default function AdminAccess({ children }) {
   const [user, setUser] = useState(null)
@@ -19,12 +23,6 @@ export default function AdminAccess({ children }) {
   useEffect(() => {
     if (!supabase) { setChecking(false); return }
     let active = true
-    supabase.auth.getUser().then(({data, error: authError}) => {
-      if (!active) return
-      setUser(data?.user || null)
-      if (authError && authError.name !== 'AuthSessionMissingError' && !isRecoveryRoute()) setError(authError.message)
-      setChecking(false)
-    }).catch(() => { if (active) { setError('Cannot verify your session. Please retry.'); setChecking(false) } })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return
       if (event === 'PASSWORD_RECOVERY') {
@@ -34,6 +32,27 @@ export default function AdminAccess({ children }) {
       setUser(session?.user || null)
       setChecking(false)
     })
+    const check = async () => {
+      let cachedUser = null
+      try {
+        // A cached session keeps a returning admin from being blocked by a
+        // slow auth server. Supabase/RLS still verifies every write.
+        const local = await sessionTimeout(supabase.auth.getSession(), 5000, 'Local session lookup timed out.')
+        cachedUser = local?.data?.session?.user || null
+        if (active && cachedUser) setUser(cachedUser)
+      } catch {}
+      try {
+        const verified = await sessionTimeout(supabase.auth.getUser(), 8000, 'The Supabase session check timed out.')
+        if (!active) return
+        setUser(verified.data?.user || null)
+        if (verified.error && verified.error.name !== 'AuthSessionMissingError' && !isRecoveryRoute() && !cachedUser) setError(verified.error.message)
+      } catch (error) {
+        if (!active) return
+        if (!cachedUser && !isRecoveryRoute()) setError(error instanceof Error ? error.message : 'Cannot verify your session. Please retry.')
+        else setNotice('Session verification is taking longer than usual. Live data can be retried from the control room.')
+      } finally { if (active) setChecking(false) }
+    }
+    check()
     return () => { active = false; subscription.unsubscribe() }
   }, [])
 

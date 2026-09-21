@@ -177,16 +177,21 @@ function AdminWorkspace() {
   const [source, setSource] = useState('supabase')
   const [loading, setLoading] = useState(true)
   const [loadNotice, setLoadNotice] = useState('')
+  const loadPart = (task, fallback, label) => Promise.race([
+    task,
+    new Promise(resolve => window.setTimeout(() => resolve({ data: fallback, source: 'preview', error: `${label} timed out. Showing the control-room fallback.` }), 12000))
+  ]).catch(error => ({ data: fallback, source: 'preview', error: error instanceof Error ? error.message : `${label} failed.` }))
   const load = async () => {
     setLoading(true); setLoadNotice('')
     try {
-      // 1. Fetch products first so large join does not compete with other queries
-      const productResult = await fetchAdminProducts()
-      // 2. Fetch builder models in parallel
-      const [themeResult, menuResult, collectionResult] = await Promise.all([
-        fetchAdminTheme(),
-        fetchAdminMenus(),
-        fetchAdminCollections()
+      // A slow catalog join must not hold the entire control room hostage.
+      // Each workspace data source has its own deadline and can fall back
+      // independently while the rest of Admin remains usable.
+      const [productResult, themeResult, menuResult, collectionResult] = await Promise.all([
+        loadPart(fetchAdminProducts(), adminProducts, 'Catalog'),
+        loadPart(fetchAdminTheme(), adminTheme, 'Theme'),
+        loadPart(fetchAdminMenus(), adminMenus, 'Menus'),
+        loadPart(fetchAdminCollections(), adminCollections, 'Collections')
       ])
       const products = productResult.data?.length ? productResult.data : adminProducts
       setProductRows(products)

@@ -61,22 +61,22 @@ function quoteLine(line: any, membership: any, program: any, rules: any[], quant
 }
 
 export function quoteCart({ lines = [], membership, program, rules = [], shipping = {} }: any) {
-  const policy = normalizeQuantityDiscountPolicy(program?.quantity_discount_policy || DEFAULT_QUANTITY_DISCOUNT_POLICY)
+  const quantityPolicy = normalizeQuantityDiscountPolicy(program?.quantity_discount_policy || DEFAULT_QUANTITY_DISCOUNT_POLICY)
   const totalQty = lines.reduce((sum, line) => sum + Math.max(1, Math.min(99, Math.trunc(Number(line.qty || 1)))), 0)
-  const quantityTier = quantityDiscountForQty(totalQty, policy)
+  const quantityTier = quantityDiscountForQty(totalQty, quantityPolicy)
   const quotedLines = lines.map(line => quoteLine(line, membership, program, rules, quantityTier.discountPercent))
   const publicSubtotal = money(quotedLines.reduce((sum, line) => sum + line.publicUnit * line.qty, 0))
   const subtotal = money(quotedLines.reduce((sum, line) => sum + line.lineTotal, 0))
   const discount = money(publicSubtotal - subtotal)
   const quantityDiscount = money(quotedLines.reduce((sum, line) => sum + line.quantityDiscount, 0))
   const isMember = activeMembership(membership)
-  const policy = program?.shipping_policy || {}
+  const shippingPolicy = program?.shipping_policy || {}
   const country = String(shipping.country || '').toUpperCase()
-  const zones = Array.isArray(policy.eligible_zones) ? policy.eligible_zones : []
+  const zones = Array.isArray(shippingPolicy.eligible_zones) ? shippingPolicy.eligible_zones : []
   const zoneEligible = zones.includes('ALL') || (country && zones.includes(country))
-  const minimumMet = subtotal >= Number(policy.minimum_subtotal || 0)
-  const excluded = new Set(policy.excluded_product_tags || [])
+  const minimumMet = subtotal >= Number(shippingPolicy.minimum_subtotal || 0)
+  const excluded = new Set(shippingPolicy.excluded_product_tags || [])
   const productEligible = !lines.some(line => (line.tags || []).some((tag: string) => excluded.has(tag)))
-  const shippingEligible = Boolean(isMember && policy.enabled && zoneEligible && minimumMet && productEligible)
-  return { member: isMember, membershipStatus: membership?.status || 'NONE', currency: program?.currency || 'USD', lines: quotedLines, publicSubtotal, subtotal, discount, quantityDiscount, quantityPolicy: normalizeQuantityDiscountPolicy(program?.quantity_discount_policy || DEFAULT_QUANTITY_DISCOUNT_POLICY), quantityTier, shipping: { eligible: shippingEligible, method: policy.method || 'STANDARD', subsidyCap: shippingEligible ? Math.max(0, Number(policy.subsidy_cap || 0)) : 0, reason: shippingEligible ? '90+ Club benefit' : !isMember ? 'Active membership required' : !zoneEligible ? 'Destination not eligible' : !minimumMet ? 'Minimum subtotal not met' : !productEligible ? 'An item is excluded' : 'Not enabled' } }
+  const shippingEligible = Boolean(isMember && shippingPolicy.enabled && zoneEligible && minimumMet && productEligible)
+  return { member: isMember, membershipStatus: membership?.status || 'NONE', currency: program?.currency || 'USD', lines: quotedLines, publicSubtotal, subtotal, discount, quantityDiscount, quantityPolicy, quantityTier, shipping: { eligible: shippingEligible, method: shippingPolicy.method || 'STANDARD', subsidyCap: shippingEligible ? Math.max(0, Number(shippingPolicy.subsidy_cap || 0)) : 0, reason: shippingEligible ? '90+ Club benefit' : !isMember ? 'Active membership required' : !zoneEligible ? 'Destination not eligible' : !minimumMet ? 'Minimum subtotal not met' : !productEligible ? 'An item is excluded' : 'Not enabled' } }
 }
