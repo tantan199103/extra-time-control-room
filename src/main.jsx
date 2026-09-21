@@ -20,6 +20,7 @@ import {
   Share2,
   ShoppingBag,
   Sparkles,
+  Square,
   SlidersHorizontal,
   ShieldCheck,
   Star,
@@ -45,6 +46,7 @@ import { apiFetch } from './lib/api-client'
 import { availableFinderSizes, canonicalSize, findAudienceOption, recommendCatalogSize, sizeFinderAudiences, sizeProfile } from './lib/size-guide'
 import { buildDeliveryEstimate } from './lib/product-commerce'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quantityDiscountForQty, quantityDiscountLabel } from './lib/quantity-pricing'
+import { adminTheme } from './admin-builder-data'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -528,6 +530,23 @@ function Breadcrumbs({ items = [] }) {
   return <nav className="breadcrumbs" aria-label="Breadcrumb"><button onClick={() => navigate('/')}>Home</button>{items.map((item, index) => <React.Fragment key={`${item.label}-${index}`}><span aria-hidden="true">/</span>{item.href ? <button onClick={() => navigate(item.href)}>{item.label}</button> : <strong aria-current="page">{item.label}</strong>}</React.Fragment>)}</nav>
 }
 
+function useMobileCols() {
+  const [cols, setColsState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('jersevo_mobile_cols')
+      if (saved === '1' || saved === '2') return Number(saved)
+    } catch {}
+    return 2
+  })
+  const setCols = next => {
+    setColsState(next)
+    try {
+      localStorage.setItem('jersevo_mobile_cols', String(next))
+    } catch {}
+  }
+  return [cols, setCols]
+}
+
 function StorefrontTrust({ compact = false, variant = 'default' }) {
   const items = variant === 'home' ? [
     ['Made Just for You', 'Crafted on demand, never mass-produced.', Sparkles],
@@ -540,8 +559,38 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
     ['RETURNS', '30-day standard return window', ShieldCheck],
     ['CHECKOUT', 'Secure checkout in USD', Lock]
   ]
+  if (variant === 'home') {
+    return (
+      <section className="storefront-trust storefront-trust--home" aria-label="Storefront trust pillars">
+        <div className="storefront-trust__track">
+          {[...items, ...items].map(([label, copy, IconComponent], idx) => (
+            <div key={`${label}-${idx}`} className="storefront-trust__pill">
+              {IconComponent && <span className="storefront-trust__pill-icon" aria-hidden="true"><IconComponent size={14}/></span>}
+              <strong className="storefront-trust__pill-title">{label}</strong>
+              <span className="storefront-trust__pill-sep">•</span>
+              <span className="storefront-trust__pill-copy">{copy}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+  if (variant === 'line' || compact) {
+    return (
+      <aside className="storefront-trust storefront-trust--line" aria-label="Order assurances">
+        <div className="storefront-trust__line-track">
+          {items.map(([label, copy, IconComponent]) => (
+            <span key={label} className="storefront-trust__line-item">
+              {IconComponent && <IconComponent size={13} aria-hidden="true"/>}
+              <strong>{copy}</strong>
+            </span>
+          ))}
+        </div>
+      </aside>
+    )
+  }
   return (
-    <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''} ${variant === 'home' ? 'storefront-trust--home' : ''}`} aria-label="Order and shopping assurances">
+    <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''}`} aria-label="Order and shopping assurances">
       {items.map(([label, copy, IconComponent]) => (
         <div key={label} className="storefront-trust__item">
           {IconComponent && <span className="storefront-trust__icon" aria-hidden="true"><IconComponent size={20}/></span>}
@@ -556,21 +605,123 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
 }
 
 function TaxonomyLanding({ league, team, products, onQuickView }) {
+  const [mobileCols, setMobileCols] = useMobileCols()
   const filtered = products.filter(product => productMatchesTaxonomy(product, { league: league?.key, team: team?.slug }))
   const title = team?.name || league?.name || 'League collections'
-  const description = team ? `${team.name} fan gear and custom jersey styles, curated for game day.` : league?.description || 'Browse custom fan gear by league, sport and team.'
   const teams = league?.teams || []
   const media = team?.media || league?.media
-  return <main className="taxonomy-page">
-    <section className={`taxonomy-hero ${media ? 'taxonomy-hero--with-media' : ''}`}>
-      <div className="taxonomy-hero__copy"><Breadcrumbs items={[{ label:'Leagues', href:'/shop' }, ...(league ? [{ label:league.name, href:leaguePath(league) }] : []), ...(team ? [{ label:team.name }] : [])]}/><p>{team ? `${league?.name || 'TEAM'} / TEAM COLLECTION` : 'LEAGUE / TEAM COLLECTIONS'}</p><h1>{title.toUpperCase()}</h1><div><p>{description}</p><span>{filtered.length} {filtered.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span></div></div>
-      {media && <figure className={`taxonomy-hero__media ${media.fallback ? 'is-fallback' : ''}`}><div className="taxonomy-hero__media-frame"><img src={media.src} alt={media.alt} loading="eager" decoding="async" /></div><figcaption>{team ? `${team.name} / TEAM COLLECTION` : `${media.label} / LEAGUE COLLECTION`}</figcaption></figure>}
-    </section>
-    {league && <section className="taxonomy-team-nav"><div><span>EXPLORE {league.name}</span><a href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>All {league.name}</a></div><div>{teams.map(item => <a key={item.slug} className={team?.slug === item.slug ? 'is-active' : ''} href={teamPath(league.key,item)} onClick={event => { event.preventDefault(); navigate(teamPath(league.key,item)) }}>{item.media && <img src={item.media.src} alt="" loading="lazy" decoding="async" /> }<span>{item.name}</span></a>)}</div></section>}
-    <StorefrontTrust compact />
-    <section className="taxonomy-products section">{filtered.length ? <div className="product-grid">{filtered.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>More {title} gear is on the way.</h2><p>Browse the full catalog while this collection grows.</p><button onClick={() => navigate('/shop')}>SHOP ALL PRODUCTS</button></div>}</section>
-    <section className="taxonomy-related"><span>SHOP BY LEAGUE</span><div>{LEAGUE_TAXONOMY.filter(item => item.key !== league?.key).map(item => <a key={item.key} href={leaguePath(item)} onClick={event => { event.preventDefault(); navigate(leaguePath(item)) }}>{item.name}<ArrowRight size={15}/></a>)}</div></section>
-  </main>
+  return (
+    <main className="taxonomy-page">
+      <section className="catalog-compact-bar" aria-label={`${title} collection`}>
+        <div className="catalog-compact-bar__main">
+          {media?.src ? (
+            <div className="catalog-compact-bar__avatar">
+              <img src={media.src} alt={media.alt || title} loading="eager" decoding="async" />
+            </div>
+          ) : (
+            <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon">
+              <Trophy size={16} />
+            </div>
+          )}
+          <div className="catalog-compact-bar__title-group">
+            <nav className="catalog-compact-bar__crumb" aria-label="Breadcrumb">
+              <button type="button" onClick={() => navigate('/shop')}>SHOP</button>
+              {league && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <button type="button" onClick={() => navigate(leaguePath(league))}>{league.name}</button>
+                </>
+              )}
+              {team && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <strong aria-current="page">{team.name}</strong>
+                </>
+              )}
+            </nav>
+            <h1 className="catalog-compact-bar__title">{title.toUpperCase()}</h1>
+          </div>
+        </div>
+        <div className="catalog-compact-bar__side">
+          <span className="catalog-compact-bar__badge">{filtered.length} {filtered.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
+          <div className="mobile-grid-toggle" aria-label="Display mode">
+            <button
+              type="button"
+              className={`grid-toggle-btn ${mobileCols === 1 ? 'is-active' : ''}`}
+              onClick={() => setMobileCols(1)}
+              aria-label="1 product per row"
+              title="1 Column"
+            >
+              <Square size={15} />
+            </button>
+            <button
+              type="button"
+              className={`grid-toggle-btn ${mobileCols === 2 ? 'is-active' : ''}`}
+              onClick={() => setMobileCols(2)}
+              aria-label="2 products per row"
+              title="2 Columns"
+            >
+              <Grid2X2 size={15} />
+            </button>
+          </div>
+        </div>
+      </section>
+      {league && (
+        <section className="taxonomy-team-nav">
+          <div className="taxonomy-team-nav__all">
+            <a
+              href={leaguePath(league)}
+              className={!team ? 'is-active' : ''}
+              onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}
+            >
+              ALL {league.name}
+            </a>
+          </div>
+          <div className="taxonomy-team-nav__scroll">
+            {teams.map(item => (
+              <a
+                key={item.slug}
+                className={team?.slug === item.slug ? 'is-active' : ''}
+                href={teamPath(league.key, item)}
+                onClick={event => { event.preventDefault(); navigate(teamPath(league.key, item)) }}
+              >
+                {item.media && <img src={item.media.src} alt="" loading="lazy" decoding="async" />}
+                <span>{item.name}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+      <StorefrontTrust compact />
+      <section className="taxonomy-products section">
+        {filtered.length ? (
+          <div className={`product-grid is-col-${mobileCols}`}>
+            {filtered.map(product => (
+              <ProductCard key={product.id} product={product} onQuickView={onQuickView} />
+            ))}
+          </div>
+        ) : (
+          <div className="catalog-empty">
+            <span>90+</span>
+            <h2>More {title} gear is on the way.</h2>
+            <p>Browse the full catalog while this collection grows.</p>
+            <button onClick={() => navigate('/shop')}>SHOP ALL PRODUCTS</button>
+          </div>
+        )}
+      </section>
+      <section className="taxonomy-related">
+        <span>SHOP BY LEAGUE</span>
+        <div>
+          {LEAGUE_TAXONOMY.filter(item => item.key !== league?.key).map(item => (
+            <a key={item.key} href={leaguePath(item)} onClick={event => { event.preventDefault(); navigate(leaguePath(item)) }}>
+              {item.name}
+              <ArrowRight size={15} />
+            </a>
+          ))}
+        </div>
+      </section>
+    </main>
+  )
 }
 
 function QuickView({ product, onClose, onAdd }) {
@@ -619,21 +770,62 @@ function StoryExplorer({ product }) {
 function PlayerDiscovery({ customProduct }) {
   const cards = [
     { name: 'FOR YOU', count: 'PERSONAL', img: '/assets/jersey-white.webp', pos: '50%', custom: true },
-    { name: 'FOR TWO', count: 'MATCHING', img: '/assets/editorial-player.webp', pos: '50%' },
-    { name: 'FOR FAMILY', count: 'TOGETHER', img: '/assets/hero-tunnel.webp', pos: '68%' },
-    { name: 'FOR THE SQUAD', count: 'CUSTOM', img: '/assets/jersey-black.webp', pos: '50%' }
+    { name: 'FOR TWO', count: 'MATCHING', img: '/assets/for-two.webp', pos: '50%' },
+    { name: 'FOR FAMILY', count: 'TOGETHER', img: '/assets/for-family.webp', pos: '50%' },
+    { name: 'FOR THE SQUAD', count: 'CUSTOM', img: '/assets/for-squad.webp', pos: '50%' }
   ]
   return (
     <section className="players-section section" id="players">
-      <div className="section-title-row"><div><h2>MADE FOR<br /><em>MORE.</em></h2><p className="intent-section__subtitle">A personalized jersey for game day, the gift, the family photo and every story in between.</p></div><ButtonLink onClick={() => navigate('/shop')}>SHOP BY INTENT</ButtonLink></div>
-      <div className="player-grid">{cards.map(card => <button key={card.name} onClick={() => card.custom ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}><img src={card.img} alt="" style={{ objectPosition: `${card.pos} center` }}/><span>{card.name}<small>{card.count} <ArrowRight size={15}/></small></span></button>)}</div>
+      <div className="section-title-row">
+        <div>
+          <h2>MADE FOR<br /><em>MORE.</em></h2>
+          <p className="intent-section__subtitle">A personalized jersey for game day, the gift, the family photo and every story in between.</p>
+        </div>
+        <ButtonLink onClick={() => navigate('/shop')}>SHOP BY INTENT</ButtonLink>
+      </div>
+      <div className="player-grid">
+        {cards.map(card => (
+          <button key={card.name} onClick={() => card.custom ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}>
+            <img src={card.img} alt={card.name} style={{ objectPosition: `${card.pos} center` }} loading="lazy" />
+            <span>{card.name}<small>{card.count} <ArrowRight size={15}/></small></span>
+          </button>
+        ))}
+      </div>
     </section>
   )
 }
 
 function LeagueDiscovery() {
-  const leagueMeta = { nfl: 'CUSTOM FOOTBALL', mlb: 'CUSTOM BASEBALL', nba: 'CUSTOM BASKETBALL', mls: 'CUSTOM SOCCER' }
-  return <section className="league-discovery section" id="leagues"><div className="section-title-row"><div><h2>CHOOSE YOUR<br /><em>LEAGUE.</em></h2><p className="league-discovery__lede">Pick a league. Find your team. Make it yours.</p></div><ButtonLink onClick={() => navigate('/shop')}>SHOP ALL LEAGUES</ButtonLink></div><div className="league-discovery__grid">{LEAGUE_TAXONOMY.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}><div className="league-discovery__media"><span className={`league-discovery__sport league-discovery__sport--${league.key}`} aria-hidden="true">{league.key === 'nfl' ? '◒' : league.key === 'mlb' ? '◓' : league.key === 'nba' ? '◉' : '✦'}</span>{league.media && <img src={league.media.src} alt={`${league.name} league mark`} loading="lazy" decoding="async" />}</div><span>{league.name}</span><small>{leagueMeta[league.key] || `CUSTOM ${league.sport.toUpperCase()}`} <ArrowRight size={15}/></small><strong>SHOP {league.name}</strong></a>)}</div></section>
+  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', mls: 'SOCCER' }
+  return (
+    <section className="league-discovery section" id="leagues">
+      <div className="section-title-row">
+        <div>
+          <h2>CHOOSE YOUR<br /><em>LEAGUE.</em></h2>
+          <p className="league-discovery__lede">Pick a league. Find your team. Make it yours.</p>
+        </div>
+        <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL LEAGUES</ButtonLink>
+      </div>
+      <div className="league-discovery__grid">
+        {LEAGUE_TAXONOMY.map(league => (
+          <a
+            key={league.key}
+            href={leaguePath(league)}
+            className="league-discovery__card"
+            onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}
+          >
+            <div className="league-discovery__media">
+              {league.media && <img src={league.media.src} alt={`${league.name} league mark`} loading="lazy" decoding="async" />}
+            </div>
+            <div className="league-discovery__info">
+              <span className="league-discovery__name">{league.name}</span>
+              <small className="league-discovery__sport-name">{leagueMeta[league.key] || league.sport.toUpperCase()}</small>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '' }) {
@@ -848,10 +1040,10 @@ function CommunityProof() {
         </div>
         <div className="community-proof__collage" aria-label="Editorial jersey photography">
           <figure className="community-proof__image community-proof__image--large">
-            <img src="/assets/editorial-player.webp" alt="Player wearing a dark jersey on a rainy city court" loading="lazy" />
+            <img src="/assets/for-two.webp" alt="Fans wearing personalized matchday jerseys" loading="lazy" />
           </figure>
           <figure className="community-proof__image community-proof__image--small">
-            <img src="/assets/jersey-white.webp" alt="White jersey detail in the studio" loading="lazy" />
+            <img src="/assets/venom-mockup-back.webp" alt="Custom jersey rear view with personalized name and number" loading="lazy" />
           </figure>
           <span className="community-proof__stamp">MORE THAN<br />A JERSEY.</span>
         </div>
@@ -1075,6 +1267,9 @@ function Home({ onQuickView, products, theme, collections = [] }) {
   const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer','quality','drop'].includes(id)) : ['hero','home-trust','leagues','rail','home-path','custom-options','players','community','faq','newsletter']
   const rawBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
   const homeBlocks = rawBlocks.filter(id => id !== 'quality' && id !== 'drop')
+  if (!homeBlocks.includes('hero')) {
+    homeBlocks.unshift('hero')
+  }
   if (!homeBlocks.includes('home-path')) {
     const heroIndex = homeBlocks.indexOf('hero')
     homeBlocks.splice(heroIndex >= 0 ? heroIndex + 1 : 0, 0, 'home-path')
@@ -1083,6 +1278,7 @@ function Home({ onQuickView, products, theme, collections = [] }) {
 }
 
 function Shop({ onQuickView, products, collection = null }) {
+  const [mobileCols, setMobileCols] = useMobileCols()
   const params = new URLSearchParams(window.location.search)
   const [color, setColor] = useState(params.get('color')?.toUpperCase() || 'ALL')
   const [sizeFilter, setSizeFilter] = useState(params.get('size')?.toUpperCase() || 'ALL')
@@ -1176,7 +1372,34 @@ function Shop({ onQuickView, products, collection = null }) {
 
   return (
     <main className="shop-page">
-      <section className="collection-hero" style={collection?.hero ? { '--collection-image':`url(${collection.hero})` } : undefined}><Breadcrumbs items={collection ? [{ label:'Shop', href:'/shop' }, { label:collection.name }] : [{ label:'Shop' }]}/><p>{collection ? 'CURATED COLLECTION' : 'DROP 01 · LIVE NOW'}</p><h1>{(collection?.name || 'THE 90+ COLLECTION').toUpperCase()}</h1><div><p>{collection?.description || 'Original jerseys built from the minutes football gives us back.'}</p><span>{shown.length} PRODUCTS</span></div></section>
+      <section className="catalog-compact-bar" aria-label={collection?.name || 'Shop catalog'}>
+        <div className="catalog-compact-bar__main">
+          {collection?.hero ? (
+            <div className="catalog-compact-bar__avatar">
+              <img src={collection.hero} alt={collection.name} loading="eager" decoding="async" />
+            </div>
+          ) : (
+            <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon">
+              <Sparkles size={16} />
+            </div>
+          )}
+          <div className="catalog-compact-bar__title-group">
+            <nav className="catalog-compact-bar__crumb" aria-label="Breadcrumb">
+              <button type="button" onClick={() => navigate('/shop')}>SHOP</button>
+              {collection && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <strong aria-current="page">{collection.name}</strong>
+                </>
+              )}
+            </nav>
+            <h1 className="catalog-compact-bar__title">{(collection?.name || 'ALL JERSEYS').toUpperCase()}</h1>
+          </div>
+        </div>
+        <div className="catalog-compact-bar__side">
+          <span className="catalog-compact-bar__badge">{shown.length} {shown.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
+        </div>
+      </section>
       <StorefrontTrust compact />
       <div className="filter-bar">
         <div className="desktop-filters">
@@ -1191,6 +1414,26 @@ function Shop({ onQuickView, products, collection = null }) {
           <button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK</button>
         </div>
         <button className="mobile-filter" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={16}/> FILTER{activeCount ? ` · ${activeCount}` : ''}</button>
+        <div className="mobile-grid-toggle" aria-label="Display mode">
+          <button
+            type="button"
+            className={`grid-toggle-btn ${mobileCols === 1 ? 'is-active' : ''}`}
+            onClick={() => setMobileCols(1)}
+            aria-label="1 product per row"
+            title="1 Column"
+          >
+            <Square size={15} />
+          </button>
+          <button
+            type="button"
+            className={`grid-toggle-btn ${mobileCols === 2 ? 'is-active' : ''}`}
+            onClick={() => setMobileCols(2)}
+            aria-label="2 products per row"
+            title="2 Columns"
+          >
+            <Grid2X2 size={15} />
+          </button>
+        </div>
         <label>SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>NEWEST</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={15}/></label>
       </div>
       {activeCount > 0 && <div className="active-filters">
@@ -1204,7 +1447,7 @@ function Shop({ onQuickView, products, collection = null }) {
         {inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}
         <button onClick={clear}>CLEAR ALL</button>
       </div>}
-      <section className="shop-grid section">{shown.length ? <div className="product-grid">{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
+      <section className="shop-grid section">{shown.length ? <div className={`product-grid is-col-${mobileCols}`}>{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
       {filterOpen && <div className="filter-sheet__backdrop" onClick={() => setFilterOpen(false)} aria-hidden="true"/>}
       <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}>
         <div className="filter-sheet__header"><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div>
@@ -1841,10 +2084,10 @@ function App() {
   const [route, setRoute] = useState(() => window.location.pathname + window.location.search + window.location.hash)
   const path = route.split(/[?#]/)[0]
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
-  const [products,setProducts] = useState(() => import.meta.env.DEV ? initialCatalog : [])
+  const [products,setProducts] = useState(() => initialCatalog)
   const [menus,setMenus] = useState([])
   const [collections,setCollections] = useState([])
-  const [theme,setTheme] = useState(null)
+  const [theme,setTheme] = useState(() => adminTheme)
   const [catalogState,setCatalogState] = useState({ loading:!path.startsWith('/admin'), source:'preview', error:null })
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
