@@ -25,6 +25,7 @@ import {
   Square,
   SlidersHorizontal,
   ShieldCheck,
+  Shirt,
   Star,
   Tag,
   PackageCheck,
@@ -56,6 +57,7 @@ const AiStudio = lazy(() => import('./AiStudio'))
 const MembershipPage = lazy(() => import('./MembershipPage'))
 const CheckoutPage = lazy(() => import('./CheckoutPage'))
 const OrderTrackingPage = lazy(() => import('./OrderTrackingPage'))
+const HomeJerseyPersonalizer = lazy(() => import('./HomeJerseyPersonalizer'))
 
 const money = value => `$${value.toFixed(0)}`
 const initialCatalog = buildFallbackCatalog(fallbackProducts)
@@ -315,11 +317,11 @@ function Hero({ content = {}, customProduct }) {
   const eyebrow = !content.eyebrow || /drop 01|extra time/i.test(String(content.eyebrow)) ? 'CUSTOM JERSEYS' : content.eyebrow
   const primaryLabel = !content.button || /explore the drop|create your jersey/i.test(String(content.button)) ? 'START CUSTOMIZING' : content.button
   const quickSports = [
-    { label: 'NFL', icon: '🏈', path: '/shop?group=FOOTBALL' },
-    { label: 'NBA', icon: '🏀', path: '/shop?group=BASKETBALL' },
-    { label: 'MLB', icon: '⚾', path: '/shop?group=BASEBALL' },
-    { label: 'MLS', icon: '⚽', path: '/shop?group=SOCCER' },
-    { label: 'CUSTOM LAB', icon: '⚡', path: customTarget }
+    { label: 'NFL', mark: '/assets/leagues/marks/nfl.webp', path: '/shop?group=FOOTBALL' },
+    { label: 'NBA', mark: '/assets/leagues/marks/nba.webp', path: '/shop?group=BASKETBALL' },
+    { label: 'MLB', mark: '/assets/leagues/marks/mlb.webp', path: '/shop?group=BASEBALL' },
+    { label: 'MLS', mark: '/assets/leagues/marks/mls.webp', path: '/shop?group=SOCCER' },
+    { label: 'CUSTOM LAB', icon: Sparkles, path: customTarget }
   ]
 
   return (
@@ -342,12 +344,17 @@ function Hero({ content = {}, customProduct }) {
           <div className="hero__quick-chips">
             {quickSports.map(sport => (
               <button key={sport.label} type="button" className="hero__sport-chip" onClick={() => navigate(sport.path)}>
-                <span>{sport.icon}</span> {sport.label}
+                {sport.mark ? (
+                  <img src={sport.mark} alt="" className="hero__sport-mark" loading="lazy" decoding="async" />
+                ) : sport.icon ? (
+                  <sport.icon size={13} className="hero__sport-icon" aria-hidden="true" />
+                ) : null}
+                <span>{sport.label}</span>
               </button>
             ))}
           </div>
         </div>
-        <span className="hero__brand-line">Football memories, made wearable.</span>
+        <span className="hero__brand-line">Jersevo · Sports memories, made wearable.</span>
       </div>
 
       <div className="hero__card-preview" onClick={() => navigate(customTarget)} role="button" tabIndex={0} aria-label="Interactive custom jersey preview">
@@ -371,6 +378,12 @@ function Hero({ content = {}, customProduct }) {
 
 function HomePath({ customProduct }) {
   const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
+  const steps = [
+    { num: '01', title: 'Pick a design', desc: 'Curated cuts & team colorways.', icon: Shirt },
+    { num: '02', title: 'Add name & number', desc: 'Personalize details that make it yours.', icon: Tag },
+    { num: '03', title: 'Live preview', desc: 'Instant mockup before production.', icon: Sparkles },
+    { num: '04', title: 'We craft & deliver', desc: 'Zero-crack dye-sub with tracked shipping.', icon: PackageCheck }
+  ]
   return (
     <section className="home-path" id="how-it-works" aria-labelledby="home-path-heading">
       <div className="home-path__intro">
@@ -382,11 +395,26 @@ function HomePath({ customProduct }) {
           <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
         </div>
       </div>
+      <div className="home-path__mobile-head">
+        <span>HOW IT WORKS · 4 SIMPLE STEPS</span>
+        <h3>MAKE IT <em>YOURS.</em></h3>
+      </div>
       <ol className="home-path__steps">
-        <li><span>01</span><div><strong>Pick a design</strong><p>Designer-led artwork with a fixed point of view.</p></div></li>
-        <li><span>02</span><div><strong>Add your name + number</strong><p>Keep the details that make the piece yours.</p></div></li>
-        <li><span>03</span><div><strong>Preview your jersey</strong><p>Check spelling, placement and the selected colorway.</p></div></li>
-        <li><span>04</span><div><strong>We make it</strong><p>Review the order, then follow the tracked delivery.</p></div></li>
+        {steps.map(step => {
+          const Icon = step.icon
+          return (
+            <li key={step.num}>
+              <span className="home-path__step-num">{step.num}</span>
+              <div className="home-path__step-body">
+                <div className="home-path__step-top">
+                  {Icon && <Icon size={14} className="home-path__step-icon" aria-hidden="true" />}
+                  <strong>{step.title}</strong>
+                </div>
+                <p>{step.desc}</p>
+              </div>
+            </li>
+          )
+        })}
       </ol>
     </section>
   )
@@ -433,7 +461,17 @@ function DropFeature({ product }) {
 }
 
 function Rating({ value, reviews }) {
-  return <span className="rating"><span>★★★★★</span> {value} <small>({reviews})</small></span>
+  return (
+    <span className="rating" aria-label={`${value} out of 5 stars from ${reviews} reviews`}>
+      <span className="rating__stars" aria-hidden="true">
+        {[...Array(5)].map((_, i) => (
+          <Star key={i} size={11} fill="#e5a914" stroke="#e5a914" />
+        ))}
+      </span>
+      <span className="rating__val">{value}</span>
+      <small>({reviews})</small>
+    </span>
+  )
 }
 
 function ProductCard({ product, onQuickView, className = '' }) {
@@ -469,18 +507,17 @@ function ProductRail({ onQuickView, title = 'BEST SELLERS. YOUR WAY.', subtitle 
     { id: 'TREND', label: '✨ TREND' },
     { id: 'NEW', label: 'NEW ARRIVAL' }
   ]
-  const sourcePool = products.length ? products : items
   const displayItems = useMemo(() => {
+    let pool = products.length ? products : items
     if (activeTab === 'TREND') {
-      const trending = sourcePool.filter(p => p.customFields?.length || (p.reviews && p.reviews >= 35) || /touchline|hot|drop|popular/i.test(`${p.badge || ''} ${p.name || ''} ${p.tags?.join(' ') || ''}`))
-      return trending.length ? trending : sourcePool
+      const trending = pool.filter(p => p.customFields?.length || (p.reviews && p.reviews >= 35) || /touchline|hot|drop|popular/i.test(`${p.badge || ''} ${p.name || ''} ${p.tags?.join(' ') || ''}`))
+      pool = trending.length ? trending : pool
+    } else if (activeTab === 'NEW') {
+      const newItems = pool.filter(p => /new|2026|arrival|drop/i.test(`${p.badge || ''} ${p.tags?.join(' ') || ''}`))
+      pool = newItems.length ? newItems : [...pool].reverse()
     }
-    if (activeTab === 'NEW') {
-      const newItems = sourcePool.filter(p => /new|2026|arrival|drop/i.test(`${p.badge || ''} ${p.tags?.join(' ') || ''}`))
-      return newItems.length ? newItems : [...sourcePool].reverse()
-    }
-    return sourcePool
-  }, [activeTab, sourcePool])
+    return pool.slice(0, 10)
+  }, [activeTab, products, items])
 
   const scroll = direction => {
     if (sliderRef.current) {
@@ -870,7 +907,7 @@ function LeagueDiscovery() {
   )
 }
 
-function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '' }) {
+function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '', showMeta = true }) {
   const uid = useId().replace(/:/g, '')
   const patternId = `jersey-grid-${uid}`
   const clipId = `shirt-clip-${uid}`
@@ -890,8 +927,10 @@ function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2
       {view === 'back' ? <>
         <text x="260" y={hasPhoto ? 270 : 224} textAnchor="middle" fill="#f4f3ee" fontFamily="Barlow Condensed" fontWeight="700" fontSize="42" letterSpacing="3">{name || 'YOUR NAME'}</text>
         <text x="260" y={hasPhoto ? 432 : 410} textAnchor="middle" fill="#f4f3ee" stroke={accent} strokeWidth="2" paintOrder="stroke" fontFamily="Barlow Condensed" fontWeight="800" fontSize="190" letterSpacing="-8">{number || '00'}</text>
-        <text x="260" y="500" textAnchor="middle" fill="#f4f3ee" fontFamily="Barlow Condensed" fontWeight="600" fontSize="17" letterSpacing="2">{teamCity || 'TEAM / CITY'}</text>
-        <text x="260" y="522" textAnchor="middle" fill={accent} fontFamily="Barlow Condensed" fontWeight="700" fontSize="14" letterSpacing="3">{year || 'YEAR'}</text>
+        {showMeta && <>
+          <text x="260" y="500" textAnchor="middle" fill="#f4f3ee" fontFamily="Barlow Condensed" fontWeight="600" fontSize="17" letterSpacing="2">{teamCity || 'TEAM / CITY'}</text>
+          <text x="260" y="522" textAnchor="middle" fill={accent} fontFamily="Barlow Condensed" fontWeight="700" fontSize="14" letterSpacing="3">{year || 'YEAR'}</text>
+        </>}
       </> : <>
         <path d="M227 208h66v66h-66z" fill="none" stroke={accent} strokeWidth="3"/><path d="M243 241h34M260 224v34" stroke={accent} strokeWidth="3"/>
         <text x="260" y="320" textAnchor="middle" fill="#f4f3ee" fontFamily="Barlow Condensed" fontWeight="700" fontSize="27" letterSpacing="4">{teamCity || 'EXTRA TIME'}</text>
@@ -1094,7 +1133,11 @@ function CommunityProof() {
       <div className="community-proof__reviews">
         <div className="community-proof__reviews-head">
           <div className="community-proof__reviews-title">
-            <span className="community-proof__stars">★★★★★</span>
+            <span className="community-proof__stars" aria-hidden="true">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={15} fill="#e5a914" stroke="#e5a914" />
+              ))}
+            </span>
             <h3>VERIFIED FAN REVIEWS</h3>
             <span className="community-proof__avg">4.9/5 AVERAGE RATING ACROSS 2,400+ ORDERS</span>
           </div>
@@ -1110,7 +1153,11 @@ function CommunityProof() {
           {reviews.map(r => (
             <article key={r.author} className="review-card">
               <div className="review-card__header">
-                <span className="review-card__stars">★★★★★</span>
+                <span className="review-card__stars" aria-hidden="true">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={13} fill="#e5a914" stroke="#e5a914" />
+                  ))}
+                </span>
                 <span className="review-card__badge"><Check size={12}/> {r.badge}</span>
               </div>
               <h4 className="review-card__title">"{r.title}"</h4>
@@ -1150,7 +1197,7 @@ function VaultTeaser() {
 
 function Manifesto() {
   return (
-    <section className="manifesto section"><p>WHY EXTRA TIME</p><h2>WE DON'T RECREATE<br />THE SHIRTS YOU REMEMBER.</h2><h2 className="outline">WE CREATE THE FEELING<br />YOU CAN'T FORGET.</h2><div><span>ORIGINAL DESIGN</span><span>SMALL-BATCH DROPS</span><span>MADE TO WEAR</span><span>BUILT TO REMEMBER</span></div></section>
+    <section className="manifesto section"><p>WHY JERSEVO</p><h2>WE DON'T RECREATE<br />THE SHIRTS YOU REMEMBER.</h2><h2 className="outline">WE CREATE THE FEELING<br />YOU CAN'T FORGET.</h2><div><span>ORIGINAL DESIGN</span><span>SMALL-BATCH DROPS</span><span>MADE TO WEAR</span><span>BUILT TO REMEMBER</span></div></section>
   )
 }
 
@@ -1287,7 +1334,7 @@ function Home({ onQuickView, products, theme, collections = [] }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
   const customProduct = products.find(product => product.customFields?.length) || products.find(product => /touchline/i.test(`${product.handle || ''} ${product.name || ''}`)) || featured
   const primaryCollection = collections[0]
-  const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,4) : products.slice(0,4)
+  const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,10) : products.slice(0,10)
   const renderBlock = id => ({
     hero:<Hero key="hero" content={theme?.content} customProduct={customProduct}/>,
     'home-trust':<StorefrontTrust key="home-trust" variant="home" />,
