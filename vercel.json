@@ -9,7 +9,8 @@
     "api/google-merchant-feed.js": { "maxDuration": 15 },
     "api/ai-listing-copy.js": { "maxDuration": 60 },
     "api/ai-listing-media.js": { "maxDuration": 60 },
-    "api/newsletter-subscribe.js": { "maxDuration": 15 }
+    "api/newsletter-subscribe.js": { "maxDuration": 15 },
+    "api/ai-preview.js": { "maxDuration": 60 }
   },
   "headers": [
     {
