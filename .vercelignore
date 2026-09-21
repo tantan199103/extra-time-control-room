@@ -23,6 +23,7 @@ node_modules
 dist
 dist-extension
 artifacts
+.tools
 .git
 .vercel
 supabase/.temp
