@@ -459,7 +459,7 @@ function ProductCard({ product, onQuickView, className = '' }) {
   )
 }
 
-function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = 'Fan favorites, ready for your details.', items = [], products = [], className = '' }) {
+function ProductRail({ onQuickView, title = 'BEST SELLERS. YOUR WAY.', subtitle = 'Fan favorites, ready to personalize.', items = [], products = [], className = '' }) {
   const [activeTab, setActiveTab] = useState('ALL')
   const sliderRef = useRef(null)
   const tabs = [
@@ -772,7 +772,7 @@ function StoryExplorer({ product }) {
 
 function PlayerDiscovery({ customProduct }) {
   const cards = [
-    { name: 'FOR YOU', count: 'PERSONAL', img: '/assets/jersey-white.webp', pos: '50%', custom: true },
+    { name: 'FOR YOU', count: 'PERSONAL', img: '/assets/for-you.webp', pos: '50%', custom: true },
     { name: 'FOR TWO', count: 'MATCHING', img: '/assets/for-two.webp', pos: '50%' },
     { name: 'FOR FAMILY', count: 'TOGETHER', img: '/assets/for-family.webp', pos: '50%' },
     { name: 'FOR THE SQUAD', count: 'CUSTOM', img: '/assets/for-squad.webp', pos: '50%' }
@@ -1046,7 +1046,7 @@ function CommunityProof() {
             <img src="/assets/for-two.webp" alt="Fans wearing personalized matchday jerseys" loading="lazy" />
           </figure>
           <figure className="community-proof__image community-proof__image--small">
-            <img src="/assets/venom-mockup-back.webp" alt="Custom jersey rear view with personalized name and number" loading="lazy" />
+            <img src="/assets/seen-in-wild.webp" alt="Passionate player on city court wearing personalized jersey" loading="lazy" />
           </figure>
           <span className="community-proof__stamp">MORE THAN<br />A JERSEY.</span>
         </div>
@@ -1254,7 +1254,7 @@ function Home({ onQuickView, products, theme, collections = [] }) {
     'home-trust':<StorefrontTrust key="home-trust" variant="home" />,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
-    rail:<ProductRail key="rail" title="THE STARTING LINEUP." subtitle="Fan favorites, ready for your details." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
+    rail:<ProductRail key="rail" title="BEST SELLERS. YOUR WAY." subtitle="Fan favorites, ready to personalize." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues"/>,
