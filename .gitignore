@@ -10,3 +10,5 @@ supabase/.temp/
 !.env.example
 !.env.backend.example
 *.local
+
+.env*

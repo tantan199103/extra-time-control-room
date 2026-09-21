@@ -21,7 +21,7 @@ import {
 export const PRIMARY_FANATICS_HOST = 'fanatics.com'
 export const FANATICS_HOSTS = SOURCE_HOSTS
 
-const FANATICS_BRAND_RE = /\b(?:fanatics(?:\s*(?:branded|authentic|exclusive|pro\s*line))?|fansedge|nfl\s*shop|nba\s*store|mlb\s*shop|nhl\s*shop|officially?\s+licensed(?:\s+by\s+the\s+[a-z0-9]+)?)\b/gi
+const FANATICS_BRAND_RE = /\b(?:fanatics(?:\s*(?:branded|authentic|exclusive|pro\s*line))?|fansedge|nfl\s*shop|nba\s*store|mlb\s*shop|nhl\s*shop|officially?\s+licensed(?:\s+by\s+the\s+[a-z0-9]+)?|nike|adidas|jordan(?:\s*brand)?|mitchell\s*(?:&|and)\s*ness|new\s*era|under\s*armour|puma|starter|champion)\b/gi
 
 const FANATICS_LEAGUES = new Map([
   ['nfl', { key: 'nfl', name: 'NFL', sport: 'Football', group: 'Football Jersey' }],
@@ -56,6 +56,8 @@ export function cleanFanaticsTitle(rawTitle) {
   title = title.replace(FANATICS_BRAND_RE, ' ')
   // Remove gender/age prefix noise if followed by brand or garment
   title = title.replace(/^(?:Men's|Women's|Unisex|Youth|Adult)\s+/i, '')
+  // Remove trailing "by <Brand/Seller>"
+  title = title.replace(/\s+by\s+[a-z0-9\s]+$/i, '')
   title = title.replace(/\s+/g, ' ').trim()
   return sanitizePublicText(title) || 'Custom Sports Jersey'
 }

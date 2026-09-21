@@ -1,4 +1,4 @@
-const CACHE_NAME = 'extra-time-shell-v4'
+const CACHE_NAME = 'extra-time-shell-v5'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
 
 self.addEventListener('install', event => {
@@ -6,7 +6,10 @@ self.addEventListener('install', event => {
 })
 
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('extra-time-shell-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()))
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('extra-time-shell-') && key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  )
 })
 
 self.addEventListener('fetch', event => {
@@ -18,6 +21,18 @@ self.addEventListener('fetch', event => {
     return
   }
   if (!['script','style','font','image','manifest'].includes(event.request.destination)) return
+  if (event.request.destination === 'script') {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok && response.type === 'basic') {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone)).catch(() => {})
+        }
+        return response
+      }).catch(() => caches.match(event.request))
+    )
+    return
+  }
   event.respondWith(caches.match(event.request).then(cached => {
     const network = fetch(event.request).then(response => {
       if (response.ok && response.type === 'basic') caches.open(CACHE_NAME).then(cache => cache.put(event.request,response.clone())).catch(() => {})

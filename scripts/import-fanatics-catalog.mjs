@@ -14,6 +14,22 @@ import {
   sanitizePublicText
 } from './fangear-import-lib.mjs'
 
+import fs from 'node:fs'
+
+for (const envFile of ['.env.local', '.env', '.env.fangear.import']) {
+  if (fs.existsSync(envFile)) {
+    try {
+      const content = fs.readFileSync(envFile, 'utf8')
+      for (const line of content.split('\n')) {
+        const match = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*(?:["']?)(.*?)(?:["']?)\s*$/)
+        if (match && !process.env[match[1]]) {
+          process.env[match[1]] = match[2]
+        }
+      }
+    } catch {}
+  }
+}
+
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const outputPath = process.env.FANATICS_IMPORT_REPORT || resolve('artifacts', 'fanatics-import-report.json')

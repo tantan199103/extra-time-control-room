@@ -27,7 +27,7 @@ import {
   saveAuditRecords
 } from './import-fanatics-catalog.mjs'
 
-for (const envFile of ['.env.fangear.import', '.env.local', '.env']) {
+for (const envFile of ['.env.local', '.env', '.env.fangear.import']) {
   if (fs.existsSync(envFile)) {
     try {
       const content = fs.readFileSync(envFile, 'utf8')
@@ -330,6 +330,10 @@ export async function runAutoSync({
   }
 
   console.log(`\nCrawling complete. Total products extracted: ${rawProducts.length}`)
+  const rawBackupPath = resolve('artifacts', 'fanatics-raw-products.json')
+  await mkdir(resolve(rawBackupPath, '..'), { recursive: true })
+  await writeFile(rawBackupPath, JSON.stringify(rawProducts, null, 2), 'utf8')
+  console.log(`Saved raw extracted products to: ${rawBackupPath}`)
 
   // 2. Normalization & Sanitization
   console.log('\nRunning Data Sanitizer (stripping Fanatics branding, generating clean SKUs)...')

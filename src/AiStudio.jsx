@@ -52,7 +52,8 @@ export default function AiStudio({ products = [] }) {
   const draft = readDraft(product?.id)
   const fields = product?.customFields || []
   const editableFields = useMemo(() => fields
-    .filter(field => !['photo', 'logo', 'textarea'].includes(field.type))
+    .map(field => typeof field === 'string' ? { key: field, label: field.toUpperCase(), type: field === 'number' ? 'number' : 'text' } : field)
+    .filter(field => field && !['photo', 'logo', 'textarea'].includes(field.type))
     .map(field => ({ ...field, previewRegion: normalizePreviewRegion(field.previewRegion) })),
     [fields]
   )

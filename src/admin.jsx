@@ -33,6 +33,7 @@ import {
   Ticket,
   X
 } from 'lucide-react'
+import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
 import { fetchAdminCollections, fetchAdminMenus, fetchAdminPaymentSettings, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
@@ -178,16 +179,38 @@ function AdminWorkspace() {
   const load = async () => {
     setLoading(true); setLoadError('')
     try {
-    const [productResult, themeResult, menuResult, collectionResult] = await Promise.all([fetchAdminProducts(), fetchAdminTheme(), fetchAdminMenus(), fetchAdminCollections()])
-    const failure = [productResult, themeResult, menuResult, collectionResult].find(result => result.error)
-    if (failure) throw new Error(failure.error)
-    setProductRows(productResult.data || [])
-    if (themeResult.data) setThemeDraft(themeResult.data)
-    if (menuResult.data?.length) setMenuRows(resolveMenuImages(menuResult.data, { products:productResult.data || [], collections:collectionResult.data || [], pages:themeResult.data?.pages || [] }))
-    if (collectionResult.data?.length) setCollectionRows(collectionResult.data)
-    setSource([productResult, themeResult, menuResult, collectionResult].every(result => result.source === 'supabase') ? 'supabase' : 'preview')
-    } catch (error) { setLoadError(error instanceof Error ? error.message : 'Could not load Admin data.') }
-    finally { setLoading(false) }
+      // 1. Fetch products first so large join does not compete with other queries
+      const productResult = await fetchAdminProducts()
+      // 2. Fetch builder models in parallel
+      const [themeResult, menuResult, collectionResult] = await Promise.all([
+        fetchAdminTheme(),
+        fetchAdminMenus(),
+        fetchAdminCollections()
+      ])
+      const products = productResult.data?.length ? productResult.data : adminProducts
+      setProductRows(products)
+      if (themeResult.data) setThemeDraft(themeResult.data)
+      const collections = collectionResult.data?.length ? collectionResult.data : adminCollections
+      setCollectionRows(collections)
+      const menus = menuResult.data?.length ? menuResult.data : adminMenus
+      setMenuRows(resolveMenuImages(menus, {
+        products,
+        collections,
+        pages: themeResult.data?.pages || adminTheme.pages
+      }))
+      const isLive = [productResult, themeResult, menuResult, collectionResult].every(result => result.source === 'supabase' && !result.error)
+      setSource(isLive ? 'supabase' : 'preview')
+    } catch (error) {
+      console.error('Admin load error:', error)
+      setProductRows(adminProducts)
+      setSource('preview')
+      // Only set fatal loadError if we have no products at all
+      if (!productRows.length) {
+        setLoadError(error instanceof Error ? error.message : 'Could not load Admin data.')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { const onPop = () => setPath(window.location.pathname); window.addEventListener('popstate', onPop); load(); return () => window.removeEventListener('popstate', onPop) }, [])
   const saveProduct = useCallback(product => setProductRows(current => current.some(item => item.id === product.id) ? current.map(item => item.id === product.id ? product : item) : [...current, product]), [])

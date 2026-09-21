@@ -84,6 +84,7 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/api/google-merchant-feed", "destination": "/api/google-merchant-feed.js" },
     { "source": "/api/newsletter-subscribe", "destination": "/api/newsletter-subscribe.js" },
+    { "source": "/api/ai-preview", "destination": "/api/ai-preview.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

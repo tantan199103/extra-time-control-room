@@ -178,10 +178,28 @@ export async function fetchStorefrontTheme(fallback = null) {
 }
 
 export async function fetchAdminProducts() {
-  if (!supabase) return { data:[], source:'error', error:'Supabase is not configured.' }
-  const { data, error } = await supabase.from('pod_products').select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))').order('updated_at', { ascending: false })
-  if (error) return { data:[], source:'error', error:error.message }
-  return { data: (data || []).map(row => normalizeProduct(row)), source: 'supabase', error: null }
+  if (!supabase) return { data: adminProducts, source: 'error', error: 'Supabase is not configured.' }
+  try {
+    const { data, error } = await supabase
+      .from('pod_products')
+      .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
+      .order('updated_at', { ascending: false })
+    if (!error && Array.isArray(data)) {
+      return { data: data.map(row => normalizeProduct(row)), source: 'supabase', error: null }
+    }
+    // If timeout or heavy join error occurred, fallback to lighter query without deep options join
+    console.warn('Full admin product query failed or timed out, attempting optimized fallback:', error?.message)
+    const { data: lightData, error: lightError } = await supabase
+      .from('pod_products')
+      .select('*, pod_product_variants(*)')
+      .order('updated_at', { ascending: false })
+    if (!lightError && Array.isArray(lightData)) {
+      return { data: lightData.map(row => normalizeProduct(row)), source: 'supabase', error: null }
+    }
+    return { data: adminProducts, source: 'preview', error: lightError?.message || error?.message || 'Could not load products.' }
+  } catch (err) {
+    return { data: adminProducts, source: 'preview', error: err instanceof Error ? err.message : 'Product query failed.' }
+  }
 }
 
 export async function saveAdminProduct(product) {

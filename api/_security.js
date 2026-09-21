@@ -42,7 +42,8 @@ export function enforceSameOrigin(request) {
 }
 
 export function serverSupabase() {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const rawUrl = String(process.env.SUPABASE_URL || '').trim()
+  const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : process.env.VITE_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) throw Object.assign(new Error('Secure Supabase server access is not configured.'), { status:503 })
   return createClient(url, key, { auth:{ persistSession:false, autoRefreshToken:false } })

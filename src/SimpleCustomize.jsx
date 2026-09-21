@@ -12,6 +12,7 @@ const fieldDefinitions = {
 }
 
 const defaultValues = { name:'', number:'', teamCity:'', year:'', color:'' }
+const money = (amount, currency = 'USD') => new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount)
 
 function go(path) {
   window.history.pushState({}, '', path)
