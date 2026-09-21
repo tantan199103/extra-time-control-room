@@ -577,13 +577,16 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
   }
   if (variant === 'line' || compact) {
     return (
-      <aside className="storefront-trust storefront-trust--line" aria-label="Order assurances">
-        <div className="storefront-trust__line-track">
-          {items.map(([label, copy, IconComponent]) => (
-            <span key={label} className="storefront-trust__line-item">
-              {IconComponent && <IconComponent size={13} aria-hidden="true"/>}
-              <strong>{copy}</strong>
-            </span>
+      <aside className="storefront-trust-line" aria-label="Order assurances">
+        <div className="storefront-trust-line__track">
+          {items.map(([label, copy, IconComponent], idx) => (
+            <React.Fragment key={label}>
+              {idx > 0 && <span className="storefront-trust-line__sep" aria-hidden="true">•</span>}
+              <span className="storefront-trust-line__item">
+                {IconComponent && <IconComponent size={14} className="storefront-trust-line__icon" aria-hidden="true"/>}
+                <strong className="storefront-trust-line__copy">{copy}</strong>
+              </span>
+            </React.Fragment>
           ))}
         </div>
       </aside>
