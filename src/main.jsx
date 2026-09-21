@@ -792,6 +792,8 @@ function Shop({ onQuickView, products, collection = null }) {
   const params = new URLSearchParams(window.location.search)
   const [color, setColor] = useState(params.get('color')?.toUpperCase() || 'ALL')
   const [sizeFilter, setSizeFilter] = useState(params.get('size')?.toUpperCase() || 'ALL')
+  const [teamFilter, setTeamFilter] = useState(params.get('team')?.toLowerCase() || 'ALL')
+  const [priceFilter, setPriceFilter] = useState(params.get('price')?.toUpperCase() || 'ALL')
   const [group, setGroup] = useState(params.get('group') || 'ALL')
   const [customOnly, setCustomOnly] = useState(params.get('custom') === '1')
   const [inStock, setInStock] = useState(params.get('stock') === '1')
@@ -812,9 +814,52 @@ function Shop({ onQuickView, products, collection = null }) {
   const colours = ['ALL', ...new Set(baseProducts.flatMap(productColours).map(value => String(value).toUpperCase()))]
   const sizes = ['ALL', 'XS', 'S', 'M', 'L', 'XL', 'XXL']
   const groups = ['ALL', ...new Set(baseProducts.map(product => product.productGroup).filter(Boolean))]
+
+  const teamOptions = useMemo(() => {
+    const map = new Map()
+    baseProducts.forEach(p => {
+      const vals = productTaxonomyValues(p)
+      const t = vals.team || p.team || p.taxonomy?.team || p.teamCity
+      if (t) {
+        const slug = String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        const label = String(t).replace(/-/g, ' ').toUpperCase()
+        if (!map.has(slug)) map.set(slug, { slug, label, count: 0 })
+        map.get(slug).count += 1
+      }
+    })
+    LEAGUE_TAXONOMY.forEach(league => {
+      league.teams.forEach(team => {
+        const count = baseProducts.filter(p => productMatchesTaxonomy(p, { team: team.slug })).length
+        if (count > 0 && !map.has(team.slug)) {
+          map.set(team.slug, { slug: team.slug, label: team.name, count })
+        }
+      })
+    })
+    return Array.from(map.values())
+  }, [baseProducts])
+
+  const PRICE_OPTIONS = [
+    { id: 'ALL', label: 'ALL PRICES', test: () => true },
+    { id: 'UNDER_90', label: 'UNDER $90', test: p => Number(p.price || 0) < 90 },
+    { id: '90_100', label: '$90 – $100', test: p => Number(p.price || 0) >= 90 && Number(p.price || 0) <= 100 },
+    { id: 'OVER_100', label: 'OVER $100', test: p => Number(p.price || 0) > 100 }
+  ]
+
   let shown = baseProducts.filter(product => {
     if (color !== 'ALL' && !productColours(product).some(value => String(value).toUpperCase() === color)) return false
     if (sizeFilter !== 'ALL' && !productSizes(product).some(value => canonicalSize(value).toUpperCase() === sizeFilter)) return false
+    if (teamFilter !== 'ALL') {
+      const matches = productMatchesTaxonomy(product, { team: teamFilter }) ||
+        String(product.team || '').toLowerCase() === teamFilter ||
+        String(product.taxonomy?.team || '').toLowerCase() === teamFilter ||
+        String(product.teamCity || '').toLowerCase().includes(teamFilter) ||
+        String(product.name || '').toLowerCase().includes(teamFilter.replace(/-/g, ' '))
+      if (!matches) return false
+    }
+    if (priceFilter !== 'ALL') {
+      const matchPrice = PRICE_OPTIONS.find(opt => opt.id === priceFilter)?.test(product)
+      if (!matchPrice) return false
+    }
     if (group !== 'ALL' && product.productGroup !== group) return false
     if (typeFilter !== 'ALL' && !String(product.type || '').toLowerCase().includes(typeFilter.toLowerCase())) return false
     if (customOnly && !product.customFields?.length) return false
@@ -822,16 +867,19 @@ function Shop({ onQuickView, products, collection = null }) {
     return true
   })
   shown = sort === 'FEATURED' && collection ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
+
   useEffect(() => {
     const next = new URL(window.location.href)
     const set = (key,value,empty) => value === empty ? next.searchParams.delete(key) : next.searchParams.set(key,value)
-    set('color',color,'ALL'); set('size',sizeFilter,'ALL'); set('group',group,'ALL'); set('type',typeFilter,'ALL'); set('sort',sort,'FEATURED')
+    set('color',color,'ALL'); set('size',sizeFilter,'ALL'); set('team',teamFilter,'ALL'); set('price',priceFilter,'ALL'); set('group',group,'ALL'); set('type',typeFilter,'ALL'); set('sort',sort,'FEATURED')
     customOnly ? next.searchParams.set('custom','1') : next.searchParams.delete('custom')
     inStock ? next.searchParams.set('stock','1') : next.searchParams.delete('stock')
     window.history.replaceState({},'',next.pathname + next.search)
-  }, [color,sizeFilter,group,typeFilter,customOnly,inStock,sort])
-  const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false) }
-  const activeCount = Number(color !== 'ALL') + Number(sizeFilter !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock)
+  }, [color,sizeFilter,teamFilter,priceFilter,group,typeFilter,customOnly,inStock,sort])
+
+  const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setTeamFilter('ALL'); setPriceFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false) }
+  const activeCount = Number(color !== 'ALL') + Number(sizeFilter !== 'ALL') + Number(teamFilter !== 'ALL') + Number(priceFilter !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock)
+
   return (
     <main className="shop-page">
       <section className="collection-hero" style={collection?.hero ? { '--collection-image':`url(${collection.hero})` } : undefined}><Breadcrumbs items={collection ? [{ label:'Shop', href:'/shop' }, { label:collection.name }] : [{ label:'Shop' }]}/><p>{collection ? 'CURATED COLLECTION' : 'DROP 01 · LIVE NOW'}</p><h1>{(collection?.name || 'THE 90+ COLLECTION').toUpperCase()}</h1><div><p>{collection?.description || 'Original jerseys built from the minutes football gives us back.'}</p><span>{shown.length} PRODUCTS</span></div></section>
@@ -841,6 +889,8 @@ function Shop({ onQuickView, products, collection = null }) {
           <span>FILTER</span>
           {colours.slice(0,5).map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}</button>)}
           <label className="catalog-select">SIZE<select value={sizeFilter} onChange={event => setSizeFilter(event.target.value)}>{sizes.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label>
+          {teamOptions.length > 0 && <label className="catalog-select">TEAM<select value={teamFilter} onChange={event => setTeamFilter(event.target.value)}><option value="ALL">ALL TEAMS</option>{teamOptions.map(t => <option key={t.slug} value={t.slug}>{t.label}</option>)}</select><ChevronDown size={13}/></label>}
+          <label className="catalog-select">PRICE<select value={priceFilter} onChange={event => setPriceFilter(event.target.value)}>{PRICE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}</select><ChevronDown size={13}/></label>
           <label className="catalog-select">GROUP<select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label>
           <label className="catalog-select">TYPE<select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={13}/></label>
           <button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOM</button>
@@ -849,9 +899,40 @@ function Shop({ onQuickView, products, collection = null }) {
         <button className="mobile-filter" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={16}/> FILTER{activeCount ? ` · ${activeCount}` : ''}</button>
         <label>SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>NEWEST</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={15}/></label>
       </div>
-      {activeCount > 0 && <div className="active-filters">{color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}{sizeFilter !== 'ALL' && <button onClick={() => setSizeFilter('ALL')}>SIZE: {sizeFilter} <X size={12}/></button>}{group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}{typeFilter !== 'ALL' && <button onClick={() => setTypeFilter('ALL')}>{typeFilter} <X size={12}/></button>}{customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}{inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}<button onClick={clear}>CLEAR ALL</button></div>}
+      {activeCount > 0 && <div className="active-filters">
+        {color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}
+        {sizeFilter !== 'ALL' && <button onClick={() => setSizeFilter('ALL')}>SIZE: {sizeFilter} <X size={12}/></button>}
+        {teamFilter !== 'ALL' && <button onClick={() => setTeamFilter('ALL')}>TEAM: {teamOptions.find(t => t.slug === teamFilter)?.label || teamFilter.toUpperCase()} <X size={12}/></button>}
+        {priceFilter !== 'ALL' && <button onClick={() => setPriceFilter('ALL')}>PRICE: {PRICE_OPTIONS.find(o => o.id === priceFilter)?.label || priceFilter} <X size={12}/></button>}
+        {group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}
+        {typeFilter !== 'ALL' && <button onClick={() => setTypeFilter('ALL')}>{typeFilter} <X size={12}/></button>}
+        {customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}
+        {inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}
+        <button onClick={clear}>CLEAR ALL</button>
+      </div>}
       <section className="shop-grid section">{shown.length ? <div className="product-grid">{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
-      <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}><div><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div><p>COLOUR</p>{colours.map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productColours(product).some(value => String(value).toUpperCase() === item)).length}</span></button>)}<p>SIZE</p><div className="filter-sheet__sizes">{sizes.map(item => <button key={item} className={sizeFilter === item ? 'is-active' : ''} onClick={() => setSizeFilter(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productSizes(product).some(v => canonicalSize(v).toUpperCase() === item)).length}</span></button>)}</div><p>PRODUCT GROUP</p><label className="filter-sheet__select"><select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={14}/></label><p>PRODUCT TYPE</p><label className="filter-sheet__select"><select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={14}/></label><button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOMIZABLE <span>{customOnly ? 'ON' : 'OFF'}</span></button><button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK <span>{inStock ? 'ON' : 'OFF'}</span></button><button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
+      {filterOpen && <div className="filter-sheet__backdrop" onClick={() => setFilterOpen(false)} aria-hidden="true"/>}
+      <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}>
+        <div className="filter-sheet__header"><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div>
+        <div className="filter-sheet__body">
+          <p>COLOUR</p>
+          <div className="filter-sheet__colours">{colours.map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productColours(product).some(value => String(value).toUpperCase() === item)).length}</span></button>)}</div>
+          <p>SIZE</p>
+          <div className="filter-sheet__sizes">{sizes.map(item => <button key={item} type="button" className={sizeFilter === item ? 'is-active' : ''} onClick={() => setSizeFilter(item)}><strong>{item}</strong><span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productSizes(product).some(v => canonicalSize(v).toUpperCase() === item)).length}</span></button>)}</div>
+          {teamOptions.length > 0 && <><p>TEAM / CLUB</p><label className="filter-sheet__select"><select value={teamFilter} onChange={event => setTeamFilter(event.target.value)}><option value="ALL">ALL TEAMS</option>{teamOptions.map(t => <option key={t.slug} value={t.slug}>{t.label}</option>)}</select><ChevronDown size={14}/></label></>}
+          <p>PRICE RANGE</p>
+          <div className="filter-sheet__prices">{PRICE_OPTIONS.map(opt => <button key={opt.id} type="button" className={priceFilter === opt.id ? 'is-active' : ''} onClick={() => setPriceFilter(opt.id)}><span>{opt.label}</span><small>{opt.id === 'ALL' ? baseProducts.length : baseProducts.filter(opt.test).length}</small></button>)}</div>
+          <p>PRODUCT GROUP</p>
+          <label className="filter-sheet__select"><select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={14}/></label>
+          <p>PRODUCT TYPE</p>
+          <label className="filter-sheet__select"><select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={14}/></label>
+          <div className="filter-sheet__toggles">
+            <button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOMIZABLE <span>{customOnly ? 'ON' : 'OFF'}</span></button>
+            <button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK <span>{inStock ? 'ON' : 'OFF'}</span></button>
+          </div>
+        </div>
+        <div className="filter-sheet__footer"><button className="button button--dark" onClick={() => setFilterOpen(false)}>SHOW {shown.length} PRODUCTS</button></div>
+      </div>
       <Newsletter/>
     </main>
   )
@@ -1090,7 +1171,19 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     }
   }
   const attachLogoPreview=(result,field)=>{const preview={productId:product.id,fieldKey:field.key,previewId:result.previewId,imageUrl:result.imageUrl,storage:result.storage,prompt:result.direction||`${field.label}: verified customer logo`,mode:result.mode,expiresAt:Date.now()+Number(result.expiresIn||86400)*1000};setAttachedPreview(preview);setGalleryIndex(0);setAdded(false);try{window.sessionStorage.setItem('extra-time-ai-preview',JSON.stringify(preview))}catch{}}
-  const openAi = () => { if (previewReadiness.enabled) navigate(`/studio?product=${product.handle || product.id}`) }
+  const openAi = () => {
+    try {
+      window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({
+        values: customValues,
+        assetRefs,
+        note: customNote,
+        selections,
+        requestKey,
+        logoConsent
+      }))
+    } catch {}
+    navigate(`/studio?product=${product.handle || product.id}`)
+  }
   const add = async () => {
     if (!selectedVariant) { if (sizeName && !selections[sizeName]) setFinder(true); else setCustomError('Choose every product option before adding to your bag.'); return }
     if (soldOut) { setCustomError('This variation is sold out. Choose another option.'); return }
@@ -1112,15 +1205,9 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     finally { setSubmitting(false) }
   }
   const media = (product.media?.length ? product.media : [{id:'primary',type:'IMAGE',url:product.image,alt:product.alt}]).filter(item => item.url)
-  const currentColorVal = selections[optionNameLike(product,['color','colour'])] || product.color || 'black'
-  const liveSvgItem = personalized ? [{
-    id: 'live-svg-preview',
-    type: 'LIVE_SVG',
-    alt: `${product.name} live custom back preview`
-  }] : []
   const gallery = attachedPreview
-    ? [{id:'custom-preview',type:'IMAGE',url:attachedPreview.imageUrl,alt:'Attached personalisation preview'},...media]
-    : [...liveSvgItem, ...media]
+    ? [{id:attachedPreview.previewId || 'custom-preview',type:'IMAGE',url:attachedPreview.imageUrl,alt:`${product.name} personalized preview`,isAi:true},...media]
+    : media
   const taxonomy = productTaxonomyValues(product)
   const productLeague = findLeague(taxonomy.league)
   const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
@@ -1128,14 +1215,14 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     <div className="pdp-breadcrumb-wrap"><Breadcrumbs items={[{ label:'Shop', href:'/shop' }, ...(productLeague ? [{ label:productLeague.name, href:leaguePath(productLeague) }] : []), ...(productTeam ? [{ label:productTeam.name, href:teamPath(productLeague.key,productTeam) }] : []), { label:product.name }]}/></div>
     <div className="pdp__commerce">
       <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={16}/> BACK TO THE DROP</button>
-      <div className="pdp__gallery" onScroll={event => setGalleryIndex(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>{gallery.map((item,index) => <figure key={`${item.id}-${index}`} className={`${index > 0 && index % 3 === 0 ? 'wide' : ''} ${item.type === 'LIVE_SVG' ? 'pdp__gallery-live' : ''}`}>{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : item.type === 'LIVE_SVG' ? <div className="pdp__gallery-svg-wrap"><JerseySvg name={customValues.name || 'YOUR NAME'} number={customValues.number || '07'} teamCity={customValues.teamCity || customValues.team || 'EXTRA TIME'} year={customValues.year || '2026'} base={swatchColor(currentColorVal)} accent="#f8f04a" view="back" photoUrl={customValues.photo || ''}/><span className="pdp__gallery-svg-badge"><Sparkles size={11}/> LIVE MOCKUP</span></div> : <img src={item.url} alt={item.alt || `${product.name} view ${index+1}`} width={item.width || undefined} height={item.height || undefined} loading={index === 0 ? 'eager' : 'lazy'} decoding="async"/>}<span>{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span></figure>)}</div>
+      <div className="pdp__gallery" onScroll={event => setGalleryIndex(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>{gallery.map((item,index) => <figure key={`${item.id}-${index}`} className={`${index > 0 && index % 3 === 0 ? 'wide' : ''} ${item.isAi ? 'pdp__gallery-ai' : ''}`}>{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <div className="pdp__gallery-img-wrap"><img src={item.url} alt={item.alt || `${product.name} view ${index+1}`} width={item.width || undefined} height={item.height || undefined} loading={index === 0 ? 'eager' : 'lazy'} decoding="async"/>{item.isAi && <span className="pdp__gallery-ai-badge"><Sparkles size={11}/> AI PREVIEW</span>}</div>}<span>{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span></figure>)}</div>
       <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       <aside className="pdp__info">
         {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div>
         <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={18}/><span><small>90+ CLUB BENEFIT</small><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your member price is ready':'SAVE 20–40% ON ELIGIBLE PIECES'}</strong><em>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'The secure member price is calculated in your bag.':'Member pricing plus eligible standard-shipping benefits.'}</em></span><ArrowRight size={16}/></button>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); const isSize = option.name === sizeName; const displayValue = value => isSize ? canonicalSize(value) : value; return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{isSize && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] ? displayValue(selections[option.name]) : 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${displayValue(value)}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : displayValue(value)}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}><i/>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'}</p>}
-        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__live-strip"><div className="pdp-custom__live-badge"><Sparkles size={13}/><span>LIVE MOCKUP · REAR VIEW</span></div><div className="pdp-custom__live-preview"><JerseySvg name={customValues.name || 'YOUR NAME'} number={customValues.number || '07'} teamCity={customValues.teamCity || customValues.team || 'EXTRA TIME'} year={customValues.year || '2026'} base={swatchColor(currentColorVal)} accent="#f8f04a" view="back" photoUrl={customValues.photo || ''}/></div><p className="pdp-custom__live-hint">Your name, number and details update live above and in the product gallery.</p></div><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={openAi} disabled={!hasStructuredPreview} title={hasStructuredPreview ? 'Open the exact-image preview.' : 'A designer must approve at least one exact edit area first.'}><Sparkles size={16}/><span><strong>{hasStructuredPreview ? 'Preview name, number and colour' : 'Visual preview awaiting designer setup'}</strong><small>{hasStructuredPreview ? `Check ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} without writing a prompt.` : 'You can still submit personalization for studio review; automatic image editing is disabled.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
+        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={openAi} disabled={!hasStructuredPreview} title={hasStructuredPreview ? 'Open AI studio to preview changes on the garment.' : 'A designer must approve at least one exact edit area first.'}><Sparkles size={16}/><span><strong>{hasStructuredPreview ? (attachedPreview ? 'UPDATE AI PREVIEW IN STUDIO' : 'PREVIEW WITH AI') : 'VISUAL PREVIEW AWAITING DESIGNER SETUP'}</strong><small>{hasStructuredPreview ? (attachedPreview ? 'Click to adjust your custom details in AI Studio.' : `Render ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} directly onto this jersey image.`) : 'Personalization will be reviewed manually by the studio.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__trust-line" aria-label="Checkout and order assurances"><span><Lock size={14}/> Secure checkout</span><span><PackageCheck size={14}/> Tracked delivery</span><span><ShieldCheck size={14}/> {personalized ? 'Custom checked' : 'Quality checked'}</span></div>
         <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || 'A performance jersey made for match-day stories and personal details.'}</p><p><strong>Fit & care</strong>Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.</p></div></details></div>
