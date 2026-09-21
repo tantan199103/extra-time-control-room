@@ -6,9 +6,9 @@ import {
   Video, WandSparkles, X, RefreshCw
 } from 'lucide-react'
 import VariantMatrix from './VariantMatrix'
-import { catalogLegalReview, createProductDraft, customFieldPresets, duplicateProductDraft, normalizeProduct, productCompleteness, seoReviewGate, slugify } from './lib/catalog-model'
+import { catalogLegalReview, createProductDraft, customFieldPresets, duplicateProductDraft, productCompleteness, seoReviewGate, slugify } from './lib/catalog-model'
 import { googleMerchantReadiness } from './lib/google-merchant'
-import { requestAiListingCopy, requestAiListingMedia, requestAiListingReview, saveAdminProduct, uploadProductMedia, supabase } from './lib/supabase'
+import { fetchAdminProduct, requestAiListingCopy, requestAiListingMedia, requestAiListingReview, saveAdminProduct, uploadProductMedia, supabase } from './lib/supabase'
 import { CUSTOM_GUIDE_SLOT_ID, LISTING_MEDIA_SLOTS, MODEL_MEDIA_SLOT_IDS, listingMediaRole, listingMediaSlot } from './lib/listing-media'
 import { normalizePreviewRegion } from './lib/customization-ai'
 import { CATALOG_CATEGORY_OPTIONS, SEASON_DROP_OPTIONS } from './lib/catalog-taxonomy'
@@ -435,8 +435,8 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
   const [newProduct] = useState(createProductDraft)
   const sourceProduct = products.find(product => product.id === id) || (id === 'new' ? newProduct : adminProducts.find(product => product.id === id) || null)
   const [fetchedProduct, setFetchedProduct] = useState(null)
-  const [fetching, setFetching] = useState(!sourceProduct && id !== 'new')
-  const effectiveProduct = sourceProduct || fetchedProduct
+  const [fetching, setFetching] = useState(id !== 'new' && Boolean(sourceProduct?._catalogSummary || !sourceProduct))
+  const effectiveProduct = fetchedProduct || sourceProduct
   const [draft,setDraft] = useState(() => effectiveProduct || {})
   const [active,setActive] = useState('story')
   const [saving,setSaving] = useState(false)
@@ -444,27 +444,16 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
   const [notice,setNotice] = useState('')
 
   useEffect(() => {
-    if (sourceProduct || id === 'new' || !supabase) return
+    if ((sourceProduct && !sourceProduct._catalogSummary) || id === 'new' || !supabase) return
     let activeReq = true
     setFetching(true)
     const runQuery = async () => {
       try {
-        let res = await supabase.from('pod_products')
-          .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
-          .eq('id', id)
-          .maybeSingle()
-        if (res.error) {
-          console.warn('ListingWorkspace full query error, trying 2-table fallback:', res.error.message)
-          res = await supabase.from('pod_products')
-            .select('*, pod_product_variants(*)')
-            .eq('id', id)
-            .maybeSingle()
-        }
         if (!activeReq) return
-        if (res.data && !res.error) {
-          const norm = normalizeProduct(res.data)
-          setFetchedProduct(norm)
-          if (!dirty) setDraft(norm)
+        const result = await fetchAdminProduct(id)
+        if (result.data) {
+          setFetchedProduct(result.data)
+          if (!dirty) setDraft(result.data)
         }
       } catch (err) {
         console.warn('ListingWorkspace fetch exception:', err)

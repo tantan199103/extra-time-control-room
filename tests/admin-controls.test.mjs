@@ -83,3 +83,11 @@ test('save and upload failures are visible and never described as success', () =
   assert.match(listing, /Upload failed:/)
   assert.match(listing, /Changes kept in this preview only; not published\./)
 })
+
+test('large admin catalogues use paginated summaries and hydrate one listing on demand', () => {
+  assert.match(adapter, /ADMIN_PRODUCT_PAGE_SIZE = 200/)
+  assert.match(adapter, /\.range\(from, from \+ ADMIN_PRODUCT_PAGE_SIZE - 1\)/)
+  assert.match(adapter, /_catalogSummary: true/)
+  assert.match(admin, /fetchAdminProduct/)
+  assert.match(listing, /sourceProduct\._catalogSummary/)
+})

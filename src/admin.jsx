@@ -36,7 +36,7 @@ import {
 import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
-import { fetchAdminCollections, fetchAdminMenus, fetchAdminPaymentSettings, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
+import { fetchAdminCollections, fetchAdminMenus, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
 import { resolveMenuImages } from './lib/storefront-model'
 import './admin-payment.css'
@@ -224,7 +224,20 @@ function AdminWorkspace() {
   }
   useEffect(() => { const onPop = () => setPath(window.location.pathname); window.addEventListener('popstate', onPop); load(); return () => window.removeEventListener('popstate', onPop) }, [])
   const saveProduct = useCallback(product => setProductRows(current => current.some(item => item.id === product.id) ? current.map(item => item.id === product.id ? product : item) : [...current, product]), [])
-  const duplicateProduct = product => { const copy=duplicateProductDraft(product,productRows); saveProduct(copy); go(`/admin/products/${copy.id}`) }
+  const duplicateProduct = async product => {
+    let source = product
+    if (product?._catalogSummary) {
+      const result = await fetchAdminProduct(product.id)
+      if (result.error || !result.data) {
+        setLoadNotice(`Could not load the complete listing before duplicating: ${result.error || 'Please retry.'}`)
+        return
+      }
+      source = result.data
+    }
+    const copy = duplicateProductDraft(source, productRows)
+    saveProduct(copy)
+    go(`/admin/products/${copy.id}`)
+  }
   const bulkUpdateProducts = async (ids,action,value) => {
     const targets=productRows.filter(product=>ids.includes(product.id))
     if(!targets.length)return {error:'Select at least one listing.'}

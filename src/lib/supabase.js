@@ -177,27 +177,107 @@ export async function fetchStorefrontTheme(fallback = null) {
   }
 }
 
+const ADMIN_PRODUCT_SUMMARY_FIELDS = [
+  'id', 'handle', 'title', 'subtitle', 'description', 'price', 'compare_at',
+  'status', 'badge', 'type', 'template_id', 'template_version', 'image',
+  'color', 'artwork_lock', 'personalization', 'inventory', 'seo', 'sku',
+  'media', 'tags', 'product_group', 'custom_fields', 'seo_status',
+  'seo_quality_score', 'seo_block_reasons', 'seo_reviewed_at', 'seo_published_at',
+  'created_at', 'updated_at'
+].join(',')
+
+const ADMIN_PRODUCT_LEGACY_FIELDS = [
+  'id', 'handle', 'title', 'subtitle', 'description', 'price', 'compare_at',
+  'status', 'badge', 'type', 'template_id', 'image', 'color', 'artwork_lock',
+  'personalization', 'inventory', 'seo', 'created_at', 'updated_at'
+].join(',')
+
+const ADMIN_VARIANT_SUMMARY_FIELDS = 'id,product_id,sku,price,compare_at,inventory,status,option_values'
+const ADMIN_PRODUCT_PAGE_SIZE = 200
+const ADMIN_PRODUCT_MAX_PAGES = 25
+
+async function fetchAdminProductPages(fields, includeVariants = true) {
+  const select = includeVariants ? `${fields},pod_product_variants(${ADMIN_VARIANT_SUMMARY_FIELDS})` : fields
+  const readPage = async page => {
+    const from = page * ADMIN_PRODUCT_PAGE_SIZE
+    const { data, error } = await supabase
+      .from('pod_products')
+      .select(select)
+      .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, from + ADMIN_PRODUCT_PAGE_SIZE - 1)
+    if (error) throw error
+    return Array.isArray(data) ? data : []
+  }
+
+  // Read in small windows. A single `select('*', deep joins)` over a large
+  // imported catalogue routinely exceeds PostgREST's statement/response
+  // budget. Four concurrent windows keep the first paint quick without
+  // opening an unbounded number of database requests.
+  const rows = []
+  let page = 0
+  let firstPage = true
+  while (page < ADMIN_PRODUCT_MAX_PAGES) {
+    const pageCount = firstPage ? 1 : 4
+    const pages = await Promise.all(
+      Array.from({ length: pageCount }, (_, index) => page + index).map(readPage)
+    )
+    let reachedEnd = false
+    pages.forEach(chunk => {
+      rows.push(...chunk)
+      if (chunk.length < ADMIN_PRODUCT_PAGE_SIZE) reachedEnd = true
+    })
+    if (reachedEnd) break
+    page += pages.length
+    firstPage = false
+  }
+  return rows
+}
+
+export async function fetchAdminProduct(productId) {
+  if (!supabase) return { data: null, source: 'error', error: 'Supabase is not configured.' }
+  try {
+    let result = await supabase
+      .from('pod_products')
+      .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
+      .eq('id', productId)
+      .maybeSingle()
+    if (result.error) {
+      result = await supabase
+        .from('pod_products')
+        .select('*, pod_product_variants(*)')
+        .eq('id', productId)
+        .maybeSingle()
+    }
+    if (result.error || !result.data) return { data: null, source: 'preview', error: result.error?.message || 'Listing was not found.' }
+    return { data: normalizeProduct(result.data), source: 'supabase', error: null }
+  } catch (err) {
+    return { data: null, source: 'preview', error: err instanceof Error ? err.message : 'Product query failed.' }
+  }
+}
+
 export async function fetchAdminProducts() {
   if (!supabase) return { data: adminProducts, source: 'error', error: 'Supabase is not configured.' }
   try {
-    const { data, error } = await supabase
-      .from('pod_products')
-      .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
-      .order('updated_at', { ascending: false })
-    if (!error && Array.isArray(data)) {
-      return { data: data.map(row => normalizeProduct(row)), source: 'supabase', error: null }
+    const data = await fetchAdminProductPages(ADMIN_PRODUCT_SUMMARY_FIELDS, true)
+    if (data.length) {
+      return {
+        data: data.map(row => normalizeProduct({ ...row, _catalogSummary: true })),
+        source: 'supabase', error: null
+      }
     }
-    // If timeout or heavy join error occurred, fallback to lighter query without deep options join
-    console.warn('Full admin product query failed or timed out, attempting optimized fallback:', error?.message)
-    const { data: lightData, error: lightError } = await supabase
-      .from('pod_products')
-      .select('*, pod_product_variants(*)')
-      .order('updated_at', { ascending: false })
-    if (!lightError && Array.isArray(lightData)) {
-      return { data: lightData.map(row => normalizeProduct(row)), source: 'supabase', error: null }
-    }
-    return { data: adminProducts, source: 'preview', error: lightError?.message || error?.message || 'Could not load products.' }
+    return { data: adminProducts, source: 'preview', error: 'No catalogue rows were returned for this admin session.' }
   } catch (err) {
+    // Keep older projects usable when the additive listing migration has not
+    // been applied yet. This legacy projection is still paginated and avoids
+    // the expensive nested `*` query that caused the timeout.
+    console.warn('Optimized admin product query failed, trying legacy projection:', err instanceof Error ? err.message : err)
+    try {
+      const data = await fetchAdminProductPages(ADMIN_PRODUCT_LEGACY_FIELDS, false)
+      if (data.length) return { data: data.map(row => normalizeProduct({ ...row, _catalogSummary: true })), source: 'supabase', error: null }
+    } catch (legacyError) {
+      return { data: adminProducts, source: 'preview', error: legacyError instanceof Error ? legacyError.message : 'Product query failed.' }
+    }
     return { data: adminProducts, source: 'preview', error: err instanceof Error ? err.message : 'Product query failed.' }
   }
 }
