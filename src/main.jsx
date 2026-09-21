@@ -976,7 +976,9 @@ function CustomOptions({ product }) {
         </div>
 
         <div className="custom-options__stage">
-          <HomeJerseyPersonalizer />
+          <Suspense fallback={<div className="home-personalizer__loading">Loading live rear view…</div>}>
+            <HomeJerseyPersonalizer />
+          </Suspense>
         </div>
       </div>
     </section>
