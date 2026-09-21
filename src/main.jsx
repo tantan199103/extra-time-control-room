@@ -6,6 +6,8 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CircleUserRound,
   Download,
   Grid2X2,
@@ -1842,15 +1844,125 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const gallery = attachedPreview
     ? [{id:attachedPreview.previewId || 'custom-preview',type:'IMAGE',url:attachedPreview.imageUrl,alt:`${product.name} personalized preview`,isAi:true},...media]
     : media
+  const galleryRef = useRef(null)
+  const scrollGalleryTo = (index) => {
+    if (galleryRef.current) {
+      const width = galleryRef.current.clientWidth || 1
+      galleryRef.current.scrollTo({ left: index * width, behavior: 'smooth' })
+      setGalleryIndex(index)
+    }
+  }
+  const prevImage = (e) => {
+    e?.stopPropagation?.()
+    const target = galleryIndex > 0 ? galleryIndex - 1 : gallery.length - 1
+    scrollGalleryTo(target)
+  }
+  const nextImage = (e) => {
+    e?.stopPropagation?.()
+    const target = galleryIndex < gallery.length - 1 ? galleryIndex + 1 : 0
+    scrollGalleryTo(target)
+  }
+  useEffect(() => {
+    setGalleryIndex(0)
+    if (galleryRef.current) {
+      galleryRef.current.scrollTo({ left: 0, behavior: 'auto' })
+    }
+  }, [product.id, attachedPreview?.imageUrl])
   const taxonomy = productTaxonomyValues(product)
   const productLeague = findLeague(taxonomy.league)
   const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
   return <main className="pdp">
     <div className="pdp-breadcrumb-wrap"><Breadcrumbs items={[{ label:'Shop', href:'/shop' }, ...(productLeague ? [{ label:productLeague.name, href:leaguePath(productLeague) }] : []), ...(productTeam ? [{ label:productTeam.name, href:teamPath(productLeague.key,productTeam) }] : []), { label:product.name }]}/></div>
     <div className="pdp__commerce">
-      <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={16}/> BACK TO THE DROP</button>
-      <div className="pdp__gallery" onScroll={event => setGalleryIndex(Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth))}>{gallery.map((item,index) => <figure key={`${item.id}-${index}`} className={`${index > 0 && index % 3 === 0 ? 'wide' : ''} ${item.isAi ? 'pdp__gallery-ai' : ''}`}>{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <div className="pdp__gallery-img-wrap"><img src={item.url} alt={item.alt || `${product.name} view ${index+1}`} width={item.width || undefined} height={item.height || undefined} loading={index === 0 ? 'eager' : 'lazy'} decoding="async"/>{item.isAi && <span className="pdp__gallery-ai-badge"><Sparkles size={11}/> AI PREVIEW</span>}</div>}<span>{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span></figure>)}</div>
-      <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
+      <div className="pdp__gallery-wrapper">
+        <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={15}/> BACK TO THE DROP</button>
+        <div className="pdp__gallery-stage">
+          <div
+            ref={galleryRef}
+            className="pdp__gallery"
+            tabIndex={0}
+            aria-label={`${product.name} gallery`}
+            onKeyDown={event => {
+              if (event.key === 'ArrowLeft') prevImage(event)
+              else if (event.key === 'ArrowRight') nextImage(event)
+            }}
+            onScroll={event => {
+              const width = event.currentTarget.clientWidth || 1
+              const idx = Math.round(event.currentTarget.scrollLeft / width)
+              if (idx !== galleryIndex && idx >= 0 && idx < gallery.length) {
+                setGalleryIndex(idx)
+              }
+            }}
+          >
+            {gallery.map((item,index) => (
+              <figure key={`${item.id}-${index}`} className={item.isAi ? 'pdp__gallery-ai' : ''}>
+                {item.type === 'VIDEO' ? (
+                  <video src={item.url} controls preload="metadata"/>
+                ) : (
+                  <div className="pdp__gallery-img-wrap">
+                    <img
+                      src={item.url}
+                      alt={item.alt || `${product.name} view ${index+1}`}
+                      width={item.width || undefined}
+                      height={item.height || undefined}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                    {item.isAi && <span className="pdp__gallery-ai-badge"><Sparkles size={11}/> AI PREVIEW</span>}
+                  </div>
+                )}
+                <span className="pdp__gallery-slide-tag">{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span>
+              </figure>
+            ))}
+          </div>
+
+          {gallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="pdp__gallery-arrow pdp__gallery-arrow--prev"
+                onClick={prevImage}
+                aria-label="Previous product image"
+              >
+                <ChevronLeft size={20}/>
+              </button>
+              <button
+                type="button"
+                className="pdp__gallery-arrow pdp__gallery-arrow--next"
+                onClick={nextImage}
+                aria-label="Next product image"
+              >
+                <ChevronRight size={20}/>
+              </button>
+            </>
+          )}
+        </div>
+
+        {gallery.length > 1 && (
+          <div className="pdp__gallery-thumbs" role="tablist" aria-label="Product image thumbnails">
+            {gallery.map((item,index) => (
+              <button
+                key={`thumb-${item.id}-${index}`}
+                type="button"
+                role="tab"
+                aria-selected={galleryIndex === index}
+                aria-label={`View image ${index + 1}`}
+                className={`pdp__gallery-thumb ${galleryIndex === index ? 'is-active' : ''}`}
+                onClick={() => scrollGalleryTo(index)}
+              >
+                {item.type === 'VIDEO' ? (
+                  <span className="pdp__gallery-thumb-video">▶</span>
+                ) : (
+                  <img src={item.url} alt="" loading="lazy"/>
+                )}
+                {item.isAi && <span className="pdp__gallery-thumb-ai" title="AI Preview">✦</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
+      </div>
       <aside className="pdp__info">
         {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}<div className="pdp__price"><strong>{money(currentPrice)}</strong>{currentCompare > currentPrice && <del>{money(Number(currentCompare))}</del>}</div>
         <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={18}/><span><small>90+ CLUB BENEFIT</small><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your member price is ready':'SAVE 20–40% ON ELIGIBLE PIECES'}</strong><em>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'The secure member price is calculated in your bag.':'Member pricing plus eligible standard-shipping benefits.'}</em></span><ArrowRight size={16}/></button>
