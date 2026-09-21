@@ -14,7 +14,20 @@ export default function AdminMembership(){
   const [source,setSource]=useState('preview')
   const [notice,setNotice]=useState('')
   const [manual,setManual]=useState({user_id:'',price_id:membershipPreview.prices[2].id,status:'ACTIVE'})
-  const load=async()=>{setLoading(true);setNotice('');const result=await fetchAdminMembership();setData(result.data);setSource(result.source);if(result.error)setNotice(`Live membership data unavailable: ${result.error}`);setLoading(false)}
+  const load=async()=>{
+    setLoading(true)
+    setNotice('')
+    try {
+      const result=await fetchAdminMembership()
+      if(result?.data) setData(result.data)
+      setSource(result?.source || 'preview')
+      if(result?.error) setNotice(`Live membership data unavailable: ${result.error}`)
+    } catch (err) {
+      setNotice(`Membership could not be loaded: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
   useEffect(()=>{load()},[])
   const pending=data.requests.filter(item=>item.status==='PENDING')
   const active=data.members.filter(item=>['ACTIVE','TRIALING'].includes(item.status)&&(!item.current_period_end||new Date(item.current_period_end)>new Date()))

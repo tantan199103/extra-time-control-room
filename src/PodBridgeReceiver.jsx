@@ -33,7 +33,7 @@ export default function PodBridgeReceiver({ products = [], onSaved }) {
 
   useEffect(() => {
     if (!nonce.current) {
-      setError('This bridge tab is missing its one-time nonce. Open it from the POD Bridge side panel.')
+      setStatus('Standing by for POD Bridge. Open the POD Bridge Side Panel or Chrome Extension to transfer product packs.')
       return undefined
     }
     const fail = (event, envelope, message) => {
@@ -175,5 +175,5 @@ export default function PodBridgeReceiver({ products = [], onSaved }) {
     return () => window.removeEventListener('message', onMessage)
   }, [])
 
-  return <main className="admin-page pod-bridge-receiver"><div className="admin-page-intro"><div><p>POD BRIDGE / RECEIVER</p><h1>READY TO RECEIVE.</h1><span>Keep this admin tab open while the Side Panel sends a Product Pack. Listings always land as drafts.</span></div><span className="admin-status admin-status--draft"><i/>{error ? 'ERROR' : 'LISTENING'}</span></div><section className="admin-panel pod-bridge-receiver__panel"><strong>{error || status}</strong>{lastProductId && <a className="admin-text-button" href={`/admin/products/${lastProductId}`}>Open listing workspace →</a>}<small>Nonce handshake: {nonce.current ? 'active' : 'missing'} · publish is disabled by design.</small></section></main>
+  return <main className="admin-page pod-bridge-receiver"><div className="admin-page-intro"><div><p>POD BRIDGE / RECEIVER</p><h1>READY TO RECEIVE.</h1><span>Keep this admin tab open while the Side Panel sends a Product Pack. Listings always land as drafts.</span></div><span className="admin-status admin-status--draft"><i/>{error ? 'ERROR' : nonce.current ? 'LISTENING' : 'STANDBY'}</span></div><section className="admin-panel pod-bridge-receiver__panel"><strong>{error || status}</strong>{lastProductId && <a className="admin-text-button" href={`/admin/products/${lastProductId}`}>Open listing workspace →</a>}<small>Nonce handshake: {nonce.current ? 'active' : 'waiting for extension'} · publish is disabled by design.</small></section></main>
 }

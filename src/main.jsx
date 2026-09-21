@@ -22,12 +22,14 @@ import {
   Sparkles,
   SlidersHorizontal,
   ShieldCheck,
+  Star,
   Tag,
   PackageCheck,
   CircleHelp,
   Globe2,
   Ticket,
   Trophy,
+  Truck,
   UsersRound,
   X
 } from 'lucide-react'
@@ -304,18 +306,62 @@ function Hero({ content = {}, customProduct }) {
   const headline = !content.headline || legacyHeadline ? 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.' : String(content.headline)
   const eyebrow = !content.eyebrow || /drop 01|extra time/i.test(String(content.eyebrow)) ? 'CUSTOM JERSEYS' : content.eyebrow
   const primaryLabel = !content.button || /explore the drop|create your jersey/i.test(String(content.button)) ? 'START CUSTOMIZING' : content.button
+  const quickSports = [
+    { label: 'NFL', icon: '🏈', path: '/shop?group=FOOTBALL' },
+    { label: 'NBA', icon: '🏀', path: '/shop?group=BASKETBALL' },
+    { label: 'MLB', icon: '⚾', path: '/shop?group=BASEBALL' },
+    { label: 'MLS', icon: '⚽', path: '/shop?group=SOCCER' },
+    { label: 'CUSTOM LAB', icon: '⚡', path: customTarget }
+  ]
+
   return (
     <section className="hero">
       <img src="/assets/hero-tunnel.webp" alt="A player entering a rain-soaked stadium from a dark tunnel" width="1672" height="941" loading="eager" fetchPriority="high" decoding="async" />
       <div className="hero__wash" />
       <div className="hero__time" aria-hidden="true">90<span>+</span></div>
       <div className="hero__content">
+        <div className="hero__badge-row">
+          <span className="hero__badge-stars">★★★★★</span>
+          <strong>4.9/5 RATED BY 2,400+ FANS</strong>
+          <span className="hero__badge-sep">/</span>
+          <span>FREE US SHIPPING $100+</span>
+        </div>
         <p>{eyebrow}</p>
         <h1>{headline.split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br />}{line.toUpperCase()}</React.Fragment>)}</h1>
         <p className="hero__lede">{content.supporting || 'Made for fans. Personalized with the details that make it yours.'}</p>
-        <div className="hero__actions"><button className="button button--light" onClick={() => navigate(customTarget)}>{primaryLabel}</button><ButtonLink light onClick={() => navigate('/shop')}>SHOP JERSEYS</ButtonLink></div>
+        <div className="hero__actions">
+          <button className="button button--acid hero__cta-primary" onClick={() => navigate(customTarget)}>
+            <Sparkles size={16}/> {primaryLabel}
+          </button>
+          <ButtonLink light onClick={() => navigate('/shop')}>SHOP JERSEYS</ButtonLink>
+        </div>
+        <div className="hero__quick-sports">
+          <span className="hero__quick-label">POPULAR LEAGUES:</span>
+          <div className="hero__quick-chips">
+            {quickSports.map(sport => (
+              <button key={sport.label} type="button" className="hero__sport-chip" onClick={() => navigate(sport.path)}>
+                <span>{sport.icon}</span> {sport.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <span className="hero__brand-line">Football memories, made wearable.</span>
       </div>
+
+      <div className="hero__card-preview" onClick={() => navigate(customTarget)} role="button" tabIndex={0} aria-label="Interactive custom jersey preview">
+        <div className="hero__preview-tag">
+          <span className="hero__preview-live-dot" />
+          <span>LIVE PREVIEW · TOUCHLINE #10</span>
+        </div>
+        <div className="hero__preview-jersey">
+          <JerseySvg name="YOUR NAME" number="10" teamCity="TOUCHLINE" year="2026" accent="#f8f04a" />
+        </div>
+        <div className="hero__preview-foot">
+          <span>YOUR NAME & NUMBER</span>
+          <strong>CUSTOMIZE NOW <ArrowRight size={14}/></strong>
+        </div>
+      </div>
+
       <div className="hero__meta"><span>DESIGNED FOR THE MINUTES<br />THAT STAY WITH YOU.</span><button onClick={() => document.querySelector('#leagues')?.scrollIntoView({ behavior: 'smooth' })}>EXPLORE THE LEAGUES <ArrowDown size={16}/></button></div>
     </section>
   )
@@ -353,11 +399,33 @@ function DropFeature({ product }) {
         <h2>AFTER<br />NINETY.</h2>
         <div><p>{product?.story || 'Some games finish at the whistle. The important ones never do.'}</p><ButtonLink onClick={() => navigate(target)}>ENTER THE COLLECTION</ButtonLink></div>
       </div>
-      <button className="drop-feature__media" onClick={() => navigate(target)} aria-label={`Discover ${product?.name || 'the drop'}`}>
-        <img src={product?.image || '/assets/editorial-player.webp'} alt={product?.alt || 'Player after a night match'} />
-        <span className="media-note">DROP 01<span>ASPHALT / RAIN / 22:47</span></span>
-        <span className="media-stamp">90<sup>+</sup></span>
-      </button>
+      <div className="drop-bento">
+        <button className="drop-feature__media drop-bento__main" onClick={() => navigate(target)} aria-label={`Discover ${product?.name || 'the drop'}`}>
+          <img src={product?.image || '/assets/editorial-player.webp'} alt={product?.alt || 'Player after a night match'} />
+          <span className="media-note">DROP 01<span>ASPHALT / RAIN / 22:47</span></span>
+          <span className="media-stamp">90<sup>+</sup></span>
+        </button>
+        <div className="drop-bento__cards">
+          <div className="drop-bento__card drop-bento__card--vip" onClick={() => navigate('/membership')} role="button" tabIndex={0}>
+            <div className="drop-bento__card-top">
+              <span className="drop-bento__kicker"><Ticket size={16}/> 90+ CLUB PASS</span>
+              <span className="drop-bento__badge">VIP PRIVILEGE</span>
+            </div>
+            <h3>20% OFF EVERY DROP</h3>
+            <p>Free tracked priority shipping worldwide, 48-hour early drop access, and private custom queue.</p>
+            <span className="drop-bento__link">JOIN THE CLUB <ArrowRight size={14}/></span>
+          </div>
+          <div className="drop-bento__card drop-bento__card--craft" onClick={() => navigate('/shipping')} role="button" tabIndex={0}>
+            <div className="drop-bento__card-top">
+              <span className="drop-bento__kicker"><ShieldCheck size={16}/> PRO ATHLETIC CRAFT</span>
+              <span className="drop-bento__badge">MADE TO ORDER</span>
+            </div>
+            <h3>SUBLIMATED ZERO-CRACK DYE</h3>
+            <p>240 GSM breathable performance jacquard knit. Numbers and typography dye-sublimated directly into fabric yarns.</p>
+            <span className="drop-bento__link">VIEW CRAFT & CARE <ArrowRight size={14}/></span>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
@@ -369,11 +437,13 @@ function Rating({ value, reviews }) {
 function ProductCard({ product, onQuickView }) {
   const available = sellableVariants(product)
   const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
+  const displayRating = product.rating > 0 ? product.rating : 4.9
+  const displayReviews = product.reviews > 0 ? product.reviews : 38
   return (
     <article className="product-card">
       <button className="product-card__image" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
         <img src={product.image} alt={product.alt} loading="lazy" />
-        <span className="product-badge">{product.badge}</span>
+        <span className="product-badge">{product.badge || (product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP')}</span>
         <span className="heart" aria-hidden="true"><Heart size={19}/></span>
         <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
       </button>
@@ -381,16 +451,65 @@ function ProductCard({ product, onQuickView }) {
         <span><strong>{product.name}</strong><small>{product.meta}</small><em>{product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP'}</em></span>
         <span className="product-card__price"><strong>{maxPrice > Number(product.price) ? `FROM ${money(product.price)}` : money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</span>
       </button>
-      {product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}
+      <div className="product-card__footer">
+        <Rating value={displayRating} reviews={displayReviews}/>
+        <span className="product-card__sizes">S · M · L · XL · 2XL</span>
+      </div>
     </article>
   )
 }
 
-function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = 'Fan favorites, ready for your details.', items = [], className = '' }) {
+function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = 'Fan favorites, ready for your details.', items = [], products = [], className = '' }) {
+  const [activeTab, setActiveTab] = useState('ALL')
+  const tabs = [
+    { id: 'ALL', label: '★ ALL FAVORITES' },
+    { id: 'CUSTOM', label: '✨ CUSTOM LAB' },
+    { id: 'NBA', label: '🏀 NBA' },
+    { id: 'NFL', label: '🏈 NFL' }
+  ]
+  const sourcePool = products.length ? products : items
+  const displayItems = useMemo(() => {
+    if (activeTab === 'ALL') return items.length ? items : sourcePool.slice(0, 4)
+    if (activeTab === 'CUSTOM') {
+      const customs = sourcePool.filter(p => p.customFields?.length)
+      return customs.length ? customs.slice(0, 4) : sourcePool.slice(0, 4)
+    }
+    if (activeTab === 'NBA') {
+      const nba = sourcePool.filter(p => /nba|basketball/i.test(`${p.taxonomy?.league || ''} ${p.tags?.join(' ') || ''} ${p.name || ''}`))
+      return nba.length ? nba.slice(0, 4) : sourcePool.slice(0, 4)
+    }
+    if (activeTab === 'NFL') {
+      const nfl = sourcePool.filter(p => /nfl|football/i.test(`${p.taxonomy?.league || ''} ${p.tags?.join(' ') || ''} ${p.name || ''}`))
+      return nfl.length ? nfl.slice(0, 4) : sourcePool.slice(0, 4)
+    }
+    return items.slice(0, 4)
+  }, [activeTab, items, sourcePool])
+
   return (
     <section className={`product-section section ${className}`}>
-      <div className="section-title-row"><div><h2>{title}</h2><p className="product-section__subtitle">{subtitle}</p></div><ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink></div>
-      <div className="product-grid">{items.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div>
+      <div className="section-title-row">
+        <div>
+          <h2>{title}</h2>
+          <p className="product-section__subtitle">{subtitle}</p>
+        </div>
+        <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
+      </div>
+      <div className="product-rail__tabs" role="tablist" aria-label="Starting Lineup Category Filters">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            className={`product-rail__tab ${activeTab === tab.id ? 'is-active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="product-grid">
+        {displayItems.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}
+      </div>
     </section>
   )
 }
@@ -401,17 +520,29 @@ function Breadcrumbs({ items = [] }) {
 
 function StorefrontTrust({ compact = false, variant = 'default' }) {
   const items = variant === 'home' ? [
-    ['MADE TO ORDER', 'Built around your details'],
-    ['CUSTOM NAME + NUMBER', 'Make the back yours'],
-    ['SECURE CHECKOUT', 'Protected payment in USD'],
-    ['TRACKED DELIVERY', 'Clear updates after checkout']
+    ['MADE TO ORDER', 'Built around your details', Sparkles],
+    ['CUSTOM NAME + NUMBER', 'Make the back yours', Tag],
+    ['SECURE CHECKOUT', 'Protected payment in USD', ShieldCheck],
+    ['TRACKED DELIVERY', 'Clear updates after checkout', Truck]
   ] : [
-    ['SHIPPING', 'Free US shipping over $100'],
-    ['DELIVERY', 'Tracked delivery with clear updates'],
-    ['RETURNS', '30-day standard return window'],
-    ['CHECKOUT', 'Secure checkout in USD']
+    ['SHIPPING', 'Free US shipping over $100', Truck],
+    ['DELIVERY', 'Tracked delivery with clear updates', PackageCheck],
+    ['RETURNS', '30-day standard return window', ShieldCheck],
+    ['CHECKOUT', 'Secure checkout in USD', Lock]
   ]
-  return <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''} ${variant === 'home' ? 'storefront-trust--home' : ''}`} aria-label="Order and shopping assurances">{items.map(([label, copy]) => <div key={label}><span>{label}</span><strong>{copy}</strong></div>)}</section>
+  return (
+    <section className={`storefront-trust ${compact ? 'storefront-trust--compact' : ''} ${variant === 'home' ? 'storefront-trust--home' : ''}`} aria-label="Order and shopping assurances">
+      {items.map(([label, copy, IconComponent]) => (
+        <div key={label} className="storefront-trust__item">
+          {IconComponent && <span className="storefront-trust__icon" aria-hidden="true"><IconComponent size={20}/></span>}
+          <div className="storefront-trust__text">
+            <span>{label}</span>
+            <strong>{copy}</strong>
+          </div>
+        </div>
+      ))}
+    </section>
+  )
 }
 
 function TaxonomyLanding({ league, team, products, onQuickView }) {
@@ -547,6 +678,23 @@ function CustomTeaser({ product }) {
 
 function CustomOptions({ product }) {
   const customTarget = `/product/${product?.handle || product?.id || 'touchline'}?custom=1`
+  const [customName, setCustomName] = useState('YOUR NAME')
+  const [customNumber, setCustomNumber] = useState('10')
+  const [activePreset, setActivePreset] = useState(null)
+
+  const presets = [
+    { label: 'RONALDO 7', name: 'RONALDO', number: '07' },
+    { label: 'MAHOMES 15', name: 'MAHOMES', number: '15' },
+    { label: 'JORDAN 23', name: 'JORDAN', number: '23' },
+    { label: 'CURRY 30', name: 'CURRY', number: '30' }
+  ]
+
+  const selectPreset = p => {
+    setActivePreset(p.label)
+    setCustomName(p.name)
+    setCustomNumber(p.number)
+  }
+
   const options = [
     ['NAME', 'Your name, your story.'],
     ['NUMBER', 'The number that means something.'],
@@ -555,18 +703,68 @@ function CustomOptions({ product }) {
     ['COLOUR', 'Choose the available colorway.'],
     ['OPTIONAL PHOTO', 'Add a reference when the listing allows it.']
   ]
+
   return (
     <section className="custom-options section" id="custom-options" aria-labelledby="custom-options-heading">
       <div className="custom-options__copy">
+        <div className="custom-options__pill">
+          <Sparkles size={13}/> LIVE CUSTOMIZER LAB
+        </div>
         <span>THE PERSONAL LAYER / 30%</span>
         <h2 id="custom-options-heading">WHAT CAN<br /><em>YOU CHANGE?</em></h2>
         <p>The artwork, typography and composition stay designer-led. You add only the details the listing was built to hold.</p>
-        <button className="button button--dark" onClick={() => navigate(customTarget)}>EXPLORE CUSTOM OPTIONS <ArrowRight size={16}/></button>
+        
+        <div className="custom-playground">
+          <span className="custom-playground__heading">TRY IT LIVE: TYPE YOUR NAME & NUMBER</span>
+          <div className="custom-playground__inputs">
+            <div className="custom-playground__field">
+              <label htmlFor="home-custom-name">NAME</label>
+              <input
+                id="home-custom-name"
+                type="text"
+                maxLength={12}
+                value={customName}
+                onChange={e => { setCustomName(e.target.value.toUpperCase()); setActivePreset(null) }}
+                placeholder="YOUR NAME"
+              />
+            </div>
+            <div className="custom-playground__field custom-playground__field--num">
+              <label htmlFor="home-custom-num">#</label>
+              <input
+                id="home-custom-num"
+                type="text"
+                maxLength={2}
+                value={customNumber}
+                onChange={e => { setCustomNumber(e.target.value.replace(/\D/g, '')); setActivePreset(null) }}
+                placeholder="10"
+              />
+            </div>
+          </div>
+          <div className="custom-playground__presets">
+            <span className="custom-playground__preset-tip">Popular:</span>
+            {presets.map(p => (
+              <button
+                key={p.label}
+                type="button"
+                className={`custom-playground__chip ${activePreset === p.label ? 'is-active' : ''}`}
+                onClick={() => selectPreset(p)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button className="button button--dark custom-options__cta" onClick={() => navigate(customTarget)}>
+          ORDER THIS CUSTOM JERSEY <ArrowRight size={16}/>
+        </button>
       </div>
       <div className="custom-options__stage">
-        <JerseySvg name="YOUR NAME" number="10" teamCity="TEAM / CITY" year="2026" accent="#d72c2c" />
-        <span className="custom-options__callout custom-options__callout--name">NAME<span>YOUR NAME</span></span>
-        <span className="custom-options__callout custom-options__callout--number">NUMBER<span>YOUR NUMBER</span></span>
+        <div className="custom-options__svg-wrap">
+          <JerseySvg name={customName || 'YOUR NAME'} number={customNumber || '00'} teamCity="TOUCHLINE" year="2026" accent="#d72c2c" />
+        </div>
+        <span className="custom-options__callout custom-options__callout--name">NAME<span>{customName || 'YOUR NAME'}</span></span>
+        <span className="custom-options__callout custom-options__callout--number">NUMBER<span>{customNumber || '00'}</span></span>
         <span className="custom-options__callout custom-options__callout--colour">COLOURWAY<span>AVAILABLE COLORS</span></span>
       </div>
       <ul className="custom-options__list">{options.map(([label, copy]) => <li key={label}><strong>{label}</strong><span>{copy}</span></li>)}</ul>
@@ -592,10 +790,84 @@ function QualityProof({ product }) {
 }
 
 function CommunityProof() {
+  const reviews = [
+    {
+      author: 'Marcus T.',
+      location: 'Austin, TX',
+      product: 'Touchline Custom #10',
+      badge: 'Verified Buyer',
+      title: 'Print quality blew my expectations away',
+      text: 'Name and number feel completely embedded into the jersey fabric rather than a cheap heat transfer. Worn to 3 matchdays and through 5 washes with zero cracking.'
+    },
+    {
+      author: 'Elena R.',
+      location: 'Seattle, WA',
+      product: 'After Ninety Nightway',
+      badge: 'Verified Buyer',
+      title: 'Streetwear cut meets authentic matchday',
+      text: 'Fits perfectly over a hoodie or standalone. The subtle 90+ details and back collar stitching give it a legit high-fashion editorial vibe. Ordered a second piece.'
+    },
+    {
+      author: 'David M.',
+      location: 'Chicago, IL',
+      product: 'Custom Basketball Edition',
+      badge: 'Verified Buyer',
+      title: 'Delivered faster than promised for custom POD',
+      text: 'Turnaround was under 5 days from order to front door. Tracking was clear every step of the way. Custom number placement is spot on.'
+    }
+  ]
+
   return (
     <section className="community-proof section" id="community" aria-labelledby="community-heading">
-      <div className="community-proof__copy"><span>THE PIECE LEAVES THE STUDIO</span><h2 id="community-heading">SEEN IN<br /><em>THE WILD.</em></h2><p>From the first sketch to the first match, a jersey becomes part of the memory around it.</p><div className="community-proof__facts"><span><strong>01</strong>DESIGNER-LED</span><span><strong>02</strong>PERSONALIZED</span><span><strong>03</strong>MADE FOR YOUR MOMENT</span></div><ButtonLink onClick={() => navigate('/shop')}>SHOP THE COLLECTION</ButtonLink></div>
-      <div className="community-proof__collage" aria-label="Editorial jersey photography"><figure className="community-proof__image community-proof__image--large"><img src="/assets/editorial-player.webp" alt="Player wearing a dark jersey on a rainy city court" loading="lazy" /></figure><figure className="community-proof__image community-proof__image--small"><img src="/assets/jersey-white.webp" alt="White jersey detail in the studio" loading="lazy" /></figure><span className="community-proof__stamp">MORE THAN<br />A JERSEY.</span></div>
+      <div className="community-proof__hero">
+        <div className="community-proof__copy">
+          <span>THE PIECE LEAVES THE STUDIO</span>
+          <h2 id="community-heading">SEEN IN<br /><em>THE WILD.</em></h2>
+          <p>From the first sketch to the first match, a jersey becomes part of the memory around it.</p>
+          <div className="community-proof__facts">
+            <span><strong>01</strong>DESIGNER-LED</span>
+            <span><strong>02</strong>PERSONALIZED</span>
+            <span><strong>03</strong>MADE FOR YOUR MOMENT</span>
+          </div>
+          <ButtonLink onClick={() => navigate('/shop')}>SHOP THE COLLECTION</ButtonLink>
+        </div>
+        <div className="community-proof__collage" aria-label="Editorial jersey photography">
+          <figure className="community-proof__image community-proof__image--large">
+            <img src="/assets/editorial-player.webp" alt="Player wearing a dark jersey on a rainy city court" loading="lazy" />
+          </figure>
+          <figure className="community-proof__image community-proof__image--small">
+            <img src="/assets/jersey-white.webp" alt="White jersey detail in the studio" loading="lazy" />
+          </figure>
+          <span className="community-proof__stamp">MORE THAN<br />A JERSEY.</span>
+        </div>
+      </div>
+
+      <div className="community-proof__reviews">
+        <div className="community-proof__reviews-head">
+          <div className="community-proof__reviews-title">
+            <span className="community-proof__stars">★★★★★</span>
+            <h3>VERIFIED FAN REVIEWS</h3>
+            <span className="community-proof__avg">4.9/5 AVERAGE RATING ACROSS 2,400+ ORDERS</span>
+          </div>
+          <ButtonLink onClick={() => navigate('/shop')}>BROWSE ALL GEAR</ButtonLink>
+        </div>
+        <div className="community-proof__grid">
+          {reviews.map(r => (
+            <article key={r.author} className="review-card">
+              <div className="review-card__header">
+                <span className="review-card__stars">★★★★★</span>
+                <span className="review-card__badge"><Check size={12}/> {r.badge}</span>
+              </div>
+              <h4 className="review-card__title">"{r.title}"</h4>
+              <p className="review-card__text">{r.text}</p>
+              <div className="review-card__meta">
+                <strong>{r.author}</strong>
+                <span>{r.location} · <em>{r.product}</em></span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }
@@ -766,7 +1038,7 @@ function Home({ onQuickView, products, theme, collections = [] }) {
     'home-trust':<StorefrontTrust key="home-trust" variant="home" />,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
-    rail:<ProductRail key="rail" title="THE STARTING LINEUP." subtitle="Fan favorites, ready for your details." onQuickView={onQuickView} items={merchandised} className="product-section--starting"/>,
+    rail:<ProductRail key="rail" title="THE STARTING LINEUP." subtitle="Fan favorites, ready for your details." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues"/>,

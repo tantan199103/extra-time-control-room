@@ -53,7 +53,7 @@ function AdminMark() {
   return <button className="admin-mark" onClick={() => go('/admin')} aria-label="Admin home"><span>90<sup>+</sup></span><strong>EXTRA<br />TIME</strong><small>CONTROL ROOM</small></button>
 }
 
-function AdminShell({ active, children, source, onRefresh }) {
+function AdminShell({ active, source, notice, onRefresh, children }) {
   const [mobileNav, setMobileNav] = useState(false)
   const items = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/admin' },
@@ -80,6 +80,7 @@ function AdminShell({ active, children, source, onRefresh }) {
       {mobileNav && <button className="admin-sidebar-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
       <div className="admin-main">
         <header className="admin-topbar"><button className="admin-mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={20}/></button><div className="admin-breadcrumb"><span>EXTRA TIME</span><ChevronDown size={13}/><strong>{active === 'overview' ? 'OVERVIEW' : active.toUpperCase()}</strong></div><div className="admin-topbar__actions"><label className="admin-search"><Search size={15}/><input placeholder="Search · Coming soon" aria-label="Search admin — not available yet" disabled title="Global search is not available yet. Use the Products search field."/></label><span className={`admin-source ${source === 'supabase' ? 'is-live' : ''}`}><i/>{source === 'supabase' ? 'SUPABASE LIVE' : 'PREVIEW DATA'}</span><button className="admin-icon-button" onClick={onRefresh} aria-label="Refresh data"><RefreshCw size={16}/></button></div></header>
+        {notice && <div className="admin-banner-notice" style={{ padding: '8px 16px', background: '#f8f4dc', borderBottom: '1px solid var(--admin-line, #ddd)', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span>{notice}</span></div>}
         {children}
       </div>
     </div>
@@ -169,15 +170,15 @@ export default function AdminApp() { return <AdminAccess><AdminWorkspace/></Admi
 
 function AdminWorkspace() {
   const [path, setPath] = useState(window.location.pathname)
-  const [productRows, setProductRows] = useState([])
+  const [productRows, setProductRows] = useState(adminProducts)
   const [themeDraft, setThemeDraft] = useState(adminTheme)
   const [menuRows, setMenuRows] = useState(adminMenus)
   const [collectionRows, setCollectionRows] = useState(adminCollections)
   const [source, setSource] = useState('supabase')
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
+  const [loadNotice, setLoadNotice] = useState('')
   const load = async () => {
-    setLoading(true); setLoadError('')
+    setLoading(true); setLoadNotice('')
     try {
       // 1. Fetch products first so large join does not compete with other queries
       const productResult = await fetchAdminProducts()
@@ -200,14 +201,18 @@ function AdminWorkspace() {
       }))
       const isLive = [productResult, themeResult, menuResult, collectionResult].every(result => result.source === 'supabase' && !result.error)
       setSource(isLive ? 'supabase' : 'preview')
+      if (!isLive) {
+        const err = [productResult, themeResult, menuResult, collectionResult].find(r => r.error)?.error
+        if (err) setLoadNotice(`Operating in preview mode (${err}). Click Refresh to retry live connection.`)
+      }
     } catch (error) {
       console.error('Admin load error:', error)
       setProductRows(adminProducts)
+      setThemeDraft(adminTheme)
+      setMenuRows(adminMenus)
+      setCollectionRows(adminCollections)
       setSource('preview')
-      // Only set fatal loadError if we have no products at all
-      if (!productRows.length) {
-        setLoadError(error instanceof Error ? error.message : 'Could not load Admin data.')
-      }
+      setLoadNotice(`Operating in preview mode (${error instanceof Error ? error.message : 'query error'}).`)
     } finally {
       setLoading(false)
     }
@@ -232,8 +237,7 @@ function AdminWorkspace() {
   const persistTheme = async theme => { setThemeDraft(theme); return saveAdminTheme(theme) }
   const persistMenus = async menus => { setMenuRows(menus); return saveAdminMenus(menus) }
   const persistCollections = async collections => { setCollectionRows(collections); return saveAdminCollections(collections) }
-  if (loading) return <main className="admin-access"><p role="status">Loading store data…</p></main>
-  if (loadError) return <main className="admin-load-error" role="alert"><h1>Store data could not be loaded</h1><p>{loadError}</p><button onClick={load}>Retry</button></main>
+  if (loading && !productRows.length) return <main className="admin-access"><p role="status">Loading store data…</p></main>
   const isEditor = path.startsWith('/admin/products/')
   const active = path === '/admin/bridge' ? 'bridge' : path.startsWith('/admin/orders') ? 'orders' : path.startsWith('/admin/membership') ? 'membership' : path.startsWith('/admin/customizations') ? 'customizations' : isEditor || path === '/admin/catalog' ? 'catalog' : path.startsWith('/admin/theme/menus') ? 'menus' : path.startsWith('/admin/theme') ? 'theme' : path.startsWith('/admin/collections') ? 'collections' : path === '/admin/settings' ? 'settings' : 'overview'
   let page = <AdminOverview products={productRows}/>
@@ -247,5 +251,5 @@ function AdminWorkspace() {
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} onSave={persistMenus}/>
   else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
-  return <AdminShell active={active} source={source} onRefresh={load}>{page}</AdminShell>
+  return <AdminShell active={active} source={source} notice={loadNotice} onRefresh={load}>{page}</AdminShell>
 }

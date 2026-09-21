@@ -6,12 +6,13 @@ import {
   Video, WandSparkles, X, RefreshCw
 } from 'lucide-react'
 import VariantMatrix from './VariantMatrix'
-import { catalogLegalReview, createProductDraft, customFieldPresets, duplicateProductDraft, productCompleteness, seoReviewGate, slugify } from './lib/catalog-model'
+import { catalogLegalReview, createProductDraft, customFieldPresets, duplicateProductDraft, normalizeProduct, productCompleteness, seoReviewGate, slugify } from './lib/catalog-model'
 import { googleMerchantReadiness } from './lib/google-merchant'
-import { requestAiListingCopy, requestAiListingMedia, requestAiListingReview, saveAdminProduct, uploadProductMedia } from './lib/supabase'
+import { requestAiListingCopy, requestAiListingMedia, requestAiListingReview, saveAdminProduct, uploadProductMedia, supabase } from './lib/supabase'
 import { CUSTOM_GUIDE_SLOT_ID, LISTING_MEDIA_SLOTS, MODEL_MEDIA_SLOT_IDS, listingMediaRole, listingMediaSlot } from './lib/listing-media'
 import { normalizePreviewRegion } from './lib/customization-ai'
 import { CATALOG_CATEGORY_OPTIONS, SEASON_DROP_OPTIONS } from './lib/catalog-taxonomy'
+import { adminProducts } from './admin-data'
 import './listing-workspace.css'
 
 const navigate = path => {
@@ -432,13 +433,50 @@ function PublishRail({ draft, update, completeness, automaticTags }) {
 export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
   const id = window.location.pathname.split('/').pop()
   const [newProduct] = useState(createProductDraft)
-  const sourceProduct = products.find(product => product.id === id) || (id === 'new' ? newProduct : null)
-  const [draft,setDraft] = useState(() => sourceProduct || {})
+  const sourceProduct = products.find(product => product.id === id) || (id === 'new' ? newProduct : adminProducts.find(product => product.id === id) || null)
+  const [fetchedProduct, setFetchedProduct] = useState(null)
+  const [fetching, setFetching] = useState(!sourceProduct && id !== 'new')
+  const effectiveProduct = sourceProduct || fetchedProduct
+  const [draft,setDraft] = useState(() => effectiveProduct || {})
   const [active,setActive] = useState('story')
   const [saving,setSaving] = useState(false)
   const [dirty,setDirty] = useState(false)
   const [notice,setNotice] = useState('')
-  useEffect(() => { if(sourceProduct && !dirty) setDraft(sourceProduct) },[sourceProduct?.id,sourceProduct?.updatedAt])
+
+  useEffect(() => {
+    if (sourceProduct || id === 'new' || !supabase) return
+    let activeReq = true
+    setFetching(true)
+    const runQuery = async () => {
+      try {
+        let res = await supabase.from('pod_products')
+          .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
+          .eq('id', id)
+          .maybeSingle()
+        if (res.error) {
+          console.warn('ListingWorkspace full query error, trying 2-table fallback:', res.error.message)
+          res = await supabase.from('pod_products')
+            .select('*, pod_product_variants(*)')
+            .eq('id', id)
+            .maybeSingle()
+        }
+        if (!activeReq) return
+        if (res.data && !res.error) {
+          const norm = normalizeProduct(res.data)
+          setFetchedProduct(norm)
+          if (!dirty) setDraft(norm)
+        }
+      } catch (err) {
+        console.warn('ListingWorkspace fetch exception:', err)
+      } finally {
+        if (activeReq) setFetching(false)
+      }
+    }
+    runQuery()
+    return () => { activeReq = false }
+  }, [id, sourceProduct])
+
+  useEffect(() => { if(effectiveProduct && !dirty) setDraft(effectiveProduct) },[effectiveProduct?.id,effectiveProduct?.updatedAt])
   useEffect(() => { const warn=event => { if(dirty){event.preventDefault();event.returnValue=''} }; window.addEventListener('beforeunload',warn); return()=>window.removeEventListener('beforeunload',warn) },[dirty])
   const update = (key,value) => { setDraft(current => key === null && typeof value === 'function' ? value(current) : ({...current,[key]:value})); setDirty(true) }
   const completeness = useMemo(() => productCompleteness(draft),[draft])
@@ -471,6 +509,7 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
     onDuplicate(copy)
     navigate(`/admin/products/${copy.id}`)
   }
-  if(!sourceProduct) return <main className="admin-page"><h1>Listing not found</h1><button onClick={() => navigate('/admin/catalog')}>Back to products</button></main>
+  if(fetching) return <main className="admin-page"><p role="status">Loading listing…</p></main>
+  if(!effectiveProduct) return <main className="admin-page"><h1>Listing not found</h1><button onClick={() => navigate('/admin/catalog')}>Back to products</button></main>
   return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update} dirty={dirty}/>} {active==='media'&&<MediaPanel draft={draft} update={update} dirty={dirty}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving||draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span></div>}</main>
 }

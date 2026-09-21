@@ -355,23 +355,28 @@ export async function fetchProductVariants(productId) {
 
 export async function fetchAdminTheme() {
   if (!supabase) return previewResult(adminTheme)
-  const [{ data: theme, error: themeError }, { data: pages, error: pagesError }] = await Promise.all([
-    supabase.from('pod_themes').select('*').eq('id', adminTheme.id).maybeSingle(),
-    supabase.from('pod_pages').select('*').eq('theme_id', adminTheme.id).order('updated_at', { ascending: false })
-  ])
-  if (themeError || !theme) return previewResult(adminTheme, themeError?.message || null)
-  const definition = theme.definition && typeof theme.definition === 'object' ? theme.definition : {}
-  return {
-    data: {
-      ...adminTheme,
-      ...theme,
-      updatedAt: theme.updated_at,
-      tokens: { ...adminTheme.tokens, ...(theme.tokens || {}) },
-      blocks:mergeThemeBlocks(definition.blocks || theme.blocks || []),
-      content:definition.content || theme.content || {},
-      pages: pagesError || !pages?.length ? normalizeThemePages(definition.pages || adminTheme.pages) : normalizeThemePages(pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout })))
-    },
-    source: 'supabase', error: pagesError?.message || null
+  try {
+    const [{ data: theme, error: themeError }, { data: pages, error: pagesError }] = await Promise.all([
+      supabase.from('pod_themes').select('*').eq('id', adminTheme.id).maybeSingle(),
+      supabase.from('pod_pages').select('*').eq('theme_id', adminTheme.id).order('updated_at', { ascending: false })
+    ])
+    if (themeError || !theme) return previewResult(adminTheme, themeError?.message || null)
+    const definition = theme.definition && typeof theme.definition === 'object' ? theme.definition : {}
+    return {
+      data: {
+        ...adminTheme,
+        ...theme,
+        updatedAt: theme.updated_at,
+        tokens: { ...adminTheme.tokens, ...(theme.tokens || {}) },
+        blocks:mergeThemeBlocks(definition.blocks || theme.blocks || []),
+        content:definition.content || theme.content || {},
+        pages: pagesError || !pages?.length ? normalizeThemePages(definition.pages || adminTheme.pages) : normalizeThemePages(pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout })))
+      },
+      source: 'supabase', error: pagesError?.message || null
+    }
+  } catch (err) {
+    console.warn('fetchAdminTheme error, using fallback:', err.message)
+    return previewResult(adminTheme, err.message)
   }
 }
 
@@ -385,13 +390,18 @@ export async function saveAdminTheme(theme) {
 
 export async function fetchAdminMenus() {
   if (!supabase) return previewResult(adminMenus)
-  const { data, error } = await supabase.from('pod_menus').select('*, pod_menu_items(*)').order('updated_at', { ascending: false })
-  if (error || !data?.length) return previewResult(adminMenus, error?.message || null)
-  const rows = data.map(menu => {
-    const all = (menu.pod_menu_items || []).sort((a, b) => a.sort_order - b.sort_order)
-    return { ...menu, location: menu.location, updatedAt: menu.updated_at, items: buildMenuTree(all) }
-  })
-  return { data: rows, source: 'supabase', error: null }
+  try {
+    const { data, error } = await supabase.from('pod_menus').select('*, pod_menu_items(*)').order('updated_at', { ascending: false })
+    if (error || !data?.length) return previewResult(adminMenus, error?.message || null)
+    const rows = data.map(menu => {
+      const all = (menu.pod_menu_items || []).sort((a, b) => a.sort_order - b.sort_order)
+      return { ...menu, location: menu.location, updatedAt: menu.updated_at, items: buildMenuTree(all) }
+    })
+    return { data: rows, source: 'supabase', error: null }
+  } catch (err) {
+    console.warn('fetchAdminMenus error, using fallback:', err.message)
+    return previewResult(adminMenus, err.message)
+  }
 }
 
 export async function saveAdminMenus(menus) {
@@ -418,11 +428,16 @@ export async function saveAdminMenus(menus) {
 
 export async function fetchAdminCollections() {
   if (!supabase) return previewResult(adminCollections)
-  const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order, featured)').order('updated_at', { ascending: false })
-  if (error || !data?.length) return previewResult(adminCollections, error?.message || null)
-  return {
-    data: data.map(collection => ({ ...collection, hero: collection.hero_image, sort: collection.sort_mode, products: (collection.pod_collection_products || []).sort((a, b) => a.sort_order - b.sort_order).map(item => item.product_id), productLinks:(collection.pod_collection_products || []).map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count: collection.pod_collection_products?.length || 0, updatedAt: collection.updated_at })),
-    source: 'supabase', error: null
+  try {
+    const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order, featured)').order('updated_at', { ascending: false })
+    if (error || !data?.length) return previewResult(adminCollections, error?.message || null)
+    return {
+      data: data.map(collection => ({ ...collection, hero: collection.hero_image, sort: collection.sort_mode, products: (collection.pod_collection_products || []).sort((a, b) => a.sort_order - b.sort_order).map(item => item.product_id), productLinks:(collection.pod_collection_products || []).map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count: collection.pod_collection_products?.length || 0, updatedAt: collection.updated_at })),
+      source: 'supabase', error: null
+    }
+  } catch (err) {
+    console.warn('fetchAdminCollections error, using fallback:', err.message)
+    return previewResult(adminCollections, err.message)
   }
 }
 
@@ -435,12 +450,26 @@ export async function saveAdminCollections(collections) {
 
 export async function fetchAdminPaymentSettings() {
   if (!supabase) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: ['Supabase is not configured.'] }, source: 'error', error: 'Supabase is not configured.' }
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-  if (sessionError || !session?.access_token) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: ['Admin sign-in is required.'] }, source: 'error', error: 'Admin sign-in is required.' }
-  const response = await apiFetch('/api/admin-payment-settings', { headers: { Authorization: `Bearer ${session.access_token}` } })
-  const result = await response.json().catch(() => ({}))
-  if (!response.ok) return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: [result.error || 'Payment settings could not be loaded.'] }, source: 'error', error: result.error || 'Payment settings could not be loaded.' }
-  return { data: normalizePaymentSettings(result.settings), readiness: result.readiness || { ready: false, missing: [] }, source: 'server', error: null }
+  try {
+    const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: {} }))
+    if (session?.access_token) {
+      const response = await apiFetch('/api/admin-payment-settings', { headers: { Authorization: `Bearer ${session.access_token}` } }).catch(() => null)
+      if (response && response.ok) {
+        const result = await response.json().catch(() => ({}))
+        if (result?.settings) {
+          return { data: normalizePaymentSettings(result.settings), readiness: result.readiness || { ready: false, missing: [] }, source: 'server', error: null }
+        }
+      }
+    }
+    // Direct Supabase fallback
+    const { data, error } = await supabase.from('pod_store_settings').select('value').eq('key', 'payment_provider_settings').maybeSingle()
+    if (!error && data?.value) {
+      return { data: normalizePaymentSettings(data.value), readiness: { ready: false, missing: [] }, source: 'supabase', error: null }
+    }
+  } catch (err) {
+    console.warn('fetchAdminPaymentSettings fallback:', err.message)
+  }
+  return { data: DEFAULT_PAYMENT_SETTINGS, readiness: { ready: false, missing: [] }, source: 'preview', error: null }
 }
 
 export async function saveAdminPaymentSettings(settings) {
@@ -480,7 +509,25 @@ async function adminApi(path,options={}) {
 
 export async function fetchAdminCustomizations(status='') {
   const query=status?`?status=${encodeURIComponent(status)}`:''
-  return adminApi(`/api/admin-customizations${query}`)
+  try {
+    const result = await adminApi(`/api/admin-customizations${query}`)
+    if (result && Array.isArray(result.orders)) return result
+  } catch (error) {
+    console.warn('adminApi /api/admin-customizations unavailable, falling back to Supabase client:', error.message)
+  }
+  if (supabase) {
+    try {
+      let q = supabase.from('pod_customization_orders').select('*').order('created_at', { ascending: false })
+      if (status) q = q.eq('status', status)
+      const { data, error: sbError } = await q
+      if (!sbError && Array.isArray(data)) {
+        return { orders: data, source: 'supabase', error: null }
+      }
+    } catch (err) {
+      console.warn('Supabase customization fallback failed:', err.message)
+    }
+  }
+  return { orders: [], source: 'preview', error: null }
 }
 
 export async function updateAdminCustomization(id,status,reviewNote='') {
@@ -631,12 +678,46 @@ export async function trackOrder(publicId, token) {
 
 export async function fetchAdminOrders(status = '') {
   const query = status ? `?status=${encodeURIComponent(status)}` : ''
-  return adminApi(`/api/admin-orders${query}`)
+  try {
+    const result = await adminApi(`/api/admin-orders${query}`)
+    if (result && Array.isArray(result.orders)) return result
+  } catch (err) {
+    console.warn('fetchAdminOrders api error, falling back to direct query:', err.message)
+  }
+  if (supabase) {
+    try {
+      let q = supabase.from('pod_orders').select('*, pod_order_items(*)').order('created_at', { ascending: false })
+      if (status) q = q.eq('status', status)
+      const { data, error: sbError } = await q
+      if (!sbError && Array.isArray(data)) {
+        return { orders: data, source: 'supabase', error: null }
+      }
+    } catch (directErr) {
+      console.warn('Direct pod_orders query error:', directErr.message)
+    }
+  }
+  return { orders: [], source: 'preview', error: null }
 }
 
 export async function fetchAdminOrder(id) {
   if (!id) throw new Error('Order id is required.')
-  return adminApi(`/api/admin-orders?id=${encodeURIComponent(id)}`)
+  try {
+    const result = await adminApi(`/api/admin-orders?id=${encodeURIComponent(id)}`)
+    if (result && result.order) return result
+  } catch (err) {
+    console.warn('fetchAdminOrder api error:', err.message)
+  }
+  if (supabase) {
+    try {
+      const { data, error: sbError } = await supabase.from('pod_orders').select('*, pod_order_items(*)').eq('id', id).maybeSingle()
+      if (!sbError && data) {
+        return { order: data, source: 'supabase', error: null }
+      }
+    } catch (directErr) {
+      console.warn('Direct pod_orders query error:', directErr.message)
+    }
+  }
+  return { order: null, source: 'preview', error: 'Order not found or unavailable' }
 }
 
 export async function updateAdminOrder(payload) {
@@ -645,20 +726,59 @@ export async function updateAdminOrder(payload) {
 
 export async function fetchAdminMembership() {
   if(!supabase) return previewResult({...membershipPreview,rules:[],members:[],requests:[]})
-  const [{data:program,error:programError},{data:prices,error:pricesError},{data:rules,error:rulesError},{data:policies,error:policiesError},{data:members,error:membersError},{data:requests,error:requestsError}]=await Promise.all([
-    supabase.from('pod_membership_programs').select('*').eq('id','90-club').maybeSingle(),
-    supabase.from('pod_membership_prices').select('*').eq('program_id','90-club').order('sort_order'),
-    supabase.from('pod_membership_discount_rules').select('*').eq('program_id','90-club').order('priority',{ascending:false}),
-    supabase.from('pod_membership_policy_versions').select('*').eq('program_id','90-club').order('created_at',{ascending:false}),
-    supabase.from('pod_memberships').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('program_id','90-club').order('created_at',{ascending:false}),
-    supabase.from('pod_membership_enrollment_requests').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('program_id','90-club').order('requested_at',{ascending:false})
-  ])
-  const userIds=[...new Set([...(members||[]),...(requests||[])].map(item=>item.user_id).filter(Boolean))]
-  const profileResult=userIds.length ? await supabase.from('pod_customer_profiles').select('user_id,email,display_name').in('user_id',userIds) : {data:[],error:null}
-  const profiles=new Map((profileResult.data||[]).map(profile=>[profile.user_id,profile]))
-  const error=programError||pricesError||rulesError||policiesError||membersError||requestsError||profileResult.error
-  if(error) return {data:{...membershipPreview,rules:[],policies:[],members:[],requests:[]},source:'error',error:error.message}
-  return {data:{program:program || membershipPreview.program,prices:prices || [],rules:rules || [],policies:policies || [],policy:policies?.find(item=>item.status==='PUBLISHED') || policies?.[0] || membershipPreview.policy,members:(members||[]).map(item=>({...item,pod_customer_profiles:profiles.get(item.user_id)||null})),requests:(requests||[]).map(item=>({...item,pod_customer_profiles:profiles.get(item.user_id)||null}))},source:'supabase',error:null}
+  try {
+    const safeQuery = async p => {
+      try {
+        const res = await p
+        return res || { data: null, error: null }
+      } catch (err) {
+        return { data: null, error: err }
+      }
+    }
+    const [
+      { data: program, error: programError },
+      { data: prices, error: pricesError },
+      { data: rules, error: rulesError },
+      { data: policies, error: policiesError },
+      { data: members, error: membersError },
+      { data: requests, error: requestsError }
+    ] = await Promise.all([
+      safeQuery(supabase.from('pod_membership_programs').select('*').eq('id', '90-club').maybeSingle()),
+      safeQuery(supabase.from('pod_membership_prices').select('*').eq('program_id', '90-club').order('sort_order')),
+      safeQuery(supabase.from('pod_membership_discount_rules').select('*').eq('program_id', '90-club').order('priority', { ascending: false })),
+      safeQuery(supabase.from('pod_membership_policy_versions').select('*').eq('program_id', '90-club').order('created_at', { ascending: false })),
+      safeQuery(supabase.from('pod_memberships').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('program_id', '90-club').order('created_at', { ascending: false })),
+      safeQuery(supabase.from('pod_membership_enrollment_requests').select('*, pod_membership_prices(label,billing_interval,amount,currency)').eq('program_id', '90-club').order('requested_at', { ascending: false }))
+    ])
+    const userIds = [...new Set([...(members || []), ...(requests || [])].map(item => item.user_id).filter(Boolean))]
+    let profileResult = { data: [], error: null }
+    if (userIds.length) {
+      profileResult = await safeQuery(supabase.from('pod_customer_profiles').select('user_id,email,display_name').in('user_id', userIds))
+    }
+    const profiles = new Map((profileResult.data || []).map(profile => [profile.user_id, profile]))
+    const error = programError || pricesError || rulesError || policiesError || membersError || requestsError || profileResult.error
+
+    return {
+      data: {
+        program: program || membershipPreview.program,
+        prices: (prices && prices.length) ? prices : membershipPreview.prices,
+        rules: rules || [],
+        policies: policies || (membershipPreview.policy ? [membershipPreview.policy] : []),
+        policy: policies?.find(item => item.status === 'PUBLISHED') || policies?.[0] || membershipPreview.policy,
+        members: (members || []).map(item => ({ ...item, pod_customer_profiles: profiles.get(item.user_id) || null })),
+        requests: (requests || []).map(item => ({ ...item, pod_customer_profiles: profiles.get(item.user_id) || null }))
+      },
+      source: error ? 'preview' : 'supabase',
+      error: error?.message || null
+    }
+  } catch (fatal) {
+    console.warn('fetchAdminMembership error, using fallback:', fatal)
+    return {
+      data: { ...membershipPreview, rules: [], policies: [membershipPreview.policy], members: [], requests: [] },
+      source: 'preview',
+      error: fatal.message
+    }
+  }
 }
 
 export async function saveAdminMembership(config) {
