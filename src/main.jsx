@@ -44,6 +44,7 @@ import { seoDescription } from './lib/seo-text'
 import { apiFetch } from './lib/api-client'
 import { availableFinderSizes, canonicalSize, findAudienceOption, recommendCatalogSize, sizeFinderAudiences, sizeProfile } from './lib/size-guide'
 import { buildDeliveryEstimate } from './lib/product-commerce'
+import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quantityDiscountForQty, quantityDiscountLabel } from './lib/quantity-pricing'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -249,6 +250,9 @@ function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quot
   const publicSubtotal = cart.reduce((sum, item) => sum + Number(item.unitPrice ?? item.product.price) * item.qty, 0)
   const quoteMap = new Map((memberQuote?.lines || []).map(line => [line.lineKey,line]))
   const subtotal = memberQuote?.member ? Number(memberQuote.subtotal) : publicSubtotal
+  const cartQuantity = cart.reduce((sum,item) => sum + Math.max(1, Number(item.qty || 1)), 0)
+  const quantityTier = memberQuote?.quantityTier || quantityDiscountForQty(cartQuantity, DEFAULT_QUANTITY_DISCOUNT_POLICY)
+  const quantityEstimate = Math.round(publicSubtotal * Number(quantityTier.discountPercent || 0)) / 100
   const remaining = Math.max(0, 100 - publicSubtotal)
   const upsellCandidate = useMemo(() => {
     if (!products?.length) return null
@@ -288,7 +292,7 @@ function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quot
             {memberQuote?.member ? <div className="cart-club-status"><Ticket size={17}/><div><strong>90+ Club pricing applied</strong><span>{memberQuote.shipping?.eligible ? `Eligible ${memberQuote.shipping.method.toLowerCase()} shipping included up to ${money(memberQuote.shipping.subsidyCap)}.` : memberQuote.shipping?.reason}</span></div></div> : <button className="cart-club-upsell" onClick={()=>{onClose();navigate('/membership')}}><Ticket/><span><strong>JOIN 90+ CLUB</strong><small>20–40% eligible savings + standard shipping benefit</small></span><ArrowRight/></button>}
             {!memberQuote?.member && <div className="shipping-meter"><p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p><div><span style={{ width: `${Math.min(100, publicSubtotal)}%` }} /></div></div>}
             {quoteLoading&&<p className="cart-quote-note" role="status">Checking secure member price…</p>}{quoteError&&account?.user&&<p className="cart-quote-note is-error" role="alert">{quoteError}</p>}
-            <div className="cart-checkout">{memberQuote?.discount>0&&<div className="cart-checkout__saving"><span>90+ CLUB SAVING</span><strong>−{money(memberQuote.discount)}</strong></div>}<div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button onClick={onCheckout} disabled={!cart.length}>CHECKOUT <ArrowRight size={16}/></button><p id="checkout-status">Live stock and pricing are checked again before payment. Your order is only confirmed after the provider approves payment.</p></div>
+            <div className="cart-checkout">{memberQuote?.discount>0&&<div className="cart-checkout__saving"><span>{memberQuote.quantityTier?.discountPercent > 0 && memberQuote.quantityTier.discountPercent >= Number(memberQuote.lines?.[0]?.discountPercent || 0) ? `QUANTITY SAVING · ${memberQuote.quantityTier.discountPercent}%` : '90+ CLUB SAVING'}</span><strong>−{money(memberQuote.discount)}</strong></div>}{!memberQuote?.member && quantityTier.discountPercent > 0 && <div className="cart-checkout__saving"><span>{quantityDiscountLabel(quantityTier)} quantity saving</span><strong>up to −{money(quantityEstimate)}</strong></div>}<div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button onClick={onCheckout} disabled={!cart.length}>CHECKOUT <ArrowRight size={16}/></button><p id="checkout-status">Live stock and pricing are checked again before payment. Your order is only confirmed after the provider approves payment.</p></div>
           </>
         )}
       </aside>
@@ -320,12 +324,6 @@ function Hero({ content = {}, customProduct }) {
       <div className="hero__wash" />
       <div className="hero__time" aria-hidden="true">90<span>+</span></div>
       <div className="hero__content">
-        <div className="hero__badge-row">
-          <span className="hero__badge-stars">★★★★★</span>
-          <strong>4.9/5 RATED BY 2,400+ FANS</strong>
-          <span className="hero__badge-sep">/</span>
-          <span>FREE US SHIPPING $100+</span>
-        </div>
         <p>{eyebrow}</p>
         <h1>{headline.split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br />}{line.toUpperCase()}</React.Fragment>)}</h1>
         <p className="hero__lede">{content.supporting || 'Made for fans. Personalized with the details that make it yours.'}</p>
@@ -434,13 +432,13 @@ function Rating({ value, reviews }) {
   return <span className="rating"><span>★★★★★</span> {value} <small>({reviews})</small></span>
 }
 
-function ProductCard({ product, onQuickView }) {
+function ProductCard({ product, onQuickView, className = '' }) {
   const available = sellableVariants(product)
   const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
   const displayRating = product.rating > 0 ? product.rating : 4.9
   const displayReviews = product.reviews > 0 ? product.reviews : 38
   return (
-    <article className="product-card">
+    <article className={`product-card ${className}`}>
       <button className="product-card__image" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
         <img src={product.image} alt={product.alt} loading="lazy" />
         <span className="product-badge">{product.badge || (product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP')}</span>
@@ -453,7 +451,7 @@ function ProductCard({ product, onQuickView }) {
       </button>
       <div className="product-card__footer">
         <Rating value={displayRating} reviews={displayReviews}/>
-        <span className="product-card__sizes">S · M · L · XL · 2XL</span>
+        <span className="product-card__sizes">S · M · L · XL · 2XL – 7XL</span>
       </div>
     </article>
   )
@@ -461,29 +459,31 @@ function ProductCard({ product, onQuickView }) {
 
 function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = 'Fan favorites, ready for your details.', items = [], products = [], className = '' }) {
   const [activeTab, setActiveTab] = useState('ALL')
+  const sliderRef = useRef(null)
   const tabs = [
     { id: 'ALL', label: '★ ALL FAVORITES' },
-    { id: 'CUSTOM', label: '✨ CUSTOM LAB' },
-    { id: 'NBA', label: '🏀 NBA' },
-    { id: 'NFL', label: '🏈 NFL' }
+    { id: 'TREND', label: '✨ TREND' },
+    { id: 'NEW', label: 'NEW ARRIVAL' }
   ]
   const sourcePool = products.length ? products : items
   const displayItems = useMemo(() => {
-    if (activeTab === 'ALL') return items.length ? items : sourcePool.slice(0, 4)
-    if (activeTab === 'CUSTOM') {
-      const customs = sourcePool.filter(p => p.customFields?.length)
-      return customs.length ? customs.slice(0, 4) : sourcePool.slice(0, 4)
+    if (activeTab === 'TREND') {
+      const trending = sourcePool.filter(p => p.customFields?.length || (p.reviews && p.reviews >= 35) || /touchline|hot|drop|popular/i.test(`${p.badge || ''} ${p.name || ''} ${p.tags?.join(' ') || ''}`))
+      return trending.length ? trending : sourcePool
     }
-    if (activeTab === 'NBA') {
-      const nba = sourcePool.filter(p => /nba|basketball/i.test(`${p.taxonomy?.league || ''} ${p.tags?.join(' ') || ''} ${p.name || ''}`))
-      return nba.length ? nba.slice(0, 4) : sourcePool.slice(0, 4)
+    if (activeTab === 'NEW') {
+      const newItems = sourcePool.filter(p => /new|2026|arrival|drop/i.test(`${p.badge || ''} ${p.tags?.join(' ') || ''}`))
+      return newItems.length ? newItems : [...sourcePool].reverse()
     }
-    if (activeTab === 'NFL') {
-      const nfl = sourcePool.filter(p => /nfl|football/i.test(`${p.taxonomy?.league || ''} ${p.tags?.join(' ') || ''} ${p.name || ''}`))
-      return nfl.length ? nfl.slice(0, 4) : sourcePool.slice(0, 4)
+    return sourcePool
+  }, [activeTab, sourcePool])
+
+  const scroll = direction => {
+    if (sliderRef.current) {
+      const offset = sliderRef.current.offsetWidth * 0.75
+      sliderRef.current.scrollBy({ left: direction === 'left' ? -offset : offset, behavior: 'smooth' })
     }
-    return items.slice(0, 4)
-  }, [activeTab, items, sourcePool])
+  }
 
   return (
     <section className={`product-section section ${className}`}>
@@ -492,7 +492,13 @@ function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = '
           <h2>{title}</h2>
           <p className="product-section__subtitle">{subtitle}</p>
         </div>
-        <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
+        <div className="product-rail__nav">
+          <div className="product-rail__arrows">
+            <button className="slider-arrow" onClick={() => scroll('left')} aria-label="Previous products"><ArrowLeft size={16}/></button>
+            <button className="slider-arrow" onClick={() => scroll('right')} aria-label="Next products"><ArrowRight size={16}/></button>
+          </div>
+          <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
+        </div>
       </div>
       <div className="product-rail__tabs" role="tablist" aria-label="Starting Lineup Category Filters">
         {tabs.map(tab => (
@@ -507,8 +513,12 @@ function ProductRail({ onQuickView, title = 'THE STARTING LINEUP.', subtitle = '
           </button>
         ))}
       </div>
-      <div className="product-grid">
-        {displayItems.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}
+      <div ref={sliderRef} className="product-rail__slider" tabIndex={0} aria-label="Featured jersey collection slider">
+        {displayItems.map(product => (
+          <div key={product.id} className="product-rail__slide">
+            <ProductCard product={product} onQuickView={onQuickView}/>
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -520,10 +530,10 @@ function Breadcrumbs({ items = [] }) {
 
 function StorefrontTrust({ compact = false, variant = 'default' }) {
   const items = variant === 'home' ? [
-    ['MADE TO ORDER', 'Built around your details', Sparkles],
-    ['CUSTOM NAME + NUMBER', 'Make the back yours', Tag],
-    ['SECURE CHECKOUT', 'Protected payment in USD', ShieldCheck],
-    ['TRACKED DELIVERY', 'Clear updates after checkout', Truck]
+    ['Made Just for You', 'Crafted on demand, never mass-produced.', Sparkles],
+    ['Personalized Your Way', 'Add your name, number, and make it unmistakably yours.', Tag],
+    ['Secure from Cart to Checkout', 'Protected payments for a worry-free purchase.', ShieldCheck],
+    ['Tracked to Your Door', 'Follow your order from production to delivery.', Truck]
   ] : [
     ['SHIPPING', 'Free US shipping over $100', Truck],
     ['DELIVERY', 'Tracked delivery with clear updates', PackageCheck],
@@ -677,7 +687,6 @@ function CustomTeaser({ product }) {
 }
 
 function CustomOptions({ product }) {
-  const customTarget = `/product/${product?.handle || product?.id || 'touchline'}?custom=1`
   const [customName, setCustomName] = useState('YOUR NAME')
   const [customNumber, setCustomNumber] = useState('10')
   const [activePreset, setActivePreset] = useState(null)
@@ -695,79 +704,77 @@ function CustomOptions({ product }) {
     setCustomNumber(p.number)
   }
 
-  const options = [
-    ['NAME', 'Your name, your story.'],
-    ['NUMBER', 'The number that means something.'],
-    ['TEAM / CITY', 'A place to carry with you.'],
-    ['YEAR', 'Mark the season or the memory.'],
-    ['COLOUR', 'Choose the available colorway.'],
-    ['OPTIONAL PHOTO', 'Add a reference when the listing allows it.']
-  ]
+  const handleOrder = () => {
+    const target = `/product/${product?.handle || product?.id || 'touchline'}?custom=1`
+    navigate(target)
+  }
 
   return (
     <section className="custom-options section" id="custom-options" aria-labelledby="custom-options-heading">
-      <div className="custom-options__copy">
-        <div className="custom-options__pill">
-          <Sparkles size={13}/> LIVE CUSTOMIZER LAB
-        </div>
-        <span>THE PERSONAL LAYER / 30%</span>
-        <h2 id="custom-options-heading">WHAT CAN<br /><em>YOU CHANGE?</em></h2>
-        <p>The artwork, typography and composition stay designer-led. You add only the details the listing was built to hold.</p>
-        
-        <div className="custom-playground">
-          <span className="custom-playground__heading">TRY IT LIVE: TYPE YOUR NAME & NUMBER</span>
-          <div className="custom-playground__inputs">
-            <div className="custom-playground__field">
-              <label htmlFor="home-custom-name">NAME</label>
-              <input
-                id="home-custom-name"
-                type="text"
-                maxLength={12}
-                value={customName}
-                onChange={e => { setCustomName(e.target.value.toUpperCase()); setActivePreset(null) }}
-                placeholder="YOUR NAME"
-              />
+      <div className="custom-options__board">
+        <div className="custom-options__copy">
+          <div className="custom-options__pill">
+            <Sparkles size={13}/> LIVE CUSTOMIZER PLAYGROUND
+          </div>
+          <span>REAL-TIME PREVIEW · INSTANT ON-DEMAND</span>
+          <h2 id="custom-options-heading">PERSONALIZE<br /><em>YOUR JERSEY.</em></h2>
+          <p>Type your name and squad number or pick a quick legend preset to watch your jersey render live before checkout.</p>
+          
+          <div className="custom-playground">
+            <span className="custom-playground__heading">LIVE CUSTOMIZER: TYPE NAME & NUMBER</span>
+            <div className="custom-playground__inputs">
+              <div className="custom-playground__field">
+                <label htmlFor="home-custom-name">NAME ON BACK</label>
+                <input
+                  id="home-custom-name"
+                  type="text"
+                  maxLength={12}
+                  value={customName}
+                  onChange={e => { setCustomName(e.target.value.toUpperCase()); setActivePreset(null) }}
+                  placeholder="YOUR NAME"
+                />
+              </div>
+              <div className="custom-playground__field custom-playground__field--num">
+                <label htmlFor="home-custom-num">#</label>
+                <input
+                  id="home-custom-num"
+                  type="text"
+                  maxLength={2}
+                  value={customNumber}
+                  onChange={e => { setCustomNumber(e.target.value.replace(/\D/g, '')); setActivePreset(null) }}
+                  placeholder="10"
+                />
+              </div>
             </div>
-            <div className="custom-playground__field custom-playground__field--num">
-              <label htmlFor="home-custom-num">#</label>
-              <input
-                id="home-custom-num"
-                type="text"
-                maxLength={2}
-                value={customNumber}
-                onChange={e => { setCustomNumber(e.target.value.replace(/\D/g, '')); setActivePreset(null) }}
-                placeholder="10"
-              />
+            <div className="custom-playground__presets">
+              <span className="custom-playground__preset-tip">Popular:</span>
+              {presets.map(p => (
+                <button
+                  key={p.label}
+                  type="button"
+                  className={`custom-playground__chip ${activePreset === p.label ? 'is-active' : ''}`}
+                  onClick={() => selectPreset(p)}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="custom-playground__presets">
-            <span className="custom-playground__preset-tip">Popular:</span>
-            {presets.map(p => (
-              <button
-                key={p.label}
-                type="button"
-                className={`custom-playground__chip ${activePreset === p.label ? 'is-active' : ''}`}
-                onClick={() => selectPreset(p)}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+
+          <button className="button button--dark custom-options__cta" onClick={handleOrder}>
+            ORDER THIS CUSTOM JERSEY <ArrowRight size={16}/>
+          </button>
         </div>
 
-        <button className="button button--dark custom-options__cta" onClick={() => navigate(customTarget)}>
-          ORDER THIS CUSTOM JERSEY <ArrowRight size={16}/>
-        </button>
-      </div>
-      <div className="custom-options__stage">
-        <div className="custom-options__svg-wrap">
-          <JerseySvg name={customName || 'YOUR NAME'} number={customNumber || '00'} teamCity="TOUCHLINE" year="2026" accent="#d72c2c" />
+        <div className="custom-options__stage">
+          <div className="custom-options__svg-wrap">
+            <JerseySvg name={customName || 'YOUR NAME'} number={customNumber || '00'} teamCity="JERSEVO" year="2026" accent="#d72c2c" />
+          </div>
+          <div className="custom-options__live-indicator">
+            <span className="live-dot" /> LIVE REAR VIEW · MADE ON DEMAND
+          </div>
         </div>
-        <span className="custom-options__callout custom-options__callout--name">NAME<span>{customName || 'YOUR NAME'}</span></span>
-        <span className="custom-options__callout custom-options__callout--number">NUMBER<span>{customNumber || '00'}</span></span>
-        <span className="custom-options__callout custom-options__callout--colour">COLOURWAY<span>AVAILABLE COLORS</span></span>
       </div>
-      <ul className="custom-options__list">{options.map(([label, copy]) => <li key={label}><strong>{label}</strong><span>{copy}</span></li>)}</ul>
     </section>
   )
 }
@@ -790,6 +797,14 @@ function QualityProof({ product }) {
 }
 
 function CommunityProof() {
+  const reviewsRef = useRef(null)
+  const scrollReviews = direction => {
+    if (reviewsRef.current) {
+      const offset = reviewsRef.current.offsetWidth * 0.8
+      reviewsRef.current.scrollBy({ left: direction === 'left' ? -offset : offset, behavior: 'smooth' })
+    }
+  }
+
   const reviews = [
     {
       author: 'Marcus T.',
@@ -849,9 +864,15 @@ function CommunityProof() {
             <h3>VERIFIED FAN REVIEWS</h3>
             <span className="community-proof__avg">4.9/5 AVERAGE RATING ACROSS 2,400+ ORDERS</span>
           </div>
-          <ButtonLink onClick={() => navigate('/shop')}>BROWSE ALL GEAR</ButtonLink>
+          <div className="community-proof__reviews-actions">
+            <div className="product-rail__arrows">
+              <button className="slider-arrow" onClick={() => scrollReviews('left')} aria-label="Previous reviews"><ArrowLeft size={16}/></button>
+              <button className="slider-arrow" onClick={() => scrollReviews('right')} aria-label="Next reviews"><ArrowRight size={16}/></button>
+            </div>
+            <ButtonLink onClick={() => navigate('/shop')}>BROWSE ALL GEAR</ButtonLink>
+          </div>
         </div>
-        <div className="community-proof__grid">
+        <div ref={reviewsRef} className="community-proof__grid" tabIndex={0} aria-label="Customer review cards">
           {reviews.map(r => (
             <article key={r.author} className="review-card">
               <div className="review-card__header">
@@ -1051,8 +1072,9 @@ function Home({ onQuickView, products, theme, collections = [] }) {
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
   }[id] || null)
-  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer'].includes(id)) : ['hero','home-trust','leagues','rail','home-path','custom-options','quality','drop','players','community','faq','newsletter']
-  const homeBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
+  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer','quality','drop'].includes(id)) : ['hero','home-trust','leagues','rail','home-path','custom-options','players','community','faq','newsletter']
+  const rawBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
+  const homeBlocks = rawBlocks.filter(id => id !== 'quality' && id !== 'drop')
   if (!homeBlocks.includes('home-path')) {
     const heroIndex = homeBlocks.indexOf('hero')
     homeBlocks.splice(heroIndex >= 0 ? heroIndex + 1 : 0, 0, 'home-path')
@@ -1300,7 +1322,7 @@ function productCommerceConfig(product) {
     ? product.bulkOffers
     : Array.isArray(source.bulkOffers)
       ? source.bulkOffers
-      : []
+      : DEFAULT_QUANTITY_DISCOUNT_POLICY
   return {
     print: {
       title: !printTitle || /design-led print detail|production note/i.test(printTitle) ? 'PERFORMANCE FABRIC. PRINT THAT LASTS.' : printTitle,
@@ -1312,14 +1334,7 @@ function productCommerceConfig(product) {
       transit: delivery.transit || '5–8 business days',
       shippingLabel: delivery.shippingLabel || 'FREE US SHIPPING OVER $100'
     },
-    bulkOffers: configuredOffers
-      .map(item => ({
-        minQty: Math.max(2, Math.round(Number(item?.minQty ?? item?.quantity ?? 0))),
-        discountPercent: Math.max(0, Math.round(Number(item?.discountPercent ?? item?.discount ?? 0))),
-        featured: Boolean(item?.featured)
-      }))
-      .filter(item => item.minQty > 1 && item.discountPercent > 0)
-      .sort((a, b) => a.minQty - b.minQty)
+    bulkOffers: normalizeQuantityDiscountPolicy(configuredOffers)
   }
 }
 
@@ -1340,10 +1355,14 @@ function ProductPurchaseHighlights({ product }) {
       <p className="pdp-estimate-note">Estimate for orders placed today. Weekends, holidays and destination can change the final date shown at checkout.</p>
     </article>
     <article className="pdp-highlight-card pdp-highlight-card--bundle pdp-highlight-card--featured">
-      <div className="pdp-highlight-card__eyebrow"><Tag size={17}/><span>{offers.length ? 'QUANTITY PRICING' : 'TEAM & GROUP PRICING'}</span></div>
-      <h2>{offers.length ? 'MORE PIECES. BETTER VALUE.' : 'OUTFIT THE WHOLE SQUAD.'}</h2>
-      <p className="pdp-highlight-card__lead">{offers.length ? 'Eligible quantity savings are calculated from the published tiers and applied at checkout.' : 'Tell us the product, sizes and quantity. We will confirm a group price before you pay.'}</p>
-      {offers.length ? <div className="pdp-bundle-grid">{offers.slice(0, 4).map(offer => <div key={`${offer.minQty}-${offer.discountPercent}`} className={offer.featured ? 'is-featured' : ''}>{offer.featured && <b>BEST VALUE</b>}<span>{offer.minQty === 10 ? '10+ pieces' : `${offer.minQty} pieces`}</span><strong>{offer.discountPercent}% off</strong></div>)}</div> : <a className="pdp-team-quote" href="mailto:support@jersevo.com?subject=Team%20order%20quote"><span><strong>GET TEAM PRICING</strong><small>Availability and the final group price are confirmed before checkout.</small></span><ArrowRight size={16}/></a>}
+      <div className="pdp-highlight-card__eyebrow"><Tag size={17}/><span>QUANTITY SAVINGS</span></div>
+      <h2>ADD A PIECE.<br/>KEEP MORE.</h2>
+      <p className="pdp-highlight-card__lead">Add another eligible piece and the best tier is applied automatically at checkout. Member pricing is still protected; benefits do not stack into an unsafe price.</p>
+      {offers.length ? (
+        <div className="pdp-bundle-grid">{offers.slice(0, 4).map(offer => <div key={`${offer.minQty}-${offer.discountPercent}`} className={offer.featured ? 'is-featured' : ''}><span>{quantityDiscountLabel(offer)}</span><strong>{offer.discountPercent}% off</strong></div>)}</div>
+      ) : (
+        <a className="pdp-team-quote" href="mailto:support@jersevo.com?subject=Team%20order%20quote"><span><strong>GET TEAM PRICING</strong><small>Availability and the final group price are confirmed before checkout.</small></span><ArrowRight size={16}/></a>
+      )}
     </article>
     <article className="pdp-highlight-card pdp-highlight-card--dark">
       <div className="pdp-highlight-card__eyebrow"><Sparkles size={16}/><span>JERSEVO PRINT & BUILD</span></div>
@@ -1385,6 +1404,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const customFields = product.customFields || []
   const options = product.options || []
   const sizeName = optionNameLike(product,['size'])
+  const customIntent = Boolean(customFields.length && (startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || initialPreview))
   const initial = { ...(savedDraft?.selections || {}) }
   // Merchant Center links each size/color offer to the same PDP with a stable
   // variant query parameter. Resolve it before the saved browser draft so a
@@ -1396,12 +1416,20 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const [selections,setSelections] = useState(() => {
     const next = initialSelections(product,initial)
     options.forEach(option => { if (option.values.length === 1) next[option.name] = option.values[0] })
+    if (customIntent) {
+      // Entering from the Custom shortcut should never leave the save CTA
+      // waiting on an empty size/colour state. Preserve compatible saved
+      // choices, then complete them from the first in-stock combination.
+      const available = (product.variants || []).filter(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0)
+      const matching = available.find(variant => Object.entries(next).every(([name,value]) => variant.values?.[name] === value)) || available[0]
+      if (matching?.values) Object.assign(next, matching.values)
+    }
     return next
   })
   const [galleryIndex,setGalleryIndex] = useState(0)
   const [finder,setFinder] = useState(false)
   const [attachedPreview,setAttachedPreview] = useState(initialPreview)
-  const [personalized,setPersonalized] = useState(Boolean(customFields.length && (startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || initialPreview)))
+  const [personalized,setPersonalized] = useState(customIntent)
   const [customValues,setCustomValues] = useState(savedDraft?.values || {})
   const [assetRefs,setAssetRefs] = useState(savedDraft?.assetRefs || {})
   const [customNote,setCustomNote] = useState(savedDraft?.note || '')
@@ -1517,8 +1545,9 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
       const result = await createCustomizationOrder({ sessionId:getCustomerSessionId(),idempotencyKey:requestKey,productId:product.id,variantId:selectedVariant.id,fields,assetRefs,note:customNote.trim(),aiPreviewId:attachedPreview?.previewId || null,aiPreviewUrl:attachedPreview?.imageUrl || null,aiPrompt:attachedPreview?.prompt || null,logoConsent })
       requestId = result?.data?.id || null
     } catch(caught) {
-      console.warn('Customization order remote save deferred:', caught)
-      requestId = `local-custom-${globalThis.crypto?.randomUUID?.().replace(/-/g,'') || Date.now()}`
+      setCustomError(caught instanceof Error ? caught.message : 'The custom request could not be saved. Please retry.')
+      setSubmitting(false)
+      return
     }
     const customization = { requestId, fields, note:customNote.trim(), aiPreviewUrl:attachedPreview?.imageUrl || null, aiPrompt:attachedPreview?.prompt || null, hasLogo, logoConsent }
     onAdd({...product,image:attachedPreview?.imageUrl || displayVariant?.image || product.image},{variant:selectedVariant,options:selections,customization})
@@ -1544,7 +1573,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={18}/><span><small>90+ CLUB BENEFIT</small><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your member price is ready':'SAVE 20–40% ON ELIGIBLE PIECES'}</strong><em>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'The secure member price is calculated in your bag.':'Member pricing plus eligible standard-shipping benefits.'}</em></span><ArrowRight size={16}/></button>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); const isSize = option.name === sizeName; const displayValue = value => isSize ? canonicalSize(value) : value; return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{isSize && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] ? displayValue(selections[option.name]) : 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${displayValue(value)}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : displayValue(value)}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}><i/>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'}</p>}
-        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={previewWithAi} disabled={!hasStructuredPreview || previewingAi} title={hasStructuredPreview ? 'Render your personal details directly onto this jersey.' : 'Personalization will be reviewed manually by the studio.'}><Sparkles size={16}/><span><strong>{previewingAi ? 'RENDERING AI PREVIEW…' : hasStructuredPreview ? (attachedPreview ? 'UPDATE AI PREVIEW' : 'PREVIEW WITH AI') : 'VISUAL PREVIEW AWAITING SETUP'}</strong><small>{previewingAi ? 'Analyzing jersey design & applying custom details…' : hasStructuredPreview ? (attachedPreview ? 'Click to re-render preview with your latest changes.' : `Render ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} directly onto this jersey image.`) : 'Personalization will be reviewed manually by the studio.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{hasStructuredPreview && <button type="button" className="pdp-custom__studio-link" onClick={openAi}><ArrowRight size={12}/> Open Studio side-by-side</button>}{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
+       {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={previewWithAi} disabled={!hasStructuredPreview || previewingAi} title={hasStructuredPreview ? 'Render your personal details directly onto this jersey.' : 'Personalization will be reviewed manually by the studio.'}><Sparkles size={16}/><span><strong>{previewingAi ? 'RENDERING AI PREVIEW…' : hasStructuredPreview ? (attachedPreview ? 'UPDATE AI PREVIEW' : 'PREVIEW WITH AI') : 'VISUAL PREVIEW AWAITING SETUP'}</strong><small>{previewingAi ? 'Analyzing jersey design & applying custom details…' : hasStructuredPreview ? (attachedPreview ? 'Click to re-render preview with your latest changes.' : `Render ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} directly onto this jersey image.`) : 'Personalization will be reviewed manually by the studio.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button><button type="button" className="pdp-custom__studio-link" onClick={openAi}><Sparkles size={12}/> Edit with AI in Studio</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__trust-line" aria-label="Checkout and order assurances"><span><Lock size={14}/> Secure checkout</span><span><PackageCheck size={14}/> Tracked delivery</span><span><ShieldCheck size={14}/> {personalized ? 'Custom checked' : 'Quality checked'}</span></div>
         <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || 'A performance jersey made for match-day stories and personal details.'}</p><p><strong>Fit & care</strong>Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.</p></div></details></div>

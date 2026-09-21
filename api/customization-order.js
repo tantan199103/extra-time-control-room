@@ -41,9 +41,9 @@ export default async function handler(request, response) {
 
     const product = await publishedListing(client, productId)
     if (!product) throw Object.assign(new Error('This listing is no longer published.'), { status:404 })
-    const { data:variant, error:variantError } = await client.from('pod_product_variants').select('id, sku, option_values, price, inventory, status').eq('id', variantId).eq('product_id',product.id).eq('status','ACTIVE').maybeSingle()
+    const { data:variant, error:variantError } = await client.from('pod_product_variants').select('id, sku, option_values, price, inventory, reserved_inventory, status').eq('id', variantId).eq('product_id',product.id).eq('status','ACTIVE').maybeSingle()
     if (variantError) throw variantError
-    if (!variant || Number(variant.inventory || 0) < 1) throw Object.assign(new Error('This variation is unavailable. Choose another option.'), { status:409 })
+    if (!variant || Math.max(0, Number(variant.inventory || 0) - Number(variant.reserved_inventory || 0)) < 1) throw Object.assign(new Error('This variation is unavailable. Choose another option.'), { status:409 })
 
     const schema = Array.isArray(product.custom_fields) ? product.custom_fields : []
     const incoming = body.fields && typeof body.fields === 'object' && !Array.isArray(body.fields) ? body.fields : {}
