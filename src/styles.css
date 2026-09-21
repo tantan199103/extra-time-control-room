@@ -614,11 +614,6 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .pdp-logo-consent span { display:grid; gap:3px; }
 .pdp-logo-consent strong { font:700 9px var(--body); }
 .pdp-logo-consent small { color:var(--muted); font-size:8px; line-height:1.4; }
-.pdp__decision { display:grid; gap:5px; margin-top:19px; padding:14px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-.pdp__decision span { display:flex; align-items:center; gap:7px; color:var(--signal); font:700 9px var(--body); }
-.pdp__decision span i { width:6px; height:6px; border-radius:50%; background:var(--signal); }
-.pdp__decision strong { font:700 12px var(--body); }
-.pdp__decision small { color:var(--muted); font-size:9px; }
 .pdp-story { background: var(--ink); color: var(--chalk); padding: 130px 32px; }
 .pdp-story__intro { display: grid; grid-template-columns: 1fr 1.7fr 1fr; gap: 40px; align-items: start; }
 .pdp-story__intro > p:first-child { color: var(--acid); }
@@ -1183,8 +1178,7 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .pdp-custom__fields { gap:0 12px; }
   .pdp-custom__fields input { font-size:19px; }
   .pdp-custom__note textarea { min-height:76px; }
-  .pdp__decision { margin-top:16px; }
-  .pdp__info { padding-bottom:202px; }
+  .pdp__info { padding-bottom:148px; }
   .ai-studio-draft { margin-top:24px; }
   .ai-studio-suggestions button { flex-basis:100%; min-width:0; }
 }
@@ -1513,14 +1507,6 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .pdp__promises { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; padding:14px 0; border-bottom:1px solid var(--line); }
 .pdp__promises > span { min-width:0; display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--muted); font:600 8px var(--body); letter-spacing:.04em; text-transform:uppercase; }
 .pdp__promises > span svg { color:var(--ink); }
-.pdp__quick-details, .pdp__info-accordions { border-top:1px solid var(--line); }
-.pdp__quick-details details, .pdp__info-accordions details { border-bottom:1px solid var(--line); }
-.pdp__quick-details summary, .pdp__info-accordions summary { min-height:50px; padding:13px 0; display:grid; grid-template-columns:18px 1fr 16px; align-items:center; gap:9px; list-style:none; cursor:pointer; color:var(--ink); font:700 9px var(--body); letter-spacing:.04em; text-transform:uppercase; }
-.pdp__quick-details summary::-webkit-details-marker, .pdp__info-accordions summary::-webkit-details-marker { display:none; }
-.pdp__quick-details summary svg:first-child, .pdp__info-accordions summary svg:first-child { color:var(--muted); }
-.pdp__quick-details summary svg:last-child, .pdp__info-accordions summary svg:last-child { transition:transform 150ms ease; }
-.pdp__quick-details details[open] summary svg:last-child, .pdp__info-accordions details[open] summary svg:last-child { transform:rotate(45deg); }
-.pdp__quick-details p, .pdp__info-accordions p { margin:0 25px 16px 27px; color:var(--muted); font-size:10px; line-height:1.6; }
 .pdp-highlights { padding:72px 32px 84px; display:grid; grid-template-columns:1.08fr .96fr 1fr; gap:12px; background:var(--paper); border-top:1px solid var(--line); }
 .pdp-highlight-card { min-width:0; padding:26px 24px 24px; border:1px solid var(--line); border-radius:2px; }
 .pdp-highlight-card--dark { display:flex; flex-direction:column; min-height:280px; background:var(--ink); color:var(--chalk); border-color:var(--ink); border-left:5px solid var(--signal); }
@@ -1624,6 +1610,71 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .mobile-sticky-atc button { min-width:132px; padding:0 16px; }
   .mobile-sticky-atc__product img { width:35px; height:43px; }
   .mobile-sticky-atc__product small { max-width:112px; }
+}
+
+/* PDP decision pass: one clear purchase path, then only the proof a shopper
+   asks for. Membership and group pricing carry the commercial emphasis;
+   status copy that repeated the delivery card has been removed. */
+.pdp__club { min-height:76px; margin:18px 0 2px; padding:13px 14px; grid-template-columns:20px minmax(0,1fr) 16px; gap:10px; border:1px solid var(--ink); background:var(--ink); color:var(--chalk); }
+.pdp__club > svg:first-child { color:var(--acid); }
+.pdp__club > svg:last-child { color:var(--acid); width:15px; }
+.pdp__club span { min-width:0; display:grid; gap:3px; }
+.pdp__club span small { margin:0; color:var(--acid); font:700 8px var(--body); letter-spacing:.08em; }
+.pdp__club span strong { color:var(--chalk); font:800 16px/.95 var(--headline); letter-spacing:.01em; }
+.pdp__club span em { color:#b6b6ae; font:500 8px/1.35 var(--body); font-style:normal; }
+.pdp__trust-line { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:13px 0; border-bottom:1px solid var(--line); color:var(--muted); }
+.pdp__trust-line span { min-width:0; display:flex; align-items:center; gap:5px; white-space:nowrap; font:600 8px var(--body); letter-spacing:.015em; }
+.pdp__trust-line svg { color:var(--ink); flex:none; }
+.pdp__essentials { border-top:0; }
+.pdp__essentials details { border-bottom:1px solid var(--line); }
+.pdp__essentials summary { min-height:47px; padding:12px 0; display:grid; grid-template-columns:18px minmax(0,1fr) 16px; align-items:center; gap:9px; list-style:none; cursor:pointer; font:700 9px var(--body); letter-spacing:.04em; text-transform:uppercase; }
+.pdp__essentials summary::-webkit-details-marker { display:none; }
+.pdp__essentials summary svg:first-child { color:var(--muted); }
+.pdp__essentials summary svg:last-child { transition:transform 150ms ease; }
+.pdp__essentials details[open] summary svg:last-child { transform:rotate(45deg); }
+.pdp__essentials details > div { padding:0 25px 8px 27px; }
+.pdp__essentials p { margin:0 0 12px; color:var(--muted); font-size:10px; line-height:1.55; }
+.pdp__essentials p strong { display:block; margin-bottom:3px; color:var(--ink); font:700 9px var(--body); text-transform:uppercase; letter-spacing:.04em; }
+
+.pdp-highlights { grid-template-columns:1fr 1fr 1fr; align-items:stretch; }
+.pdp-highlight-card { min-height:312px; }
+.pdp-highlight-card--delivery { order:1; }
+.pdp-highlight-card--featured { order:2; border-color:#e1b5b5; border-top:4px solid var(--signal); background:#fff4f4; }
+.pdp-highlight-card--dark { order:3; }
+.pdp-highlight-card--delivery h2, .pdp-highlight-card--featured h2 { margin:25px 0 13px; max-width:360px; font:800 clamp(30px,2.8vw,44px)/.86 var(--headline); letter-spacing:-.035em; }
+.pdp-highlight-card--featured h2 { color:var(--signal); }
+.pdp-highlight-card--featured .pdp-highlight-card__eyebrow { color:var(--signal); }
+.pdp-highlight-card--featured .pdp-highlight-card__lead { color:#635b58; }
+.pdp-delivery-track { margin:27px 0 22px; }
+.pdp-delivery-track small { color:#89817d; font-size:8px; line-height:1.3; }
+.pdp-estimate-note { margin:14px 0 0; color:#807875; font-size:8px; line-height:1.45; }
+.pdp-highlight-card--dark .pdp-highlight-card__note { text-transform:none; letter-spacing:.02em; }
+
+.size-finder__intro { display:flex; gap:9px; align-items:flex-start; margin:0 0 22px; color:var(--muted); }
+.size-finder__intro svg { flex:none; color:var(--signal); margin-top:1px; }
+.size-finder__intro p { margin:0; font-size:10px; line-height:1.55; }
+.size-audience { margin:0 0 22px; }
+.size-audience > span { display:flex; align-items:center; gap:6px; margin-bottom:9px; font:700 9px var(--body); letter-spacing:.07em; }
+.size-audience > span svg { color:var(--signal); }
+.size-audience > div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.size-audience button { min-height:38px; padding:0 8px; border:1px solid var(--line); color:var(--muted); font:600 10px var(--body); }
+.size-audience button.is-active { border-color:var(--ink); background:var(--ink); color:var(--chalk); }
+.size-result { gap:4px; }
+.size-result small { grid-column:1/-1; margin-top:4px; color:var(--muted); font-size:8px; line-height:1.4; }
+.size-modal__panel > .button:disabled { opacity:.45; cursor:not-allowed; }
+
+@media (max-width:780px) {
+  .pdp__info { padding-bottom:148px; }
+  .pdp-highlight-card { min-height:0; }
+  .pdp-highlight-card--delivery h2,
+  .pdp-highlight-card--featured h2 { font-size:36px; }
+}
+
+@media (max-width:380px) {
+  .pdp__trust-line { gap:4px; }
+  .pdp__trust-line span { font-size:7px; letter-spacing:0; }
+  .pdp__trust-line svg { width:12px; height:12px; }
+  .pdp__club span strong { font-size:15px; }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

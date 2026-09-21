@@ -70,12 +70,21 @@ test('product cards expose quick view and never quick-add sold-out variants', ()
   assert.match(source, /<QuickView/)
 })
 
+test('size finder renders catalog sizes in the same canonical form as the option controls', () => {
+  assert.match(source, /availableSizes\.map\(canonicalSize\)/)
+  assert.match(source, /canonicalSize\(recommendation\)/)
+  assert.match(source, /availableFinderSizes\(product/)
+})
+
 test('product decision content is compact until the shopper asks for detail', () => {
-  assert.match(source, /className="pdp__quick-details"><details>/)
-  assert.match(source, /className="pdp__info-accordions"><details>/)
+  assert.match(source, /className="pdp__essentials"><details>/)
+  assert.match(source, /<span>Shipping & returns<\/span>/)
+  assert.match(source, /<span>Product, fit & care<\/span>/)
   assert.match(source, /<details className="pdp-content__details">/)
   assert.match(source, /className="pdp-story-signals"><details>/)
-  assert.match(source, /aria-label="Product assurances"/)
+  assert.match(source, /aria-label="Checkout and order assurances"/)
+  assert.doesNotMatch(source, /className="pdp__decision"/)
+  assert.doesNotMatch(source, /Ready to ship/)
 })
 
 test('product highlights use configured bulk offers and do not invent discounts', () => {
@@ -83,13 +92,17 @@ test('product highlights use configured bulk offers and do not invent discounts'
   assert.ok(highlights)
   assert.match(highlights, /const offers = config\.bulkOffers/)
   assert.match(highlights, /offer\.discountPercent/)
-  assert.match(highlights, /REQUEST A TEAM QUOTE/)
+  assert.match(highlights, /GET TEAM PRICING/)
+  assert.match(highlights, /ESTIMATED DELIVERY/)
+  assert.match(highlights, /JERSEVO PRINT & BUILD/)
+  assert.doesNotMatch(highlights, /Ready to ship/i)
+  assert.doesNotMatch(highlights, /70\s*%|30\s*%/)
   assert.doesNotMatch(highlights, /(?:5|7|10|15)% off/)
 })
 
 test('mobile purchase bar keeps product context above the fixed navigation', () => {
   assert.match(source, /className="mobile-sticky-atc__product"><img/)
-  assert.match(source, /Object\.values\(selections\)\.join\(' · '\)/)
+  assert.match(source, /selectionSummary/)
   assert.match(css, /\.mobile-sticky-atc \{ bottom:calc\(76px \+ env\(safe-area-inset-bottom\)\)/)
 })
 
