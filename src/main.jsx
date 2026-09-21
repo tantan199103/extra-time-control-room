@@ -943,40 +943,17 @@ function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2
 }
 
 function CustomTeaser({ product }) {
-  const [nameIndex, setNameIndex] = useState(0)
-  const names = [['TAN', '07'], ['ALEX', '10'], ['YOURS', '23']]
-  useEffect(() => {
-    const timer = setInterval(() => setNameIndex(value => (value + 1) % names.length), 1800)
-    return () => clearInterval(timer)
-  }, [])
   return (
     <section className="custom-teaser" id="custom">
       <div className="custom-teaser__grid" aria-hidden="true" />
-      <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>YOUR STORY.<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">70% of the artwork stays fixed.<br />You choose the details that make it yours.</p><button className="button button--acid" onClick={() => navigate(`/product/${product?.handle || product?.id || 'touchline'}?custom=1`)}>START PERSONALIZING <ArrowRight size={17}/></button></div>
-      <div className="custom-teaser__jersey"><span className="axis-label axis-label--top">REAR VIEW · LIVE</span><JerseySvg name={names[nameIndex][0]} number={names[nameIndex][1]} /><span className="axis-label axis-label--bottom">DESIGN STATE / {String(nameIndex + 1).padStart(2, '0')}</span></div>
-      <div className="custom-teaser__steps"><span>70% / ARTWORK LOCKED</span><span>NAME + NUMBER</span><span>TEAM / CITY · YEAR</span><span>COLOUR · OPTIONAL PHOTO</span></div>
+      <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>PERSONALIZE<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">The artwork stays fixed.<br />Add only the name and number that make it yours.</p><button className="button button--acid" onClick={() => navigate(`/product/${product?.handle || product?.id || 'touchline'}?custom=1`)}>START PERSONALIZING <ArrowRight size={17}/></button></div>
+      <div className="custom-teaser__jersey"><Suspense fallback={<div className="home-personalizer__loading">Loading live rear view…</div>}><HomeJerseyPersonalizer /></Suspense></div>
+      <div className="custom-teaser__steps"><span>DESIGN / LOCKED</span><span>NAME + NUMBER</span><span>LIVE REAR VIEW</span><span>MADE ON DEMAND</span></div>
     </section>
   )
 }
 
 function CustomOptions({ product }) {
-  const [customName, setCustomName] = useState('YOUR NAME')
-  const [customNumber, setCustomNumber] = useState('10')
-  const [activePreset, setActivePreset] = useState(null)
-
-  const presets = [
-    { label: 'RONALDO 7', name: 'RONALDO', number: '07' },
-    { label: 'MAHOMES 15', name: 'MAHOMES', number: '15' },
-    { label: 'JORDAN 23', name: 'JORDAN', number: '23' },
-    { label: 'CURRY 30', name: 'CURRY', number: '30' }
-  ]
-
-  const selectPreset = p => {
-    setActivePreset(p.label)
-    setCustomName(p.name)
-    setCustomNumber(p.number)
-  }
-
   const handleOrder = () => {
     const target = `/product/${product?.handle || product?.id || 'touchline'}?custom=1`
     navigate(target)
@@ -991,61 +968,15 @@ function CustomOptions({ product }) {
           </div>
           <span>REAL-TIME PREVIEW · INSTANT ON-DEMAND</span>
           <h2 id="custom-options-heading">PERSONALIZE<br /><em>YOUR JERSEY.</em></h2>
-          <p>Type your name and squad number or pick a quick legend preset to watch your jersey render live before checkout.</p>
-          
-          <div className="custom-playground">
-            <span className="custom-playground__heading">LIVE CUSTOMIZER: TYPE NAME & NUMBER</span>
-            <div className="custom-playground__inputs">
-              <div className="custom-playground__field">
-                <label htmlFor="home-custom-name">NAME ON BACK</label>
-                <input
-                  id="home-custom-name"
-                  type="text"
-                  maxLength={12}
-                  value={customName}
-                  onChange={e => { setCustomName(e.target.value.toUpperCase()); setActivePreset(null) }}
-                  placeholder="YOUR NAME"
-                />
-              </div>
-              <div className="custom-playground__field custom-playground__field--num">
-                <label htmlFor="home-custom-num">#</label>
-                <input
-                  id="home-custom-num"
-                  type="text"
-                  maxLength={2}
-                  value={customNumber}
-                  onChange={e => { setCustomNumber(e.target.value.replace(/\D/g, '')); setActivePreset(null) }}
-                  placeholder="10"
-                />
-              </div>
-            </div>
-            <div className="custom-playground__presets">
-              <span className="custom-playground__preset-tip">Popular:</span>
-              {presets.map(p => (
-                <button
-                  key={p.label}
-                  type="button"
-                  className={`custom-playground__chip ${activePreset === p.label ? 'is-active' : ''}`}
-                  onClick={() => selectPreset(p)}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <p>Edit only the two details that matter. The supplied jersey design stays locked while the rear view updates live.</p>
 
           <button className="button button--dark custom-options__cta" onClick={handleOrder}>
-            ORDER THIS CUSTOM JERSEY <ArrowRight size={16}/>
+            CONTINUE WITH THIS JERSEY <ArrowRight size={16}/>
           </button>
         </div>
 
         <div className="custom-options__stage">
-          <div className="custom-options__svg-wrap">
-            <JerseySvg name={customName || 'YOUR NAME'} number={customNumber || '00'} teamCity="JERSEVO" year="2026" accent="#d72c2c" />
-          </div>
-          <div className="custom-options__live-indicator">
-            <span className="live-dot" /> LIVE REAR VIEW · MADE ON DEMAND
-          </div>
+          <HomeJerseyPersonalizer />
         </div>
       </div>
     </section>

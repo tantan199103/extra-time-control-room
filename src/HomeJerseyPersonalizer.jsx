@@ -103,7 +103,7 @@ function ThreeRearView({ name, number, onReady, onError, shouldLoad }) {
 
     const setup = async () => {
       try {
-        const [{ default: THREE }, { GLTFLoader }, { MeshoptDecoder }] = await Promise.all([
+        const [THREE, { GLTFLoader }, { MeshoptDecoder }] = await Promise.all([
           import('three'),
           import('three/examples/jsm/loaders/GLTFLoader.js'),
           import('three/examples/jsm/libs/meshopt_decoder.module.js')
