@@ -72,9 +72,9 @@ export function resolveApiTarget(path, config = {}) {
     const functionName = pathname.replace(/^\/api\//, '')
     return `${edgeOrigin}/${functionName}${parsed.search}`
   }
-  // Keep visual AI preview on same-origin Vercel serverless when running in browser
+  // Keep visual AI preview and customization order on same-origin Vercel serverless when running in browser
   // unless backendOrigin was explicitly passed in caller config (e.g. in backend tests).
-  if (pathname === '/api/ai-preview' && !config.backendOrigin && typeof window !== 'undefined') {
+  if (['/api/ai-preview', '/api/customization-order'].includes(pathname) && !config.backendOrigin && typeof window !== 'undefined') {
     return rawPath
   }
   if (NODE_BACKEND_ROUTES.has(pathname) && backendOrigin) {
@@ -101,14 +101,14 @@ export async function apiFetch(path, options = {}) {
   }
   try {
     const response = await fetch(target, { ...options, headers })
-    // If backend origin returned 422 (e.g. outdated container), 502 or 503 for ai-preview, fallback to same-origin
-    if (!response.ok && [422, 502, 503].includes(response.status) && target !== path && String(path).startsWith('/api/ai-preview')) {
+    // If backend origin returned 422 (e.g. outdated container), 502 or 503 for ai-preview / customization-order, fallback to same-origin
+    if (!response.ok && [422, 502, 503].includes(response.status) && target !== path && (String(path).startsWith('/api/ai-preview') || String(path).startsWith('/api/customization-order'))) {
       const fallbackResponse = await fetch(path, { ...options, headers }).catch(() => null)
       if (fallbackResponse && fallbackResponse.ok) return fallbackResponse
     }
     return response
   } catch (error) {
-    if (target !== path && String(path).startsWith('/api/ai-preview')) {
+    if (target !== path && (String(path).startsWith('/api/ai-preview') || String(path).startsWith('/api/customization-order'))) {
       const fallbackResponse = await fetch(path, { ...options, headers }).catch(() => null)
       if (fallbackResponse) return fallbackResponse
     }

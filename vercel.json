@@ -10,7 +10,8 @@
     "api/ai-listing-copy.js": { "maxDuration": 60 },
     "api/ai-listing-media.js": { "maxDuration": 60 },
     "api/newsletter-subscribe.js": { "maxDuration": 15 },
-    "api/ai-preview.js": { "maxDuration": 60 }
+    "api/ai-preview.js": { "maxDuration": 60 },
+    "api/customization-order.js": { "maxDuration": 30 }
   },
   "headers": [
     {
@@ -86,6 +87,7 @@
     { "source": "/api/google-merchant-feed", "destination": "/api/google-merchant-feed.js" },
     { "source": "/api/newsletter-subscribe", "destination": "/api/newsletter-subscribe.js" },
     { "source": "/api/ai-preview", "destination": "/api/ai-preview.js" },
+    { "source": "/api/customization-order", "destination": "/api/customization-order.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

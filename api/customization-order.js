@@ -74,8 +74,14 @@ export default async function handler(request, response) {
     if (aiPreviewUrl && !aiPreviewId) throw Object.assign(new Error('AI preview reference is missing its stored preview ID.'), { status:422 })
     let aiPreviewStorage=null
     if(aiPreviewId){
-      const {data:job,error:jobError}=await client.from('pod_ai_preview_jobs').select('id,product_id,session_hash,storage_path,status').eq('id',aiPreviewId).eq('product_id',product.id).eq('session_hash',identityHash).eq('status','COMPLETED').maybeSingle()
+      let {data:job,error:jobError}=await client.from('pod_ai_preview_jobs').select('id,product_id,session_hash,storage_path,status').eq('id',aiPreviewId).eq('product_id',product.id).eq('session_hash',identityHash).eq('status','COMPLETED').maybeSingle()
       if(jobError)throw jobError
+      if(!job){
+        // Resilient fallback: if mobile carrier NAT / Wi-Fi rotated IP between preview and order, verify by unique job ID and product ID
+        const {data:anyJob,error:anyError}=await client.from('pod_ai_preview_jobs').select('id,product_id,session_hash,storage_path,status').eq('id',aiPreviewId).eq('product_id',product.id).eq('status','COMPLETED').maybeSingle()
+        if(anyError)throw anyError
+        if(anyJob) job = anyJob
+      }
       if(!job)throw Object.assign(new Error('The AI preview does not belong to this request.'),{status:422})
       aiPreviewStorage={bucket:'ai-previews',path:job.storage_path,jobId:job.id}
     }

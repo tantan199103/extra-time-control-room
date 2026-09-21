@@ -8,6 +8,8 @@ api/*.js
 !api/ai-listing-media.js
 !api/newsletter-subscribe.js
 !api/ai-preview.js
+!api/customization-order.js
+!api/_logo-request.js
 !api/_exact-image-edit.js
 !api/_security.js
 !api/_membership.js

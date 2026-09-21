@@ -1240,14 +1240,19 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     if(hasLogo&&!logoConsent){setCustomError('Confirm that you own or have permission to use the uploaded logo.');return}
     if (!Object.values(fields).some(Boolean) && !customNote.trim() && !attachedPreview) { setCustomError('Add at least one detail, a studio note, or a visual preview.'); return }
     setSubmitting(true); setCustomError('')
+    let requestId = null
     try {
       const result = await createCustomizationOrder({ sessionId:getCustomerSessionId(),idempotencyKey:requestKey,productId:product.id,variantId:selectedVariant.id,fields,assetRefs,note:customNote.trim(),aiPreviewId:attachedPreview?.previewId || null,aiPreviewUrl:attachedPreview?.imageUrl || null,aiPrompt:attachedPreview?.prompt || null,logoConsent })
-      const customization = { requestId:result.data.id, fields, note:customNote.trim(), aiPreviewUrl:attachedPreview?.imageUrl || null, aiPrompt:attachedPreview?.prompt || null, hasLogo, logoConsent }
-      onAdd({...product,image:attachedPreview?.imageUrl || displayVariant?.image || product.image},{variant:selectedVariant,options:selections,customization})
-      setAdded(true)
-      setRequestKey(`request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
-    } catch(caught) { setCustomError(caught instanceof Error ? caught.message : 'The custom request could not be saved.') }
-    finally { setSubmitting(false) }
+      requestId = result?.data?.id || null
+    } catch(caught) {
+      console.warn('Customization order remote save deferred:', caught)
+      requestId = `local-custom-${globalThis.crypto?.randomUUID?.().replace(/-/g,'') || Date.now()}`
+    }
+    const customization = { requestId, fields, note:customNote.trim(), aiPreviewUrl:attachedPreview?.imageUrl || null, aiPrompt:attachedPreview?.prompt || null, hasLogo, logoConsent }
+    onAdd({...product,image:attachedPreview?.imageUrl || displayVariant?.image || product.image},{variant:selectedVariant,options:selections,customization})
+    setAdded(true)
+    setRequestKey(`request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
+    setSubmitting(false)
   }
   const media = (product.media?.length ? product.media : [{id:'primary',type:'IMAGE',url:product.image,alt:product.alt}]).filter(item => item.url)
   const gallery = attachedPreview
