@@ -51,11 +51,14 @@ export function quoteLine({ line, membership, program, rules = [], collections =
   // configured margin floor still protects production economics.
   const requestedUnit = Math.min(publicUnit, quantityUnit, memberUnit)
   const cost = line.cost == null ? null : Number(line.cost)
-  const marginFloor = cost == null || !memberActive ? 0 : moneyNumber(cost / Math.max(0.01, 1 - Number(program.min_margin_percent || 0) / 100))
+  // Keep every promotional path (member or quantity) above the configured
+  // production margin. The browser can show a saving, but the server owns
+  // the final unit price and must never let a bulk tier undercut cost.
+  const marginFloor = cost == null || !program ? 0 : moneyNumber(cost / Math.max(0.01, 1 - Number(program.min_margin_percent || 0) / 100))
   const finalUnit = Math.min(publicUnit, moneyNumber(Math.max(requestedUnit,marginFloor)))
   const discount = moneyNumber((publicUnit - finalUnit) * qty)
   const effectivePercent = publicUnit ? moneyNumber((1 - finalUnit / publicUnit) * 100) : 0
-  return { ...base, finalUnit, lineTotal:moneyNumber(finalUnit * qty), discount, discountPercent:effectivePercent, rule:memberActive ? (rule ? { id:rule.id,name:rule.name,scopeType:rule.scope_type,requestedPercent } : { id:null,name:'Club default',scopeType:'ALL',requestedPercent }) : null, marginLimited:memberActive && marginFloor > requestedUnit }
+  return { ...base, finalUnit, lineTotal:moneyNumber(finalUnit * qty), discount, discountPercent:effectivePercent, rule:memberActive ? (rule ? { id:rule.id,name:rule.name,scopeType:rule.scope_type,requestedPercent } : { id:null,name:'Club default',scopeType:'ALL',requestedPercent }) : null, marginLimited:marginFloor > requestedUnit }
 }
 
 export function quoteCart({ lines = [], membership, program, rules = [], shipping = {}, now = new Date(), quantityPolicy } ) {

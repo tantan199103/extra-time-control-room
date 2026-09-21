@@ -52,3 +52,18 @@ test('cart quote reports member savings and eligible shipping without trusting c
   assert.equal(excluded.shipping.eligible,false)
 })
 
+test('quantity tiers are 0/10/20/30 and do not undercut production margin',()=>{
+  const nonMember={...line,cost:80}
+  const quoteFor=qty=>quoteCart({lines:[{...nonMember,qty}],membership:null,program,rules:[],shipping:{country:'US'},now})
+  assert.equal(quoteFor(1).quantityTier.discountPercent,0)
+  assert.equal(quoteFor(1).lines[0].finalUnit,100)
+  assert.equal(quoteFor(2).quantityTier.discountPercent,10)
+  assert.equal(quoteFor(2).lines[0].finalUnit,100)
+  assert.equal(quoteFor(3).quantityTier.discountPercent,20)
+  assert.equal(quoteFor(3).lines[0].finalUnit,100)
+  assert.equal(quoteFor(4).quantityTier.discountPercent,30)
+  assert.equal(quoteFor(4).lines[0].finalUnit,100)
+
+  const safe={...line,cost:30}
+  assert.equal(quoteCart({lines:[{...safe,qty:4}],membership:null,program,rules:[],now}).lines[0].finalUnit,70)
+})

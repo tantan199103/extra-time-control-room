@@ -54,10 +54,13 @@ function quoteLine(line: any, membership: any, program: any, rules: any[], quant
   const memberUnit = requestedPercent > 0 ? money((rule?.stack_with_sale ? publicUnit : listUnit) * (1 - requestedPercent / 100)) : publicUnit
   const requestedUnit = Math.min(publicUnit, quantityUnit, memberUnit)
   const cost = line.cost == null ? null : Number(line.cost)
-  const marginFloor = cost == null || !memberActive ? 0 : money(cost / Math.max(0.01, 1 - Number(program.min_margin_percent || 0) / 100))
+  // Quantity promotions must respect the same production margin guard as
+  // member pricing. Final prices are server-owned even when the shopper is
+  // not signed in.
+  const marginFloor = cost == null || !program ? 0 : money(cost / Math.max(0.01, 1 - Number(program.min_margin_percent || 0) / 100))
   const finalUnit = Math.min(publicUnit, money(Math.max(requestedUnit, marginFloor)))
   const discount = money((publicUnit - finalUnit) * qty)
-  return { ...base, finalUnit, lineTotal: money(finalUnit * qty), discount, discountPercent: publicUnit ? money((1 - finalUnit / publicUnit) * 100) : 0, rule: memberActive ? (rule ? { id: rule.id, name: rule.name, scopeType: rule.scope_type, requestedPercent } : { id: null, name: 'Club default', scopeType: 'ALL', requestedPercent }) : null, marginLimited: memberActive && marginFloor > requestedUnit }
+  return { ...base, finalUnit, lineTotal: money(finalUnit * qty), discount, discountPercent: publicUnit ? money((1 - finalUnit / publicUnit) * 100) : 0, rule: memberActive ? (rule ? { id: rule.id, name: rule.name, scopeType: rule.scope_type, requestedPercent } : { id: null, name: 'Club default', scopeType: 'ALL', requestedPercent }) : null, marginLimited: marginFloor > requestedUnit }
 }
 
 export function quoteCart({ lines = [], membership, program, rules = [], shipping = {} }: any) {
