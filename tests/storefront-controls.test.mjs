@@ -70,6 +70,29 @@ test('product cards expose quick view and never quick-add sold-out variants', ()
   assert.match(source, /<QuickView/)
 })
 
+test('product decision content is compact until the shopper asks for detail', () => {
+  assert.match(source, /className="pdp__quick-details"><details>/)
+  assert.match(source, /className="pdp__info-accordions"><details>/)
+  assert.match(source, /<details className="pdp-content__details">/)
+  assert.match(source, /className="pdp-story-signals"><details>/)
+  assert.match(source, /aria-label="Product assurances"/)
+})
+
+test('product highlights use configured bulk offers and do not invent discounts', () => {
+  const highlights = source.match(/function ProductPurchaseHighlights\([\s\S]*?\nfunction ProductContentBlocks/)?.[0]
+  assert.ok(highlights)
+  assert.match(highlights, /const offers = config\.bulkOffers/)
+  assert.match(highlights, /offer\.discountPercent/)
+  assert.match(highlights, /REQUEST A TEAM QUOTE/)
+  assert.doesNotMatch(highlights, /(?:5|7|10|15)% off/)
+})
+
+test('mobile purchase bar keeps product context above the fixed navigation', () => {
+  assert.match(source, /className="mobile-sticky-atc__product"><img/)
+  assert.match(source, /Object\.values\(selections\)\.join\(' · '\)/)
+  assert.match(css, /\.mobile-sticky-atc \{ bottom:calc\(76px \+ env\(safe-area-inset-bottom\)\)/)
+})
+
 test('league discovery is available from the header mega menu and footer index', () => {
   assert.match(source, /label:'LEAGUES'/)
   assert.match(source, /type:'TAXONOMY'/)

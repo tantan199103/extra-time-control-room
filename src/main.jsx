@@ -21,6 +21,7 @@ import {
   Sparkles,
   SlidersHorizontal,
   ShieldCheck,
+  Tag,
   PackageCheck,
   CircleHelp,
   Globe2,
@@ -865,11 +866,71 @@ function CustomFieldControl({ field, value, assetRef, onChange, productId, previ
   return <label className={field.type === 'textarea' || field.type === 'photo' ? 'is-wide' : ''}><span>{field.label}{field.required && <b>Required</b>}<small>{field.help || 'Customer detail'}</small></span>{field.type === 'textarea' ? <textarea {...common}/> : field.type === 'select' ? <select {...common}><option value="">Choose…</option>{(field.options || []).map(option => <option key={option}>{option}</option>)}</select> : field.type === 'photo' ? <div className="pdp-custom__photo">{value && <img src={value} alt={`${field.label} reference`}/>}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload}/><strong>{uploading ? 'Uploading reference…' : value ? 'Replace photo' : 'Upload photo'}</strong><small>JPG, PNG or WebP · max 2 MB</small>{error && <em>{error}</em>}</div> : <input {...common} type="text" inputMode={field.type === 'number' ? 'numeric' : 'text'}/>}</label>
 }
 
+function productCommerceConfig(product) {
+  const source = product?.commerce || product?.merchandising || {}
+  const delivery = product?.delivery || source.delivery || {}
+  const print = product?.printTechnology || source.printTechnology || {}
+  const configuredOffers = Array.isArray(product?.bulkOffers)
+    ? product.bulkOffers
+    : Array.isArray(source.bulkOffers)
+      ? source.bulkOffers
+      : []
+  return {
+    print: {
+      title: print.title || 'DESIGN-LED PRINT DETAIL',
+      copy: print.copy || 'Names, numbers and approved artwork stay inside the designer-defined print area. Every personal detail is checked before production.',
+      note: print.note || '70% artwork locked · 30% personal layer'
+    },
+    delivery: {
+      production: delivery.production || '3–5 business days',
+      transit: delivery.transit || '5–8 business days',
+      shippingLabel: delivery.shippingLabel || 'FREE US SHIPPING OVER $100',
+      status: delivery.status || 'Ready to produce'
+    },
+    bulkOffers: configuredOffers
+      .map(item => ({
+        minQty: Math.max(2, Math.round(Number(item?.minQty ?? item?.quantity ?? 0))),
+        discountPercent: Math.max(0, Math.round(Number(item?.discountPercent ?? item?.discount ?? 0))),
+        featured: Boolean(item?.featured)
+      }))
+      .filter(item => item.minQty > 1 && item.discountPercent > 0)
+      .sort((a, b) => a.minQty - b.minQty)
+  }
+}
+
+function ProductPurchaseHighlights({ product }) {
+  const config = productCommerceConfig(product)
+  const offers = config.bulkOffers
+  return <section className="pdp-highlights" aria-label="Product delivery and purchase highlights">
+    <article className="pdp-highlight-card pdp-highlight-card--dark">
+      <div className="pdp-highlight-card__eyebrow"><Sparkles size={16}/><span>JERSEVO PRODUCTION NOTE</span></div>
+      <h2>{config.print.title}</h2>
+      <p>{config.print.copy}</p>
+      <span className="pdp-highlight-card__note">{config.print.note}</span>
+    </article>
+    <article className="pdp-highlight-card pdp-highlight-card--delivery">
+      <div className="pdp-highlight-card__eyebrow"><PackageCheck size={17}/><span>ESTIMATED DELIVERY</span></div>
+      <div className="pdp-delivery-track" aria-label="Order, production and delivery timeline">
+        <div className="is-current"><i/><strong>ORDERED</strong><span>Today</span></div>
+        <div><i/><strong>IN PRODUCTION</strong><span>{config.delivery.production}</span></div>
+        <div><i/><strong>DELIVERED</strong><span>{config.delivery.transit}</span></div>
+      </div>
+      <div className="pdp-shipping-pill"><Globe2 size={16}/><strong>{config.delivery.shippingLabel}</strong></div>
+      <div className="pdp-production-status"><i/>{config.delivery.status}</div>
+    </article>
+    <article className="pdp-highlight-card pdp-highlight-card--bundle">
+      <div className="pdp-highlight-card__eyebrow"><Tag size={17}/><span>{offers.length ? 'BUY MORE, SAVE MORE' : 'ORDER FOR THE SQUAD'}</span></div>
+      <p className="pdp-highlight-card__lead">{offers.length ? 'Bundle offers are applied to eligible quantities at checkout.' : 'Ordering for teammates or friends? Ask for a team quote before payment.'}</p>
+      {offers.length ? <div className="pdp-bundle-grid">{offers.slice(0, 4).map(offer => <div key={`${offer.minQty}-${offer.discountPercent}`} className={offer.featured ? 'is-featured' : ''}>{offer.featured && <b>BEST VALUE</b>}<span>{offer.minQty === 10 ? '10+ pieces' : `${offer.minQty} pieces`}</span><strong>{offer.discountPercent}% off</strong></div>)}</div> : <a className="pdp-team-quote" href="mailto:support@jersevo.com?subject=Team%20order%20quote"><span><strong>REQUEST A TEAM QUOTE</strong><small>We will confirm availability and the final price before checkout.</small></span><ArrowRight size={16}/></a>}
+    </article>
+  </section>
+}
+
 function ProductContentBlocks({ product }) {
-  if (!product.contentBlocks?.length) return <section className="pdp-editorial-fallback"><img src={product.image} alt={product.alt}/><div><span>THE DESIGN STORY</span><h2>{product.subtitle || product.name}</h2><p>{product.description || product.story}</p></div></section>
+  if (!product.contentBlocks?.length) return <section className="pdp-editorial-fallback"><img src={product.image} alt={product.alt}/><details><summary><Sparkles size={16}/><span><small>THE DESIGN STORY</small><strong>{product.subtitle || product.name}</strong></span><Plus/></summary><p>{product.description || product.story}</p></details></section>
   const media = new Map((product.media || []).map(item => [item.id,item]))
   const mediaRoles = new Map((product.media || []).map(item => [listingMediaRole(item),item]).filter(([role]) => role))
-  return <section className="pdp-content"><div className="pdp-content__label">PRODUCT STORY / {product.name}</div>{product.contentBlocks.map(block => {
+  return <section className="pdp-content"><details className="pdp-content__details"><summary><Sparkles size={16}/><span><small>PRODUCT STORY</small><strong>{product.name}</strong></span><Plus/></summary><div className="pdp-content__body">{product.contentBlocks.map(block => {
     const asset = media.get(block.mediaId) || mediaRoles.get(block.mediaRole)
     const url = block.url || asset?.url
     if (block.type === 'heading') return <h2 key={block.id}>{block.content}</h2>
@@ -878,7 +939,7 @@ function ProductContentBlocks({ product }) {
     if (block.type === 'image' && url) return <figure key={block.id}><img src={url} alt={asset?.alt || `${product.name} story detail`}/>{block.content && <figcaption>{block.content}</figcaption>}</figure>
     if (block.type === 'video' && url) return <video key={block.id} src={url} controls preload="metadata"/>
     return null
-  })}</section>
+  })}</div></details></section>
 }
 
 function ProductStorySignals({ product }) {
@@ -886,7 +947,7 @@ function ProductStorySignals({ product }) {
   const valueProps = Array.isArray(seo.valueProps) ? seo.valueProps.filter(Boolean).slice(0, 6) : []
   const differentiators = Array.isArray(seo.differentiators) ? seo.differentiators.filter(Boolean).slice(0, 6) : []
   if (!valueProps.length && !differentiators.length) return null
-  return <section className="pdp-story-signals"><div className="pdp-story-signals__intro"><span>THE REASON TO KEEP IT</span><h2>Value in the details.</h2><p>One design, understood from the story through to the final personal touch.</p></div><div className="pdp-story-signals__groups">{valueProps.length > 0 && <div><span>VALUE / WHAT YOU RECEIVE</span>{valueProps.map((item, index) => <article key={`value-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}{differentiators.length > 0 && <div><span>DIFFERENCE / WHAT MAKES IT DISTINCT</span>{differentiators.map((item, index) => <article key={`difference-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}</div></section>
+  return <section className="pdp-story-signals"><details><summary><ShieldCheck size={16}/><span><small>PRODUCT PROOF</small><strong>Value in the details</strong></span><Plus/></summary><div className="pdp-story-signals__groups">{valueProps.length > 0 && <div><span>VALUE / WHAT YOU RECEIVE</span>{valueProps.map((item, index) => <article key={`value-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}{differentiators.length > 0 && <div><span>DIFFERENCE / WHAT MAKES IT DISTINCT</span>{differentiators.map((item, index) => <article key={`difference-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}</div></details></section>
 }
 
 function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account }) {
@@ -992,16 +1053,16 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={openAi} disabled={!hasStructuredPreview} title={hasStructuredPreview ? 'Open the exact-image preview.' : 'A designer must approve at least one exact edit area first.'}><Sparkles size={16}/><span><strong>{hasStructuredPreview ? 'Preview name, number and colour' : 'Visual preview awaiting designer setup'}</strong><small>{hasStructuredPreview ? `Check ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} without writing a prompt.` : 'You can still submit personalization for studio review; automatic image editing is disabled.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <div className="pdp__decision"><span><i/> {personalized ? 'Made to order' : 'Published stock'}</span><strong>{personalized ? 'Artwork confirmed before production' : soldOut ? 'Choose another variation' : 'Ready to ship'}</strong><small>{personalized ? 'Your editable fields are reviewed before production.' : 'Ships after your variation is confirmed.'}</small></div>
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
-        <div className="pdp__promises"><span><Check size={16}/> Tracked delivery</span><span><Check size={16}/> Artwork review</span><span><Check size={16}/> Secure request</span></div>
-        <div className="pdp__shipping-card"><div><strong>Ships across the US</strong><span>Free shipping on orders over $100</span></div><div><strong>30-day standard returns</strong><span>Personalized orders are reviewed before production</span></div><button onClick={() => navigate('/shipping')}>VIEW SHIPPING DETAILS <ArrowRight size={14}/></button></div>
+        <div className="pdp__promises" aria-label="Product assurances"><span title="Tracked delivery" aria-label="Tracked delivery"><PackageCheck size={17}/><span>Tracked</span></span><span title="Artwork review" aria-label="Artwork reviewed before production"><ShieldCheck size={17}/><span>Reviewed</span></span><span title="Secure request" aria-label="Secure personalization request"><Lock size={17}/><span>Secure</span></span></div>
+        <div className="pdp__quick-details"><details><summary><Globe2 size={16}/><span>Shipping</span><Plus size={16}/></summary><p>US orders over $100 receive free standard shipping. A live destination quote is shown before payment.</p></details><details><summary><CircleHelp size={16}/><span>Returns & care</span><Plus size={16}/></summary><p>Standard pieces can be returned within 30 days. Personalized work is reviewed before production. Wash inside out on a cool cycle and hang dry.</p></details></div>
         <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={16}/><span><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'90+ Club member pricing':'Members save 20–40% on eligible pieces'}</strong><small>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your secure price is calculated in the bag.':'See the season pass and shipping benefit.'}</small></span><ArrowRight size={16}/></button>
-        <details><summary>PRODUCT DETAILS <Plus/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary>SHIPPING & RETURNS <Plus/></summary><p>Production timing and the live delivery estimate are shown before checkout. Standard pieces can be returned within 30 days; personalized work is reviewed before production.</p></details><details><summary>CARE & FIT <Plus/></summary><p>Use the size guide before ordering. Wash inside out on a cool cycle and hang dry to protect printed names and numbers.</p></details>
+        <div className="pdp__info-accordions"><details><summary><Sparkles size={16}/><span>Product details</span><Plus size={16}/></summary><p>{product.description || 'Original football artwork made for everyday wear.'}</p></details><details><summary><PackageCheck size={16}/><span>Production & delivery</span><Plus size={16}/></summary><p>Production timing and the live delivery estimate are shown before checkout. Personalized pieces are reviewed before production.</p></details><details><summary><ShieldCheck size={16}/><span>Fit & care</span><Plus size={16}/></summary><p>Use the size guide before ordering. Wash inside out on a cool cycle and hang dry to protect printed names and numbers.</p></details></div>
       </aside>
     </div>
-    <ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
+    <ProductPurchaseHighlights product={product}/><ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
     <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>
     <SizeFinder open={finder} onClose={() => setFinder(false)} onRecommend={value => sizeName && chooseOption(sizeName,value)}/>
-    <div className="mobile-sticky-atc"><span><strong>{money(currentPrice)}</strong>{selectedVariant ? `${Object.values(selections).join(' · ')} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</span><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'ADD TO BAG') : 'CHOOSE OPTIONS'}</button></div>
+    <div className="mobile-sticky-atc"><div className="mobile-sticky-atc__product"><img src={displayVariant?.image || product.image} alt=""/><span><strong>{money(currentPrice)}</strong><small>{selectedVariant ? `${Object.values(selections).join(' · ')} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</small></span></div><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'BUY NOW') : 'CHOOSE OPTIONS'}</button></div>
   </main>
 }
 
