@@ -614,6 +614,8 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .pdp-custom__ai.is-unavailable { background:#e6e4dc; color:var(--muted); cursor:not-allowed; opacity:.65; }
 .pdp-custom__ai.is-unavailable > svg:first-child { color:var(--muted); }
 .pdp-custom__error { margin:10px 0 0; color:var(--signal); font-size:9px; }
+.pdp-custom__studio-link { display:inline-flex; align-items:center; gap:5px; margin-top:8px; background:none; border:none; padding:4px 0; color:var(--muted); font:600 10px var(--body); letter-spacing:.04em; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.pdp-custom__studio-link:hover { color:var(--ink); }
 .pdp-logo-upload { min-height:88px; padding:10px; display:grid; grid-template-columns:64px minmax(0,1fr); gap:10px; align-items:center; position:relative; border:1px dashed #aaa9a2; background:#eeede7; overflow:hidden; }
 .pdp-logo-upload > img { width:64px; height:64px; object-fit:contain; background:#fff; border:1px solid #d8d5ca; }
 .pdp-logo-upload__mark { width:64px; height:64px; display:grid; place-items:center; background:var(--ink); color:var(--acid); font:700 17px var(--headline); }

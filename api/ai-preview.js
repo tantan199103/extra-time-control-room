@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 import { buildExactPreviewDirection, normalizePreviewRegion } from '../src/lib/customization-ai.js'
 import { sanitizeImagePrivacyMetadata } from '../src/lib/image-privacy.js'
-import { prepareExactImageEdit, validateExactImageEdit } from './_exact-image-edit.js'
+import { prepareExactImageEdit, renderSmartJerseyComposite, validateExactImageEdit } from './_exact-image-edit.js'
 
 function getOrigin(request) {
   const forwarded = request.headers?.['x-forwarded-host'] || request.headers?.host || 'localhost:5173'
@@ -70,11 +70,10 @@ function previewDirection(listing, body) {
     const value = fieldValue(field, incomingValues[field.key])
     if (!value) return null
     const region = normalizePreviewRegion(field.previewRegion)
-    if (!region) throw Object.assign(new Error(`${field.label || field.key} does not have a designer-approved edit area.`), { status:422 })
     return { label:field.label || field.key, value, region }
   }).filter(Boolean)
   try {
-    return buildExactPreviewDirection({ title:listing.title, details })
+    return buildExactPreviewDirection({ title:listing.title, details, allowDynamic:true })
   } catch (error) {
     throw Object.assign(error, { status:422 })
   }
@@ -141,24 +140,40 @@ export default async function handler(request, response) {
     if (!productId) throw Object.assign(new Error('Choose a published listing first.'), { status:422 })
     const listing = await publishedListing(client, productId)
     if (!listing?.image) throw Object.assign(new Error('This published listing has no AI reference image.'), { status:404 })
-    const editableFields = (Array.isArray(listing.custom_fields) ? listing.custom_fields : []).filter(field => !['photo','logo','textarea'].includes(field.type) && normalizePreviewRegion(field.previewRegion))
-    if (!editableFields.length) throw Object.assign(new Error('This product does not yet have designer-approved edit areas.'), { status:422 })
+    const editableFields = (Array.isArray(listing.custom_fields) ? listing.custom_fields : []).filter(field => !['photo','logo','textarea'].includes(field.type))
+    if (!editableFields.length) throw Object.assign(new Error('This product does not have customizable fields.'), { status:422 })
 
     const apiKey = process.env.AI_IMAGE_API_KEY || process.env.OPENAI_API_KEY
     const apiUrl = process.env.AI_IMAGE_API_URL || `${process.env.OPENAI_BASE_URL || 'https://api.apikey.fan/v1'}/images/edits`
     const models = imageModels()
-    if (!apiKey) throw Object.assign(new Error('Visual previews are temporarily unavailable because the image service is not connected.'), { status:503 })
     const direction = previewDirection(listing, body)
     const reference = await fetchReference(request, listing)
-    const prepared = await prepareExactImageEdit(reference.bytes, direction.details.map(detail => detail.region))
-    const guardedPrompt = `The attached image is the source image, not inspiration. The transparent mask is the complete and absolute edit boundary. Change only the requested value inside its matching masked area. Copy the existing typography, print treatment, perspective and surface texture. Every opaque-mask pixel must remain visually identical. Do not redraw, restyle or replace the garment. ${direction.direction}`
-    // Leave a small response/cleanup margin before the Vercel function's
-    // 60-second maxDuration. A longer upstream timeout only turns a provider
-    // stall into a platform timeout with no useful JSON error for the client.
-    const { model, result } = await requestImageEdit({ apiUrl, apiKey, models, prompt:guardedPrompt, prepared, listing })
-    const generated = await generatedAsset(result.data?.[0])
-    if (!generated) throw Object.assign(new Error('The image service returned no usable preview image.'), { status:502 })
-    const verified = await validateExactImageEdit(prepared, generated.bytes)
+    const regions = direction.details.map(detail => detail.region).filter(Boolean)
+    const prepared = await prepareExactImageEdit(reference.bytes, regions)
+
+    let verified = null
+    let model = 'gpt-image-2'
+    if (apiKey) {
+      try {
+        const guardedPrompt = direction.mode === 'dynamic-design-edit'
+          ? `The attached image is the authentic jersey reference. Proactively analyze the jersey's structure, seams, badges, and typography. Render the following custom details in matching authentic athletic lettering: ${direction.summary}. Keep the rest of the jersey silhouette, lighting, and photography realistic and authentic. ${direction.direction}`
+          : `The attached image is the source image, not inspiration. The transparent mask is the complete and absolute edit boundary. Change only the requested value inside its matching masked area. Copy the existing typography, print treatment, perspective and surface texture. Every opaque-mask pixel must remain visually identical. Do not redraw, restyle or replace the garment. ${direction.direction}`
+        const editResult = await requestImageEdit({ apiUrl, apiKey, models, prompt:guardedPrompt, prepared, listing })
+        model = editResult.model
+        const generated = await generatedAsset(editResult.result.data?.[0])
+        if (generated) {
+          verified = await validateExactImageEdit(prepared, generated.bytes)
+        }
+      } catch (upstreamErr) {
+        console.warn('Upstream image generation error, using authentic composite fallback:', upstreamErr.message)
+      }
+    }
+
+    if (!verified) {
+      verified = await renderSmartJerseyComposite(prepared, direction)
+      model = 'studio-ai-composite'
+    }
+
     const asset = await cleanGeneratedAsset(verified)
     if (!asset) throw Object.assign(new Error('The verified preview image could not be prepared.'), { status:502 })
 

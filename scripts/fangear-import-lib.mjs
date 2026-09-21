@@ -2,8 +2,22 @@ import { createHash } from 'node:crypto'
 import { seoDescription } from '../src/lib/seo-text.js'
 
 export const SOURCE_HOST = 'fangearsport.com'
+export const SOURCE_HOSTS = Object.freeze([
+  'fangearsport.com',
+  'fanatics.com',
+  'footballfanatics.com',
+  'fanatics.frgimages.com',
+  'fansedge.com',
+  'nflshop.com',
+  'nbastore.com',
+  'mlbshop.com',
+  'nhlshop.com'
+])
 export const IMPORT_ARTWORK_LOCK = 70
 export const IMPORT_STATUS = 'DRAFT'
+
+const SOURCE_HOSTS_PATTERN = SOURCE_HOSTS.map(host => host.replace('.', '\\.')).join('|')
+const BRAND_KEYWORDS_PATTERN = /\b(?:fangear(?:sport)?|fgs\s*pro|fanatics(?:\s*(?:branded|authentic|exclusive|pro\s*line))?|fansedge|nfl\s*shop|nba\s*store|mlb\s*shop|nhl\s*shop|officially?\s+licensed)\b/gi
 
 const LEAGUES = new Map([
   ['nfl', { key: 'nfl', name: 'NFL', sport: 'Football' }],
@@ -73,7 +87,7 @@ export function minorToMoney(value, minorUnit = 2) {
 
 export function cleanTag(value) {
   const tag = slugify(value, '')
-  if (!tag || /fangear|fangearsport|fgs|gpt|openai|prompt|ai-image/.test(tag)) return ''
+  if (!tag || /fangear|fangearsport|fgs|fanatics|fansedge|gpt|openai|prompt|ai-image/.test(tag)) return ''
   return tag
 }
 
@@ -81,7 +95,7 @@ export function stripSourceUrls(value) {
   return String(value || '')
     .replace(/https?:\/\/[^\s"'<>]+/gi, '')
     .replace(/www\.[^\s"'<>]+/gi, '')
-    .replace(new RegExp(`(?:https?:\\/\\/)?(?:[^\\s"'<>]*\\.)?${SOURCE_HOST.replace('.', '\\.')}(?:[^\\s"'<>]*)`, 'gi'), '')
+    .replace(new RegExp(`(?:https?:\\/\\/)?(?:[^\\s"'<>]*\\.)?(?:${SOURCE_HOSTS_PATTERN})(?:[^\\s"'<>]*)`, 'gi'), '')
 }
 
 export function sanitizePublicText(value) {
@@ -91,7 +105,7 @@ export function sanitizePublicText(value) {
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\b(?:gtx-trans|google translate|translate widget)\b/gi, ' ')
-    .replace(/\b(?:fangear(?:sport)?|fgs\s*pro)\b/gi, ' ')
+    .replace(BRAND_KEYWORDS_PATTERN, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -107,7 +121,7 @@ export function sanitizeSourceHtml(value) {
     .replace(/<\/a>/gi, '')
     .replace(/\s+>/g, '>')
   html = stripSourceUrls(html)
-  html = html.replace(/\b(?:fangear(?:sport)?|fgs\s*pro|gtx-trans|google translate)\b/gi, '')
+  html = html.replace(BRAND_KEYWORDS_PATTERN, '')
   return html
 }
 
@@ -334,7 +348,7 @@ export function normalizeSourceProduct(product, { categories = [], variationDeta
 
 export function publicListingHasSourceReferences(listing) {
   const serialized = JSON.stringify(listing || {})
-  return new RegExp(`(?:${SOURCE_HOST.replace('.', '\\.')})|(?:www\\.)|(?:gpt[-_ ]?image|openai)|(?:\\bprompt\\b)`, 'i').test(serialized)
+  return new RegExp(`(?:${SOURCE_HOSTS_PATTERN})|(?:www\\.)|(?:gpt[-_ ]?image|openai)|(?:\\bprompt\\b)|(?:fanatics)`, 'i').test(serialized)
 }
 
 export function buildCollectionPlan(categories = [], products = []) {

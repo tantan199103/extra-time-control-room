@@ -20,22 +20,49 @@ export function normalizePreviewRegion(region) {
 
 export function productPreviewReadiness(fields = []) {
   const supported = (Array.isArray(fields) ? fields : []).filter(field => !['photo', 'textarea'].includes(field?.type))
-  const ready = supported.filter(field => normalizePreviewRegion(field?.previewRegion))
+  const explicitReady = supported.filter(field => normalizePreviewRegion(field?.previewRegion))
   const missing = supported.filter(field => !normalizePreviewRegion(field?.previewRegion))
+  const hasExplicit = explicitReady.length > 0
+  const ready = hasExplicit ? explicitReady : supported
   return {
-    enabled: ready.length > 0,
-    readyCount: ready.length,
+    enabled: supported.length > 0,
+    readyCount: hasExplicit ? explicitReady.length : supported.length,
     supportedCount: supported.length,
     readyFields: ready,
-    missingFields: missing
+    missingFields: hasExplicit ? missing : [],
+    dynamic: !hasExplicit && supported.length > 0,
+    allFields: supported
   }
 }
 
-export function buildExactPreviewDirection({ title, details = [] } = {}) {
+export function buildDynamicPreviewDirection({ title, details = [] } = {}) {
   const requestedDetails = details
     .map(item => ({ label:clean(item?.label, 80), value:clean(item?.value, 500), region:normalizePreviewRegion(item?.region) }))
     .filter(item => item.label && item.value)
-  if (requestedDetails.some(item => !item.region)) throw new Error('Every personal detail needs a designer-approved edit area.')
+  if (!requestedDetails.length) throw new Error('Add at least one personal detail.')
+  const normalizedDetails = requestedDetails.slice(0, 12)
+  const changes = normalizedDetails.map(item => `${item.label}: ${item.value}`).join('; ')
+  const productTitle = clean(title, 140) || 'this jersey'
+  return {
+    mode:'dynamic-design-edit',
+    summary:changes,
+    details:normalizedDetails,
+    direction:[
+      `Analyze the garment photo of “${productTitle}” and proactively apply the requested personalization.`,
+      `Customer personalization details: ${changes}.`,
+      'Intelligently analyze the jersey design, silhouette, collar, badges, seams, and fabric weave to determine the natural, authentic placement for each detail (e.g. arched player nameplate across upper back/chest, squad number centered below name, matching team color accents).',
+      'Render the custom text and numbers with matching athletic typography, correct perspective, fabric fold curvature, realistic lighting and surface texture.',
+      'Preserve the original jersey pattern, team crests, sponsors, background, camera angle, and photograph authentic quality.'
+    ].join(' ')
+  }
+}
+
+export function buildExactPreviewDirection({ title, details = [], allowDynamic = false } = {}) {
+  const requestedDetails = details
+    .map(item => ({ label:clean(item?.label, 80), value:clean(item?.value, 500), region:normalizePreviewRegion(item?.region) }))
+    .filter(item => item.label && item.value)
+  if (!allowDynamic && requestedDetails.some(item => !item.region)) throw new Error('Every personal detail needs a designer-approved edit area.')
+  if (allowDynamic && requestedDetails.some(item => !item.region)) return buildDynamicPreviewDirection({ title, details })
   const normalizedDetails = requestedDetails.slice(0, 12)
   if (!normalizedDetails.length) throw new Error('Add at least one personal detail.')
   const changes = normalizedDetails.map(item => `${item.label}: ${item.value}`).join('; ')

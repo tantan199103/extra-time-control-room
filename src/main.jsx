@@ -1184,6 +1184,51 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     } catch {}
     navigate(`/studio?product=${product.handle || product.id}`)
   }
+  const [previewingAi, setPreviewingAi] = useState(false)
+  const previewWithAi = async () => {
+    const hasValues = Object.values(customValues).some(v => String(v || '').trim())
+    if (!hasValues) {
+      setCustomError('Add a player name, number or custom detail first.')
+      return
+    }
+    setPreviewingAi(true); setCustomError('')
+    try {
+      const response = await apiFetch('/api/ai-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getCustomerSessionId(),
+          productId: product.id,
+          values: customValues
+        })
+      })
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(body.error || 'Visual preview generation failed.')
+      const preview = {
+        productId: product.id,
+        previewId: body.previewId,
+        imageUrl: body.imageUrl,
+        storage: body.storage,
+        prompt: body.direction || body.summary || Object.entries(customValues).map(([k,v]) => `${k}: ${v}`).join('; '),
+        mode: 'exact-image-edit',
+        values: customValues,
+        expiresAt: Date.now() + Number(body.expiresIn || 86400) * 1000
+      }
+      setAttachedPreview(preview)
+      setGalleryIndex(0)
+      setAdded(false)
+      try {
+        window.sessionStorage.setItem('extra-time-ai-preview', JSON.stringify(preview))
+        window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({
+          values: customValues, assetRefs, note: customNote, selections, requestKey, logoConsent
+        }))
+      } catch {}
+    } catch (err) {
+      setCustomError(err instanceof Error ? err.message : 'Visual preview generation failed.')
+    } finally {
+      setPreviewingAi(false)
+    }
+  }
   const add = async () => {
     if (!selectedVariant) { if (sizeName && !selections[sizeName]) setFinder(true); else setCustomError('Choose every product option before adding to your bag.'); return }
     if (soldOut) { setCustomError('This variation is sold out. Choose another option.'); return }
@@ -1222,7 +1267,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={18}/><span><small>90+ CLUB BENEFIT</small><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your member price is ready':'SAVE 20–40% ON ELIGIBLE PIECES'}</strong><em>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'The secure member price is calculated in your bag.':'Member pricing plus eligible standard-shipping benefits.'}</em></span><ArrowRight size={16}/></button>
         {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); const isSize = option.name === sizeName; const displayValue = value => isSize ? canonicalSize(value) : value; return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{isSize && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] ? displayValue(selections[option.name]) : 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{option.values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${displayValue(value)}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : displayValue(value)}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}><i/>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'}</p>}
-        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={openAi} disabled={!hasStructuredPreview} title={hasStructuredPreview ? 'Open AI studio to preview changes on the garment.' : 'A designer must approve at least one exact edit area first.'}><Sparkles size={16}/><span><strong>{hasStructuredPreview ? (attachedPreview ? 'UPDATE AI PREVIEW IN STUDIO' : 'PREVIEW WITH AI') : 'VISUAL PREVIEW AWAITING DESIGNER SETUP'}</strong><small>{hasStructuredPreview ? (attachedPreview ? 'Click to adjust your custom details in AI Studio.' : `Render ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} directly onto this jersey image.`) : 'Personalization will be reviewed manually by the studio.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
+        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button className={!personalized ? 'is-active' : ''} onClick={() => chooseOrderType(false)}><span>Standard</span><small>As shown</small></button><button className={personalized ? 'is-active' : ''} onClick={() => chooseOrderType(true)}><span>Personalized</span><small>{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''}</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={previewWithAi} disabled={!hasStructuredPreview || previewingAi} title={hasStructuredPreview ? 'Render your personal details directly onto this jersey.' : 'Personalization will be reviewed manually by the studio.'}><Sparkles size={16}/><span><strong>{previewingAi ? 'RENDERING AI PREVIEW…' : hasStructuredPreview ? (attachedPreview ? 'UPDATE AI PREVIEW' : 'PREVIEW WITH AI') : 'VISUAL PREVIEW AWAITING SETUP'}</strong><small>{previewingAi ? 'Analyzing jersey design & applying custom details…' : hasStructuredPreview ? (attachedPreview ? 'Click to re-render preview with your latest changes.' : `Render ${previewReadiness.readyFields.slice(0,3).map(field => field.label).join(', ')} directly onto this jersey image.`) : 'Personalization will be reviewed manually by the studio.'}</small></span>{hasStructuredPreview ? <ArrowRight size={16}/> : <Lock size={16}/>}</button>{hasStructuredPreview && <button type="button" className="pdp-custom__studio-link" onClick={openAi}><ArrowRight size={12}/> Open Studio side-by-side</button>}{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__trust-line" aria-label="Checkout and order assurances"><span><Lock size={14}/> Secure checkout</span><span><PackageCheck size={14}/> Tracked delivery</span><span><ShieldCheck size={14}/> {personalized ? 'Custom checked' : 'Quality checked'}</span></div>
         <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || 'A performance jersey made for match-day stories and personal details.'}</p><p><strong>Fit & care</strong>Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.</p></div></details></div>
@@ -1511,9 +1556,9 @@ function App() {
   const [appInstalled, setAppInstalled] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const lastScrollY = useRef(window.scrollY)
   const customProduct = products.find(product => product.customFields?.length) || products[0]
-  const productSlug = path.startsWith('/product/') ? decodeURIComponent(path.split('/').pop()) : ''
+  const productSlug = path.startsWith('/product/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : ''
   const routeProduct = productSlug ? findStorefrontProduct(products,productSlug) : null
-  const collectionHandle = path.startsWith('/collection/') ? decodeURIComponent(path.split('/').pop()) : new URLSearchParams(search).get('collection')
+  const collectionHandle = path.startsWith('/collection/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : new URLSearchParams(search).get('collection')
   const routeCollection = collectionHandle ? collections.find(collection => collection.handle === collectionHandle || collection.id === collectionHandle) : null
   const routeLeague = path.startsWith('/league/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
   const routeTeam = path.startsWith('/team/') ? findTeam(routeLeague?.key, decodeURIComponent(path.split('/')[3] || '')) : null
