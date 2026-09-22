@@ -9,6 +9,7 @@ api/*.js
 !api/newsletter-subscribe.js
 !api/ai-preview.js
 !api/customization-order.js
+!api/admin-import-fanatics.js
 !api/_logo-request.js
 !api/_exact-image-edit.js
 !api/_security.js
