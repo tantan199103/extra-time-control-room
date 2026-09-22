@@ -995,10 +995,10 @@ function CustomOptions({ product, products = [], onAdd }) {
       <div className="section-title-row custom-options__head">
         <div>
           <div className="custom-options__pill">
-            <Sparkles size={13}/> AI MATCHDAY CUSTOM LAB
+            <Sparkles size={13}/> MAKE IT YOURS · AI MATCHDAY CUSTOM LAB
           </div>
           <h2 id="custom-options-heading">PERSONALIZE<br /><em>YOUR JERSEY.</em></h2>
-          <p className="custom-options__lede">Pick your team, customize your name & number, and render an authentic matchday preview before you order.</p>
+          <p className="custom-options__lede">Pick your league & team, enter your custom name & number, render a photorealistic matchday preview, and wear your moment.</p>
         </div>
         <ButtonLink onClick={() => navigate('/shop')}>EXPLORE ALL LEAGUES</ButtonLink>
       </div>

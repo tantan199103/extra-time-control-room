@@ -54,3 +54,34 @@ test('home customizer links name and number to pdp target query and session stor
   assert.match(main, /searchParams\.get\('name'\)/)
   assert.match(main, /searchParams\.get\('number'\)/)
 })
+
+test('mobile personalizer consolidates timeline and covers 4 major leagues with full size range and no popular chips', async () => {
+  const [personalizer, styles] = await Promise.all([
+    read('../src/HomeJerseyPersonalizer.jsx'),
+    read('../src/styles.css')
+  ])
+
+  // 4 Simple steps timeline
+  assert.match(personalizer, /TIMELINE_STEPS/)
+  assert.match(personalizer, /home-personalizer__timeline/)
+
+  // 4 Major leagues represented
+  assert.match(personalizer, /league:\s*'NFL'/)
+  assert.match(personalizer, /league:\s*'MLB'/)
+  assert.match(personalizer, /league:\s*'NBA'/)
+  assert.match(personalizer, /league:\s*'MLS'/)
+
+  // Popular chips removed
+  assert.doesNotMatch(personalizer, /home-personalizer__presets/)
+  assert.doesNotMatch(personalizer, /Popular:/)
+
+  // Full size range (XS to 7XL)
+  assert.match(personalizer, /FULL_JERSEY_SIZES/)
+  for (const size of ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '7XL']) {
+    assert.match(personalizer, new RegExp(`'${size}'`))
+  }
+
+  // Mobile home-path consolidated
+  assert.match(styles, /\.home-path\s*\{\s*display:\s*none\s*!important;/)
+})
+
