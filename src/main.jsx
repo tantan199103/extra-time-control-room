@@ -392,11 +392,10 @@ function Hero({ content = {}, customProduct }) {
 }
 
 function HomePath({ customProduct }) {
-  const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
   const steps = [
-    { num: '01', title: 'Pick a design', desc: 'Curated cuts & team colorways.', icon: Shirt },
-    { num: '02', title: 'Add name & number', desc: 'Personalize details that make it yours.', icon: Tag },
-    { num: '03', title: 'Live preview', desc: 'Instant mockup before production.', icon: Sparkles },
+    { num: '01', title: 'Pick a team', desc: 'NFL & MLB official catalogue cuts.', icon: Shirt },
+    { num: '02', title: 'Add name & number', desc: 'Custom player or your own name.', icon: Tag },
+    { num: '03', title: 'Render with AI', desc: 'Instant photorealistic matchday render.', icon: Sparkles },
     { num: '04', title: 'We craft & deliver', desc: 'Zero-crack dye-sub with tracked shipping.', icon: PackageCheck }
   ]
   return (
@@ -404,9 +403,9 @@ function HomePath({ customProduct }) {
       <div className="home-path__intro">
         <span>CUSTOM JERSEYS / FOUR SIMPLE STEPS</span>
         <h2 id="home-path-heading">MAKE IT<br /><em>YOURS.</em></h2>
-        <p>Choose a design, add the details that matter and preview your jersey before it reaches the pitch.</p>
+        <p>Choose your league, add the details that matter and render an authentic matchday preview before it reaches the pitch.</p>
         <div className="home-path__actions">
-          <button className="button button--dark" onClick={() => navigate(customTarget)}>START CUSTOMIZING <ArrowRight size={16}/></button>
+          <button className="button button--dark" onClick={() => document.getElementById('custom-options')?.scrollIntoView({ behavior: 'smooth' })}>TRY THE CUSTOMIZER <ArrowDown size={16}/></button>
           <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
         </div>
       </div>
@@ -969,38 +968,23 @@ function CustomTeaser({ product, products = [], onAdd }) {
 }
 
 function CustomOptions({ product, products = [], onAdd }) {
-  const handleOrder = () => {
-    let customQuery = ''
-    try {
-      const saved = JSON.parse(window.sessionStorage.getItem('jersevo_home_custom') || '{}')
-      if (saved.name) customQuery += `&name=${encodeURIComponent(saved.name)}`
-      if (saved.number) customQuery += `&number=${encodeURIComponent(saved.number)}`
-    } catch {}
-    const target = `/product/${product?.handle || product?.id || 'touchline'}?custom=1${customQuery}`
-    navigate(target)
-  }
-
   return (
     <section className="custom-options section" id="custom-options" aria-labelledby="custom-options-heading">
-      <div className="custom-options__board">
-        <div className="custom-options__copy">
+      <div className="section-title-row custom-options__head">
+        <div>
           <div className="custom-options__pill">
-            <Sparkles size={13}/> LIVE CUSTOMIZER PLAYGROUND
+            <Sparkles size={13}/> AI MATCHDAY CUSTOM LAB
           </div>
-          <span>REAL-TIME PREVIEW · INSTANT ON-DEMAND</span>
           <h2 id="custom-options-heading">PERSONALIZE<br /><em>YOUR JERSEY.</em></h2>
-          <p>Edit only the two details that matter. The supplied jersey design stays locked while the rear view updates live.</p>
-
-          <button className="button button--dark custom-options__cta" onClick={handleOrder}>
-            CONTINUE WITH THIS JERSEY <ArrowRight size={16}/>
-          </button>
+          <p className="custom-options__lede">Pick your team, customize your name & number, and render an authentic matchday preview before you order.</p>
         </div>
+        <ButtonLink onClick={() => navigate('/shop')}>EXPLORE ALL LEAGUES</ButtonLink>
+      </div>
 
-        <div className="custom-options__stage">
-          <Suspense fallback={<div className="home-personalizer__loading">Loading live jersey listings…</div>}>
-            <HomeJerseyPersonalizer onAdd={onAdd} product={product} products={products} />
-          </Suspense>
-        </div>
+      <div className="custom-options__stage">
+        <Suspense fallback={<div className="home-personalizer__loading">Loading live jersey listings…</div>}>
+          <HomeJerseyPersonalizer onAdd={onAdd} product={product} products={products} />
+        </Suspense>
       </div>
     </section>
   )

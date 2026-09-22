@@ -292,6 +292,20 @@ a { color: inherit; }
   padding: 0;
 }
 
+.home-personalizer__body {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.15fr);
+  gap: clamp(24px, 4vw, 44px);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .home-personalizer__body {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
 /* 1. League Tabs Bar */
 .home-personalizer__leagues-bar {
   display: flex;
@@ -3349,30 +3363,9 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 /* CustomOptions & Live Customizer Playground */
 .custom-options { min-height: auto; padding-top: 60px; padding-bottom: 64px; background: #e8e7e1; position: relative; overflow: hidden; }
 .custom-options::before { content: '30%'; position: absolute; right: -20px; top: -5px; color: rgba(10,10,10,.05); font: 800 clamp(180px, 26vw, 420px)/.7 var(--headline); letter-spacing: -.1em; pointer-events: none; }
-.custom-options__board { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.2fr); gap: clamp(32px, 6vw, 84px); align-items: center; position: relative; z-index: 1; }
-.custom-options__copy { display: flex; flex-direction: column; }
-.custom-options__copy > span { color: var(--signal); font: 600 10px var(--body); letter-spacing: .1em; }
-.custom-options__copy h2 { margin: 12px 0 14px; font: 700 clamp(36px, 4.2vw, 56px)/.85 var(--headline); letter-spacing: -.04em; }
-.custom-options__copy p { max-width: 440px; margin: 0; font-size: 14px; line-height: 1.6; color: var(--muted); }
-.custom-options__pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; margin-bottom: 12px; background: rgba(215, 44, 44, 0.1); color: var(--signal); font: 700 10px var(--body); letter-spacing: 0.08em; border-radius: 999px; width: max-content; }
-.custom-playground { background: var(--paper); border: 1px solid var(--line); padding: 20px; margin: 22px 0 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); }
-.custom-playground__heading { display: block; font: 700 10px var(--body); letter-spacing: 0.08em; color: var(--ink); margin-bottom: 12px; }
-.custom-playground__inputs { display: grid; grid-template-columns: 1fr 78px; gap: 12px; }
-.custom-playground__field { display: flex; flex-direction: column; gap: 4px; }
-.custom-playground__field label { font: 700 9px var(--body); color: var(--muted); letter-spacing: 0.06em; }
-.custom-playground__field input { height: 44px; padding: 0 14px; background: var(--chalk); border: 1px solid var(--line); font: 700 18px var(--headline); letter-spacing: 0.05em; color: var(--ink); outline: none; transition: border-color 160ms ease, background 160ms ease; }
-.custom-playground__field input:focus { border-color: var(--ink); background: #fff; }
-.custom-playground__presets { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.custom-playground__preset-tip { font: 600 10px var(--body); color: var(--muted); }
-.custom-playground__chip { padding: 5px 12px; background: var(--chalk); border: 1px solid var(--line); font: 700 10px var(--headline); letter-spacing: 0.04em; color: var(--ink); cursor: pointer; transition: all 140ms ease; }
-.custom-playground__chip:hover, .custom-playground__chip.is-active { background: var(--ink); color: var(--chalk); border-color: var(--ink); }
-.custom-options__cta { align-self: flex-start; }
-.custom-options__stage { min-height: auto; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; background: var(--paper); border: 1px solid var(--line); padding: 20px; position: relative; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); }
+.custom-options .section-title-row { margin-bottom: 28px; }
+.custom-options__stage { min-height: auto; width: 100%; display: block; position: relative; }
 .custom-options__stage .jersey-svg { display: none; }
-.custom-options__svg-wrap { width: 100%; display: grid; place-items: center; }
-.custom-options__live-indicator { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font: 700 9px var(--body); letter-spacing: 0.08em; color: var(--muted); }
-.custom-options__tag { margin-top: 14px; font: 700 9px var(--body); letter-spacing: 0.08em; color: var(--muted); }
-.live-dot { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
 .custom-options__stage > .home-personalizer { width: 100%; min-height: auto; padding: 0; }
 
 /* Quality Proof */
@@ -3552,30 +3545,19 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .product-rail__slide { flex: 0 0 58vw; max-width: 230px; scroll-snap-align: start; }
   .custom-options { min-height: 0; padding: 40px 16px 44px; display: block; }
   .custom-options::before { display: none; }
-  .custom-options__board { display: flex; flex-direction: column; gap: 20px; }
+  .custom-options .section-title-row { margin-bottom: 20px; }
   .custom-options__stage {
-    min-height: 360px;
-    padding: 24px 0 16px;
-    order: -1;
-    width: 100vw;
-    margin-left: -16px;
-    margin-right: -16px;
-    border-left: 0;
-    border-right: 0;
-    border-radius: 0;
-    background: var(--paper);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    min-height: auto;
+    padding: 0;
+    width: 100%;
+    margin: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
   }
   .custom-options__stage .jersey-svg { display: none; }
-  .custom-options__stage > .home-personalizer { min-height: auto; padding: 0 12px; }
-  .custom-options__copy h2 { margin: 12px 0 10px; font-size: clamp(24px, 7.5vw, 32px); line-height: .92; }
-  .custom-options__copy p { max-width: 100%; font-size: 12px; }
-  .custom-options__cta { width: 100%; margin-top: 16px; align-self: stretch; }
-  .custom-playground { padding: 14px; margin: 16px 0 14px; }
-  .custom-playground__inputs { grid-template-columns: 1fr 65px; gap: 8px; }
-  .custom-playground__field input { height: 40px; font-size: 16px; }
-  .custom-playground__chip { padding: 4px 9px; font-size: 10px; }
+  .custom-options__stage > .home-personalizer { min-height: auto; padding: 0; }
   .quality-proof { padding-top: 48px; padding-bottom: 48px; }
   .quality-proof__head { display: block; margin-bottom: 24px; }
   .quality-proof h2 { margin-top: 14px; font-size: clamp(24px, 7.5vw, 32px); line-height: .92; }

@@ -341,15 +341,14 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
         })}
       </div>
 
-      {/* 2. Real Listing Photo Stage with Live Athletic Decal Overlay & AI Generated State */}
-      <div
-        className="home-personalizer__stage-wrap"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <span className="axis-label axis-label--top">CATALOGUE MATCHDAY · AI LIVE CUSTOMIZER</span>
-
-        <div className="home-personalizer__photo-stage">
+      {/* 2. Main Two-Column Stage: Left Photo + Right Controls */}
+      <div className="home-personalizer__body">
+        <div
+          className="home-personalizer__stage-wrap"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="home-personalizer__photo-stage">
           <img
             src={activeImage}
             alt={activeListing.alt}
@@ -438,8 +437,6 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
             ))}
           </div>
         </div>
-
-        <span className="axis-label axis-label--bottom">OFFICIAL CATALOGUE ITEM · MADE ON DEMAND</span>
       </div>
 
       {/* 3. PDP-Like Interactive Customizer Controls */}
@@ -604,5 +601,6 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
         </div>
       </div>
     </div>
+  </div>
   )
 }
