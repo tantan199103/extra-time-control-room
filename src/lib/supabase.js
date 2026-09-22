@@ -336,6 +336,28 @@ export async function saveAdminProduct(product) {
   return { data:normalizeProduct(data), source:'supabase', error:null }
 }
 
+export async function deleteAdminProduct(productId) {
+  if (!productId) return { error: 'Listing ID is required.', source: 'error' }
+  if (!supabase) return { error: null, source: 'preview' }
+
+  const { error: rpcError } = await supabase.rpc('pod_delete_listing', { target_id: productId })
+  if (!rpcError) return { error: null, source: 'supabase' }
+
+  try {
+    await Promise.allSettled([
+      supabase.from('pod_collection_products').delete().eq('product_id', productId),
+      supabase.from('pod_product_revisions').delete().eq('product_id', productId),
+      supabase.from('pod_product_variants').delete().eq('product_id', productId)
+    ])
+    await supabase.from('pod_product_options').delete().eq('product_id', productId)
+    const { error } = await supabase.from('pod_products').delete().eq('id', productId)
+    if (error) return { error: error.message, source: 'supabase' }
+    return { error: null, source: 'supabase' }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Delete failed.', source: 'supabase' }
+  }
+}
+
 const mediaTypes = new Map([
   ['image/jpeg','IMAGE'], ['image/png','IMAGE'], ['image/webp','IMAGE'], ['image/avif','IMAGE'],
   ['video/mp4','VIDEO'], ['video/webm','VIDEO']

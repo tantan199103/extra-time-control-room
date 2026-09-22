@@ -8,7 +8,7 @@ import {
 import VariantMatrix from './VariantMatrix'
 import { catalogLegalReview, createProductDraft, customFieldPresets, duplicateProductDraft, productCompleteness, seoReviewGate, slugify } from './lib/catalog-model'
 import { googleMerchantReadiness } from './lib/google-merchant'
-import { fetchAdminProduct, requestAiListingCopy, requestAiListingMedia, requestAiListingReview, saveAdminProduct, uploadProductMedia, supabase } from './lib/supabase'
+import { deleteAdminProduct, fetchAdminProduct, requestAiListingCopy, requestAiListingMedia, requestAiListingReview, saveAdminProduct, uploadProductMedia, supabase } from './lib/supabase'
 import { CUSTOM_GUIDE_SLOT_ID, LISTING_MEDIA_SLOTS, MODEL_MEDIA_SLOT_IDS, listingMediaRole, listingMediaSlot } from './lib/listing-media'
 import { normalizePreviewRegion } from './lib/customization-ai'
 import { CATALOG_CATEGORY_OPTIONS, SEASON_DROP_OPTIONS } from './lib/catalog-taxonomy'
@@ -49,8 +49,8 @@ function SelectField({ label, value, onChange, children, hint }) {
   return <label className="listing-field listing-field--select"><span>{label}</span><select value={value ?? ''} onChange={event => onChange(event.target.value)}>{children}</select><ChevronDown size={14}/>{hint && <small>{hint}</small>}</label>
 }
 
-function WorkspaceHeader({ draft, dirty, saving, previewProduct, onSave, onPublish, onDuplicate }) {
-  return <header className="listing-workspace__header"><button className="listing-workspace__back" onClick={() => navigate('/admin/catalog')}><ArrowLeft size={15}/> Products</button><div className="listing-workspace__identity"><span>{draft._persisted ? 'LISTING' : 'UNSAVED DRAFT'} / {draft.sku}</span><h1>{draft.title || 'Untitled listing'}</h1></div><div className="listing-workspace__actions"><span className={`listing-dirty ${dirty ? 'is-dirty' : ''}`}><i/>{dirty ? 'Unsaved changes' : 'Up to date'}</span><button className="admin-button admin-button--outline" onClick={onDuplicate}><Copy size={14}/> Duplicate</button><button className="admin-button admin-button--outline" disabled={!previewProduct} title={previewProduct ? 'Open the current published storefront listing.' : 'Publish this listing before opening its storefront page.'} onClick={() => previewProduct && window.open(`/product/${previewProduct.handle || previewProduct.id}`, '_blank', 'noopener,noreferrer')}><Eye size={14}/> Preview</button><button className="admin-button admin-button--outline" disabled={saving} onClick={() => onSave()}><Save size={14}/>{saving ? 'Saving…' : 'Save changes'}</button><button className="admin-button admin-button--dark" disabled={saving || draft.status === 'ARCHIVED'} onClick={onPublish}><PackageCheck size={14}/> Publish</button></div></header>
+function WorkspaceHeader({ draft, dirty, saving, deleting, previewProduct, onSave, onPublish, onDuplicate, onDelete }) {
+  return <header className="listing-workspace__header"><button className="listing-workspace__back" onClick={() => navigate('/admin/catalog')}><ArrowLeft size={15}/> Products</button><div className="listing-workspace__identity"><span>{draft._persisted ? 'LISTING' : 'UNSAVED DRAFT'} / {draft.sku}</span><h1>{draft.title || 'Untitled listing'}</h1></div><div className="listing-workspace__actions"><span className={`listing-dirty ${dirty ? 'is-dirty' : ''}`}><i/>{dirty ? 'Unsaved changes' : 'Up to date'}</span><button className="admin-button admin-button--danger" disabled={saving || deleting} title="Permanently delete this listing" onClick={onDelete}><Trash2 size={14}/> {deleting ? 'Deleting…' : 'Delete'}</button><button className="admin-button admin-button--outline" onClick={onDuplicate}><Copy size={14}/> Duplicate</button><button className="admin-button admin-button--outline" disabled={!previewProduct} title={previewProduct ? 'Open the current published storefront listing.' : 'Publish this listing before opening its storefront page.'} onClick={() => previewProduct && window.open(`/product/${previewProduct.handle || previewProduct.id}`, '_blank', 'noopener,noreferrer')}><Eye size={14}/> Preview</button><button className="admin-button admin-button--outline" disabled={saving || deleting} onClick={() => onSave()}><Save size={14}/>{saving ? 'Saving…' : 'Save changes'}</button><button className="admin-button admin-button--dark" disabled={saving || deleting || draft.status === 'ARCHIVED'} onClick={onPublish}><PackageCheck size={14}/> Publish</button></div></header>
 }
 
 function AiBriefFields({ brief, setBrief }) {
@@ -630,7 +630,7 @@ function PublishRail({ draft, update, completeness, automaticTags }) {
   )
 }
 
-export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
+export default function ListingWorkspace({ products, onSaved, onDuplicate, onDelete }) {
   const id = window.location.pathname.split('/').pop()
   const [newProduct] = useState(createProductDraft)
   const sourceProduct = products.find(product => product.id === id) || (id === 'new' ? newProduct : adminProducts.find(product => product.id === id) || null)
@@ -640,6 +640,7 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
   const [draft,setDraft] = useState(() => effectiveProduct || {})
   const [active,setActive] = useState('story')
   const [saving,setSaving] = useState(false)
+  const [deleting,setDeleting] = useState(false)
   const [dirty,setDirty] = useState(false)
   const [notice,setNotice] = useState('')
 
@@ -698,7 +699,25 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
     onDuplicate(copy)
     navigate(`/admin/products/${copy.id}`)
   }
+  const removeListing = async () => {
+    if (!window.confirm(`Permanently delete "${draft.title || draft.name || draft.id}"? This action cannot be undone.`)) return
+    setDeleting(true)
+    setNotice('')
+    try {
+      const result = await deleteAdminProduct(draft.id)
+      if (result.error) {
+        setNotice(`Not saved: ${result.error}`)
+        return
+      }
+      onDelete?.(draft.id)
+      navigate('/admin/catalog')
+    } catch (err) {
+      setNotice(`Not saved: ${err instanceof Error ? err.message : 'Delete failed.'}`)
+    } finally {
+      setDeleting(false)
+    }
+  }
   if(fetching) return <main className="admin-page"><p role="status">Loading listing…</p></main>
   if(!effectiveProduct) return <main className="admin-page"><h1>Listing not found</h1><button onClick={() => navigate('/admin/catalog')}>Back to products</button></main>
-  return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update} dirty={dirty}/>} {active==='media'&&<MediaPanel draft={draft} update={update} dirty={dirty}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving||draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span>{notice.includes('Rights and affiliation review required')&&<button type="button" style={{ marginLeft: 12, padding: '4px 10px', background: '#f8f04a', color: '#0a0a0a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }} onClick={async () => { update('aiMetadata', { ...(draft.aiMetadata || {}), catalogReview: { ...(draft.aiMetadata?.catalogReview || {}), status: 'APPROVED', reviewedAt: new Date().toISOString() } }); setNotice('Rights review marked as Approved. Saving listing now…'); setTimeout(() => save(), 100); }}>Duyệt & Lưu ngay ⚡</button>}</div>}</main>
+  return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} deleting={deleting} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate} onDelete={removeListing}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update} dirty={dirty}/>} {active==='media'&&<MediaPanel draft={draft} update={update} dirty={dirty}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving || deleting} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving || deleting || draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button><button className="listing-mobile-delete" disabled={saving || deleting} title="Permanently delete listing" onClick={removeListing}><Trash2 size={15}/>Delete</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span>{notice.includes('Rights and affiliation review required')&&<button type="button" style={{ marginLeft: 12, padding: '4px 10px', background: '#f8f04a', color: '#0a0a0a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }} onClick={async () => { update('aiMetadata', { ...(draft.aiMetadata || {}), catalogReview: { ...(draft.aiMetadata?.catalogReview || {}), status: 'APPROVED', reviewedAt: new Date().toISOString() } }); setNotice('Rights review marked as Approved. Saving listing now…'); setTimeout(() => save(), 100); }}>Duyệt & Lưu ngay ⚡</button>}</div>}</main>
 }
