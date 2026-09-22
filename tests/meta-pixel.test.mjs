@@ -15,7 +15,8 @@ import {
   trackAddPaymentInfo,
   trackPurchase,
   trackSearch,
-  trackLead
+  trackLead,
+  DEFAULT_PIXEL_ID
 } from '../src/lib/meta-pixel.js'
 
 test('Meta Pixel helper fails soft in node/SSR without window', () => {
@@ -117,4 +118,13 @@ test('Facebook Catalog feed route is configured in vercel.json rewrite', () => {
 test('Google Merchant and Facebook Catalog feed handles isFacebook request properly', async () => {
   const handlerModule = await import('../api/google-merchant-feed.js')
   assert.equal(typeof handlerModule.default, 'function')
+})
+
+test('index.html contains official Meta Pixel code snippet and DEFAULT_PIXEL_ID', () => {
+  assert.equal(DEFAULT_PIXEL_ID, '1684842090311448')
+  const indexHtml = fs.readFileSync(path.resolve('index.html'), 'utf8')
+  assert.match(indexHtml, /connect\.facebook\.net\/en_US\/fbevents\.js/)
+  assert.match(indexHtml, /fbq\('init',\s*'1684842090311448'\)/)
+  assert.match(indexHtml, /fbq\('track',\s*'PageView'\)/)
+  assert.match(indexHtml, /facebook\.com\/tr\?id=1684842090311448&ev=PageView&noscript=1/)
 })

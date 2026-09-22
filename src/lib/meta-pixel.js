@@ -4,6 +4,7 @@
  */
 
 const STORAGE_KEY = 'jersevo_fb_pixel_id'
+export const DEFAULT_PIXEL_ID = '1684842090311448'
 
 export function getMetaPixelId() {
   if (typeof window === 'undefined') return ''
@@ -11,6 +12,7 @@ export function getMetaPixelId() {
     window.__EXTRA_TIME_PIXEL_ID__ ||
     localStorage.getItem(STORAGE_KEY) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FACEBOOK_PIXEL_ID) ||
+    DEFAULT_PIXEL_ID ||
     ''
   ).trim()
 }
@@ -99,7 +101,13 @@ export function emitFbEvent(eventName, params = {}, isCustom = false) {
  * Standard Events
  */
 
+let isInitialPageView = true
+
 export function trackPageView(path = '') {
+  if (typeof window !== 'undefined' && isInitialPageView) {
+    isInitialPageView = false
+    return { eventName: 'PageView', params: path ? { page_path: path } : {}, isInitial: true, pixelId: getMetaPixelId() }
+  }
   return emitFbEvent('PageView', path ? { page_path: path } : {})
 }
 
