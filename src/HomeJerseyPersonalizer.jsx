@@ -333,8 +333,8 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
   const handleGenerateWithAi = async () => {
     const trimmedName = cleanName(name)
     const trimmedNumber = cleanNumber(number)
-    if (!trimmedName && !trimmedNumber) {
-      setAiNotice('Enter a name or number to render with AI.')
+    if (!name.trim() && !number.trim()) {
+      setAiNotice('Enter a name or number to render your jersey.')
       return
     }
 
@@ -620,7 +620,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
           <form className="home-personalizer__controls" onSubmit={e => e.preventDefault()}>
             <div className="home-personalizer__field">
               <label htmlFor="home-jersey-name">
-                NAME <span>MAX {MAX_NAME_LENGTH}</span>
+                NAME
               </label>
               <input
                 id="home-jersey-name"
@@ -637,7 +637,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
             </div>
             <div className="home-personalizer__field home-personalizer__field--number">
               <label htmlFor="home-jersey-number">
-                NUMBER <span>00–99</span>
+                NUMBER
               </label>
               <input
                 id="home-jersey-number"
@@ -661,16 +661,17 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               className="home-personalizer__btn-ai"
               onClick={handleGenerateWithAi}
               disabled={isGeneratingAi}
+              aria-label="Render Jersey"
             >
               {isGeneratingAi ? (
                 <>
                   <RefreshCw size={15} className="animate-spin" />
-                  <span>RENDERING WITH AI...</span>
+                  <span>RENDERING JERSEY...</span>
                 </>
               ) : (
                 <>
                   <Sparkles size={15} />
-                  <span>RENDER WITH AI</span>
+                  <span>RENDER JERSEY</span>
                 </>
               )}
             </button>

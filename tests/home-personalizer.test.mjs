@@ -14,6 +14,9 @@ test('homepage personalizer uses real catalogue league listings and AI name/numb
   assert.match(options, /PERSONALIZE<br \/>\s*<em>YOUR JERSEY\.<\/em>/)
   assert.match(options, /<HomeJerseyPersonalizer/)
   assert.doesNotMatch(options, /home-custom-name|home-custom-num|RONALDO 7|MAHOMES 15/)
+  assert.doesNotMatch(options, /custom-options__pill/)
+  assert.doesNotMatch(options, /custom-options__lede/)
+  assert.doesNotMatch(options, /EXPLORE ALL LEAGUES/)
 
   // Real catalogue league listings
   assert.match(personalizer, /CATALOGUE_LEAGUE_LISTINGS/)
@@ -25,7 +28,11 @@ test('homepage personalizer uses real catalogue league listings and AI name/numb
   // AI name and number generation
   assert.match(personalizer, /api\/ai-preview/)
   assert.match(personalizer, /handleGenerateWithAi/)
-  assert.match(personalizer, /RENDER WITH AI|RENDERING WITH AI/i)
+  assert.match(personalizer, /RENDER JERSEY|RENDERING JERSEY/i)
+
+  // Clean labels without MAX 12 and 00-99
+  assert.doesNotMatch(personalizer, /NAME\s*<span>MAX/i)
+  assert.doesNotMatch(personalizer, /NUMBER\s*<span>00/i)
 
   // Constraints & actions
   assert.match(personalizer, /MAX_NAME_LENGTH = 12/)
@@ -83,5 +90,8 @@ test('mobile personalizer consolidates timeline and covers 4 major leagues with 
 
   // Mobile home-path consolidated
   assert.match(styles, /\.home-path\s*\{\s*display:\s*none\s*!important;/)
+
+  // Mobile edge-to-edge product details panel
+  assert.match(styles, /\.home-personalizer__panel\s*\{[^}]*margin-left:\s*-16px;[^}]*margin-right:\s*-16px;[^}]*width:\s*calc\(100%\s*\+\s*32px\);/)
 })
 

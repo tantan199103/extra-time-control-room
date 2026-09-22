@@ -993,14 +993,7 @@ function CustomOptions({ product, products = [], onAdd }) {
   return (
     <section className="custom-options section" id="custom-options" aria-labelledby="custom-options-heading">
       <div className="section-title-row custom-options__head">
-        <div>
-          <div className="custom-options__pill">
-            <Sparkles size={13}/> MAKE IT YOURS · AI MATCHDAY CUSTOM LAB
-          </div>
-          <h2 id="custom-options-heading">PERSONALIZE<br /><em>YOUR JERSEY.</em></h2>
-          <p className="custom-options__lede">Pick your league & team, enter your custom name & number, render a photorealistic matchday preview, and wear your moment.</p>
-        </div>
-        <ButtonLink onClick={() => navigate('/shop')}>EXPLORE ALL LEAGUES</ButtonLink>
+        <h2 id="custom-options-heading">PERSONALIZE<br /><em>YOUR JERSEY.</em></h2>
       </div>
 
       <div className="custom-options__stage">
@@ -1630,21 +1623,27 @@ function productCommerceConfig(product) {
   }
 }
 
-function ProductPurchaseHighlights({ product }) {
+function ProductPurchaseHighlights({ product, personalized = false }) {
   const config = productCommerceConfig(product)
   const offers = config.bulkOffers
   const estimate = buildDeliveryEstimate(config.delivery)
-  return <section className="pdp-highlights" aria-label="Product delivery and purchase highlights">
-    <article className="pdp-highlight-card pdp-highlight-card--delivery">
-      <div className="pdp-highlight-card__eyebrow"><PackageCheck size={17}/><span>ESTIMATED DELIVERY</span></div>
+  return <section className="pdp-highlights" id="pdp-highlights" aria-label="Product delivery and purchase highlights">
+    <article className="pdp-highlight-card pdp-highlight-card--delivery" id="pdp-delivery-timeline">
+      <div className="pdp-highlight-card__eyebrow">
+        <PackageCheck size={17}/>
+        <span>ESTIMATED DELIVERY</span>
+        <span className={`pdp-highlight-badge ${personalized ? 'is-personalized' : ''}`}>
+          {personalized ? 'CUSTOM ARTWORK' : 'STANDARD JERSEY'}
+        </span>
+      </div>
       <h2>FROM ORDER TO YOUR DOOR.</h2>
       <div className="pdp-delivery-track" aria-label="Order, production and delivery timeline">
         <div className="is-current"><i/><strong>ORDERED</strong><span>{estimate.ordered}</span><small>{estimate.orderCutoff}</small></div>
-        <div><i/><strong>PRODUCTION</strong><span>{estimate.production}</span><small>{estimate.productionDays}</small></div>
+        <div className={personalized ? 'is-active-step' : ''}><i/><strong>{personalized ? 'CUSTOM CRAFT' : 'PRODUCTION'}</strong><span>{estimate.production}</span><small>{personalized ? 'Studio review & print' : estimate.productionDays}</small></div>
         <div><i/><strong>DELIVERY</strong><span>{estimate.delivered}</span><small>Estimated arrival</small></div>
       </div>
       <div className="pdp-shipping-pill"><Globe2 size={16}/><strong>{config.delivery.shippingLabel}</strong></div>
-      <p className="pdp-estimate-note">Estimate for orders placed today. Weekends, holidays and destination can change the final date shown at checkout.</p>
+      <p className="pdp-estimate-note">{personalized ? 'Timeline includes custom name & number review by the studio. Orders placed today start processing immediately.' : 'Estimate for orders placed today. Weekends, holidays and destination can change the final date shown at checkout.'}</p>
     </article>
     <article className="pdp-highlight-card pdp-highlight-card--bundle pdp-highlight-card--featured">
       <div className="pdp-highlight-card__eyebrow"><Tag size={17}/><span>QUANTITY SAVINGS</span></div>
@@ -1752,6 +1751,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const currentCompare = displayVariant?.compareAt ?? product.compareAt
   const commerceConfig = productCommerceConfig(product)
   const bulkOffers = commerceConfig.bulkOffers || []
+  const estimate = buildDeliveryEstimate(commerceConfig.delivery)
   const soldOut = selectedVariant ? Number(selectedVariant.inventory || 0) < 1 : false
   const selectionSummary = options.map(option => selections[option.name] ? (option.name === sizeName ? canonicalSize(selections[option.name]) : selections[option.name]) : '').filter(Boolean).join(' · ')
   const swatchColor = value => ({black:'#111111',white:'#eeeeea',chalk:'#eeeeea',oxblood:'#711e25',red:'#b52b2b',blue:'#244c89',navy:'#15233d',green:'#315c43',purple:'#5f3a78'}[String(value).toLowerCase()] || String(value))
@@ -2015,10 +2015,45 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button type="button" className={`pdp-custom__choice-btn pdp-custom__choice-btn--standard ${!personalized ? 'is-active' : ''}`} onClick={() => chooseOrderType(false)}><span className="pdp-custom__choice-title">Standard</span><small className="pdp-custom__choice-sub">Clean blank jersey as shown</small></button><button type="button" className={`pdp-custom__choice-btn pdp-custom__choice-btn--personalized ${personalized ? 'is-active' : ''}`} onClick={() => chooseOrderType(true)}><span className="pdp-custom__choice-badge"><Sparkles size={10}/> POPULAR CHOICE</span><span className="pdp-custom__choice-title"><Sparkles size={14} className="pdp-custom__choice-sparkle"/> Personalized</span><small className="pdp-custom__choice-sub">{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''} (Free)</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={previewWithAi} disabled={!hasStructuredPreview || previewingAi} title={hasStructuredPreview ? 'Render your personal details directly onto this jersey.' : 'Personalization will be reviewed manually by the studio.'}><Sparkles size={18} className="pdp-custom__ai-icon"/><span><strong>{previewingAi ? 'RENDERING CUSTOM JERSEY…' : hasStructuredPreview ? (attachedPreview ? 'UPDATE & REVIEW CUSTOM JERSEY' : 'REVIEW WITH CUSTOM JERSEY') : 'VISUAL PREVIEW AWAITING SETUP'}</strong><small>{previewingAi ? 'Analyzing jersey design & applying custom details…' : hasStructuredPreview ? (attachedPreview ? 'Click to re-render preview with your latest changes.' : 'Instant AI mockup · See your customized name & number on this jersey live') : 'Personalization will be reviewed manually by the studio.'}</small></span><span className="pdp-custom__ai-action">{hasStructuredPreview ? <ArrowRight size={17}/> : <Lock size={16}/>}</span></button><button type="button" className="pdp-custom__studio-link" onClick={openAi}><Sparkles size={12}/> Edit with AI in Studio</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__trust-line" aria-label="Checkout and order assurances"><span><Lock size={14}/> Secure checkout</span><span><PackageCheck size={14}/> Tracked delivery</span><span><ShieldCheck size={14}/> {personalized ? 'Custom checked' : 'Quality checked'}</span></div>
+        <div className="pdp-delivery-badge" aria-label="Estimated delivery timing">
+          <div className="pdp-delivery-badge__top">
+            <div className="pdp-delivery-badge__title">
+              <Truck size={15} className="pdp-delivery-badge__icon" />
+              <span>ESTIMATED ARRIVAL: <strong>{estimate.delivered}</strong></span>
+            </div>
+            <a
+              href="#pdp-delivery-timeline"
+              className="pdp-delivery-badge__link"
+              onClick={e => {
+                const target = document.getElementById('pdp-delivery-timeline')
+                if (target) {
+                  e.preventDefault()
+                  target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }
+              }}
+            >
+              <span>Timeline</span>
+              <ArrowDown size={11} />
+            </a>
+          </div>
+          <div className="pdp-delivery-badge__details">
+            <span className="pdp-delivery-badge__mode">
+              <i className="pdp-delivery-badge__pulse" />
+              {personalized ? (
+                <>Personalized: Custom craft in <strong>{estimate.productionDays}</strong></>
+              ) : (
+                <>Standard: Dispatch in <strong>{estimate.productionDays}</strong></>
+              )}
+            </span>
+            <span className="pdp-delivery-badge__shipping">
+              <Globe2 size={11} /> {commerceConfig.delivery.shippingLabel}
+            </span>
+          </div>
+        </div>
         <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || 'A performance jersey made for match-day stories and personal details.'}</p><p><strong>Fit & care</strong>Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.</p></div></details></div>
       </aside>
     </div>
-    <ProductPurchaseHighlights product={product}/><ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
+    <ProductPurchaseHighlights product={product} personalized={personalized}/><ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
     <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>
     <SizeFinder open={finder} onClose={() => setFinder(false)} product={product} sizeOptionName={sizeName || 'Size'} selections={selections} onRecommend={({size,audienceOptionName,audienceValue}) => { setSelections(current => ({...current,...(audienceOptionName ? {[audienceOptionName]:audienceValue} : {}),...(sizeName ? {[sizeName]:size} : {})})); setAdded(false); setCustomError('') }}/>
     <div className="mobile-sticky-atc"><div className="mobile-sticky-atc__product"><img src={displayVariant?.image || product.image} alt=""/><span><strong>{money(currentPrice)}</strong><small>{selectedVariant ? `${selectionSummary} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</small></span></div><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'BUY NOW') : 'CHOOSE OPTIONS'}</button></div>
