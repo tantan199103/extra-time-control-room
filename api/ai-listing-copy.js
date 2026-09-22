@@ -27,10 +27,13 @@ const imageCount = value => {
   return Number.isFinite(number) ? Math.max(0, Math.min(10, Math.round(number))) : null
 }
 
-function safeImageReference(value) {
+function safeImageReference(value, origin = '') {
   try {
-    const url = new URL(String(value || '').trim())
-    if (url.protocol !== 'https:' || url.username || url.password) return ''
+    const raw = String(value || '').trim()
+    if (!raw) return ''
+    const url = (raw.startsWith('/') && origin) ? new URL(raw, origin) : new URL(raw)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return ''
+    if (url.username || url.password) return ''
     // The model needs a public image URL, but the browser must never be able
     // to make this endpoint forward local, file or data URLs to the provider.
     if (/^(localhost|127(?:\.\d{1,3}){3}|0\.0\.0\.0|\[::1\])$/i.test(url.hostname)) return ''
@@ -175,9 +178,12 @@ export default async function handler(request, response) {
     const configuredModel = (process.env.AI_TEXT_MODEL || '').trim()
     let model = (!configuredModel || configuredModel === 'gpt-4.1-mini') ? 'gpt-4o-mini' : configuredModel
 
+    const host = request.headers?.['x-forwarded-host'] || request.headers?.host
+    const origin = host ? `https://${String(host).split(',')[0].trim()}` : (process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://www.jersevo.com')
+
     const media = Array.isArray(product.media) ? product.media.slice(0, 12) : []
     const mediaImages = media.map(item => {
-      const url = safeImageReference(item?.url)
+      const url = safeImageReference(item?.url, origin)
       return url ? { url, role:text(item.role || item.mediaRole, 60), alt:text(item.alt, 240), type:text(item.type, 20) } : null
     }).filter(Boolean).filter(item => item.type === 'IMAGE' || !item.type)
     const productContext = {
@@ -202,7 +208,7 @@ export default async function handler(request, response) {
     const content = [{ type:'text', text:userText }]
     // Keep the reference URL available to the vision-capable model, but never
     // copy it into public listing text or the returned suggestion.
-    const referenceImage = safeImageReference(product.image)
+    const referenceImage = safeImageReference(product.image, origin)
     // Always lead with the listing's primary image. It is the source of truth
     // for the artwork even when additional editorial media exists. De-dupe by
     // URL so a primary image that is also in the media array is only reviewed
@@ -210,8 +216,8 @@ export default async function handler(request, response) {
     const references = [...new Map([
       ...(referenceImage ? [{ url:referenceImage, role:'primary', alt:'Primary listing reference', type:'IMAGE' }] : []),
       ...mediaImages
-    ].map(item => [item.url, item]).filter(([url]) => url)).values()].slice(0, 10)
-    for (const image of references.slice(0, 10)) content.push({ type:'image_url', image_url:{ url:image.url, detail:'low' } })
+    ].map(item => [item.url, item]).filter(([url]) => url)).values()].slice(0, 4)
+    for (const image of references) content.push({ type:'image_url', image_url:{ url:image.url, detail:'low' } })
     const headers = { Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json' }
     let visionUsed = references.length > 0
     let upstream = await fetch(apiUrl, {
