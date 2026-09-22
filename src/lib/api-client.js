@@ -72,9 +72,9 @@ export function resolveApiTarget(path, config = {}) {
     const functionName = pathname.replace(/^\/api\//, '')
     return `${edgeOrigin}/${functionName}${parsed.search}`
   }
-  // Keep visual AI preview and customization order on same-origin Vercel serverless when running in browser
+  // Keep visual AI preview, customization order and listing AI on same-origin Vercel serverless when running in browser
   // unless backendOrigin was explicitly passed in caller config (e.g. in backend tests).
-  if (['/api/ai-preview', '/api/customization-order'].includes(pathname) && !config.backendOrigin && typeof window !== 'undefined') {
+  if (['/api/ai-preview', '/api/customization-order', '/api/ai-listing-copy', '/api/ai-listing-media'].includes(pathname) && !config.backendOrigin && typeof window !== 'undefined') {
     return rawPath
   }
   if (NODE_BACKEND_ROUTES.has(pathname) && backendOrigin) {
@@ -101,14 +101,14 @@ export async function apiFetch(path, options = {}) {
   }
   try {
     const response = await fetch(target, { ...options, headers })
-    // If backend origin returned 422 (e.g. outdated container), 502 or 503 for ai-preview / customization-order, fallback to same-origin
-    if (!response.ok && [422, 502, 503].includes(response.status) && target !== path && (String(path).startsWith('/api/ai-preview') || String(path).startsWith('/api/customization-order'))) {
+    // If backend origin returned 401, 404, 422, 500, 502 or 503 for AI or customization routes, fallback to same-origin
+    if (!response.ok && [401, 404, 422, 500, 502, 503].includes(response.status) && target !== path && (String(path).startsWith('/api/ai-') || String(path).startsWith('/api/customization-order'))) {
       const fallbackResponse = await fetch(path, { ...options, headers }).catch(() => null)
       if (fallbackResponse && fallbackResponse.ok) return fallbackResponse
     }
     return response
   } catch (error) {
-    if (target !== path && (String(path).startsWith('/api/ai-preview') || String(path).startsWith('/api/customization-order'))) {
+    if (target !== path && (String(path).startsWith('/api/ai-') || String(path).startsWith('/api/customization-order'))) {
       const fallbackResponse = await fetch(path, { ...options, headers }).catch(() => null)
       if (fallbackResponse) return fallbackResponse
     }

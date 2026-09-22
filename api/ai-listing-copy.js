@@ -166,10 +166,14 @@ export default async function handler(request, response) {
     const direction = text(brief.direction, 1600)
     if (!direction && !text(product.description, 5000) && !text(product.title, 120)) return json(response, 422, { error:'Add a title, story or AI direction first.' })
     const apiKey = process.env.AI_TEXT_API_KEY || process.env.AI_IMAGE_API_KEY || process.env.OPENAI_API_KEY
-    const base = (process.env.AI_TEXT_API_URL || process.env.OPENAI_BASE_URL || 'https://api.apikey.fan/v1').replace(/\/$/, '')
-    const apiUrl = base.endsWith('/chat/completions') ? base : `${base}/chat/completions`
-    const model = process.env.AI_TEXT_MODEL || 'gpt-4.1-mini'
     if (!apiKey) return json(response, 503, { error:'AI writing is not connected. Add AI_TEXT_API_KEY in the server environment.' })
+    let base = (process.env.AI_TEXT_API_URL || process.env.OPENAI_BASE_URL || '').replace(/\/$/, '')
+    if (!base) {
+      base = apiKey.startsWith('sk-proj-') ? 'https://api.openai.com/v1' : 'https://api.apikey.fan/v1'
+    }
+    let apiUrl = base.endsWith('/chat/completions') ? base : `${base}/chat/completions`
+    const configuredModel = (process.env.AI_TEXT_MODEL || '').trim()
+    let model = (!configuredModel || configuredModel === 'gpt-4.1-mini') ? 'gpt-4o-mini' : configuredModel
 
     const media = Array.isArray(product.media) ? product.media.slice(0, 12) : []
     const mediaImages = media.map(item => {
@@ -216,9 +220,23 @@ export default async function handler(request, response) {
       signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
     })
     let payload = await upstream.json().catch(() => ({}))
-    // Some OpenAI-compatible gateways do not expose response_format. Retry with
-    // the same multimodal content first so a full audit never silently drops
-    // its image evidence.
+
+    // 1. If 401 Unauthorized using default apikey.fan, try official OpenAI endpoint in case an official key was provided
+    if (upstream.status === 401 && base.includes('apikey.fan') && !process.env.AI_TEXT_API_URL && !process.env.OPENAI_BASE_URL) {
+      const openAiUrl = 'https://api.openai.com/v1/chat/completions'
+      const altUpstream = await fetch(openAiUrl, {
+        method:'POST', headers,
+        body:JSON.stringify({ model, temperature:0.65, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] }),
+        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+      }).catch(() => null)
+      if (altUpstream && (altUpstream.ok || altUpstream.status !== 401)) {
+        upstream = altUpstream
+        apiUrl = openAiUrl
+        payload = await upstream.json().catch(() => ({}))
+      }
+    }
+
+    // 2. Some OpenAI-compatible gateways do not expose response_format. Retry with the same content without it.
     if (!upstream.ok && [400,415,422].includes(upstream.status)) {
       upstream = await fetch(apiUrl, {
         method:'POST', headers,
@@ -227,10 +245,21 @@ export default async function handler(request, response) {
       })
       payload = await upstream.json().catch(() => ({}))
     }
-    // A few text-only gateways reject multimodal messages altogether. A normal
-    // copy draft may still use a guarded text-only fallback; FULL_AUDIT must
-    // fail instead of claiming it inspected images it never received.
-    if (!upstream.ok && [400,415,422].includes(upstream.status) && !fullAudit && visionUsed) {
+
+    // 3. If model was rejected (404 or model error message) and model is not gpt-4o, try gpt-4o fallback
+    if (!upstream.ok && (upstream.status === 404 || /model/i.test(String(payload.error?.message || payload.message || '')))) {
+      model = 'gpt-4o'
+      upstream = await fetch(apiUrl, {
+        method:'POST', headers,
+        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content:visionUsed ? content : userText }] }),
+        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+      })
+      payload = await upstream.json().catch(() => ({}))
+    }
+
+    // 4. If multimodal vision was rejected or failed (e.g. gateway cannot fetch Supabase image URLs),
+    // fallback to text-only mode so the admin receives a complete listing copy and SEO audit rather than failing.
+    if (!upstream.ok && visionUsed) {
       visionUsed = false
       upstream = await fetch(apiUrl, {
         method:'POST', headers,
@@ -239,12 +268,25 @@ export default async function handler(request, response) {
       })
       payload = await upstream.json().catch(() => ({}))
     }
-    if (!upstream.ok) return json(response, upstream.status, { error:payload.error?.message || payload.message || 'AI provider rejected the writing request.' })
+
+    if (!upstream.ok) {
+      if (upstream.status === 401) {
+        return json(response, 401, { error:'AI API Key is invalid or expired. Check AI_TEXT_API_KEY in Vercel or server settings.' })
+      }
+      if (upstream.status === 429) {
+        return json(response, 429, { error:'AI provider credit quota exceeded or rate limit reached. Check your API provider balance.' })
+      }
+      return json(response, upstream.status, { error:payload.error?.message || payload.message || 'AI provider rejected the writing request.' })
+    }
+
     const raw = extractJson(payload.choices?.[0]?.message?.content)
     const suggestion = normalizeSuggestion(raw, language)
     // Never trust a model-generated count; report the exact number of image
     // references that this request actually sent to the vision model.
     suggestion.audit.reviewedImageCount = visionUsed ? references.length : 0
+    if (!visionUsed && references.length > 0 && !suggestion.audit.imageGaps.length) {
+      suggestion.audit.imageGaps.push({ role:'primary', reason:'Image inspection unavailable from current AI provider; story and SEO audited from listing data.' })
+    }
     if (!suggestion.title || !suggestion.description) return json(response, 502, { error:'AI returned an incomplete listing draft. Try a more specific direction.' })
     return json(response, 200, { suggestion, model, mode:fullAudit ? 'FULL_AUDIT' : 'COPY_DRAFT' })
   } catch (error) {

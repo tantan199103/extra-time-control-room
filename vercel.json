@@ -88,6 +88,8 @@
     { "source": "/api/newsletter-subscribe", "destination": "/api/newsletter-subscribe.js" },
     { "source": "/api/ai-preview", "destination": "/api/ai-preview.js" },
     { "source": "/api/customization-order", "destination": "/api/customization-order.js" },
+    { "source": "/api/ai-listing-copy", "destination": "/api/ai-listing-copy.js" },
+    { "source": "/api/ai-listing-media", "destination": "/api/ai-listing-media.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
