@@ -561,6 +561,58 @@ function PublishRail({ draft, update, completeness, automaticTags }) {
             </p>
           ))}
         </div>
+        {(() => {
+          const legalReview = catalogLegalReview(draft)
+          if (!legalReview.required) return null
+          return (
+            <div style={{ marginTop: 12, padding: 10, background: legalReview.approved ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.12)', border: `1px solid ${legalReview.approved ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`, borderRadius: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', color: legalReview.approved ? '#4ade80' : '#f87171' }}>
+                  {legalReview.approved ? '✓ RIGHTS APPROVED' : '⚠ RIGHTS REVIEW REQUIRED'}
+                </span>
+              </div>
+              <p style={{ fontSize: 12, margin: '4px 0 8px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>
+                {legalReview.approved ? 'Verified by operator.' : `Referenced: ${legalReview.reasons.join(', ')}`}
+              </p>
+              {!legalReview.approved ? (
+                <button
+                  type="button"
+                  className="admin-button admin-button--outline"
+                  style={{ width: '100%', fontSize: 11, padding: '5px 8px', justifyContent: 'center', background: 'rgba(255,255,255,0.1)' }}
+                  onClick={() => {
+                    update('aiMetadata', {
+                      ...(draft.aiMetadata || {}),
+                      catalogReview: {
+                        ...(draft.aiMetadata?.catalogReview || {}),
+                        status: 'APPROVED',
+                        reviewedAt: new Date().toISOString()
+                      }
+                    })
+                  }}
+                >
+                  Duyệt bản quyền (Approve)
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                  onClick={() => {
+                    update('aiMetadata', {
+                      ...(draft.aiMetadata || {}),
+                      catalogReview: {
+                        ...(draft.aiMetadata?.catalogReview || {}),
+                        status: 'PENDING',
+                        reviewedAt: null
+                      }
+                    })
+                  }}
+                >
+                  Hủy duyệt (Revoke)
+                </button>
+              )}
+            </div>
+          )
+        })()}
       </div>
       <div className="listing-auto-tags">
         <span>Automatic filters</span>
@@ -648,5 +700,5 @@ export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
   }
   if(fetching) return <main className="admin-page"><p role="status">Loading listing…</p></main>
   if(!effectiveProduct) return <main className="admin-page"><h1>Listing not found</h1><button onClick={() => navigate('/admin/catalog')}>Back to products</button></main>
-  return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update} dirty={dirty}/>} {active==='media'&&<MediaPanel draft={draft} update={update} dirty={dirty}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving||draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span></div>}</main>
+  return <main className="listing-workspace"><WorkspaceHeader draft={draft} dirty={dirty} saving={saving} previewProduct={previewProduct} onSave={save} onPublish={() => save('PUBLISHED')} onDuplicate={duplicate}/><div className="listing-workspace__body"><nav className="listing-spine" aria-label="Listing editor sections">{sections.map((section,index) => { const Icon=section.icon; const done=completeness.checks.find(item=>item.key===section.id)?.done; return <button key={section.id} className={active===section.id?'is-active':''} onClick={() => setActive(section.id)}><i>{done ? <Check size={11}/> : index+1}</i><Icon size={16}/><span><strong>{section.label}</strong><small>{section.copy}</small></span></button> })}</nav><div className="listing-workspace__editor">{active==='story'&&<StoryPanel draft={draft} update={update} dirty={dirty}/>} {active==='media'&&<MediaPanel draft={draft} update={update} dirty={dirty}/>} {active==='variants'&&<section className="listing-section"><VariantMatrix product={draft} onChange={value=>update('variants',value)} onOptionsChange={value=>update('options',value)} onProductChange={update}/></section>} {active==='custom'&&<CustomFieldsPanel draft={draft} update={update}/>} {active==='organization'&&<OrganizationPanel draft={draft} update={update} allProducts={products}/>}</div><PublishRail draft={draft} update={update} completeness={completeness} automaticTags={automaticTags}/></div><div className="listing-mobile-actions"><button disabled={saving} onClick={() => save()}><Save size={15}/>{saving?'Saving…':'Save changes'}</button><button disabled={saving||draft.status==='ARCHIVED'} onClick={() => save('PUBLISHED')}><PackageCheck size={15}/>Publish</button></div>{notice&&<div className={`listing-toast ${notice.startsWith('Not saved:')?'is-error':''}`} role={notice.startsWith('Not saved:')?'alert':'status'}>{notice.startsWith('Not saved:')?<X size={15}/>:<Check size={15}/>}<span>{notice}</span>{notice.includes('Rights and affiliation review required')&&<button type="button" style={{ marginLeft: 12, padding: '4px 10px', background: '#f8f04a', color: '#0a0a0a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }} onClick={async () => { update('aiMetadata', { ...(draft.aiMetadata || {}), catalogReview: { ...(draft.aiMetadata?.catalogReview || {}), status: 'APPROVED', reviewedAt: new Date().toISOString() } }); setNotice('Rights review marked as Approved. Saving listing now…'); setTimeout(() => save(), 100); }}>Duyệt & Lưu ngay ⚡</button>}</div>}</main>
 }
