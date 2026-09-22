@@ -952,18 +952,18 @@ function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2
   )
 }
 
-function CustomTeaser({ product }) {
+function CustomTeaser({ product, products = [], onAdd }) {
   return (
     <section className="custom-teaser" id="custom">
       <div className="custom-teaser__grid" aria-hidden="true" />
       <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>PERSONALIZE<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">The artwork stays fixed.<br />Add only the name and number that make it yours.</p><button className="button button--acid" onClick={() => navigate(`/product/${product?.handle || product?.id || 'touchline'}?custom=1`)}>START PERSONALIZING <ArrowRight size={17}/></button></div>
-      <div className="custom-teaser__jersey"><Suspense fallback={<div className="home-personalizer__loading">Loading live rear view…</div>}><HomeJerseyPersonalizer /></Suspense></div>
+      <div className="custom-teaser__jersey"><Suspense fallback={<div className="home-personalizer__loading">Loading live jersey listings…</div>}><HomeJerseyPersonalizer onAdd={onAdd} product={product} products={products} /></Suspense></div>
       <div className="custom-teaser__steps"><span>DESIGN / LOCKED</span><span>NAME + NUMBER</span><span>LIVE REAR VIEW</span><span>MADE ON DEMAND</span></div>
     </section>
   )
 }
 
-function CustomOptions({ product }) {
+function CustomOptions({ product, products = [], onAdd }) {
   const handleOrder = () => {
     let customQuery = ''
     try {
@@ -992,8 +992,8 @@ function CustomOptions({ product }) {
         </div>
 
         <div className="custom-options__stage">
-          <Suspense fallback={<div className="home-personalizer__loading">Loading live rear view…</div>}>
-            <HomeJerseyPersonalizer />
+          <Suspense fallback={<div className="home-personalizer__loading">Loading live jersey listings…</div>}>
+            <HomeJerseyPersonalizer onAdd={onAdd} product={product} products={products} />
           </Suspense>
         </div>
       </div>
@@ -1279,7 +1279,7 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
   </div>
 }
 
-function Home({ onQuickView, products, theme, collections = [] }) {
+function Home({ onQuickView, products, theme, collections = [], onAdd }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
   const customProduct = products.find(product => product.customFields?.length) || products.find(product => /touchline/i.test(`${product.handle || ''} ${product.name || ''}`)) || featured
   const primaryCollection = collections[0]
@@ -1293,8 +1293,8 @@ function Home({ onQuickView, products, theme, collections = [] }) {
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues"/>,
-    'custom-cta':<CustomTeaser key="custom-cta" product={customProduct}/>,
-    'custom-options':<CustomOptions key="custom-options" product={customProduct}/>,
+    'custom-cta':<CustomTeaser key="custom-cta" product={customProduct} products={products} onAdd={onAdd}/>,
+    'custom-options':<CustomOptions key="custom-options" product={customProduct} products={products} onAdd={onAdd}/>,
     quality:<QualityProof key="quality" product={featured}/>,
     community:<CommunityProof key="community"/>,
     faq:<HomeFaq key="faq"/>,
@@ -2477,9 +2477,9 @@ function App() {
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
   let page
   if (!path.startsWith('/admin') && catalogState.loading && !products.length) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
-  else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
-  else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
-  else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections}/>
+  else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
+  else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
+  else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
   else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding league={routeLeague} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding league={routeLeague} team={routeTeam} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>

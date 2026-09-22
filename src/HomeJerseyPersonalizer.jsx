@@ -1,218 +1,111 @@
-import React, { useEffect, useId, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingBag,
+  Sparkles,
+  Star
+} from 'lucide-react'
 
-const MODEL_URL = '/assets/models/jersey.glb'
-const MAX_NAME_LENGTH = 12
-const MAX_NUMBER_LENGTH = 2
+export const MAX_NAME_LENGTH = 12
+export const MAX_NUMBER_LENGTH = 2
 
-function cleanName(value) {
-  return value
+export const LEAGUE_LISTINGS = [
+  {
+    id: 'mls-touchline',
+    league: 'MLS',
+    leagueName: 'Major League Soccer',
+    leagueMark: '/assets/leagues/marks/mls.webp',
+    title: 'TOUCHLINE 04 PRO',
+    subtitle: 'Matchday Custom Rear View',
+    image: '/assets/venom-mockup-back.webp',
+    alt: 'MLS Matchday custom jersey rear view photo',
+    productHandle: 'touchline',
+    price: 109,
+    compareAt: 130,
+    textColor: '#f4f3ee',
+    strokeColor: '#f8f04a',
+    isDark: true,
+    badge: 'LIVE REAR VIEW',
+    sizes: ['S', 'M', 'L', 'XL', '2XL']
+  },
+  {
+    id: 'nfl-after-90',
+    league: 'NFL',
+    leagueName: 'National Football League',
+    leagueMark: '/assets/leagues/marks/nfl.webp',
+    title: 'AFTER 90 NIGHTWAY',
+    subtitle: 'Night Game Gridiron Cut',
+    image: '/assets/jersey-black.webp',
+    alt: 'NFL Night Game black matchday jersey photo',
+    productHandle: 'after-90',
+    price: 89,
+    compareAt: 110,
+    textColor: '#f4f3ee',
+    strokeColor: '#22c55e',
+    isDark: true,
+    badge: 'BEST SELLER',
+    sizes: ['S', 'M', 'L', 'XL', '2XL']
+  },
+  {
+    id: 'nba-home-end',
+    league: 'NBA',
+    leagueName: 'National Basketball Association',
+    leagueMark: '/assets/leagues/marks/nba.webp',
+    title: 'HOME END TERRACE',
+    subtitle: 'Hardwood Oxblood Edition',
+    image: '/assets/jersey-oxblood.webp',
+    alt: 'NBA Hardwood oxblood jersey photo',
+    productHandle: 'home-end',
+    price: 95,
+    compareAt: 115,
+    textColor: '#f4f3ee',
+    strokeColor: '#f8f04a',
+    isDark: true,
+    badge: 'LOW STOCK',
+    sizes: ['S', 'M', 'L', 'XL', '2XL']
+  },
+  {
+    id: 'mlb-chalk-lines',
+    league: 'MLB',
+    leagueName: 'Major League Baseball',
+    leagueMark: '/assets/leagues/marks/mlb.webp',
+    title: 'CHALK LINES DIAMOND',
+    subtitle: 'Tactics Diamond Edition',
+    image: '/assets/jersey-white.webp',
+    alt: 'MLB Chalk Lines diamond white jersey photo',
+    productHandle: 'chalk-lines',
+    price: 92,
+    compareAt: 110,
+    textColor: '#141414',
+    strokeColor: '#d72c2c',
+    isDark: false,
+    badge: 'NEW DROP',
+    sizes: ['S', 'M', 'L', 'XL', '2XL']
+  }
+]
+
+export function cleanName(value) {
+  return String(value || '')
     .toUpperCase()
     .replace(/[^A-Z0-9À-Ỹ -]/g, '')
     .replace(/\s+/g, ' ')
     .slice(0, MAX_NAME_LENGTH)
 }
 
-function cleanNumber(value) {
-  return value.replace(/\D/g, '').slice(0, MAX_NUMBER_LENGTH)
+export function cleanNumber(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, MAX_NUMBER_LENGTH)
 }
 
-function drawDecal(canvas, name, number) {
-  const width = 1024
-  const height = 1220
-  const context = canvas.getContext('2d')
-  if (!context) return
-  canvas.width = width
-  canvas.height = height
-  context.clearRect(0, 0, width, height)
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  context.fillStyle = '#f4f3ee'
-  context.strokeStyle = '#f8f04a'
-  context.lineJoin = 'round'
-
-  const nameText = name || 'YOUR NAME'
-  const nameSize = Math.max(42, Math.min(92, 560 / Math.max(nameText.length, 6)))
-  context.font = `800 ${nameSize}px "Arial Narrow", "Barlow Condensed", Arial, sans-serif`
-  context.letterSpacing = '12px'
-  context.fillText(nameText, width / 2, 235)
-
-  const numberText = number || '00'
-  context.font = '900 420px "Arial Narrow", "Barlow Condensed", Arial, sans-serif'
-  context.lineWidth = 10
-  context.strokeText(numberText, width / 2, 665)
-  context.fillText(numberText, width / 2, 665)
+function navigate(path) {
+  window.history.pushState({}, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
-function FallbackJersey({ name, number }) {
-  const uid = useId().replace(/:/g, '')
-  const patternId = `home-jersey-grid-${uid}`
-  const clipId = `home-shirt-clip-${uid}`
-  return (
-    <svg className="jersey-svg" viewBox="0 0 520 600" role="img" aria-label={`Custom jersey preview with ${name || 'your name'} number ${number || '00'}`}>
-      <defs>
-        <pattern id={patternId} width="26" height="26" patternUnits="userSpaceOnUse"><path d="M 26 0 L 0 0 0 26" fill="none" stroke="currentColor" strokeWidth="1" opacity=".2" /></pattern>
-        <clipPath id={clipId}><path d="M185 70 116 101 32 181l64 91 54-35v283h220V237l54 35 64-91-84-80-69-31c-22 36-52 45-75 45s-53-9-75-45Z" /></clipPath>
-      </defs>
-      <path d="M185 70 116 101 32 181l64 91 54-35v283h220V237l54 35 64-91-84-80-69-31c-22 36-52 45-75 45s-53-9-75-45Z" fill="#131313" stroke="#f2f1e9" strokeWidth="3" />
-      <rect x="20" y="55" width="480" height="480" fill={`url(#${patternId})`} color="#f8f04a" clipPath={`url(#${clipId})`} />
-      <path d="M185 70c17 54 53 65 75 65s58-11 75-65" fill="none" stroke="#f2f1e9" strokeWidth="14" />
-      <path d="M335 75c34 120 24 291 35 445" fill="none" stroke="#f8f04a" strokeWidth="5" />
-      <path d="m32 181 64 91m392-91-64 91M150 237v283m220-283v283" fill="none" stroke="#f2f1e9" strokeWidth="3" opacity=".7" />
-      <text x="260" y="224" textAnchor="middle" fill="#f4f3ee" fontFamily="Barlow Condensed" fontWeight="700" fontSize="42" letterSpacing="3">{name || 'YOUR NAME'}</text>
-      <text x="260" y="410" textAnchor="middle" fill="#f4f3ee" stroke="#f8f04a" strokeWidth="2" paintOrder="stroke" fontFamily="Barlow Condensed" fontWeight="800" fontSize="190" letterSpacing="-8">{number || '00'}</text>
-      <g transform="translate(383 170)"><circle r="31" fill="#f4f3ee" /><text y="8" textAnchor="middle" fill="#0a0a0a" fontFamily="Barlow Condensed" fontWeight="800" fontSize="24">90+</text></g>
-    </svg>
-  )
-}
-
-function hasWebGL() {
-  try {
-    const canvas = document.createElement('canvas')
-    return Boolean(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
-  } catch {
-    return false
-  }
-}
-
-function ThreeRearView({ name, number, onReady, onError, shouldLoad }) {
-  const canvasRef = useRef(null)
-  const stageRef = useRef(null)
-  const decalCanvasRef = useRef(null)
-  const decalTextureRef = useRef(null)
-  const rendererRef = useRef(null)
-  const sceneRef = useRef(null)
-  const cameraRef = useRef(null)
-  const frameRef = useRef(null)
-
-  useEffect(() => {
-    if (!shouldLoad || !canvasRef.current || !stageRef.current || !hasWebGL()) {
-      if (shouldLoad && !hasWebGL()) onError?.()
-      return undefined
-    }
-
-    let disposed = false
-    let resizeObserver
-    let renderer
-    let scene
-    let camera
-    let decalMesh
-
-    const render = () => {
-      if (!disposed && renderer && scene && camera) renderer.render(scene, camera)
-    }
-
-    const setup = async () => {
-      try {
-        const [THREE, { GLTFLoader }, { MeshoptDecoder }] = await Promise.all([
-          import('three'),
-          import('three/examples/jsm/loaders/GLTFLoader.js'),
-          import('three/examples/jsm/libs/meshopt_decoder.module.js')
-        ])
-        if (disposed) return
-
-        renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true, antialias: true, powerPreference: 'high-performance' })
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75))
-        renderer.outputColorSpace = THREE.SRGBColorSpace
-        renderer.toneMapping = THREE.ACESFilmicToneMapping
-        renderer.toneMappingExposure = 1.05
-        rendererRef.current = renderer
-
-        scene = new THREE.Scene()
-        sceneRef.current = scene
-        camera = new THREE.PerspectiveCamera(26, 1, 0.01, 100)
-        camera.position.set(0, 0.02, 2.45)
-        camera.lookAt(0, 0.02, 0)
-        cameraRef.current = camera
-
-        scene.add(new THREE.HemisphereLight(0xf5f2e9, 0x171717, 2.2))
-        const keyLight = new THREE.DirectionalLight(0xffffff, 3.1)
-        keyLight.position.set(-1.4, 2.2, 3)
-        scene.add(keyLight)
-        const fillLight = new THREE.DirectionalLight(0xf8f04a, 0.55)
-        fillLight.position.set(1.5, 0.2, 2)
-        scene.add(fillLight)
-
-        const loader = new GLTFLoader()
-        loader.setMeshoptDecoder(MeshoptDecoder)
-        const gltf = await loader.loadAsync(MODEL_URL)
-        if (disposed) return
-
-        const model = gltf.scene
-        const bounds = new THREE.Box3().setFromObject(model)
-        const size = bounds.getSize(new THREE.Vector3())
-        const center = bounds.getCenter(new THREE.Vector3())
-        model.position.sub(center)
-        model.scale.setScalar(1.72 / Math.max(size.y, 0.01))
-        model.rotation.y = Math.PI
-        model.traverse(object => {
-          if (!object.isMesh) return
-          object.castShadow = false
-          object.receiveShadow = false
-          if (object.material) {
-            object.material.roughness = Math.max(object.material.roughness || 0.7, 0.72)
-          }
-        })
-        scene.add(model)
-
-        const decalCanvas = document.createElement('canvas')
-        decalCanvasRef.current = decalCanvas
-        drawDecal(decalCanvas, name, number)
-        const decalTexture = new THREE.CanvasTexture(decalCanvas)
-        decalTexture.colorSpace = THREE.SRGBColorSpace
-        decalTexture.anisotropy = renderer.capabilities.getMaxAnisotropy()
-        decalTextureRef.current = decalTexture
-        const decalMaterial = new THREE.MeshBasicMaterial({ map: decalTexture, transparent: true, depthTest: false, depthWrite: false, toneMapped: false })
-        decalMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.69, 0.82), decalMaterial)
-        decalMesh.position.set(0, 0.14, 0.29)
-        scene.add(decalMesh)
-
-        const resize = () => {
-          if (!stageRef.current || !renderer || !camera) return
-          const { clientWidth, clientHeight } = stageRef.current
-          if (!clientWidth || !clientHeight) return
-          renderer.setSize(clientWidth, clientHeight, false)
-          camera.aspect = clientWidth / clientHeight
-          camera.updateProjectionMatrix()
-          render()
-        }
-        resizeObserver = new ResizeObserver(resize)
-        resizeObserver.observe(stageRef.current)
-        resize()
-        onReady?.()
-      } catch (error) {
-        if (!disposed) onError?.(error)
-      }
-    }
-
-    setup()
-    return () => {
-      disposed = true
-      resizeObserver?.disconnect()
-      if (frameRef.current) cancelAnimationFrame(frameRef.current)
-      decalMesh?.geometry.dispose()
-      if (decalMesh?.material) {
-        decalMesh.material.map?.dispose()
-        decalMesh.material.dispose()
-      }
-      renderer?.dispose()
-      rendererRef.current = null
-      sceneRef.current = null
-      cameraRef.current = null
-    }
-  }, [shouldLoad])
-
-  useEffect(() => {
-    if (!decalCanvasRef.current || !decalTextureRef.current) return
-    drawDecal(decalCanvasRef.current, name, number)
-    decalTextureRef.current.needsUpdate = true
-    if (rendererRef.current && sceneRef.current && cameraRef.current) rendererRef.current.render(sceneRef.current, cameraRef.current)
-  }, [name, number])
-
-  return <div className="home-personalizer__canvas-stage" ref={stageRef}><canvas ref={canvasRef} aria-label="Live rear view jersey preview" /></div>
-}
-
-export default function HomeJerseyPersonalizer() {
-  const rootRef = useRef(null)
+export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }) {
+  const [activeIndex, setActiveIndex] = useState(0)
   const [name, setName] = useState(() => {
     try {
       const saved = JSON.parse(window.sessionStorage.getItem('jersevo_home_custom') || '{}')
@@ -227,8 +120,11 @@ export default function HomeJerseyPersonalizer() {
     } catch {}
     return '10'
   })
-  const [shouldLoad, setShouldLoad] = useState(false)
-  const [modelState, setModelState] = useState('idle')
+  const [selectedSize, setSelectedSize] = useState('L')
+  const [added, setAdded] = useState(false)
+  const touchStartX = useRef(null)
+
+  const activeListing = LEAGUE_LISTINGS[activeIndex] || LEAGUE_LISTINGS[0]
 
   useEffect(() => {
     try {
@@ -236,43 +132,299 @@ export default function HomeJerseyPersonalizer() {
     } catch {}
   }, [name, number])
 
-  useEffect(() => {
-    const element = rootRef.current
-    if (!element || typeof IntersectionObserver === 'undefined') {
-      setShouldLoad(true)
-      return undefined
-    }
-    const observer = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) {
-        setShouldLoad(true)
-        observer.disconnect()
-      }
-    }, { rootMargin: '280px 0px', threshold: 0.01 })
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
+  const prevSlide = () => {
+    setActiveIndex(current => (current > 0 ? current - 1 : LEAGUE_LISTINGS.length - 1))
+    setAdded(false)
+  }
 
-  const showFallback = modelState !== 'ready'
+  const nextSlide = () => {
+    setActiveIndex(current => (current < LEAGUE_LISTINGS.length - 1 ? current + 1 : 0))
+    setAdded(false)
+  }
+
+  const handleTouchStart = e => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = e => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (diff > 45) nextSlide()
+    else if (diff < -45) prevSlide()
+    touchStartX.current = null
+  }
+
+  const handlePreset = (presetName, presetNum) => {
+    setName(cleanName(presetName))
+    setNumber(cleanNumber(presetNum))
+  }
+
+  const handleAddToCart = () => {
+    const handle = activeListing.productHandle
+    const foundProduct = (products || []).find(p => p.handle === handle || p.id === handle) || product || (products || [])[0]
+    if (!foundProduct) {
+      navigate(`/product/${handle}?custom=1&name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`)
+      return
+    }
+
+    const availableVariants = foundProduct.variants || []
+    const matchingVariant = availableVariants.find(v => v.values?.Size === selectedSize) || availableVariants[0]
+
+    if (typeof onAdd === 'function') {
+      onAdd(foundProduct, {
+        variant: matchingVariant,
+        options: {
+          Size: selectedSize,
+          ...(matchingVariant?.values?.Colour ? { Colour: matchingVariant.values.Colour } : {})
+        },
+        customization: {
+          fields: { name, number },
+          values: { name, number },
+          note: `Personalized on homepage: ${activeListing.league} ${activeListing.title}`
+        }
+      })
+      setAdded(true)
+      window.setTimeout(() => setAdded(false), 2400)
+    } else {
+      navigate(`/product/${foundProduct.handle || foundProduct.id || handle}?custom=1&name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`)
+    }
+  }
+
+  const handleViewDetails = () => {
+    const handle = activeListing.productHandle
+    let customQuery = ''
+    if (name) customQuery += `&name=${encodeURIComponent(name)}`
+    if (number) customQuery += `&number=${encodeURIComponent(number)}`
+    navigate(`/product/${handle}?custom=1${customQuery}`)
+  }
+
+  const displayName = name || 'YOUR NAME'
+  const displayNumber = number || '00'
 
   return (
-    <div className="home-personalizer" ref={rootRef}>
-      <div className="home-personalizer__stage-wrap">
-        <span className="axis-label axis-label--top">LIVE REAR VIEW · MADE ON DEMAND</span>
-        {showFallback && <div className="home-personalizer__fallback" aria-hidden={false}><FallbackJersey name={name} number={number} /></div>}
-        {shouldLoad && <ThreeRearView name={name} number={number} shouldLoad={shouldLoad} onReady={() => setModelState('ready')} onError={() => setModelState('error')} />}
-        <span className="axis-label axis-label--bottom">NAME + NUMBER / LIVE PREVIEW</span>
+    <div className="home-personalizer">
+      {/* 1. League Tabs Selector */}
+      <div className="home-personalizer__leagues-bar" role="tablist" aria-label="Select League Jersey">
+        {LEAGUE_LISTINGS.map((listing, index) => {
+          const isActive = index === activeIndex
+          return (
+            <button
+              key={listing.id}
+              role="tab"
+              aria-selected={isActive}
+              className={`home-personalizer__league-tab ${isActive ? 'is-active' : ''}`}
+              onClick={() => { setActiveIndex(index); setAdded(false) }}
+            >
+              <img src={listing.leagueMark} alt={`${listing.league} mark`} className="home-personalizer__league-mark" />
+              <span>{listing.league}</span>
+            </button>
+          )
+        })}
       </div>
-      <form className="home-personalizer__controls" onSubmit={event => event.preventDefault()}>
-        <div className="home-personalizer__field">
-          <label htmlFor="home-jersey-name">NAME <span>MAX {MAX_NAME_LENGTH}</span></label>
-          <input id="home-jersey-name" value={name} maxLength={MAX_NAME_LENGTH} autoComplete="off" spellCheck="false" onChange={event => setName(cleanName(event.target.value))} placeholder="YOUR NAME" />
+
+      {/* 2. Real Listing Photo Stage with Slide & Live Jersey Decal Overlay */}
+      <div
+        className="home-personalizer__stage-wrap"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <span className="axis-label axis-label--top">LIVE REAR VIEW · MADE ON DEMAND</span>
+
+        <div className="home-personalizer__photo-stage">
+          <img
+            src={activeListing.image}
+            alt={activeListing.alt}
+            className="home-personalizer__photo"
+            loading="eager"
+          />
+
+          {/* Authentic Athletic Jersey Overlay */}
+          <div className={`home-personalizer__decal-overlay ${activeListing.isDark ? 'is-dark' : 'is-light'}`}>
+            <div className="home-personalizer__decal-nameplate">
+              <span
+                className="home-personalizer__jersey-name"
+                style={{
+                  color: activeListing.textColor,
+                  fontSize: `clamp(14px, ${Math.max(16, Math.min(32, 280 / Math.max(displayName.length, 6)))}px, 34px)`
+                }}
+              >
+                {displayName}
+              </span>
+            </div>
+            <div className="home-personalizer__decal-number">
+              <span
+                className="home-personalizer__jersey-number"
+                style={{
+                  color: activeListing.textColor,
+                  WebkitTextStroke: `2px ${activeListing.strokeColor}`
+                }}
+              >
+                {displayNumber}
+              </span>
+            </div>
+          </div>
+
+          {/* Photo Stage Badges */}
+          <div className="home-personalizer__badge-overlay">
+            <div className="home-personalizer__pill-badge">
+              <img src={activeListing.leagueMark} alt="" />
+              <span>{activeListing.league} · {activeListing.badge}</span>
+            </div>
+            <div className="home-personalizer__live-status">
+              <span className="live-dot" />
+              <span>LIVE MOCKUP</span>
+            </div>
+          </div>
+
+          {/* Slide Navigation Buttons */}
+          <button
+            className="home-personalizer__slide-arrow home-personalizer__slide-arrow--prev"
+            onClick={prevSlide}
+            aria-label="Previous league jersey slide"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            className="home-personalizer__slide-arrow home-personalizer__slide-arrow--next"
+            onClick={nextSlide}
+            aria-label="Next league jersey slide"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          {/* Slide Dots */}
+          <div className="home-personalizer__dots" aria-hidden="true">
+            {LEAGUE_LISTINGS.map((item, idx) => (
+              <button
+                key={item.id}
+                tabIndex={-1}
+                className={`home-personalizer__dot ${idx === activeIndex ? 'is-active' : ''}`}
+                onClick={() => { setActiveIndex(idx); setAdded(false) }}
+                aria-label={`Slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
-        <div className="home-personalizer__field home-personalizer__field--number">
-          <label htmlFor="home-jersey-number">NUMBER <span>00–99</span></label>
-          <input id="home-jersey-number" value={number} maxLength={MAX_NUMBER_LENGTH} inputMode="numeric" autoComplete="off" onChange={event => setNumber(cleanNumber(event.target.value))} placeholder="07" />
+
+        <span className="axis-label axis-label--bottom">REAL LISTING PHOTO · INSTANT ON-DEMAND</span>
+      </div>
+
+      {/* 3. PDP-Like Interactive Customizer Controls */}
+      <div className="home-personalizer__panel">
+        {/* Listing Title & Price row */}
+        <div className="home-personalizer__listing-head">
+          <div className="home-personalizer__listing-titles">
+            <span className="home-personalizer__listing-sub">{activeListing.subtitle}</span>
+            <h3 className="home-personalizer__listing-name">{activeListing.title}</h3>
+            <div className="home-personalizer__rating">
+              <span className="home-personalizer__stars" aria-hidden="true">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={13} fill="#e5a914" stroke="#e5a914" />
+                ))}
+              </span>
+              <span>4.9 (420+ fans)</span>
+            </div>
+          </div>
+          <div className="home-personalizer__listing-pricing">
+            <strong className="home-personalizer__price">${activeListing.price}</strong>
+            {activeListing.compareAt && (
+              <span className="home-personalizer__compare">${activeListing.compareAt}</span>
+            )}
+            <span className="home-personalizer__tag">MADE TO ORDER</span>
+          </div>
         </div>
-        <p className="home-personalizer__hint">The artwork stays fixed. Edit only the name and number, then continue to the product.</p>
-      </form>
+
+        {/* Inputs: Name & Number */}
+        <form className="home-personalizer__controls" onSubmit={e => e.preventDefault()}>
+          <div className="home-personalizer__field">
+            <label htmlFor="home-jersey-name">
+              NAME <span>MAX {MAX_NAME_LENGTH}</span>
+            </label>
+            <input
+              id="home-jersey-name"
+              value={name}
+              maxLength={MAX_NAME_LENGTH}
+              autoComplete="off"
+              spellCheck="false"
+              onChange={e => setName(cleanName(e.target.value))}
+              placeholder="YOUR NAME"
+            />
+          </div>
+          <div className="home-personalizer__field home-personalizer__field--number">
+            <label htmlFor="home-jersey-number">
+              NUMBER <span>00–99</span>
+            </label>
+            <input
+              id="home-jersey-number"
+              value={number}
+              maxLength={MAX_NUMBER_LENGTH}
+              inputMode="numeric"
+              autoComplete="off"
+              onChange={e => setNumber(cleanNumber(e.target.value))}
+              placeholder="07"
+            />
+          </div>
+        </form>
+
+        {/* Presets Row */}
+        <div className="home-personalizer__presets">
+          <span className="home-personalizer__preset-tip">Popular:</span>
+          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('MARTA', '10')}>MARTA 10</button>
+          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('MESSI', '10')}>MESSI 10</button>
+          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('BRADY', '12')}>BRADY 12</button>
+          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('JORDAN', '23')}>JORDAN 23</button>
+        </div>
+
+        {/* Size Selection Pills */}
+        <div className="home-personalizer__sizes">
+          <div className="home-personalizer__sizes-header">
+            <span>CHOOSE SIZE:</span>
+            <strong>{selectedSize}</strong>
+          </div>
+          <div className="home-personalizer__size-pills">
+            {activeListing.sizes.map(size => {
+              const isSelected = size === selectedSize
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  className={`home-personalizer__size-pill ${isSelected ? 'is-selected' : ''}`}
+                  onClick={() => setSelectedSize(size)}
+                >
+                  {size}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Action Buttons: ADD TO BAG & VIEW DETAILS */}
+        <div className="home-personalizer__actions">
+          <button
+            type="button"
+            className={`button button--acid home-personalizer__btn-add ${added ? 'is-added' : ''}`}
+            onClick={handleAddToCart}
+          >
+            {added ? (
+              <>
+                <Check size={18} /> ADDED TO BAG!
+              </>
+            ) : (
+              <>
+                <ShoppingBag size={18} /> ADD TO BAG · ${activeListing.price}
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            className="button button--dark home-personalizer__btn-pdp"
+            onClick={handleViewDetails}
+          >
+            <span>PDP DETAILS</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
