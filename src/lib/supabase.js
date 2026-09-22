@@ -454,7 +454,13 @@ export async function requestAiListingCopy(product, brief = {}) {
     })
   })
   const result = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(result.error || 'AI copy could not be generated.')
+  if (!response.ok) {
+    // If the provider timed out on image download, silently retry once in ultra-fast text-only mode
+    if ((response.status === 504 || /too long|timeout|timed out/i.test(result.error || '')) && !brief.skipVision) {
+      return requestAiListingCopy(product, { ...brief, skipVision: true })
+    }
+    throw new Error(result.error || 'AI copy could not be generated.')
+  }
   return result
 }
 

@@ -199,80 +199,97 @@ export default async function handler(request, response) {
       customerEditableFields:list(product.customFields),
       mediaRoles:media.map(item => text(item.role || item.mediaRole,60)).filter(Boolean),
       mediaNotes:media.slice(0,8).map(item => ({ type:text(item.type,20), alt:text(item.alt,240), role:text(item.role || item.mediaRole,60) })),
-      mediaImages,
       existingStoryBlocks:safeStoryBlocks(product.contentBlocks)
     }
     const fullAudit = String(brief.reviewMode || '').toUpperCase() === 'FULL_AUDIT'
     const system = `You are the senior product editor for Extra Time, a designer-led football apparel studio. Write specific, credible commerce copy grounded in the supplied design story and inspect every supplied product image before deciding what to say. Never invent teams, players, sponsors, materials, manufacturing claims, awards, licensing, shipping promises or reviews. Keep typography/composition/effects designer-locked; customer customization is limited to the supplied editable fields. Remove URLs, source references and AI-provider references. Write in ${language}. Return only valid JSON with keys title, subtitle, description, seoTitle, seoDescription, primaryKeyword, secondaryKeywords, keywords, tags, valueProps, differentiators, imagePlan, contentBlocks, audit. audit is an object with summary, contentScore (0-100), mediaScore (0-100), issues (array of concise fixes), reviewedImageCount and imageGaps (array of {role, reason}). imagePlan is an array of {role, caption} using only these controlled roles: model-front, model-back, model-street, model-detail, model-matchday and custom-guide. Include missing roles that would materially improve the listing; do not request duplicate images that already cover the same role unless regeneration is clearly justified. contentBlocks is an array of {type: heading|paragraph|quote|image, content, mediaRole}; image blocks must use a controlled role. Include image blocks where they genuinely explain a value, difference or distinctive design detail, not as decoration. SEO title max 60 characters, SEO description 150–160 characters, title max 90 characters. Use the primary keyword naturally once in the title or opening, use secondary keywords only where useful, and avoid keyword stuffing or generic luxury language.${fullAudit ? ' This is a full listing audit: explicitly compare the copy, SEO, custom fields, story blocks and every supplied image, then identify the highest-value missing image roles.' : ''}`
     const userText = `Current listing:\n${JSON.stringify(productContext)}\n\nCreative direction: ${direction || (fullAudit ? 'Audit the complete listing and normalize it without changing factual meaning.' : 'Refine the current story without changing factual meaning.')}\nTone: ${text(brief.tone,80) || 'Editorial, direct, emotionally precise'}\nTarget search intent: ${text(brief.searchIntent,300) || 'Football memory, personalized jersey and designer-led sportswear'}\nPrimary keyword: ${text(brief.primaryKeyword || brief.primary_keyword,100) || 'personalized football jersey'}\nSecondary keywords: ${list(brief.secondaryKeywords || brief.secondary_keywords,10).join(', ') || 'custom football jersey, football memory gift'}\nVerified value points: ${list(brief.valueProps || brief.value_props,6).join(' | ') || 'Use only facts visible in the listing.'}\nVerified differentiators: ${list(brief.differentiators,6).join(' | ') || 'Designer-locked composition with controlled personalization.'}\n${fullAudit ? 'Read every text field and every supplied image. Report what is missing or inconsistent, then create one coherent, detailed product story and a practical image plan for the highest-value missing controlled roles.' : 'Create one coherent, detailed product story. Explain the visual idea, the customer value, what is different about this design and exactly what can be personalized.'}\nUse image blocks only for controlled roles; never invent an image URL.`
     const content = [{ type:'text', text:userText }]
+
     // Keep the reference URL available to the vision-capable model, but never
     // copy it into public listing text or the returned suggestion.
     const referenceImage = safeImageReference(product.image, origin)
-    // Always lead with the listing's primary image. It is the source of truth
-    // for the artwork even when additional editorial media exists. De-dupe by
-    // URL so a primary image that is also in the media array is only reviewed
-    // once, while still allowing the model to inspect up to ten public images.
-    const references = [...new Map([
+    const skipVision = Boolean(brief.skipVision || body.skipVision)
+    // Lead strictly with the listing's primary image to minimize image download latency
+    const references = skipVision ? [] : [...new Map([
       ...(referenceImage ? [{ url:referenceImage, role:'primary', alt:'Primary listing reference', type:'IMAGE' }] : []),
       ...mediaImages
-    ].map(item => [item.url, item]).filter(([url]) => url)).values()].slice(0, 4)
-    for (const image of references) content.push({ type:'image_url', image_url:{ url:image.url, detail:'low' } })
-    const headers = { Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json' }
-    let visionUsed = references.length > 0
-    let upstream = await fetch(apiUrl, {
-      method:'POST', headers,
-      body:JSON.stringify({ model, temperature:0.65, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] }),
-      signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-    })
-    let payload = await upstream.json().catch(() => ({}))
+    ].map(item => [item.url, item]).filter(([url]) => url)).values()].slice(0, 1)
 
-    // 1. If 401 Unauthorized using default apikey.fan, try official OpenAI endpoint in case an official key was provided
-    if (upstream.status === 401 && base.includes('apikey.fan') && !process.env.AI_TEXT_API_URL && !process.env.OPENAI_BASE_URL) {
-      const openAiUrl = 'https://api.openai.com/v1/chat/completions'
-      const altUpstream = await fetch(openAiUrl, {
-        method:'POST', headers,
-        body:JSON.stringify({ model, temperature:0.65, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] }),
-        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-      }).catch(() => null)
-      if (altUpstream && (altUpstream.ok || altUpstream.status !== 401)) {
-        upstream = altUpstream
-        apiUrl = openAiUrl
+    const headers = { Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json' }
+    const VISION_TIMEOUT_MS = Math.min(22_000, Math.max(5_000, Math.floor(UPSTREAM_TIMEOUT_MS * 0.4)))
+    const TEXT_TIMEOUT_MS = Math.min(32_000, UPSTREAM_TIMEOUT_MS)
+
+    let visionUsed = references.length > 0
+    let upstream = null
+    let payload = {}
+
+    // Phase 1: Attempt multimodal vision inspection with a bounded timeout
+    if (visionUsed) {
+      for (const image of references) content.push({ type:'image_url', image_url:{ url:image.url, detail:'low' } })
+      try {
+        upstream = await fetch(apiUrl, {
+          method:'POST', headers,
+          body:JSON.stringify({ model, temperature:0.65, max_tokens:2500, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content }] }),
+          signal:AbortSignal.timeout(VISION_TIMEOUT_MS)
+        })
         payload = await upstream.json().catch(() => ({}))
+      } catch (err) {
+        // If vision timed out (> 22s) or failed to download images, drop vision and fall back to instant text-only audit
+        visionUsed = false
+        upstream = null
       }
     }
 
-    // 2. Some OpenAI-compatible gateways do not expose response_format. Retry with the same content without it.
-    if (!upstream.ok && [400,415,422].includes(upstream.status)) {
-      upstream = await fetch(apiUrl, {
-        method:'POST', headers,
-        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content }] }),
-        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-      })
-      payload = await upstream.json().catch(() => ({}))
-    }
-
-    // 3. If model was rejected (404 or model error message) and model is not gpt-4o, try gpt-4o fallback
-    if (!upstream.ok && (upstream.status === 404 || /model/i.test(String(payload.error?.message || payload.message || '')))) {
-      model = 'gpt-4o'
-      upstream = await fetch(apiUrl, {
-        method:'POST', headers,
-        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content:visionUsed ? content : userText }] }),
-        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-      })
-      payload = await upstream.json().catch(() => ({}))
-    }
-
-    // 4. If multimodal vision was rejected or failed (e.g. gateway cannot fetch Supabase image URLs),
-    // fallback to text-only mode so the admin receives a complete listing copy and SEO audit rather than failing.
-    if (!upstream.ok && visionUsed) {
+    // Phase 2: If vision failed, was rejected, or was skipped, run high-speed text-only audit
+    if (!upstream || !upstream.ok) {
       visionUsed = false
-      upstream = await fetch(apiUrl, {
-        method:'POST', headers,
-        body:JSON.stringify({ model, temperature:0.65, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
-        signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-      })
-      payload = await upstream.json().catch(() => ({}))
+      try {
+        upstream = await fetch(apiUrl, {
+          method:'POST', headers,
+          body:JSON.stringify({ model, temperature:0.65, max_tokens:2500, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
+          signal:AbortSignal.timeout(TEXT_TIMEOUT_MS)
+        })
+        payload = await upstream.json().catch(() => ({}))
+      } catch (err) {
+        if (isTimeoutError(err)) throw err
+      }
+
+      // 1. If 401 Unauthorized using default apikey.fan, try official OpenAI endpoint in case an official key was provided
+      if (upstream?.status === 401 && base.includes('apikey.fan') && !process.env.AI_TEXT_API_URL && !process.env.OPENAI_BASE_URL) {
+        const openAiUrl = 'https://api.openai.com/v1/chat/completions'
+        const altUpstream = await fetch(openAiUrl, {
+          method:'POST', headers,
+          body:JSON.stringify({ model, temperature:0.65, max_tokens:2500, response_format:{ type:'json_object' }, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
+          signal:AbortSignal.timeout(TEXT_TIMEOUT_MS)
+        }).catch(() => null)
+        if (altUpstream && (altUpstream.ok || altUpstream.status !== 401)) {
+          upstream = altUpstream
+          apiUrl = openAiUrl
+          payload = await upstream.json().catch(() => ({}))
+        }
+      }
+
+      // 2. Some OpenAI-compatible gateways do not expose response_format. Retry with the same content without it.
+      if (upstream && !upstream.ok && [400,415,422].includes(upstream.status)) {
+        upstream = await fetch(apiUrl, {
+          method:'POST', headers,
+          body:JSON.stringify({ model, temperature:0.65, max_tokens:2500, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
+          signal:AbortSignal.timeout(TEXT_TIMEOUT_MS)
+        })
+        payload = await upstream.json().catch(() => ({}))
+      }
+
+      // 3. If model was rejected (404 or model error message) and model is not gpt-4o, try gpt-4o fallback
+      if (upstream && !upstream.ok && (upstream.status === 404 || /model/i.test(String(payload.error?.message || payload.message || '')))) {
+        model = 'gpt-4o'
+        upstream = await fetch(apiUrl, {
+          method:'POST', headers,
+          body:JSON.stringify({ model, temperature:0.65, max_tokens:2500, messages:[{ role:'system', content:system }, { role:'user', content:userText }] }),
+          signal:AbortSignal.timeout(TEXT_TIMEOUT_MS)
+        })
+        payload = await upstream.json().catch(() => ({}))
+      }
     }
 
     if (!upstream.ok) {
