@@ -361,54 +361,13 @@ a { color: inherit; }
   display: block;
 }
 
-/* Authentic Decal Overlay on Jersey Back */
-.home-personalizer__decal-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.home-personalizer__decal-nameplate {
-  position: absolute;
-  top: 24%;
-  left: 15%;
-  right: 15%;
-  text-align: center;
-  transform: perspective(400px) rotateX(4deg);
-}
-.home-personalizer__jersey-name {
-  display: inline-block;
-  font-family: var(--headline, "Barlow Condensed"), "Arial Narrow", Impact, sans-serif;
-  font-weight: 800;
-  letter-spacing: clamp(4px, 1vw, 8px);
-  text-transform: uppercase;
-  line-height: 1;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
-}
-.home-personalizer__decal-overlay.is-light .home-personalizer__jersey-name {
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8), 0 0 2px rgba(0, 0, 0, 0.3);
-}
-.home-personalizer__decal-number {
-  position: absolute;
-  top: 36%;
-  left: 15%;
-  right: 15%;
-  text-align: center;
-  transform: perspective(400px) rotateX(4deg);
-}
-.home-personalizer__jersey-number {
-  display: inline-block;
-  font-family: var(--headline, "Barlow Condensed"), "Arial Narrow", Impact, sans-serif;
-  font-weight: 900;
-  font-size: clamp(68px, 15vw, 120px);
-  line-height: 0.88;
-  letter-spacing: -0.04em;
-  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.85);
-}
-.home-personalizer__decal-overlay.is-light .home-personalizer__jersey-number {
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+/* Photo Stage */
+.home-personalizer__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 280ms ease, transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Badges on Photo */
@@ -443,8 +402,8 @@ a { color: inherit; }
 .home-personalizer__live-status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
+  gap: 5px;
+  padding: 4px 10px;
   background: rgba(18, 18, 18, 0.75);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -459,29 +418,96 @@ a { color: inherit; }
   border-color: #f8f04a;
   font-weight: 800;
 }
+
+/* Advanced AI Scanner & Progress Overlay */
 .home-personalizer__ai-loader {
   position: absolute;
   inset: 0;
-  background: rgba(18, 18, 18, 0.88);
-  backdrop-filter: blur(12px);
+  background: rgba(12, 12, 14, 0.92);
+  backdrop-filter: blur(14px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   z-index: 5;
   color: #ffffff;
   text-align: center;
-  padding: 20px;
+  padding: 24px;
+  overflow: hidden;
 }
-.home-personalizer__ai-loader strong {
-  font: 800 15px var(--headline, sans-serif);
-  letter-spacing: 0.04em;
+.home-personalizer__ai-scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #f8f04a 50%, transparent 100%);
+  box-shadow: 0 0 14px #f8f04a;
+  animation: aiScan 2.4s ease-in-out infinite alternate;
+}
+@keyframes aiScan {
+  0% { top: 8%; opacity: 0.2; }
+  50% { opacity: 0.95; }
+  100% { top: 92%; opacity: 0.2; }
+}
+.home-personalizer__ai-spinner-ring {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(248, 240, 74, 0.15) 0%, transparent 70%);
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(248, 240, 74, 0.35);
+}
+.home-personalizer__ai-title {
+  font: 800 14px var(--headline, sans-serif);
+  letter-spacing: 0.08em;
   color: var(--acid, #f8f04a);
+  text-transform: uppercase;
 }
-.home-personalizer__ai-loader span {
-  font: 500 11px var(--body, sans-serif);
-  color: rgba(255, 255, 255, 0.8);
+.home-personalizer__ai-phase {
+  font: 500 12px var(--body, sans-serif);
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 260px;
+  min-height: 36px;
+  line-height: 1.4;
+}
+.home-personalizer__ai-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 240px;
+  margin-top: 4px;
+}
+.home-personalizer__ai-timer {
+  font: 700 12px monospace;
+  color: var(--acid, #f8f04a);
+  min-width: 28px;
+  text-align: right;
+}
+.home-personalizer__ai-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.home-personalizer__ai-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f8f04a 0%, #ffffff 100%);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+/* Hero Preview Image */
+.hero__preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 4px;
 }
 .home-personalizer__slide-arrow {
   position: absolute;

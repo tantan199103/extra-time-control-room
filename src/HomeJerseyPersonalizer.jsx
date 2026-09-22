@@ -152,6 +152,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
   const [aiPreviewUrl, setAiPreviewUrl] = useState(null)
   const [aiPreviewId, setAiPreviewId] = useState(null)
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [aiElapsed, setAiElapsed] = useState(0)
   const [aiNotice, setAiNotice] = useState('')
   const touchStartX = useRef(null)
 
@@ -162,6 +163,19 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
       window.sessionStorage.setItem('jersevo_home_custom', JSON.stringify({ name, number }))
     } catch {}
   }, [name, number])
+
+  useEffect(() => {
+    let timer = null
+    if (isGeneratingAi) {
+      setAiElapsed(0)
+      timer = setInterval(() => {
+        setAiElapsed(prev => prev + 1)
+      }, 1000)
+    } else {
+      setAiElapsed(0)
+    }
+    return () => { if (timer) clearInterval(timer) }
+  }, [isGeneratingAi])
 
   const prevSlide = () => {
     setActiveIndex(current => (current > 0 ? current - 1 : CATALOGUE_LEAGUE_LISTINGS.length - 1))
@@ -193,7 +207,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
     setName(cleanName(presetName))
     setNumber(cleanNumber(presetNum))
     setAiPreviewUrl(null)
-    setAiNotice('')
+    setAiNotice(`Selected ${presetName} #${presetNum}. Click RENDER WITH AI to generate.`)
   }
 
   /**
@@ -204,7 +218,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
     const trimmedName = cleanName(name)
     const trimmedNumber = cleanNumber(number)
     if (!trimmedName && !trimmedNumber) {
-      setAiNotice('Nhập tên hoặc số áo để AI tạo ảnh thiết kế.')
+      setAiNotice('Enter a name or number to render with AI.')
       return
     }
 
@@ -234,7 +248,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
       if (result.imageUrl) {
         setAiPreviewUrl(result.imageUrl)
         setAiPreviewId(result.previewId || null)
-        setAiNotice('Đã đổi Tên & Số bằng AI thành công!')
+        setAiNotice('AI Matchday Render Ready!')
         try {
           window.sessionStorage.setItem('extra-time-ai-preview', JSON.stringify({
             productId: targetProductId,
@@ -299,8 +313,6 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
     navigate(`/product/${handle}?custom=1${customQuery}`)
   }
 
-  const displayName = name || 'YOUR NAME'
-  const displayNumber = number || '00'
   const activeImage = aiPreviewUrl || activeListing.image
 
   return (
@@ -345,40 +357,29 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
             loading="eager"
           />
 
-          {/* Athletic Jersey Overlay (shown when not replaced by AI generated image) */}
-          {!aiPreviewUrl && (
-            <div className={`home-personalizer__decal-overlay ${activeListing.isDark ? 'is-dark' : 'is-light'}`}>
-              <div className="home-personalizer__decal-nameplate">
-                <span
-                  className="home-personalizer__jersey-name"
-                  style={{
-                    color: activeListing.textColor,
-                    fontSize: `clamp(14px, ${Math.max(16, Math.min(32, 280 / Math.max(displayName.length, 6)))}px, 34px)`
-                  }}
-                >
-                  {displayName}
-                </span>
-              </div>
-              <div className="home-personalizer__decal-number">
-                <span
-                  className="home-personalizer__jersey-number"
-                  style={{
-                    color: activeListing.textColor,
-                    WebkitTextStroke: `2px ${activeListing.strokeColor}`
-                  }}
-                >
-                  {displayNumber}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* AI Generating Shimmer Overlay */}
+          {/* AI Generating Scanning Overlay */}
           {isGeneratingAi && (
             <div className="home-personalizer__ai-loader" role="status" aria-live="polite">
-              <Sparkles size={28} className="animate-spin text-acid" />
-              <strong>AI ĐANG IN TÊN & SỐ LÊN ÁO…</strong>
-              <span>Đang kết xuất bản thiết kế thể thao chuẩn matchday</span>
+              <div className="home-personalizer__ai-scanner-line" />
+              <div className="home-personalizer__ai-spinner-ring">
+                <Sparkles size={28} className="animate-spin text-acid" />
+              </div>
+              <strong className="home-personalizer__ai-title">AI MATCHDAY STUDIO IN PROGRESS</strong>
+              <span className="home-personalizer__ai-phase">
+                {aiElapsed < 6 ? 'Analyzing authentic jersey silhouette & fabric weave…'
+                  : aiElapsed < 15 ? 'Synthesizing matchday typography & squad numbers…'
+                  : aiElapsed < 25 ? 'Rendering dynamic lighting & seam fold curvature…'
+                  : 'Finalizing high-resolution matchday preview…'}
+              </span>
+              <div className="home-personalizer__ai-meter">
+                <span className="home-personalizer__ai-timer">{aiElapsed}s</span>
+                <div className="home-personalizer__ai-progress-bar">
+                  <div
+                    className="home-personalizer__ai-progress-fill"
+                    style={{ width: `${Math.min(95, Math.max(12, aiElapsed * 3))}%` }}
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -397,7 +398,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               ) : (
                 <>
                   <span className="live-dot" />
-                  <span>LIVE PREVIEW</span>
+                  <span>CATALOGUE PHOTO</span>
                 </>
               )}
             </div>
@@ -454,7 +455,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
                   <Star key={i} size={13} fill="#e5a914" stroke="#e5a914" />
                 ))}
               </span>
-              <span>4.9/5 (420+ đánh giá verified)</span>
+              <span>4.9/5 (420+ verified reviews)</span>
             </div>
           </div>
           <div className="home-personalizer__listing-pricing">
@@ -530,12 +531,12 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
             {isGeneratingAi ? (
               <>
                 <RefreshCw size={15} className="animate-spin" />
-                <span>AI ĐANG KẾT XUẤT ẢNH ÁO…</span>
+                <span>RENDERING WITH AI...</span>
               </>
             ) : (
               <>
                 <Sparkles size={15} />
-                <span>ĐỔI TÊN & SỐ BẰNG AI</span>
+                <span>RENDER WITH AI</span>
               </>
             )}
           </button>
@@ -544,9 +545,9 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               type="button"
               className="home-personalizer__btn-revert"
               onClick={() => setAiPreviewUrl(null)}
-              title="Quay lại ảnh áo gốc"
+              title="Return to original catalogue photo"
             >
-              Ảnh gốc
+              ORIGINAL PHOTO
             </button>
           )}
         </div>

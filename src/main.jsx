@@ -370,13 +370,18 @@ function Hero({ content = {}, customProduct }) {
       <div className="hero__card-preview" onClick={() => navigate(customTarget)} role="button" tabIndex={0} aria-label="Interactive custom jersey preview">
         <div className="hero__preview-tag">
           <span className="hero__preview-live-dot" />
-          <span>LIVE PREVIEW · TOUCHLINE #10</span>
+          <span>OFFICIAL CATALOGUE · GAME DAY</span>
         </div>
         <div className="hero__preview-jersey">
-          <JerseySvg name="YOUR NAME" number="10" teamCity="TOUCHLINE" year="2026" accent="#f8f04a" />
+          <img
+            src="/assets/products/media-400a45a3596401125289.webp"
+            alt="Custom Dallas Cowboys NFL game day jersey"
+            className="hero__preview-image"
+            loading="eager"
+          />
         </div>
         <div className="hero__preview-foot">
-          <span>YOUR NAME & NUMBER</span>
+          <span>AI CUSTOM LAB · MADE TO ORDER</span>
           <strong>CUSTOMIZE NOW <ArrowRight size={14}/></strong>
         </div>
       </div>
@@ -2244,7 +2249,7 @@ function App() {
   const [route, setRoute] = useState(() => window.location.pathname + window.location.search + window.location.hash)
   const path = route.split(/[?#]/)[0]
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
-  const [products,setProducts] = useState(() => initialCatalog)
+  const [products,setProducts] = useState(() => readLocal('jersevo_cached_catalog', null) || initialCatalog)
   const [menus,setMenus] = useState([])
   const [collections,setCollections] = useState([])
   const [theme,setTheme] = useState(() => adminTheme)
@@ -2292,7 +2297,10 @@ function App() {
       fetchStorefrontTheme(null)
     ]).then(([catalogResult,menuResult,collectionResult,themeResult]) => {
       if(!active)return
-      setProducts(catalogResult.data || [])
+      if (catalogResult.data?.length) {
+        setProducts(catalogResult.data)
+        try { window.localStorage.setItem('jersevo_cached_catalog', JSON.stringify(catalogResult.data)) } catch {}
+      }
       const nextCollections = collectionResult.data || []
       const nextTheme = themeResult.data || null
       setMenus(resolveMenuImages(menuResult.data || [], { products:catalogResult.data || [], collections:nextCollections, pages:nextTheme?.pages || [] }))

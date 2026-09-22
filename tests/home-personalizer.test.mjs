@@ -25,7 +25,7 @@ test('homepage personalizer uses real catalogue league listings and AI name/numb
   // AI name and number generation
   assert.match(personalizer, /api\/ai-preview/)
   assert.match(personalizer, /handleGenerateWithAi/)
-  assert.match(personalizer, /ĐỔI TÊN & SỐ BẰNG AI|AI ĐANG KẾT XUẤT/)
+  assert.match(personalizer, /RENDER WITH AI|RENDERING WITH AI/i)
 
   // Constraints & actions
   assert.match(personalizer, /MAX_NAME_LENGTH = 12/)
@@ -33,10 +33,15 @@ test('homepage personalizer uses real catalogue league listings and AI name/numb
   assert.match(personalizer, /ADD TO BAG/)
   assert.match(personalizer, /selectedSize/)
 
-  // Requirement: no 3D (three.js, GLB) and no cartoon SVGs/GVs
+  // Requirement: no 3D (three.js, GLB), no cartoon SVGs/GVs, and no duplicate CSS decal overlay
   assert.doesNotMatch(personalizer, /import\('three'\)/)
   assert.doesNotMatch(personalizer, /jersey\.glb/)
   assert.doesNotMatch(personalizer, /<svg className="jersey-svg"/)
+  assert.doesNotMatch(personalizer, /home-personalizer__decal-overlay/)
+
+  const hero = main.slice(main.indexOf('function Hero'), main.indexOf('function HomePath'))
+  assert.doesNotMatch(hero, /<JerseySvg/)
+  assert.match(hero, /hero__preview-image/)
 })
 
 test('home customizer links name and number to pdp target query and session storage', async () => {
