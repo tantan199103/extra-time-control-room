@@ -2995,7 +2995,7 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .mobile-sticky-atc__product small { max-width:145px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:8px; }
 
 @media (max-width:780px) {
-  .pdp-highlights { padding:56px 16px 68px; display:block; }
+  .pdp-highlights { padding:24px 16px 54px; display:block; }
   .pdp-highlight-card { margin-bottom:9px; padding:22px 17px 19px; }
   .pdp-highlight-card:last-child { margin-bottom:0; }
   .pdp-highlight-card--dark { min-height:0; }
@@ -3040,6 +3040,24 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .pdp__trust-line { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:13px 0; border-bottom:1px solid var(--line); color:var(--muted); }
 .pdp__trust-line span { min-width:0; display:flex; align-items:center; gap:5px; white-space:nowrap; font:600 8px var(--body); letter-spacing:.015em; }
 .pdp__trust-line svg { color:var(--ink); flex:none; }
+/* INLINE DELIVERY BADGE - PDP PURCHASE COHESION */
+.pdp-delivery-badge { margin:12px 0 10px; padding:11px 13px; background:#fff8f8; border:1px solid #f2cfcf; border-left:3px solid var(--signal); border-radius:3px; display:grid; gap:7px; transition:all 0.2s ease; }
+.pdp-delivery-badge:hover { border-color:#e5b0b0; box-shadow:0 2px 10px rgba(181,43,43,0.07); }
+.pdp-delivery-badge__top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.pdp-delivery-badge__title { display:flex; align-items:center; gap:7px; font:700 10px var(--body); color:var(--ink); letter-spacing:.03em; }
+.pdp-delivery-badge__icon { color:var(--signal); flex-shrink:0; }
+.pdp-delivery-badge__title strong { color:var(--signal); font-weight:800; }
+.pdp-delivery-badge__link { display:inline-flex; align-items:center; gap:3px; font:700 8.5px var(--body); color:#7a7370; text-decoration:none; letter-spacing:.04em; text-transform:uppercase; padding:2px 6px; border-radius:2px; background:rgba(0,0,0,0.03); transition:all 0.15s ease; }
+.pdp-delivery-badge__link:hover { color:var(--ink); background:rgba(0,0,0,0.08); }
+.pdp-delivery-badge__details { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:6px; border-top:1px dashed #eed5d5; font:550 9px var(--body); color:#6a6460; }
+.pdp-delivery-badge__mode { display:flex; align-items:center; gap:6px; }
+.pdp-delivery-badge__mode strong { color:var(--ink); }
+.pdp-delivery-badge__pulse { width:6px; height:6px; border-radius:50%; background:#38b565; display:inline-block; box-shadow:0 0 0 2px rgba(56,181,101,0.25); animation:pdp-pulse 2s infinite ease-in-out; }
+@keyframes pdp-pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.25); opacity:0.75; } }
+.pdp-delivery-badge__shipping { display:flex; align-items:center; gap:4px; color:var(--signal); font-weight:700; font-size:8.5px; letter-spacing:.03em; white-space:nowrap; }
+.pdp-highlight-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; font:700 8.5px var(--body); letter-spacing:.05em; background:var(--chalk); border:1px solid var(--line); color:var(--muted); margin-left:auto; }
+.pdp-highlight-badge.is-personalized { background:var(--signal); border-color:var(--signal); color:#fff; }
+.pdp-delivery-track .is-active-step i { border-color:var(--signal); background:var(--signal); }
 .pdp__essentials { border-top:0; }
 .pdp__essentials details { border-bottom:1px solid var(--line); }
 .pdp__essentials summary { min-height:47px; padding:12px 0; display:grid; grid-template-columns:18px minmax(0,1fr) 16px; align-items:center; gap:9px; list-style:none; cursor:pointer; font:700 9px var(--body); letter-spacing:.04em; text-transform:uppercase; }
@@ -3079,7 +3097,10 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .size-modal__panel > .button:disabled { opacity:.45; cursor:not-allowed; }
 
 @media (max-width:780px) {
-  .pdp__info { padding-bottom:148px; }
+  .pdp__info { padding-bottom:24px; }
+  .pdp-delivery-badge { margin:10px 0 8px; padding:10px 12px; }
+  .pdp-delivery-badge__title { font-size:9.5px; }
+  .pdp-delivery-badge__details { flex-direction:column; align-items:flex-start; gap:4px; }
   .pdp-highlight-card { min-height:0; }
   .pdp-highlight-card--delivery h2,
   .pdp-highlight-card--featured h2 { font-size:36px; }

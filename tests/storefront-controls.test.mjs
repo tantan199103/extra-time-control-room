@@ -116,3 +116,14 @@ test('league discovery is available from the header mega menu and footer index',
   assert.doesNotMatch(source, /className="fixed-league-menu"/)
   assert.match(css, /\.pdp \+ footer/)
 })
+
+test('product page integrates inline estimated delivery with purchase options and highlights timeline', () => {
+  assert.match(source, /className="pdp-delivery-badge"/)
+  assert.match(source, /ESTIMATED ARRIVAL:/)
+  assert.match(source, /href="#pdp-delivery-timeline"/)
+  assert.match(source, /id="pdp-delivery-timeline"/)
+  assert.match(source, /<ProductPurchaseHighlights product=\{product\} personalized=\{personalized\}\/>/)
+  assert.match(css, /\.pdp-delivery-badge\s*\{/)
+  assert.match(css, /\.pdp-highlights\s*\{\s*padding:\s*36px/)
+})
+
