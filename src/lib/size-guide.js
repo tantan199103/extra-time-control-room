@@ -51,6 +51,15 @@ export function sizeFinderAudiences(product) {
   return [{ value:inferred, label:PROFILE_RANGES[audienceKey(inferred)].label, key:audienceKey(inferred) }]
 }
 
+export function sortSizes(values = []) {
+  return values.slice().sort((a, b) => {
+    const left = sizeRank(a)
+    const right = sizeRank(b)
+    return (left < 0 ? Number.MAX_SAFE_INTEGER : left) - (right < 0 ? Number.MAX_SAFE_INTEGER : right)
+      || String(a).localeCompare(String(b))
+  })
+}
+
 export function availableFinderSizes(product, { sizeOptionName = 'Size', selections = {}, audienceOptionName = '', audienceValue = '' } = {}) {
   if (!product) return ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '7XL']
   const variants = (product.variants || []).filter(variant => String(variant.status || 'ACTIVE').toUpperCase() === 'ACTIVE' && Number(variant.inventory || 0) > 0)
@@ -59,12 +68,6 @@ export function availableFinderSizes(product, { sizeOptionName = 'Size', selecti
     if (audienceOptionName && name.toLowerCase() === audienceOptionName.toLowerCase()) return !audienceValue || value === audienceValue
     return !selections[name] || selections[name] === value
   }))
-  const sortSizes = values => values.slice().sort((a, b) => {
-    const left = sizeRank(a)
-    const right = sizeRank(b)
-    return (left < 0 ? Number.MAX_SAFE_INTEGER : left) - (right < 0 ? Number.MAX_SAFE_INTEGER : right)
-      || String(a).localeCompare(String(b))
-  })
   const values = sortSizes([...new Set(matching.map(variant => optionValue(variant.values, sizeOptionName)).filter(Boolean))])
   if (values.length || Array.isArray(product.variants)) return values
   return sortSizes((product.options || []).find(option => option.name.toLowerCase() === String(sizeOptionName).toLowerCase())?.values || [])
