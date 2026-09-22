@@ -1711,7 +1711,19 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const [finder,setFinder] = useState(false)
   const [attachedPreview,setAttachedPreview] = useState(initialPreview)
   const [personalized,setPersonalized] = useState(customIntent)
-  const [customValues,setCustomValues] = useState(savedDraft?.values || {})
+  const [customValues,setCustomValues] = useState(() => {
+    const initialValues = { ...(savedDraft?.values || {}) }
+    const searchParams = new URLSearchParams(window.location.search)
+    const urlName = searchParams.get('name')
+    const urlNumber = searchParams.get('number')
+    let homeCustom = {}
+    try { homeCustom = JSON.parse(window.sessionStorage.getItem('jersevo_home_custom') || '{}') } catch {}
+    const finalName = urlName || (!initialValues.name ? homeCustom.name : null)
+    const finalNumber = urlNumber || (!initialValues.number ? homeCustom.number : null)
+    if (finalName) initialValues.name = String(finalName).toUpperCase().slice(0, 12)
+    if (finalNumber) initialValues.number = String(finalNumber).replace(/\D/g, '').slice(0, 2)
+    return initialValues
+  })
   const [assetRefs,setAssetRefs] = useState(savedDraft?.assetRefs || {})
   const [customNote,setCustomNote] = useState(savedDraft?.note || '')
   const [requestKey,setRequestKey] = useState(savedDraft?.requestKey || `request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)

@@ -21,3 +21,14 @@ test('homepage personalizer keeps the supplied model locked to name and number',
   assert.match(personalizer, /import\('three'\)/)
 })
 
+test('home customizer links name and number to pdp target query and session storage', async () => {
+  const [main, personalizer] = await Promise.all([
+    read('../src/main.jsx'),
+    read('../src/HomeJerseyPersonalizer.jsx')
+  ])
+  assert.match(personalizer, /jersevo_home_custom/)
+  assert.match(main, /jersevo_home_custom/)
+  assert.match(main, /searchParams\.get\('name'\)/)
+  assert.match(main, /searchParams\.get\('number'\)/)
+})
+
