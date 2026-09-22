@@ -95,3 +95,14 @@ test('mobile personalizer consolidates timeline and covers 4 major leagues with 
   assert.match(styles, /\.home-personalizer__panel\s*\{[^}]*margin-left:\s*-16px;[^}]*margin-right:\s*-16px;[^}]*width:\s*calc\(100%\s*\+\s*32px\);/)
 })
 
+test('players section (MADE FOR MORE) harmonizes with customizer in color and connects seamlessly', async () => {
+  const styles = await read('../src/styles.css')
+
+  // Color harmony: #e8e7e1 on players-section
+  assert.match(styles, /\.players-section\s*\{\s*background:\s*#e8e7e1;/)
+
+  // Seamless connection: custom-options has 0 bottom padding, players-section has compact top padding
+  assert.match(styles, /\.custom-options\s*\{[^}]*padding-bottom:\s*0;/)
+  assert.match(styles, /\.players-section\s*\{[^}]*padding-top:\s*36px;/)
+})
+
