@@ -2,3 +2,32 @@
 .admin-payment-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.admin-payment-fields label,.admin-payment-provider label{display:grid;gap:7px;color:var(--admin-muted);font:600 8px var(--body);letter-spacing:.08em;text-transform:uppercase}.admin-payment-fields select,.admin-payment-provider input,.admin-payment-provider textarea{width:100%;min-height:42px;padding:9px 10px;border:1px solid var(--admin-line);background:#fff;color:var(--admin-ink);font:600 11px var(--body);text-transform:none;letter-spacing:0}.admin-payment-toggle{grid-template-columns:1fr auto!important;align-items:center;padding:0 12px;border:1px solid var(--admin-line)}.admin-payment-toggle input{width:18px;height:18px;accent-color:var(--admin-ink)}
 .admin-payment-provider{display:grid;gap:14px;margin-top:18px;padding:17px;border-left:4px solid var(--admin-acid);background:#efeee7}.admin-payment-provider label small{color:var(--admin-muted);font-weight:500;text-transform:none;letter-spacing:0}.admin-payment-provider textarea{min-height:120px;resize:vertical;font-family:monospace}.admin-payment-provider p,.admin-payment-status small{margin:0;color:var(--admin-muted);font:500 9px/1.55 var(--body)}.admin-payment-provider code{color:var(--admin-ink);font-family:monospace}.admin-payment-status{display:grid;gap:5px;margin:18px 0 14px;padding:13px;border:1px solid var(--admin-line)}.admin-payment-status strong{font:700 16px var(--headline)}.admin-payment-status span{color:var(--admin-signal);font:600 9px var(--body)}.admin-payment-body>p{margin:0 0 14px;padding:10px 12px;background:#e8f2e9;border-left:3px solid #4a9a5a;font:600 9px/1.5 var(--body)}.admin-payment-body>p.is-error{background:#f5e5e2;border-color:var(--admin-signal)}
 @media(max-width:760px){.admin-payment-body{padding:16px}.admin-payment-fields{grid-template-columns:1fr}.admin-payment-choice{grid-template-columns:1fr}.admin-payment-choice button+button{border-left:0;border-top:1px solid var(--admin-line)}}
+
+/* Meta Pixel & Facebook Catalog Sync */
+.admin-pixel-panel{margin-bottom:24px}
+.admin-pixel-body{padding:20px 23px 24px;display:grid;gap:18px}
+.admin-pixel-field{display:flex;gap:12px;align-items:flex-end}
+.admin-pixel-field label{flex:1;display:grid;gap:7px;color:var(--admin-muted);font:600 8px var(--body);letter-spacing:.08em;text-transform:uppercase}
+.admin-pixel-field label small{color:var(--admin-muted);font-weight:500;text-transform:none;letter-spacing:0}
+.admin-pixel-field input{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--admin-line);background:#fff;color:var(--admin-ink);font:600 12px var(--body)}
+.admin-pixel-field .admin-button{height:42px;white-space:nowrap;flex-shrink:0}
+.admin-pixel-notice{margin:0;padding:10px 12px;background:#e8f2e9;border-left:3px solid #4a9a5a;font:600 10px/1.5 var(--body);color:var(--admin-ink)}
+.admin-pixel-notice.is-error{background:#f5e5e2;border-color:var(--admin-signal)}
+.admin-pixel-feed-box{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px;background:#efeee7;border-left:4px solid var(--admin-acid)}
+.admin-pixel-feed-box>div{display:grid;gap:6px}
+.admin-pixel-feed-box span{font:700 9px var(--body);letter-spacing:.08em;color:var(--admin-muted);text-transform:uppercase}
+.admin-pixel-feed-box p{margin:0;font:500 11px/1.5 var(--body);color:var(--admin-ink)}
+.admin-pixel-feed-box code{display:inline-block;padding:4px 8px;background:#fff;border:1px solid var(--admin-line);font:600 11px monospace;color:var(--admin-ink);word-break:break-all}
+.admin-pixel-feed-box .admin-button{flex-shrink:0;height:38px}
+.admin-pixel-checklist{display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--admin-line)}
+.admin-pixel-checklist>span{font:700 8px var(--body);letter-spacing:.08em;color:var(--admin-muted);text-transform:uppercase}
+.admin-pixel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.admin-pixel-grid>div{padding:10px 12px;background:#fff;border:1px solid var(--admin-line);display:grid;gap:4px}
+.admin-pixel-grid b{font:700 11px var(--body);color:var(--admin-ink)}
+.admin-pixel-grid span{font:500 10px/1.4 var(--body);color:var(--admin-muted)}
+
+@media(max-width:760px){
+  .admin-pixel-field{flex-direction:column;align-items:stretch}
+  .admin-pixel-feed-box{flex-direction:column;align-items:flex-start}
+  .admin-pixel-grid{grid-template-columns:1fr}
+}

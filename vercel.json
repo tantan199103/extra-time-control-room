@@ -85,6 +85,7 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/api/google-merchant-feed", "destination": "/api/google-merchant-feed.js" },
+    { "source": "/api/facebook-catalog-feed", "destination": "/api/google-merchant-feed.js" },
     { "source": "/api/newsletter-subscribe", "destination": "/api/newsletter-subscribe.js" },
     { "source": "/api/ai-preview", "destination": "/api/ai-preview.js" },
     { "source": "/api/customization-order", "destination": "/api/customization-order.js" },

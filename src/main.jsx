@@ -50,6 +50,7 @@ import { availableFinderSizes, canonicalSize, findAudienceOption, recommendCatal
 import { buildDeliveryEstimate } from './lib/product-commerce'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quantityDiscountForQty, quantityDiscountLabel } from './lib/quantity-pricing'
 import { adminTheme } from './admin-builder-data'
+import { initMetaPixel, trackPageView, trackViewContent, trackAddToCart, trackCustomizeProduct, trackInitiateCheckout, trackSearch } from './lib/meta-pixel'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -219,6 +220,12 @@ function SearchOverlay({ open, onClose, products }) {
   const inputRef = useRef(null)
   const panelRef = useRef(null)
   useDialogFocus(open, panelRef, onClose, inputRef)
+  useEffect(() => {
+    if (query.trim().length >= 2) {
+      const timer = setTimeout(() => trackSearch(query.trim()), 600)
+      return () => clearTimeout(timer)
+    }
+  }, [query])
   const matchingProducts = products.filter(product => `${product.name} ${product.story} ${product.meta}`.toLowerCase().includes(query.toLowerCase()))
   return (
     <div ref={panelRef} className={`overlay search-overlay ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={!open} role="dialog" aria-modal="true" aria-label="Search products" tabIndex={-1}>
@@ -1733,6 +1740,9 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const swatchColor = value => ({black:'#111111',white:'#eeeeea',chalk:'#eeeeea',oxblood:'#711e25',red:'#b52b2b',blue:'#244c89',navy:'#15233d',green:'#315c43',purple:'#5f3a78'}[String(value).toLowerCase()] || String(value))
   useEffect(() => { if (startPersonalized && customFields.length) setPersonalized(true) }, [startPersonalized,customFields.length])
   useEffect(() => {
+    if (product) trackViewContent(product, displayVariant)
+  }, [product?.id, displayVariant?.id])
+  useEffect(() => {
     try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues,assetRefs,note:customNote,selections,requestKey,logoConsent })) } catch {}
   }, [product.id,customValues,assetRefs,customNote,selections,requestKey,logoConsent])
   const chooseOrderType = enabled => {
@@ -2051,7 +2061,7 @@ const TRUST_PAGES = {
     sections:[
       {heading:'What we collect',body:'Depending on the action, Extra Time may receive your name, email, delivery address, order details, selected size and personalization instructions. Optional reference images stay attached to the private request that needs them.',list:['Cart and session storage keeps the bag working on your device.','Order records keep the details needed for fulfillment, support and legal accounting.','Payment details are entered with the payment provider; the store does not keep full card numbers.']},
       {heading:'What we do with it',body:'We use information to validate a cart, prepare a quote, create an order, deliver it, prevent abuse and answer support requests. We do not turn customer references into public product media without permission.',list:['Operational providers receive only the information needed for their job.','Staff access is limited to the order and workflow context they need.','AI artwork directions are treated as private order inputs and reviewed before production.']},
-      {heading:'Your choices',body:'You can ask to review or correct the details attached to an order. Some records must remain for fraud prevention, tax or accounting obligations; the team will explain any limit instead of silently ignoring the request.',list:['Email support@jersevo.com or use the private order link for an order-specific question.','Sign out on shared devices and do not upload someone else’s image without their permission.','At launch, the storefront does not load advertising pixels or cross-site analytics; this page will be updated if that changes.','We will update this page when a material privacy practice changes.']},
+      {heading:'Your choices',body:'You can ask to review or correct the details attached to an order. Some records must remain for fraud prevention, tax or accounting obligations; the team will explain any limit instead of silently ignoring the request.',list:['Email support@jersevo.com or use the private order link for an order-specific question.','Sign out on shared devices and do not upload someone else’s image without their permission.','The storefront supports Meta / Facebook Pixel conversion tracking to measure e-commerce purchases and match personalized product catalog views.','We will update this page when a material privacy practice changes.']},
       {heading:'Contact for privacy requests',body:'Jersevo operates the Extra Time storefront from Texas, United States. Privacy, correction and deletion requests can be sent to support@jersevo.com.',list:['Include the relevant order number, but never include a full payment card number.','We may need to verify that the request belongs to the customer or account concerned.','A verified mailing address will be added here when the business address is finalised.']}
     ],
     faqs:[['Does Extra Time sell customer data?','No. Customer order details and references are used to operate the store, not sold as an audience list.'],['How are reference images handled?','They remain private to the relevant customization request and are used to review the requested artwork direction.'],['How do I request a correction?','Use the order status link or account session and include the order number so the request can be matched safely.']]
@@ -2262,6 +2272,17 @@ function App() {
   const routeTeam = path.startsWith('/team/') ? findTeam(routeLeague?.key, decodeURIComponent(path.split('/')[3] || '')) : null
   useRouteMetadata({ path, product:routeProduct, collection:routeCollection, league:routeLeague, team:routeTeam })
   useEffect(() => {
+    initMetaPixel()
+  }, [])
+  useEffect(() => {
+    trackPageView(path)
+  }, [path])
+  useEffect(() => {
+    if (quickViewProduct) {
+      trackViewContent(quickViewProduct)
+    }
+  }, [quickViewProduct?.id])
+  useEffect(() => {
     const aliases = { '/moments': 'story', '/players': 'players' }
     const anchor = aliases[path]
     if (!anchor) return
@@ -2438,6 +2459,10 @@ function App() {
       return found ? current.map(item => item === found ? {...item,qty:item.qty+1} : item) : [...current,line]
     })
     setCartOpen(true)
+    trackAddToCart(line)
+    if (line.customization) {
+      trackCustomizeProduct(product, line.customization.fields || {})
+    }
   }
   const clearCart = () => {
     setCart([])
@@ -2454,6 +2479,8 @@ function App() {
   }
   const openCheckout = () => {
     if (!cart.length) { setCartNotice('Your bag is empty.'); return }
+    const total = cart.reduce((sum, item) => sum + Number(item.unitPrice ?? item.product?.price ?? 0) * Number(item.qty || 1), 0)
+    trackInitiateCheckout(cart, total)
     setCartOpen(false)
     navigate('/checkout')
   }

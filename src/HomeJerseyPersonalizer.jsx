@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { apiFetch } from './lib/api-client'
 import { getCustomerSessionId } from './lib/supabase'
+import { trackCustomizeProduct } from './lib/meta-pixel'
 
 export const MAX_NAME_LENGTH = 12
 export const MAX_NUMBER_LENGTH = 2
@@ -249,6 +250,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
         setAiPreviewUrl(result.imageUrl)
         setAiPreviewId(result.previewId || null)
         setAiNotice('AI Matchday Render Ready!')
+        trackCustomizeProduct(activeListing, { name: trimmedName, number: trimmedNumber })
         try {
           window.sessionStorage.setItem('extra-time-ai-preview', JSON.stringify({
             productId: targetProductId,

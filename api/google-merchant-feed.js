@@ -43,12 +43,14 @@ export default async function handler(request, response) {
     })
     const format = String(request.query?.format || new URL(request.url || 'http://localhost', 'http://localhost').searchParams.get('format') || 'xml').toLowerCase()
 
+    const isFacebook = String(request.url || '').toLowerCase().includes('facebook')
+
     if (format === 'json') {
       // Diagnostics intentionally contain IDs and counts only. Product copy,
       // image URLs and customer data are not returned by the public report.
       return sendJson(response, 200, {
         ...catalogue.report,
-        feedUrl: `${new URL(process.env.SITE_URL || 'https://www.jersevo.com').origin}/api/google-merchant-feed`,
+        feedUrl: `${new URL(process.env.SITE_URL || 'https://www.jersevo.com').origin}/api/${isFacebook ? 'facebook-catalog-feed' : 'google-merchant-feed'}`,
         formats: ['xml', 'tsv']
       })
     }
@@ -57,7 +59,7 @@ export default async function handler(request, response) {
       origin: process.env.SITE_URL || 'https://www.jersevo.com'
     })
     response.setHeader('Content-Type', format === 'tsv' ? 'text/tab-separated-values; charset=utf-8' : 'application/rss+xml; charset=utf-8')
-    response.setHeader('Content-Disposition', `inline; filename="jersevo-google-merchant.${format === 'tsv' ? 'tsv' : 'xml'}"`)
+    response.setHeader('Content-Disposition', `inline; filename="jersevo-${isFacebook ? 'facebook-catalog' : 'google-merchant'}.${format === 'tsv' ? 'tsv' : 'xml'}"`)
     response.setHeader('X-Robots-Tag', 'noindex, nofollow')
     response.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600')
     return response.status(200).send(body)

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CircleAlert, Lock, PackageCheck, ShieldCheck, ShoppingBag, Sparkles } from 'lucide-react'
 import { cancelPendingPayment, capturePayPalPayment, createCheckout, requestCheckoutQuote } from './lib/supabase'
+import { trackAddPaymentInfo, trackPurchase } from './lib/meta-pixel'
 
 const money = (value, currency = 'USD') => {
   try { return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(Number(value || 0)) } catch { return `${currency} ${Number(value || 0).toFixed(2)}` }
@@ -116,6 +117,12 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
         let pending = null
         try { pending = JSON.parse(sessionStorage.getItem('extra-time-pending-checkout') || 'null') } catch {}
         const fallbackLineKeys = cart.map(item => item.key || `${item.product.id}:${item.variantId}`)
+        trackPurchase({
+          order_id: publicId,
+          value: result.total || pending?.total || quote?.total || 0,
+          currency: 'USD',
+          contents: cart
+        })
         onPaymentConfirmed?.(pending?.publicId === publicId ? (pending.lineKeys || fallbackLineKeys) : fallbackLineKeys)
         if (!onPaymentConfirmed) onClearCart?.()
         try { sessionStorage.removeItem('extra-time-pending-checkout') } catch {}
@@ -159,6 +166,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
         let approval
         try { approval = new URL(result.approvalUrl, window.location.origin) } catch { approval = null }
         if (!approval || approval.protocol !== 'https:' || !/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) throw new Error('The payment provider returned an invalid approval link. Your bag is still available; try again shortly.')
+        trackAddPaymentInfo()
         sessionStorage.setItem('extra-time-pending-checkout', JSON.stringify({ publicId: result.order.publicId, token: result.order.token, provider: result.provider, lineKeys }))
         window.location.assign(approval.href)
         return
