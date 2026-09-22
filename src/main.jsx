@@ -273,31 +273,41 @@ function CartDrawer({ open, onClose, cart, updateQty, account, memberQuote, quot
           <div className="empty-cart"><span>90+</span><h3>THE NEXT MEMORY<br />STARTS HERE.</h3><p>Your bag is empty. The archive is not.</p><button className="button button--dark" onClick={() => { onClose(); navigate('/shop') }}>EXPLORE THE DROP</button></div>
         ) : (
           <>
-            <div className="cart-status">
-              <span><Check size={16} /> Bag checked against live stock</span>
-              <span className="cart-reservation-badge"><Sparkles size={12}/> Reserved</span>
-            </div>
-            {cartNotice && <p className="cart-runtime-notice" role="status">{cartNotice}</p>}
-            <div className="cart-items">
-              {cart.map(item => { const lineKey=item.key || cartLineKey(item); const clubLine=quoteMap.get(lineKey); const publicTotal=Number(item.unitPrice ?? item.product.price)*item.qty; return <div className="cart-item" key={lineKey}>
-                <img src={item.product.image} alt="" />
-                <div><h3>{item.product.name}</h3><p>{Object.entries(item.options || {}).map(([name,value]) => `${name} ${value}`).join(' · ') || item.sku || 'Default variation'}</p>{item.customization && <div className="cart-item__custom"><span>{Object.entries(item.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key}: ${/^https?:\/\//i.test(String(value)) ? 'attached' : value}`).join(' · ') || 'Custom request'}</span>{item.customization.note && <small>Note: {item.customization.note}</small>}{item.customization.aiPreviewUrl && <small>Visual preview attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)} aria-label={`Decrease ${item.product.name}`}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)} aria-label={`Increase ${item.product.name}`}><Plus size={14} /></button></div></div>
-                <strong className={clubLine?.discount>0?'cart-member-price':''}>{clubLine?.discount>0&&<del>{money(publicTotal)}</del>}{money(clubLine?.lineTotal ?? publicTotal)}{clubLine?.discount>0&&<small>90+ CLUB</small>}</strong>
-              </div>})}
-            </div>
-            {upsellCandidate && (
-              <div className="cart-cross-sell">
-                <p>PAIR WITH YOUR ORDER</p>
-                <button type="button" onClick={() => onAdd?.(upsellCandidate)}>
-                  <img src={upsellCandidate.image} alt={upsellCandidate.name} />
-                  <span><strong>{upsellCandidate.name}</strong><small>{money(upsellCandidate.price)} · Quick add</small></span>
-                  <Plus size={16}/>
-                </button>
+            <div className="cart-drawer__top-signals">
+              {!memberQuote?.member && (
+                <div className="shipping-meter">
+                  <p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p>
+                  <div><span style={{ width: `${Math.min(100, publicSubtotal)}%` }} /></div>
+                </div>
+              )}
+              <div className="cart-status">
+                <span><Check size={15} /> Bag checked against live stock</span>
+                <span className="cart-reservation-badge"><Sparkles size={11}/> Reserved</span>
               </div>
-            )}
-            {memberQuote?.member ? <div className="cart-club-status"><Ticket size={17}/><div><strong>90+ Club pricing applied</strong><span>{memberQuote.shipping?.eligible ? `Eligible ${memberQuote.shipping.method.toLowerCase()} shipping included up to ${money(memberQuote.shipping.subsidyCap)}.` : memberQuote.shipping?.reason}</span></div></div> : <button className="cart-club-upsell" onClick={()=>{onClose();navigate('/membership')}}><Ticket/><span><strong>JOIN 90+ CLUB</strong><small>20–40% eligible savings + standard shipping benefit</small></span><ArrowRight/></button>}
-            {!memberQuote?.member && <div className="shipping-meter"><p>{remaining ? `${money(remaining)} AWAY FROM FREE SHIPPING` : 'FREE SHIPPING UNLOCKED'}</p><div><span style={{ width: `${Math.min(100, publicSubtotal)}%` }} /></div></div>}
-            {quoteLoading&&<p className="cart-quote-note" role="status">Checking secure member price…</p>}{quoteError&&account?.user&&<p className="cart-quote-note is-error" role="alert">{quoteError}</p>}
+            </div>
+            <div className="cart-drawer__body">
+              {cartNotice && <p className="cart-runtime-notice" role="status">{cartNotice}</p>}
+              <div className="cart-items">
+                {cart.map(item => { const lineKey=item.key || cartLineKey(item); const clubLine=quoteMap.get(lineKey); const publicTotal=Number(item.unitPrice ?? item.product.price)*item.qty; return <div className="cart-item" key={lineKey}>
+                  <img src={item.product.image} alt="" />
+                  <div><h3>{item.product.name}</h3><p>{Object.entries(item.options || {}).map(([name,value]) => `${name} ${value}`).join(' · ') || item.sku || 'Default variation'}</p>{item.customization && <div className="cart-item__custom"><span>{Object.entries(item.customization.fields || {}).filter(([, value]) => value).map(([key, value]) => `${key}: ${/^https?:\/\//i.test(String(value)) ? 'attached' : value}`).join(' · ') || 'Custom request'}</span>{item.customization.note && <small>Note: {item.customization.note}</small>}{item.customization.aiPreviewUrl && <small>Visual preview attached</small>}</div>}<div className="qty"><button onClick={() => updateQty(item, -1)} aria-label={`Decrease ${item.product.name}`}><Minus size={14} /></button><span>{item.qty}</span><button onClick={() => updateQty(item, 1)} aria-label={`Increase ${item.product.name}`}><Plus size={14} /></button></div></div>
+                  <strong className={clubLine?.discount>0?'cart-member-price':''}>{clubLine?.discount>0&&<del>{money(publicTotal)}</del>}{money(clubLine?.lineTotal ?? publicTotal)}{clubLine?.discount>0&&<small>90+ CLUB</small>}</strong>
+                </div>})}
+              </div>
+              {upsellCandidate && (
+                <div className="cart-cross-sell">
+                  <p>PAIR WITH YOUR ORDER</p>
+                  <button type="button" onClick={() => onAdd?.(upsellCandidate)}>
+                    <img src={upsellCandidate.image} alt={upsellCandidate.name} />
+                    <span><strong>{upsellCandidate.name}</strong><small>{money(upsellCandidate.price)} · Quick add</small></span>
+                    <Plus size={16}/>
+                  </button>
+                </div>
+              )}
+              {memberQuote?.member ? <div className="cart-club-status"><Ticket size={17}/><div><strong>90+ Club pricing applied</strong><span>{memberQuote.shipping?.eligible ? `Eligible ${memberQuote.shipping.method.toLowerCase()} shipping included up to ${money(memberQuote.shipping.subsidyCap)}.` : memberQuote.shipping?.reason}</span></div></div> : <button className="cart-club-upsell" onClick={()=>{onClose();navigate('/membership')}}><Ticket size={16}/><span><strong>JOIN 90+ CLUB</strong><small>20–40% eligible savings + standard shipping benefit</small></span><ArrowRight size={15}/></button>}
+              {quoteLoading&&<p className="cart-quote-note" role="status">Checking secure member price…</p>}
+              {quoteError&&account?.user&&<p className="cart-quote-note is-error" role="alert">{quoteError}</p>}
+            </div>
             <div className="cart-checkout">{memberQuote?.discount>0&&<div className="cart-checkout__saving"><span>{memberQuote.quantityTier?.discountPercent > 0 && memberQuote.quantityTier.discountPercent >= Number(memberQuote.lines?.[0]?.discountPercent || 0) ? `QUANTITY SAVING · ${memberQuote.quantityTier.discountPercent}%` : '90+ CLUB SAVING'}</span><strong>−{money(memberQuote.discount)}</strong></div>}{!memberQuote?.member && quantityTier.discountPercent > 0 && <div className="cart-checkout__saving"><span>{quantityDiscountLabel(quantityTier)} quantity saving</span><strong>up to −{money(quantityEstimate)}</strong></div>}<div><span>SUBTOTAL</span><strong>{money(subtotal)}</strong></div><button onClick={onCheckout} disabled={!cart.length}>CHECKOUT <ArrowRight size={16}/></button><p id="checkout-status">Live stock and pricing are checked again before payment. Your order is only confirmed after the provider approves payment.</p></div>
           </>
         )}
@@ -955,7 +965,13 @@ function CustomTeaser({ product }) {
 
 function CustomOptions({ product }) {
   const handleOrder = () => {
-    const target = `/product/${product?.handle || product?.id || 'touchline'}?custom=1`
+    let customQuery = ''
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem('jersevo_home_custom') || '{}')
+      if (saved.name) customQuery += `&name=${encodeURIComponent(saved.name)}`
+      if (saved.number) customQuery += `&number=${encodeURIComponent(saved.number)}`
+    } catch {}
+    const target = `/product/${product?.handle || product?.id || 'touchline'}?custom=1${customQuery}`
     navigate(target)
   }
 

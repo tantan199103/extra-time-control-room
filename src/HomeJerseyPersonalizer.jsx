@@ -213,10 +213,28 @@ function ThreeRearView({ name, number, onReady, onError, shouldLoad }) {
 
 export default function HomeJerseyPersonalizer() {
   const rootRef = useRef(null)
-  const [name, setName] = useState('TAN')
-  const [number, setNumber] = useState('07')
+  const [name, setName] = useState(() => {
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem('jersevo_home_custom') || '{}')
+      if (saved.name) return cleanName(saved.name)
+    } catch {}
+    return 'MARTA'
+  })
+  const [number, setNumber] = useState(() => {
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem('jersevo_home_custom') || '{}')
+      if (saved.number) return cleanNumber(saved.number)
+    } catch {}
+    return '10'
+  })
   const [shouldLoad, setShouldLoad] = useState(false)
   const [modelState, setModelState] = useState('idle')
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem('jersevo_home_custom', JSON.stringify({ name, number }))
+    } catch {}
+  }, [name, number])
 
   useEffect(() => {
     const element = rootRef.current
