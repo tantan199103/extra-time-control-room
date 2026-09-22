@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AdminAccess from './AdminAccess'
 import ListingWorkspace from './ListingWorkspace'
 import PodBridgeReceiver from './PodBridgeReceiver'
@@ -103,7 +103,7 @@ function AdminOverview({ products }) {
   const stats = [
     {label:'Published listings',value:products.filter(row=>row.status==='PUBLISHED').length,note:'From the catalogue',tone:'acid'},
     {label:'Draft listings',value:products.filter(row=>row.status==='DRAFT').length,note:'Not visible to customers',tone:'paper'},
-    {label:'Active variants',value:products.reduce((count,row)=>count+(row.variants || []).filter(variant=>variant.status==='ACTIVE').length,0),note:'Across all listings',tone:'paper'},
+    {label:'Active variants',value:products.reduce((count,row)=>count+(row._catalogSummary ? Number(row._variantCount || 0) : (row.variants || []).filter(variant=>variant.status==='ACTIVE').length),0),note:'Across all listings',tone:'paper'},
     {label:'Needs attention',value:products.filter(row=>productCompleteness(row).percent<100).length,note:'Missing media, SEO or routing',tone:'ink'}
   ]
   return <main className="admin-page admin-overview"><PageIntro eyebrow="Store operations" title="Your catalogue, at a glance." copy="Each listing now owns its story, media, SEO, variation pricing and customer-editable information in one workspace." action="New product" onAction={()=>go('/admin/products/new')}/><section className="admin-stat-grid">{stats.map(item=><StatCard key={item.label} item={item}/>)}</section><section className="admin-panel admin-overview-review"><div className="admin-panel__head"><div><h2>Ready for review</h2><p>Draft or incomplete listings that need a decision.</p></div><button className="admin-text-button" onClick={()=>go('/admin/catalog')}>Open products</button></div>{products.filter(row=>row.status==='DRAFT' || productCompleteness(row).percent<100).slice(0,6).map(product=><CatalogRow product={product} key={product.id}/>)}{!products.length&&<div className="admin-empty"><Package size={24}/><strong>No listings yet</strong><span>Create the first product to start the catalogue.</span></div>}</section></main>
@@ -111,7 +111,9 @@ function AdminOverview({ products }) {
 
 function CatalogRow({ product, onDuplicate, selected = false, onToggle }) {
   const completeness = productCompleteness(product)
-  const stock = (product.variants || []).filter(row=>row.status==='ACTIVE').reduce((sum,row)=>sum+Number(row.inventory||0),0)
+  const stock = product._catalogSummary
+    ? Number(product.inventory || 0)
+    : (product.variants || []).filter(row=>row.status==='ACTIVE').reduce((sum,row)=>sum+Number(row.inventory||0),0)
   const tags = [...new Set([...(product.tags || []),...deriveAutomaticTags(product)])]
   return <article className={`admin-catalog-row ${selected ? 'is-selected' : ''}`}>{onToggle&&<button className={`admin-catalog-row__select ${selected?'is-checked':''}`} onClick={() => onToggle(product.id)} aria-label={`${selected?'Deselect':'Select'} ${product.title || product.name}`}>{selected&&<Check size={12}/>}</button>}<button className="admin-catalog-row__open" onClick={() => go(`/admin/products/${product.id}`)} aria-label={`Edit ${product.title || product.name}`}><span className="admin-product-thumb">{product.image?<img src={product.image} alt=""/>:<Package size={19}/>}</span><span className="admin-product-name"><strong>{product.name}</strong><small>{product.sku || product.subtitle || 'No SKU'}</small><i>{tags.slice(0,3).map(tag=><b key={tag}>{tag}</b>)}</i></span><span className="admin-product-type">{product.productGroup || product.type || '—'}</span><span className="admin-product-price">{money(product.price)}</span><StatusPill value={product.status}/><span className="admin-product-stock">{stock ? `${stock} units` : '—'}</span><span className="admin-product-score"><b>{completeness.percent}%</b><i><em style={{width:`${completeness.percent}%`}}/></i><small title={(product.seoBlockReasons || []).join(', ') || `SEO quality ${product.seoQualityScore || 0}/100`}>SEO {product.seoStatus || 'BLOCKED'}</small></span><ArrowRight size={16}/></button>{onDuplicate&&<button className="admin-catalog-row__duplicate" onClick={() => onDuplicate(product)} title="Create an unsaved draft copy"><Copy size={14}/><span>Duplicate</span></button>}</article>
 }
@@ -177,18 +179,33 @@ function AdminWorkspace() {
   const [source, setSource] = useState('supabase')
   const [loading, setLoading] = useState(true)
   const [loadNotice, setLoadNotice] = useState('')
+  const loadSequence = useRef(0)
   const loadPart = (task, fallback, label) => Promise.race([
     task,
     new Promise(resolve => window.setTimeout(() => resolve({ data: fallback, source: 'preview', error: `${label} timed out. Showing the control-room fallback.` }), 12000))
   ]).catch(error => ({ data: fallback, source: 'preview', error: error instanceof Error ? error.message : `${label} failed.` }))
   const load = async () => {
+    const sequence = ++loadSequence.current
     setLoading(true); setLoadNotice('')
+    const mergeCatalogPage = rows => {
+      if (sequence !== loadSequence.current || !Array.isArray(rows) || !rows.length) return
+      setProductRows(current => {
+        const byId = new Map(current.map(row => [row.id, row]))
+        rows.forEach(row => byId.set(row.id, row))
+        return [...byId.values()].sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
+      })
+    }
+    const catalogError = error => {
+      if (sequence !== loadSequence.current) return
+      const message = error instanceof Error ? error.message : String(error || 'Background catalogue request failed.')
+      setLoadNotice(`Catalogue loaded partially; remaining listings could not be loaded (${message}). Click Refresh to retry.`)
+    }
     try {
       // A slow catalog join must not hold the entire control room hostage.
       // Each workspace data source has its own deadline and can fall back
       // independently while the rest of Admin remains usable.
       const [productResult, themeResult, menuResult, collectionResult] = await Promise.all([
-        loadPart(fetchAdminProducts(), adminProducts, 'Catalog'),
+        loadPart(fetchAdminProducts({ onPage: mergeCatalogPage, onError: catalogError }), adminProducts, 'Catalog'),
         loadPart(fetchAdminTheme(), adminTheme, 'Theme'),
         loadPart(fetchAdminMenus(), adminMenus, 'Menus'),
         loadPart(fetchAdminCollections(), adminCollections, 'Collections')

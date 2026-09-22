@@ -132,22 +132,32 @@ function legacyPersonalizationFields(fields = [], productType = '') {
 export function deriveAutomaticTags(product) {
   const variants = product.variants || []
   const active = variants.filter(row => row.status === 'ACTIVE')
-  const totalStock = active.reduce((sum, row) => sum + Number(row.inventory || 0), 0)
+  const summaryCount = product._catalogSummary ? Number(product._variantCount || 0) : null
+  const totalStock = product._catalogSummary
+    ? Number(product.inventory || 0)
+    : active.reduce((sum, row) => sum + Number(row.inventory || 0), 0)
   const tags = [product.status, product.type, product.productGroup].filter(Boolean).map(cleanTag)
   if ((product.customFields || []).length) tags.push('customizable')
   if ((product.media || []).some(item => item.type === 'VIDEO')) tags.push('has-video')
   if (product.compareAt != null && Number(product.compareAt) > Number(product.price || 0) || active.some(row => row.compareAt != null && Number(row.compareAt) > Number(row.price || 0))) tags.push('sale')
-  if (active.length && totalStock === 0) tags.push('out-of-stock')
-  else if (active.length && totalStock <= 10) tags.push('low-stock')
+  const hasActiveVariants = product._catalogSummary ? summaryCount > 0 : active.length > 0
+  if (hasActiveVariants && totalStock === 0) tags.push('out-of-stock')
+  else if (hasActiveVariants && totalStock <= 10) tags.push('low-stock')
   return [...new Set(tags.filter(Boolean))]
 }
 
 export function productCompleteness(product) {
+  const summaryHasVariants = product._catalogSummary
+    ? Number(product._variantCount || 0) > 0
+    : (product.variants || []).some(row => row.status === 'ACTIVE')
+  const summaryHasSeo = product._catalogSummary
+    ? ['READY', 'INDEXABLE'].includes(String(product.seoStatus || '').toUpperCase())
+    : Boolean(product.seo?.title?.trim() && product.seo?.description?.trim())
   const checks = [
     { key:'story', label:'Story & title', done:Boolean(product.title?.trim() && product.description?.trim()) },
     { key:'media', label:'Primary image', done:Boolean(product.image?.trim()) },
-    { key:'variants', label:'Active variation', done:Boolean((product.variants || []).some(row => row.status === 'ACTIVE')) },
-    { key:'seo', label:'SEO metadata', done:Boolean(product.seo?.title?.trim() && product.seo?.description?.trim()) },
+    { key:'variants', label:'Active variation', done:summaryHasVariants },
+    { key:'seo', label:'SEO metadata', done:summaryHasSeo },
     { key:'seoGate', label:'SEO review gate', done:product.seoStatus === 'INDEXABLE' },
     { key:'organization', label:'Catalogue routing', done:Boolean(product.type?.trim() && (product.tags || []).length) }
   ]

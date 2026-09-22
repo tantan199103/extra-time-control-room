@@ -177,13 +177,18 @@ export async function fetchStorefrontTheme(fallback = null) {
   }
 }
 
+// Keep the catalogue projection deliberately small.  The editor hydrates one
+// listing with the complete JSON/media/options payload when it is opened; the
+// catalogue only needs the fields used by filters, rows and overview cards.
+// Fetching `seo`, `media`, `custom_fields` and every variant here made a large
+// imported catalogue hit PostgREST's statement/response timeout before the
+// Admin shell could render.
 const ADMIN_PRODUCT_SUMMARY_FIELDS = [
   'id', 'handle', 'title', 'subtitle', 'description', 'price', 'compare_at',
   'status', 'badge', 'type', 'template_id', 'template_version', 'image',
-  'color', 'artwork_lock', 'personalization', 'inventory', 'seo', 'sku',
-  'media', 'tags', 'product_group', 'custom_fields', 'seo_status',
-  'seo_quality_score', 'seo_block_reasons', 'seo_reviewed_at', 'seo_published_at',
-  'created_at', 'updated_at'
+  'color', 'artwork_lock', 'personalization', 'inventory', 'sku', 'tags',
+  'product_group', 'seo_status', 'seo_quality_score', 'seo_block_reasons',
+  'seo_reviewed_at', 'seo_published_at', 'created_at', 'updated_at'
 ].join(',')
 
 const ADMIN_PRODUCT_LEGACY_FIELDS = [
@@ -192,12 +197,11 @@ const ADMIN_PRODUCT_LEGACY_FIELDS = [
   'personalization', 'inventory', 'seo', 'created_at', 'updated_at'
 ].join(',')
 
-const ADMIN_VARIANT_SUMMARY_FIELDS = 'id,product_id,sku,price,compare_at,inventory,status,option_values'
 const ADMIN_PRODUCT_PAGE_SIZE = 200
 const ADMIN_PRODUCT_MAX_PAGES = 25
 
-async function fetchAdminProductPages(fields, includeVariants = true) {
-  const select = includeVariants ? `${fields},pod_product_variants(${ADMIN_VARIANT_SUMMARY_FIELDS})` : fields
+async function fetchAdminProductPages(fields, includeVariantCount = false, { onPage, onError, progressive = false } = {}) {
+  const select = includeVariantCount ? `${fields},pod_product_variants(count)` : fields
   const readPage = async page => {
     const from = page * ADMIN_PRODUCT_PAGE_SIZE
     const { data, error } = await supabase
@@ -210,28 +214,59 @@ async function fetchAdminProductPages(fields, includeVariants = true) {
     return Array.isArray(data) ? data : []
   }
 
+  const normalizeSummaryPage = rows => rows.map(row => {
+    const countRow = Array.isArray(row.pod_product_variants) ? row.pod_product_variants[0] : null
+    const variantCount = countRow && Number.isFinite(Number(countRow.count)) ? Number(countRow.count) : null
+    const normalized = normalizeProduct({
+      ...row,
+      // `pod_product_variants(count)` is only a catalogue hint.  Never let
+      // the count object masquerade as a real editable variant.
+      pod_product_variants: [],
+      _variantCount: variantCount,
+      _catalogSummary: true
+    })
+    return normalized
+  })
+
   // Read in small windows. A single `select('*', deep joins)` over a large
   // imported catalogue routinely exceeds PostgREST's statement/response
   // budget. Four concurrent windows keep the first paint quick without
   // opening an unbounded number of database requests.
-  const rows = []
-  let page = 0
-  let firstPage = true
-  while (page < ADMIN_PRODUCT_MAX_PAGES) {
-    const pageCount = firstPage ? 1 : 4
-    const pages = await Promise.all(
-      Array.from({ length: pageCount }, (_, index) => page + index).map(readPage)
-    )
-    let reachedEnd = false
-    pages.forEach(chunk => {
-      rows.push(...chunk)
-      if (chunk.length < ADMIN_PRODUCT_PAGE_SIZE) reachedEnd = true
-    })
-    if (reachedEnd) break
-    page += pages.length
-    firstPage = false
+  const firstPage = await readPage(0)
+  if (firstPage.length) onPage?.(normalizeSummaryPage(firstPage), { page: 0, done: firstPage.length < ADMIN_PRODUCT_PAGE_SIZE })
+  if (firstPage.length < ADMIN_PRODUCT_PAGE_SIZE) return firstPage
+
+  const loadRemaining = async () => {
+    const rows = []
+    let page = 1
+    while (page < ADMIN_PRODUCT_MAX_PAGES) {
+      const pageCount = Math.min(4, ADMIN_PRODUCT_MAX_PAGES - page)
+      const pages = await Promise.all(
+        Array.from({ length: pageCount }, (_, index) => page + index).map(readPage)
+      )
+      let reachedEnd = false
+      pages.forEach((chunk, index) => {
+        rows.push(...chunk)
+        if (chunk.length < ADMIN_PRODUCT_PAGE_SIZE) reachedEnd = true
+        if (chunk.length) onPage?.(normalizeSummaryPage(chunk), { page: page + index, done: chunk.length < ADMIN_PRODUCT_PAGE_SIZE })
+      })
+      if (reachedEnd) break
+      page += pages.length
+    }
+    return rows
   }
-  return rows
+
+  // Once the first 200 rows are available, continue in bounded windows.  In
+  // progressive mode the caller receives the first page now and the rest is
+  // intentionally detached from the initial Admin render.
+  if (progressive) {
+    const background = loadRemaining().catch(error => {
+      onError?.(error)
+      return []
+    })
+    return { firstPage, background }
+  }
+  return [...firstPage, ...(await loadRemaining())]
 }
 
 export async function fetchAdminProduct(productId) {
@@ -256,16 +291,21 @@ export async function fetchAdminProduct(productId) {
   }
 }
 
-export async function fetchAdminProducts() {
+export async function fetchAdminProducts({ onPage, onError } = {}) {
   if (!supabase) return { data: adminProducts, source: 'error', error: 'Supabase is not configured.' }
   try {
-    const data = await fetchAdminProductPages(ADMIN_PRODUCT_SUMMARY_FIELDS, true)
-    if (data.length) {
-      return {
-        data: data.map(row => normalizeProduct({ ...row, _catalogSummary: true })),
-        source: 'supabase', error: null
-      }
-    }
+    // `onPage` opts into progressive loading.  The first page is returned as
+    // soon as it is available; subsequent pages are emitted by the same
+    // bounded loader and can be merged into the Admin table without blocking
+    // the control-room shell.
+    const result = await fetchAdminProductPages(ADMIN_PRODUCT_SUMMARY_FIELDS, true, { onPage, onError, progressive: Boolean(onPage) })
+    const data = Array.isArray(result) ? result : result.firstPage
+    if (data.length) return { data: data.map(row => normalizeProduct({
+      ...row,
+      pod_product_variants: [],
+      _variantCount: Array.isArray(row.pod_product_variants) && row.pod_product_variants[0]?.count != null ? Number(row.pod_product_variants[0].count) : null,
+      _catalogSummary: true
+    })), source: 'supabase', error: null }
     return { data: adminProducts, source: 'preview', error: 'No catalogue rows were returned for this admin session.' }
   } catch (err) {
     // Keep older projects usable when the additive listing migration has not
@@ -273,11 +313,14 @@ export async function fetchAdminProducts() {
     // the expensive nested `*` query that caused the timeout.
     console.warn('Optimized admin product query failed, trying legacy projection:', err instanceof Error ? err.message : err)
     try {
-      const data = await fetchAdminProductPages(ADMIN_PRODUCT_LEGACY_FIELDS, false)
+      const result = await fetchAdminProductPages(ADMIN_PRODUCT_LEGACY_FIELDS, false, { onPage, onError, progressive: Boolean(onPage) })
+      const data = Array.isArray(result) ? result : result.firstPage
       if (data.length) return { data: data.map(row => normalizeProduct({ ...row, _catalogSummary: true })), source: 'supabase', error: null }
     } catch (legacyError) {
+      onError?.(legacyError)
       return { data: adminProducts, source: 'preview', error: legacyError instanceof Error ? legacyError.message : 'Product query failed.' }
     }
+    onError?.(err)
     return { data: adminProducts, source: 'preview', error: err instanceof Error ? err.message : 'Product query failed.' }
   }
 }
