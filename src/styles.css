@@ -2404,6 +2404,7 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .taxonomy-team-nav__status { font:600 8.5px var(--body) !important; color:var(--muted) !important; letter-spacing:.06em !important; text-transform:uppercase !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; max-width:55vw !important; }
   .taxonomy-team-nav__current strong { color:var(--signal) !important; font-weight:700 !important; }
   .taxonomy-team-nav__scroll { display:grid !important; grid-template-rows:repeat(3,38px) !important; grid-auto-flow:column !important; grid-auto-columns:max-content !important; gap:6px 8px !important; overflow-x:auto !important; overflow-y:hidden !important; scrollbar-width:none !important; -webkit-overflow-scrolling:touch !important; padding:2px 2px 4px !important; margin:0 !important; max-height:none !important; }
+  .taxonomy-team-nav__scroll.is-two-rows { grid-template-rows:repeat(2,38px) !important; }
   .taxonomy-team-nav__scroll::-webkit-scrollbar { display:none !important; }
   .taxonomy-team-nav__item { display:inline-flex !important; align-items:center !important; gap:6px !important; height:38px !important; padding:0 10px 0 6px !important; border-radius:999px !important; background:var(--chalk) !important; border:1px solid var(--line) !important; white-space:nowrap !important; font:700 9.5px var(--body) !important; color:var(--ink) !important; text-decoration:none !important; flex:none !important; box-sizing:border-box !important; }
   .taxonomy-team-nav__item.is-active { background:var(--ink) !important; color:var(--chalk) !important; border-color:var(--ink) !important; box-shadow:0 2px 8px rgba(0,0,0,.16) !important; }
@@ -2414,7 +2415,7 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .taxonomy-related { padding:50px 16px 76px; }
   .taxonomy-related > div { grid-template-columns:1fr 1fr; }
   .taxonomy-related a { min-height:64px; padding:12px; font-size:17px; }
-  .league-discovery__grid { grid-template-columns:1fr 1fr; }
+  .league-discovery__grid { display:flex; flex-direction:row; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
   .league-discovery__grid a { min-height:130px; padding:14px; }
   .league-discovery__grid a > span { font-size:48px; }
   .pdp-breadcrumb-wrap { padding:13px 16px 0; }

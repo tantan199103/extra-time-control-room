@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, teamMascot, teamPath } from '../src/lib/league-taxonomy.js'
 
 test('league taxonomy exposes stable league and team URLs', () => {
@@ -74,5 +75,27 @@ test('teamMascot extracts concise mascots for mobile team badges', () => {
   assert.equal(teamMascot('FC Barcelona'), 'Barcelona')
   assert.equal(teamMascot('Bayern Munich'), 'Bayern')
   assert.equal(teamMascot(''), '')
+})
+
+test('few-team leagues are balanced to two rows in navigation', async () => {
+  const source = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
+  const css = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
+
+  assert.match(source, /taxonomy-team-nav__scroll \$\{teams\.length <= 20 \? 'is-two-rows' : ''\}/)
+  assert.match(css, /\.taxonomy-team-nav__scroll\.is-two-rows\s*\{\s*grid-template-rows:\s*repeat\(2,\s*38px\)\s*!important;/)
+
+  const bundesliga = findLeague('bundesliga')
+  const seriea = findLeague('seriea')
+  const laliga = findLeague('laliga')
+  const epl = findLeague('epl')
+  const nfl = findLeague('nfl')
+  const ncaa = findLeague('ncaa')
+
+  assert.ok(bundesliga.teams.length <= 20)
+  assert.ok(seriea.teams.length <= 20)
+  assert.ok(laliga.teams.length <= 20)
+  assert.ok(epl.teams.length <= 20)
+  assert.ok(nfl.teams.length > 20)
+  assert.ok(ncaa.teams.length > 20)
 })
 

@@ -765,7 +765,7 @@ function TaxonomyLanding({ league, team, products, onQuickView }) {
               )}
             </div>
           </div>
-          <div className="taxonomy-team-nav__scroll" role="tablist" aria-label={`${league.name} teams`}>
+          <div className={`taxonomy-team-nav__scroll ${teams.length <= 20 ? 'is-two-rows' : ''}`} role="tablist" aria-label={`${league.name} teams`}>
             {teams.map(item => {
               const mascot = teamMascot(item.name)
               const isActive = team?.slug === item.slug
