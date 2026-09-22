@@ -11,7 +11,8 @@
     "api/ai-listing-media.js": { "maxDuration": 60 },
     "api/newsletter-subscribe.js": { "maxDuration": 15 },
     "api/ai-preview.js": { "maxDuration": 60 },
-    "api/customization-order.js": { "maxDuration": 30 }
+    "api/customization-order.js": { "maxDuration": 30 },
+    "api/admin-import-fanatics.js": { "maxDuration": 60 }
   },
   "headers": [
     {

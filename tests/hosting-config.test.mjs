@@ -18,7 +18,8 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
     'api/ai-listing-media.js': { maxDuration: 60 },
     'api/newsletter-subscribe.js': { maxDuration: 15 },
     'api/ai-preview.js': { maxDuration: 60 },
-    'api/customization-order.js': { maxDuration: 30 }
+    'api/customization-order.js': { maxDuration: 30 },
+    'api/admin-import-fanatics.js': { maxDuration: 60 }
   }, 'SEO/feed stay on Vercel while AI listing tools and the remaining application API routes use Cloud Run')
   assert.ok(config.rewrites.some(rule => rule.source === '/api/google-merchant-feed' && rule.destination === '/api/google-merchant-feed.js'))
   assert.ok(config.rewrites.some(rule => rule.source === '/api/newsletter-subscribe' && rule.destination === '/api/newsletter-subscribe.js'))
