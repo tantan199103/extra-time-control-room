@@ -453,8 +453,36 @@ a { color: inherit; }
   letter-spacing: .08em;
   border-radius: 999px;
 }
-
-/* Slide Arrows */
+.home-personalizer__live-status.is-ai {
+  background: rgba(248, 240, 74, 0.95);
+  color: #121212;
+  border-color: #f8f04a;
+  font-weight: 800;
+}
+.home-personalizer__ai-loader {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 18, 18, 0.88);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 5;
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+}
+.home-personalizer__ai-loader strong {
+  font: 800 15px var(--headline, sans-serif);
+  letter-spacing: 0.04em;
+  color: var(--acid, #f8f04a);
+}
+.home-personalizer__ai-loader span {
+  font: 500 11px var(--body, sans-serif);
+  color: rgba(255, 255, 255, 0.8);
+}
 .home-personalizer__slide-arrow {
   position: absolute;
   top: 50%;
@@ -642,10 +670,64 @@ a { color: inherit; }
   cursor: pointer;
   transition: all 140ms ease;
 }
-.home-personalizer__chip:hover {
+.home-personalizer__chip:hover,
+.home-personalizer__chip.is-active {
   background: var(--ink, #121212);
   color: var(--chalk, #ffffff);
   border-color: var(--ink, #121212);
+}
+
+/* AI Generation Bar */
+.home-personalizer__ai-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-personalizer__btn-ai {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  background: linear-gradient(135deg, #111111 0%, #1f1f23 100%);
+  border: 1px solid rgba(248, 240, 74, 0.5);
+  color: var(--acid, #f8f04a);
+  font: 800 12px var(--headline, sans-serif);
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: all 160ms ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+.home-personalizer__btn-ai:hover:not(:disabled) {
+  background: var(--ink, #121212);
+  border-color: var(--acid, #f8f04a);
+  box-shadow: 0 0 16px rgba(248, 240, 74, 0.25);
+  transform: translateY(-1px);
+}
+.home-personalizer__btn-ai:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+.home-personalizer__btn-revert {
+  padding: 0 12px;
+  height: 44px;
+  background: #ffffff;
+  border: 1px solid var(--line, #dedcd5);
+  font: 700 10px var(--body, sans-serif);
+  color: var(--muted, #666);
+  cursor: pointer;
+  letter-spacing: .04em;
+  transition: all 140ms ease;
+}
+.home-personalizer__btn-revert:hover {
+  border-color: var(--ink, #121212);
+  color: var(--ink, #121212);
+}
+.home-personalizer__ai-notice {
+  margin: -4px 0 0;
+  font: 600 11px var(--body, sans-serif);
+  color: #16a34a;
 }
 
 /* Sizes */

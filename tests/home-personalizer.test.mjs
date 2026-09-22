@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 
 const read = path => readFile(new URL(path, import.meta.url), 'utf8')
 
-test('homepage personalizer uses real league listing photos and PDP-like customization without 3D or SVGs', async () => {
+test('homepage personalizer uses real catalogue league listings and AI name/number preview', async () => {
   const [main, personalizer] = await Promise.all([
     read('../src/main.jsx'),
     read('../src/HomeJerseyPersonalizer.jsx')
@@ -14,14 +14,25 @@ test('homepage personalizer uses real league listing photos and PDP-like customi
   assert.match(options, /PERSONALIZE<br \/>\s*<em>YOUR JERSEY\.<\/em>/)
   assert.match(options, /<HomeJerseyPersonalizer/)
   assert.doesNotMatch(options, /home-custom-name|home-custom-num|RONALDO 7|MAHOMES 15/)
-  assert.match(personalizer, /LEAGUE_LISTINGS/)
-  assert.match(personalizer, /venom-mockup-back\.webp/)
-  assert.match(personalizer, /jersey-black\.webp/)
+
+  // Real catalogue league listings
+  assert.match(personalizer, /CATALOGUE_LEAGUE_LISTINGS/)
+  assert.match(personalizer, /dallas-cowboys/)
+  assert.match(personalizer, /green-bay-packers/)
+  assert.match(personalizer, /denver-broncos/)
+  assert.match(personalizer, /los-angeles-dodgers/)
+
+  // AI name and number generation
+  assert.match(personalizer, /api\/ai-preview/)
+  assert.match(personalizer, /handleGenerateWithAi/)
+  assert.match(personalizer, /ĐỔI TÊN & SỐ BẰNG AI|AI ĐANG KẾT XUẤT/)
+
+  // Constraints & actions
   assert.match(personalizer, /MAX_NAME_LENGTH = 12/)
   assert.match(personalizer, /MAX_NUMBER_LENGTH = 2/)
   assert.match(personalizer, /ADD TO BAG/)
   assert.match(personalizer, /selectedSize/)
-  assert.match(personalizer, /LIVE REAR VIEW/)
+
   // Requirement: no 3D (three.js, GLB) and no cartoon SVGs/GVs
   assert.doesNotMatch(personalizer, /import\('three'\)/)
   assert.doesNotMatch(personalizer, /jersey\.glb/)

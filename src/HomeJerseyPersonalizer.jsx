@@ -4,85 +4,112 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
   ShoppingBag,
   Sparkles,
   Star
 } from 'lucide-react'
+import { apiFetch } from './lib/api-client'
+import { getCustomerSessionId } from './lib/supabase'
 
 export const MAX_NAME_LENGTH = 12
 export const MAX_NUMBER_LENGTH = 2
 
-export const LEAGUE_LISTINGS = [
+/**
+ * Real catalogue league listings synchronized with published products in Supabase.
+ * NFL (Cowboys, Packers, Broncos) and MLB (Dodgers).
+ */
+export const CATALOGUE_LEAGUE_LISTINGS = [
   {
-    id: 'mls-touchline',
-    league: 'MLS',
-    leagueName: 'Major League Soccer',
-    leagueMark: '/assets/leagues/marks/mls.webp',
-    title: 'TOUCHLINE 04 PRO',
-    subtitle: 'Matchday Custom Rear View',
-    image: '/assets/venom-mockup-back.webp',
-    alt: 'MLS Matchday custom jersey rear view photo',
-    productHandle: 'touchline',
-    price: 109,
-    compareAt: 130,
-    textColor: '#f4f3ee',
-    strokeColor: '#f8f04a',
-    isDark: true,
-    badge: 'LIVE REAR VIEW',
-    sizes: ['S', 'M', 'L', 'XL', '2XL']
-  },
-  {
-    id: 'nfl-after-90',
+    id: 'listing-fa785a04606049483aa3',
+    productId: 'listing-fa785a04606049483aa3',
+    productHandle: 'custom-dallas-cowboys-jersey-game-day',
     league: 'NFL',
-    leagueName: 'National Football League',
+    leagueKey: 'nfl',
+    team: 'dallas-cowboys',
+    teamName: 'Dallas Cowboys',
+    teamMark: '/assets/leagues/marks/teams/nfl/dallas-cowboys.webp',
     leagueMark: '/assets/leagues/marks/nfl.webp',
-    title: 'AFTER 90 NIGHTWAY',
-    subtitle: 'Night Game Gridiron Cut',
-    image: '/assets/jersey-black.webp',
-    alt: 'NFL Night Game black matchday jersey photo',
-    productHandle: 'after-90',
-    price: 89,
-    compareAt: 110,
-    textColor: '#f4f3ee',
-    strokeColor: '#22c55e',
+    title: 'Custom Dallas Cowboys Jersey',
+    subtitle: 'Popular Game Day Style',
+    image: 'https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/listing-fa785a04606049483aa3/import/media-400a45a3596401125289.webp',
+    alt: 'Custom Dallas Cowboys NFL game day jersey',
+    price: 59.99,
+    compareAt: 79.99,
+    textColor: '#ffffff',
+    strokeColor: '#002244',
     isDark: true,
     badge: 'BEST SELLER',
+    preset: { name: 'PRESCOTT', number: '4' },
     sizes: ['S', 'M', 'L', 'XL', '2XL']
   },
   {
-    id: 'nba-home-end',
-    league: 'NBA',
-    leagueName: 'National Basketball Association',
-    leagueMark: '/assets/leagues/marks/nba.webp',
-    title: 'HOME END TERRACE',
-    subtitle: 'Hardwood Oxblood Edition',
-    image: '/assets/jersey-oxblood.webp',
-    alt: 'NBA Hardwood oxblood jersey photo',
-    productHandle: 'home-end',
-    price: 95,
-    compareAt: 115,
-    textColor: '#f4f3ee',
+    id: 'listing-e7b7dafe5613c7e08978',
+    productId: 'listing-e7b7dafe5613c7e08978',
+    productHandle: 'custom-new-packers-jersey-green-2026',
+    league: 'NFL',
+    leagueKey: 'nfl',
+    team: 'green-bay-packers',
+    teamName: 'Green Bay Packers',
+    teamMark: '/assets/leagues/marks/teams/nfl/green-bay-packers.webp',
+    leagueMark: '/assets/leagues/marks/nfl.webp',
+    title: 'Custom Green Bay Packers Jersey',
+    subtitle: 'Green 2026 Fan Edition',
+    image: 'https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/listing-e7b7dafe5613c7e08978/import/media-3b5328659753a7db9f85.webp',
+    alt: 'Custom Green Bay Packers NFL jersey green 2026',
+    price: 59.99,
+    compareAt: 79.99,
+    textColor: '#ffffff',
     strokeColor: '#f8f04a',
     isDark: true,
-    badge: 'LOW STOCK',
+    badge: 'NEW DROP',
+    preset: { name: 'LOVE', number: '10' },
     sizes: ['S', 'M', 'L', 'XL', '2XL']
   },
   {
-    id: 'mlb-chalk-lines',
+    id: 'listing-6d14a6e6255e642a18df',
+    productId: 'listing-6d14a6e6255e642a18df',
+    productHandle: 'custom-denver-broncos-jersey-name-number',
+    league: 'NFL',
+    leagueKey: 'nfl',
+    team: 'denver-broncos',
+    teamName: 'Denver Broncos',
+    teamMark: '/assets/leagues/marks/teams/nfl/denver-broncos.webp',
+    leagueMark: '/assets/leagues/marks/nfl.webp',
+    title: 'Custom Denver Broncos Jersey',
+    subtitle: 'Name Number Bold Fan Wear',
+    image: 'https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/listing-6d14a6e6255e642a18df/import/media-e7f661e96614b77e694c.webp',
+    alt: 'Custom Denver Broncos NFL jersey bold name number',
+    price: 59.99,
+    compareAt: 79.99,
+    textColor: '#ffffff',
+    strokeColor: '#fb4f14',
+    isDark: true,
+    badge: 'TRENDING',
+    preset: { name: 'NIX', number: '10' },
+    sizes: ['S', 'M', 'L', 'XL', '2XL']
+  },
+  {
+    id: 'listing-bc9823215a1a5020526b',
+    productId: 'listing-bc9823215a1a5020526b',
+    productHandle: 'los-angeles-dodgers-white-jersey-custom',
     league: 'MLB',
-    leagueName: 'Major League Baseball',
+    leagueKey: 'mlb',
+    team: 'los-angeles-dodgers',
+    teamName: 'Los Angeles Dodgers',
+    teamMark: '/assets/leagues/marks/teams/mlb/los-angeles-dodgers.webp',
     leagueMark: '/assets/leagues/marks/mlb.webp',
-    title: 'CHALK LINES DIAMOND',
-    subtitle: 'Tactics Diamond Edition',
-    image: '/assets/jersey-white.webp',
-    alt: 'MLB Chalk Lines diamond white jersey photo',
-    productHandle: 'chalk-lines',
-    price: 92,
-    compareAt: 110,
-    textColor: '#141414',
-    strokeColor: '#d72c2c',
+    title: 'Personalized LA Dodgers Baseball Jersey',
+    subtitle: 'White Edition Custom Fan Wear',
+    image: 'https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/listing-bc9823215a1a5020526b/import/media-53dda8f0c5ee356f4040.webp',
+    alt: 'Personalized Los Angeles Dodgers white MLB baseball jersey',
+    price: 59.99,
+    compareAt: 79.99,
+    textColor: '#005a9c',
+    strokeColor: '#ef3e42',
     isDark: false,
-    badge: 'NEW DROP',
+    badge: 'FAN FAVORITE',
+    preset: { name: 'OHTANI', number: '17' },
     sizes: ['S', 'M', 'L', 'XL', '2XL']
   }
 ]
@@ -122,9 +149,13 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
   })
   const [selectedSize, setSelectedSize] = useState('L')
   const [added, setAdded] = useState(false)
+  const [aiPreviewUrl, setAiPreviewUrl] = useState(null)
+  const [aiPreviewId, setAiPreviewId] = useState(null)
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [aiNotice, setAiNotice] = useState('')
   const touchStartX = useRef(null)
 
-  const activeListing = LEAGUE_LISTINGS[activeIndex] || LEAGUE_LISTINGS[0]
+  const activeListing = CATALOGUE_LEAGUE_LISTINGS[activeIndex] || CATALOGUE_LEAGUE_LISTINGS[0]
 
   useEffect(() => {
     try {
@@ -133,13 +164,17 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
   }, [name, number])
 
   const prevSlide = () => {
-    setActiveIndex(current => (current > 0 ? current - 1 : LEAGUE_LISTINGS.length - 1))
+    setActiveIndex(current => (current > 0 ? current - 1 : CATALOGUE_LEAGUE_LISTINGS.length - 1))
+    setAiPreviewUrl(null)
     setAdded(false)
+    setAiNotice('')
   }
 
   const nextSlide = () => {
-    setActiveIndex(current => (current < LEAGUE_LISTINGS.length - 1 ? current + 1 : 0))
+    setActiveIndex(current => (current < CATALOGUE_LEAGUE_LISTINGS.length - 1 ? current + 1 : 0))
+    setAiPreviewUrl(null)
     setAdded(false)
+    setAiNotice('')
   }
 
   const handleTouchStart = e => {
@@ -157,11 +192,69 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
   const handlePreset = (presetName, presetNum) => {
     setName(cleanName(presetName))
     setNumber(cleanNumber(presetNum))
+    setAiPreviewUrl(null)
+    setAiNotice('')
+  }
+
+  /**
+   * Generates or updates the custom jersey preview with AI.
+   * Calls /api/ai-preview on the server to render the customer's custom name & number.
+   */
+  const handleGenerateWithAi = async () => {
+    const trimmedName = cleanName(name)
+    const trimmedNumber = cleanNumber(number)
+    if (!trimmedName && !trimmedNumber) {
+      setAiNotice('Nhập tên hoặc số áo để AI tạo ảnh thiết kế.')
+      return
+    }
+
+    setIsGeneratingAi(true)
+    setAiNotice('')
+
+    try {
+      const targetProductId = activeListing.productId || activeListing.productHandle
+      const response = await apiFetch('/api/ai-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getCustomerSessionId(),
+          productId: targetProductId,
+          values: {
+            name: trimmedName,
+            number: trimmedNumber
+          }
+        })
+      })
+
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(result.error || 'AI visual preview could not be generated.')
+      }
+
+      if (result.imageUrl) {
+        setAiPreviewUrl(result.imageUrl)
+        setAiPreviewId(result.previewId || null)
+        setAiNotice('Đã đổi Tên & Số bằng AI thành công!')
+        try {
+          window.sessionStorage.setItem('extra-time-ai-preview', JSON.stringify({
+            productId: targetProductId,
+            previewId: result.previewId,
+            imageUrl: result.imageUrl,
+            values: { name: trimmedName, number: trimmedNumber }
+          }))
+        } catch {}
+      }
+    } catch (err) {
+      console.warn('AI preview generation notice:', err.message)
+      setAiNotice(err instanceof Error ? err.message : 'AI preview generation notice.')
+    } finally {
+      setIsGeneratingAi(false)
+    }
   }
 
   const handleAddToCart = () => {
     const handle = activeListing.productHandle
-    const foundProduct = (products || []).find(p => p.handle === handle || p.id === handle) || product || (products || [])[0]
+    const foundProduct = (products || []).find(p => p.handle === handle || p.id === handle || p.id === activeListing.productId) || product || (products || [])[0]
     if (!foundProduct) {
       navigate(`/product/${handle}?custom=1&name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`)
       return
@@ -171,18 +264,26 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
     const matchingVariant = availableVariants.find(v => v.values?.Size === selectedSize) || availableVariants[0]
 
     if (typeof onAdd === 'function') {
-      onAdd(foundProduct, {
-        variant: matchingVariant,
-        options: {
-          Size: selectedSize,
-          ...(matchingVariant?.values?.Colour ? { Colour: matchingVariant.values.Colour } : {})
+      onAdd(
+        {
+          ...foundProduct,
+          image: aiPreviewUrl || activeListing.image || foundProduct.image
         },
-        customization: {
-          fields: { name, number },
-          values: { name, number },
-          note: `Personalized on homepage: ${activeListing.league} ${activeListing.title}`
+        {
+          variant: matchingVariant,
+          options: {
+            Size: selectedSize,
+            ...(matchingVariant?.values?.Colour ? { Colour: matchingVariant.values.Colour } : {})
+          },
+          customization: {
+            fields: { name, number },
+            values: { name, number },
+            aiPreviewUrl: aiPreviewUrl || null,
+            aiPreviewId: aiPreviewId || null,
+            note: `Catalogue customized: ${activeListing.league} ${activeListing.teamName} (${name} #${number})`
+          }
         }
-      })
+      )
       setAdded(true)
       window.setTimeout(() => setAdded(false), 2400)
     } else {
@@ -200,12 +301,13 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
 
   const displayName = name || 'YOUR NAME'
   const displayNumber = number || '00'
+  const activeImage = aiPreviewUrl || activeListing.image
 
   return (
     <div className="home-personalizer">
-      {/* 1. League Tabs Selector */}
-      <div className="home-personalizer__leagues-bar" role="tablist" aria-label="Select League Jersey">
-        {LEAGUE_LISTINGS.map((listing, index) => {
+      {/* 1. Real Catalogue League & Team Selector Tabs */}
+      <div className="home-personalizer__leagues-bar" role="tablist" aria-label="Select Catalogue Jersey">
+        {CATALOGUE_LEAGUE_LISTINGS.map((listing, index) => {
           const isActive = index === activeIndex
           return (
             <button
@@ -213,66 +315,91 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               role="tab"
               aria-selected={isActive}
               className={`home-personalizer__league-tab ${isActive ? 'is-active' : ''}`}
-              onClick={() => { setActiveIndex(index); setAdded(false) }}
+              onClick={() => {
+                setActiveIndex(index)
+                setAiPreviewUrl(null)
+                setAdded(false)
+                setAiNotice('')
+              }}
             >
-              <img src={listing.leagueMark} alt={`${listing.league} mark`} className="home-personalizer__league-mark" />
-              <span>{listing.league}</span>
+              <img src={listing.teamMark || listing.leagueMark} alt="" className="home-personalizer__league-mark" />
+              <span>{listing.league} · {listing.teamName.split(' ').pop()}</span>
             </button>
           )
         })}
       </div>
 
-      {/* 2. Real Listing Photo Stage with Slide & Live Jersey Decal Overlay */}
+      {/* 2. Real Listing Photo Stage with Live Athletic Decal Overlay & AI Generated State */}
       <div
         className="home-personalizer__stage-wrap"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <span className="axis-label axis-label--top">LIVE REAR VIEW · MADE ON DEMAND</span>
+        <span className="axis-label axis-label--top">CATALOGUE MATCHDAY · AI LIVE CUSTOMIZER</span>
 
         <div className="home-personalizer__photo-stage">
           <img
-            src={activeListing.image}
+            src={activeImage}
             alt={activeListing.alt}
             className="home-personalizer__photo"
             loading="eager"
           />
 
-          {/* Authentic Athletic Jersey Overlay */}
-          <div className={`home-personalizer__decal-overlay ${activeListing.isDark ? 'is-dark' : 'is-light'}`}>
-            <div className="home-personalizer__decal-nameplate">
-              <span
-                className="home-personalizer__jersey-name"
-                style={{
-                  color: activeListing.textColor,
-                  fontSize: `clamp(14px, ${Math.max(16, Math.min(32, 280 / Math.max(displayName.length, 6)))}px, 34px)`
-                }}
-              >
-                {displayName}
-              </span>
+          {/* Athletic Jersey Overlay (shown when not replaced by AI generated image) */}
+          {!aiPreviewUrl && (
+            <div className={`home-personalizer__decal-overlay ${activeListing.isDark ? 'is-dark' : 'is-light'}`}>
+              <div className="home-personalizer__decal-nameplate">
+                <span
+                  className="home-personalizer__jersey-name"
+                  style={{
+                    color: activeListing.textColor,
+                    fontSize: `clamp(14px, ${Math.max(16, Math.min(32, 280 / Math.max(displayName.length, 6)))}px, 34px)`
+                  }}
+                >
+                  {displayName}
+                </span>
+              </div>
+              <div className="home-personalizer__decal-number">
+                <span
+                  className="home-personalizer__jersey-number"
+                  style={{
+                    color: activeListing.textColor,
+                    WebkitTextStroke: `2px ${activeListing.strokeColor}`
+                  }}
+                >
+                  {displayNumber}
+                </span>
+              </div>
             </div>
-            <div className="home-personalizer__decal-number">
-              <span
-                className="home-personalizer__jersey-number"
-                style={{
-                  color: activeListing.textColor,
-                  WebkitTextStroke: `2px ${activeListing.strokeColor}`
-                }}
-              >
-                {displayNumber}
-              </span>
+          )}
+
+          {/* AI Generating Shimmer Overlay */}
+          {isGeneratingAi && (
+            <div className="home-personalizer__ai-loader" role="status" aria-live="polite">
+              <Sparkles size={28} className="animate-spin text-acid" />
+              <strong>AI ĐANG IN TÊN & SỐ LÊN ÁO…</strong>
+              <span>Đang kết xuất bản thiết kế thể thao chuẩn matchday</span>
             </div>
-          </div>
+          )}
 
           {/* Photo Stage Badges */}
           <div className="home-personalizer__badge-overlay">
             <div className="home-personalizer__pill-badge">
-              <img src={activeListing.leagueMark} alt="" />
-              <span>{activeListing.league} · {activeListing.badge}</span>
+              <img src={activeListing.teamMark || activeListing.leagueMark} alt="" />
+              <span>{activeListing.league} · {activeListing.teamName}</span>
             </div>
-            <div className="home-personalizer__live-status">
-              <span className="live-dot" />
-              <span>LIVE MOCKUP</span>
+            <div className={`home-personalizer__live-status ${aiPreviewUrl ? 'is-ai' : ''}`}>
+              {aiPreviewUrl ? (
+                <>
+                  <Sparkles size={11} />
+                  <span>AI MOCKUP</span>
+                </>
+              ) : (
+                <>
+                  <span className="live-dot" />
+                  <span>LIVE PREVIEW</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -294,19 +421,24 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
 
           {/* Slide Dots */}
           <div className="home-personalizer__dots" aria-hidden="true">
-            {LEAGUE_LISTINGS.map((item, idx) => (
+            {CATALOGUE_LEAGUE_LISTINGS.map((item, idx) => (
               <button
                 key={item.id}
                 tabIndex={-1}
                 className={`home-personalizer__dot ${idx === activeIndex ? 'is-active' : ''}`}
-                onClick={() => { setActiveIndex(idx); setAdded(false) }}
+                onClick={() => {
+                  setActiveIndex(idx)
+                  setAiPreviewUrl(null)
+                  setAdded(false)
+                  setAiNotice('')
+                }}
                 aria-label={`Slide ${idx + 1}`}
               />
             ))}
           </div>
         </div>
 
-        <span className="axis-label axis-label--bottom">REAL LISTING PHOTO · INSTANT ON-DEMAND</span>
+        <span className="axis-label axis-label--bottom">OFFICIAL CATALOGUE ITEM · MADE ON DEMAND</span>
       </div>
 
       {/* 3. PDP-Like Interactive Customizer Controls */}
@@ -314,7 +446,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
         {/* Listing Title & Price row */}
         <div className="home-personalizer__listing-head">
           <div className="home-personalizer__listing-titles">
-            <span className="home-personalizer__listing-sub">{activeListing.subtitle}</span>
+            <span className="home-personalizer__listing-sub">{activeListing.league} · {activeListing.teamName}</span>
             <h3 className="home-personalizer__listing-name">{activeListing.title}</h3>
             <div className="home-personalizer__rating">
               <span className="home-personalizer__stars" aria-hidden="true">
@@ -322,13 +454,13 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
                   <Star key={i} size={13} fill="#e5a914" stroke="#e5a914" />
                 ))}
               </span>
-              <span>4.9 (420+ fans)</span>
+              <span>4.9/5 (420+ đánh giá verified)</span>
             </div>
           </div>
           <div className="home-personalizer__listing-pricing">
-            <strong className="home-personalizer__price">${activeListing.price}</strong>
+            <strong className="home-personalizer__price">${activeListing.price.toFixed(2)}</strong>
             {activeListing.compareAt && (
-              <span className="home-personalizer__compare">${activeListing.compareAt}</span>
+              <span className="home-personalizer__compare">${activeListing.compareAt.toFixed(2)}</span>
             )}
             <span className="home-personalizer__tag">MADE TO ORDER</span>
           </div>
@@ -346,7 +478,10 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               maxLength={MAX_NAME_LENGTH}
               autoComplete="off"
               spellCheck="false"
-              onChange={e => setName(cleanName(e.target.value))}
+              onChange={e => {
+                setName(cleanName(e.target.value))
+                setAiPreviewUrl(null)
+              }}
               placeholder="YOUR NAME"
             />
           </div>
@@ -360,20 +495,62 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               maxLength={MAX_NUMBER_LENGTH}
               inputMode="numeric"
               autoComplete="off"
-              onChange={e => setNumber(cleanNumber(e.target.value))}
+              onChange={e => {
+                setNumber(cleanNumber(e.target.value))
+                setAiPreviewUrl(null)
+              }}
               placeholder="07"
             />
           </div>
         </form>
 
-        {/* Presets Row */}
+        {/* Presets Row with Catalogue Stars */}
         <div className="home-personalizer__presets">
           <span className="home-personalizer__preset-tip">Popular:</span>
-          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('MARTA', '10')}>MARTA 10</button>
-          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('MESSI', '10')}>MESSI 10</button>
-          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('BRADY', '12')}>BRADY 12</button>
-          <button type="button" className="home-personalizer__chip" onClick={() => handlePreset('JORDAN', '23')}>JORDAN 23</button>
+          {CATALOGUE_LEAGUE_LISTINGS.map(item => (
+            <button
+              key={item.id}
+              type="button"
+              className={`home-personalizer__chip ${activeListing.id === item.id ? 'is-active' : ''}`}
+              onClick={() => handlePreset(item.preset.name, item.preset.number)}
+            >
+              {item.preset.name} {item.preset.number}
+            </button>
+          ))}
         </div>
+
+        {/* AI Action Trigger */}
+        <div className="home-personalizer__ai-bar">
+          <button
+            type="button"
+            className="home-personalizer__btn-ai"
+            onClick={handleGenerateWithAi}
+            disabled={isGeneratingAi}
+          >
+            {isGeneratingAi ? (
+              <>
+                <RefreshCw size={15} className="animate-spin" />
+                <span>AI ĐANG KẾT XUẤT ẢNH ÁO…</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={15} />
+                <span>ĐỔI TÊN & SỐ BẰNG AI</span>
+              </>
+            )}
+          </button>
+          {aiPreviewUrl && (
+            <button
+              type="button"
+              className="home-personalizer__btn-revert"
+              onClick={() => setAiPreviewUrl(null)}
+              title="Quay lại ảnh áo gốc"
+            >
+              Ảnh gốc
+            </button>
+          )}
+        </div>
+        {aiNotice && <p className="home-personalizer__ai-notice">{aiNotice}</p>}
 
         {/* Size Selection Pills */}
         <div className="home-personalizer__sizes">
@@ -411,7 +588,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               </>
             ) : (
               <>
-                <ShoppingBag size={18} /> ADD TO BAG · ${activeListing.price}
+                <ShoppingBag size={18} /> ADD TO BAG · ${activeListing.price.toFixed(2)}
               </>
             )}
           </button>
