@@ -400,47 +400,8 @@ function Hero({ content = {}, customProduct }) {
   )
 }
 
-function HomePath({ customProduct }) {
-  const steps = [
-    { num: '01', title: 'Pick a team', desc: 'NFL & MLB official catalogue cuts.', icon: Shirt },
-    { num: '02', title: 'Add name & number', desc: 'Custom player or your own name.', icon: Tag },
-    { num: '03', title: 'Render with AI', desc: 'Instant photorealistic matchday render.', icon: Sparkles },
-    { num: '04', title: 'We craft & deliver', desc: 'Zero-crack dye-sub with tracked shipping.', icon: PackageCheck }
-  ]
-  return (
-    <section className="home-path" id="how-it-works" aria-labelledby="home-path-heading">
-      <div className="home-path__intro">
-        <span>CUSTOM JERSEYS / FOUR SIMPLE STEPS</span>
-        <h2 id="home-path-heading">MAKE IT<br /><em>YOURS.</em></h2>
-        <p>Choose your league, add the details that matter and render an authentic matchday preview before it reaches the pitch.</p>
-        <div className="home-path__actions">
-          <button className="button button--dark" onClick={() => document.getElementById('custom-options')?.scrollIntoView({ behavior: 'smooth' })}>TRY THE CUSTOMIZER <ArrowDown size={16}/></button>
-          <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
-        </div>
-      </div>
-      <div className="home-path__mobile-head">
-        <span>HOW IT WORKS · 4 SIMPLE STEPS</span>
-        <h3>MAKE IT <em>YOURS.</em></h3>
-      </div>
-      <ol className="home-path__steps">
-        {steps.map(step => {
-          const Icon = step.icon
-          return (
-            <li key={step.num}>
-              <span className="home-path__step-num">{step.num}</span>
-              <div className="home-path__step-body">
-                <div className="home-path__step-top">
-                  {Icon && <Icon size={14} className="home-path__step-icon" aria-hidden="true" />}
-                  <strong>{step.title}</strong>
-                </div>
-                <p>{step.desc}</p>
-              </div>
-            </li>
-          )
-        })}
-      </ol>
-    </section>
-  )
+function HomePath() {
+  return null
 }
 
 function DropFeature({ product }) {
@@ -1134,7 +1095,7 @@ function HomeFaq() {
     ['How do I follow my order?', 'After checkout, use the order-status link to see the latest payment, fulfillment and delivery updates.'],
     ['Can I return a personalized piece?', 'Review the return policy before ordering. Standard and personalized pieces can have different eligibility rules, so the product and policy pages are the source of truth.']
   ]
-  return <section className="home-faq section" id="faq" aria-labelledby="faq-heading"><div className="home-faq__heading"><span>HELPFUL ANSWERS</span><h2 id="faq-heading">FREQUENTLY<br />ASKED QUESTIONS.</h2><ButtonLink onClick={() => navigate('/shipping')}>READ THE TRUST DESK</ButtonLink></div><div className="home-faq__items">{items.map(([question, answer]) => <details key={question}><summary><span>{question}</span><Plus size={18}/></summary><p>{answer}</p></details>)}</div></section>
+  return <section className="home-faq section" id="faq" aria-labelledby="faq-heading"><div className="home-faq__heading"><span>HELPFUL ANSWERS</span><h2 id="faq-heading">FREQUENTLY<br />ASKED <em>QUESTIONS.</em></h2><ButtonLink onClick={() => navigate('/shipping')}>READ THE TRUST DESK</ButtonLink></div><div className="home-faq__items">{items.map(([question, answer]) => <details key={question}><summary><span>{question}</span><Plus size={18}/></summary><p>{answer}</p></details>)}</div></section>
 }
 
 function VaultTeaser() {
@@ -1293,7 +1254,7 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
     'home-trust':<StorefrontTrust key="home-trust" variant="home" />,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
-    rail:<ProductRail key="rail" title="BEST SELLERS. YOUR WAY." subtitle="Fan favorites, ready to personalize." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
+    rail:<ProductRail key="rail" title={<>BEST SELLERS.<br /><em>YOUR WAY.</em></>} subtitle="Fan favorites, ready to personalize." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues"/>,
@@ -1306,15 +1267,11 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
   }[id] || null)
-  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer','quality','drop'].includes(id)) : ['hero','home-trust','leagues','rail','home-path','custom-options','players','community','faq','newsletter']
+  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer','quality','drop','home-path'].includes(id)) : ['hero','home-trust','leagues','rail','custom-options','players','community','faq','newsletter']
   const rawBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
-  const homeBlocks = rawBlocks.filter(id => id !== 'quality' && id !== 'drop')
+  const homeBlocks = rawBlocks.filter(id => id !== 'quality' && id !== 'drop' && id !== 'home-path')
   if (!homeBlocks.includes('hero')) {
     homeBlocks.unshift('hero')
-  }
-  if (!homeBlocks.includes('home-path')) {
-    const heroIndex = homeBlocks.indexOf('hero')
-    homeBlocks.splice(heroIndex >= 0 ? heroIndex + 1 : 0, 0, 'home-path')
   }
   return <>{homeBlocks.map(renderBlock)}</>
 }
