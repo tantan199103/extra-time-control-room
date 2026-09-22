@@ -91,6 +91,7 @@
     { "source": "/api/customization-order", "destination": "/api/customization-order.js" },
     { "source": "/api/ai-listing-copy", "destination": "/api/ai-listing-copy.js" },
     { "source": "/api/ai-listing-media", "destination": "/api/ai-listing-media.js" },
+    { "source": "/api/admin-import-fanatics", "destination": "/api/admin-import-fanatics.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

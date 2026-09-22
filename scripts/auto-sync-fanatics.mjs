@@ -41,7 +41,8 @@ for (const envFile of ['.env.local', '.env', '.env.fangear.import']) {
   }
 }
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+const rawSupabaseUrl = String(process.env.SUPABASE_URL || '').trim()
+const supabaseUrl = /^https?:\/\//i.test(rawSupabaseUrl) ? rawSupabaseUrl : (process.env.VITE_SUPABASE_URL || 'https://ofetusgarxcwloxxkhnr.supabase.co')
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const outputPath = process.env.FANATICS_IMPORT_REPORT || resolve('artifacts', 'fanatics-import-report.json')
 
