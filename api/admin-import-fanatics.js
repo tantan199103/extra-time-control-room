@@ -20,15 +20,27 @@ import {
 export default async function handler(request, response) {
   try {
     enforceSameOrigin(request)
-    if (request.method !== 'POST') {
-      return sendJson(response, 405, { error: 'POST Fanatics product import only.' })
-    }
-
     const client = serverSupabase()
     const internalKey = request.headers?.['x-internal-key']
     const isInternalAuth = internalKey && internalKey === (process.env.INTERNAL_IMPORT_KEY || 'jersevo_fanatics_import_2026')
     if (!isInternalAuth) {
       await requireAdmin(request, client)
+    }
+
+    if (request.method === 'GET') {
+      const { data, count, error } = await client
+        .from('pod_products')
+        .select('id,title,status,image,price,created_at,updated_at', { count: 'exact' })
+        .eq('status', 'DRAFT')
+      return sendJson(response, 200, {
+        totalDrafts: count,
+        drafts: data,
+        error: error ? error.message : null
+      })
+    }
+
+    if (request.method !== 'POST') {
+      return sendJson(response, 405, { error: 'GET or POST only.' })
     }
 
     const rawBody = readBody(request, 1024 * 1024)
