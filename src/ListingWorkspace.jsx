@@ -289,6 +289,84 @@ function EditorialMediaSet({ draft, update, onNotice, dirty }) {
   return <section className="listing-editorial-set"><div className="listing-subsection__head"><div><span>Controlled image generation</span><h3>Build the product story in six frames.</h3><p>Every frame uses the exact primary listing image as reference. Five model views show value and context; one guide explains the allowed custom fields.</p></div><Sparkles size={19}/></div>{draft.image ? <div className="listing-editorial-set__reference"><img src={draft.image} alt="Primary listing reference"/><span>PRIMARY LISTING IMAGE / EXACT REFERENCE</span></div> : <p className="listing-notice is-error" role="alert">Add a primary listing image before generating editorial media.</p>}<div className="listing-editorial-set__actions"><button className="listing-primary-action" disabled={Boolean(busy) || !draft._persisted || !draft.image} title={!draft._persisted ? 'Save this listing before generating editorial media.' : !draft.image ? 'Add a primary listing image first.' : 'Generate the missing model views one at a time.'} onClick={generateModels}>{batchGenerating ? <><LoaderCircle className="is-spinning" size={15}/> Generating {progress.done}/{progress.total}</> : <><ImageIcon size={15}/> Generate 5 model views</>}</button><button className="listing-secondary-action" disabled={Boolean(busy) || !draft._persisted || !draft.image || Boolean(guide)} title={!draft._persisted ? 'Save this listing before generating editorial media.' : !draft.image ? 'Add a primary listing image first.' : guide ? 'The custom guide is already attached.' : 'Generate the customisation guide.'} onClick={() => guideSlot && generateOne(guideSlot)}>{busy === CUSTOM_GUIDE_SLOT_ID ? <><LoaderCircle className="is-spinning" size={15}/> Generating guide…</> : <><FileText size={15}/> {guide ? 'Guide attached' : 'Generate custom guide'}</>}</button></div>{error && <p className="listing-notice is-error" role="alert">{error}</p>}<div className="listing-editorial-set__grid">{LISTING_MEDIA_SLOTS.map(slot => { const asset = slotAsset(slot); const isBusy = busy === slot.id; return <article key={slot.id} className={`listing-editorial-slot ${asset ? 'is-ready' : ''}`}><div className="listing-editorial-slot__visual">{asset ? <img src={asset.url} alt={asset.alt || slot.alt}/> : <><span>{slot.group === 'model' ? 'MODEL' : 'GUIDE'}</span><strong>{slot.shortLabel}</strong></>}{isBusy && <i><LoaderCircle className="is-spinning" size={18}/></i>}<b>{asset ? 'READY' : 'EMPTY'}</b></div><div className="listing-editorial-slot__body"><strong>{slot.label}</strong><small>{asset ? asset.alt : slot.alt}</small>{asset && <button disabled={Boolean(busy)} onClick={() => generateOne(slot)} title="Regenerate this frame using the current primary image."><RefreshCw size={12}/> Regenerate</button>}</div></article>})}</div><small className="listing-editorial-set__help">Generated frames are editorial previews, not proof of a physical sample when the primary image is a 2D mockup. Review the garment, text and color before publishing; generated files are stripped of provider metadata and stay unpublished until you save them.</small></section>
 }
 
+function MediaCard({ item, index, draft, update, updateMedia, move, remove, media }) {
+  const [dim, setDim] = useState(null)
+  return (
+    <article className={`listing-media-card ${draft.image === item.url ? 'is-primary' : ''}`}>
+      <div className="listing-media-card__visual">
+        {item.type === 'VIDEO' ? (
+          <video src={item.url} controls preload="metadata" />
+        ) : (
+          <img
+            src={item.url}
+            alt={item.alt || ''}
+            onLoad={e => {
+              if (e.target.naturalWidth && e.target.naturalHeight) {
+                setDim({ width: e.target.naturalWidth, height: e.target.naturalHeight })
+              }
+            }}
+          />
+        )}
+        <span>{item.type}</span>
+        {dim && <span className="listing-media-dimensions">{dim.width} × {dim.height}</span>}
+        {draft.image === item.url && <strong>PRIMARY</strong>}
+      </div>
+      <div className="listing-media-card__body">
+        <p title={item.filename || 'Uploaded media'}>
+          {item.filename || 'Uploaded media'}
+          {dim ? ` · ${dim.width}×${dim.height}` : ''}
+        </p>
+        <Field
+          label="Alt text"
+          value={item.alt || ''}
+          onChange={value => updateMedia(item.id, { alt: value })}
+          placeholder="Describe what is visible"
+          hint="Needed for accessibility and image search."
+        />
+        <div>
+          <button
+            disabled={item.type !== 'IMAGE' || draft.image === item.url}
+            title={
+              item.type !== 'IMAGE'
+                ? 'Only images can be the primary listing reference.'
+                : draft.image === item.url
+                  ? 'This is already the primary image.'
+                  : 'Use as primary listing image'
+            }
+            onClick={() => update('image', item.url)}
+          >
+            <Check size={13} /> Set primary
+          </button>
+          <button
+            type="button"
+            title="Open original image in new tab"
+            onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
+          >
+            <Eye size={13} />
+          </button>
+          <button
+            disabled={index === 0}
+            title={index === 0 ? 'Already first.' : 'Move earlier'}
+            onClick={() => move(index, -1)}
+          >
+            <ArrowLeft size={13} />
+          </button>
+          <button
+            disabled={index === media.length - 1}
+            title={index === media.length - 1 ? 'Already last.' : 'Move later'}
+            onClick={() => move(index, 1)}
+          >
+            <ArrowRight size={13} />
+          </button>
+          <button onClick={() => remove(item)} aria-label="Detach media">
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 function MediaPanel({ draft, update, dirty }) {
   const inputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
@@ -314,7 +392,7 @@ function MediaPanel({ draft, update, dirty }) {
     setNotice('Removed from this listing. The stored file is retained so published references are not broken.')
   }
   const move = (index,direction) => { const target=index+direction; if(target<0||target>=media.length)return; const next=[...media]; [next[index],next[target]]=[next[target],next[index]]; update('media',next) }
-  return <section className="listing-section listing-media"><div className="listing-section__heading"><div><span>Listing media library</span><h2>Show the real piece.</h2><p>Upload production photos and product video directly. The primary image is also the reference used by customer AI editing.</p></div><><input ref={inputRef} className="listing-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple onChange={upload}/><button className="listing-primary-action" disabled={uploading} onClick={() => inputRef.current?.click()}>{uploading ? <LoaderCircle className="is-spinning" size={16}/> : <Upload size={16}/>} {uploading ? 'Uploading…' : 'Upload media'}</button></></div><div className="listing-media-rules"><span><ImageIcon size={15}/> Images: JPG, PNG, WebP, AVIF · up to 15 MB</span><span><Video size={15}/> Video: MP4, WebM · up to 80 MB</span><span><Lock size={15}/> Removing a tile only detaches it from this listing</span></div>{notice && <p className={notice.startsWith('Upload failed:') ? 'listing-notice is-error' : 'listing-notice'} role={notice.startsWith('Upload failed:') ? 'alert' : 'status'}>{notice}</p>}<EditorialMediaSet draft={draft} update={update} dirty={dirty} onNotice={setNotice}/><div className="listing-media-grid">{media.map((item,index) => <article key={item.id} className={`listing-media-card ${draft.image === item.url ? 'is-primary' : ''}`}><div className="listing-media-card__visual">{item.type === 'VIDEO' ? <video src={item.url} controls preload="metadata"/> : <img src={item.url} alt={item.alt || ''}/>}<span>{item.type}</span>{draft.image === item.url && <strong>PRIMARY</strong>}</div><div className="listing-media-card__body"><p>{item.filename || 'Uploaded media'}</p><Field label="Alt text" value={item.alt || ''} onChange={value => updateMedia(item.id,{alt:value})} placeholder="Describe what is visible" hint="Needed for accessibility and image search."/><div><button disabled={item.type !== 'IMAGE' || draft.image === item.url} title={item.type !== 'IMAGE' ? 'Only images can be the primary listing reference.' : draft.image === item.url ? 'This is already the primary image.' : 'Use as primary listing image'} onClick={() => update('image',item.url)}><Check size={13}/> Set primary</button><button disabled={index === 0} title={index === 0 ? 'Already first.' : 'Move earlier'} onClick={() => move(index,-1)}><ArrowLeft size={13}/></button><button disabled={index === media.length-1} title={index === media.length-1 ? 'Already last.' : 'Move later'} onClick={() => move(index,1)}><ArrowRight size={13}/></button><button onClick={() => remove(item)} aria-label="Detach media"><Trash2 size={13}/></button></div></div></article>)}{!media.length && <button className="listing-media-empty" onClick={() => inputRef.current?.click()}><Upload size={23}/><strong>Upload the first product image</strong><span>Use a real mockup or production photo. Add a short video after the image set.</span></button>}</div><div className="listing-subsection"><div className="listing-subsection__head"><div><span>Fallback reference</span><h3>Primary image URL</h3></div><Link2 size={18}/></div><Field label="Public image URL" value={draft.image || ''} onChange={value => update('image',value)} hint="Useful for an existing CDN asset. Uploading above is recommended."/></div></section>
+  return <section className="listing-section listing-media"><div className="listing-section__heading"><div><span>Listing media library</span><h2>Show the real piece.</h2><p>Upload production photos and product video directly. The primary image is also the reference used by customer AI editing.</p></div><><input ref={inputRef} className="listing-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple onChange={upload}/><button className="listing-primary-action" disabled={uploading} onClick={() => inputRef.current?.click()}>{uploading ? <LoaderCircle className="is-spinning" size={16}/> : <Upload size={16}/>} {uploading ? 'Uploading…' : 'Upload media'}</button></></div><div className="listing-media-rules"><span><ImageIcon size={15}/> Images: JPG, PNG, WebP, AVIF · up to 15 MB</span><span><Video size={15}/> Video: MP4, WebM · up to 80 MB</span><span><Lock size={15}/> Removing a tile only detaches it from this listing</span></div>{notice && <p className={notice.startsWith('Upload failed:') ? 'listing-notice is-error' : 'listing-notice'} role={notice.startsWith('Upload failed:') ? 'alert' : 'status'}>{notice}</p>}<EditorialMediaSet draft={draft} update={update} dirty={dirty} onNotice={setNotice}/><div className="listing-media-grid">{media.map((item,index) => <MediaCard key={item.id} item={item} index={index} draft={draft} update={update} updateMedia={updateMedia} move={move} remove={remove} media={media} />)}{!media.length && <button className="listing-media-empty" onClick={() => inputRef.current?.click()}><Upload size={23}/><strong>Upload the first product image</strong><span>Use a real mockup or production photo. Add a short video after the image set.</span></button>}</div><div className="listing-subsection"><div className="listing-subsection__head"><div><span>Fallback reference</span><h3>Primary image URL</h3></div><Link2 size={18}/></div><Field label="Public image URL" value={draft.image || ''} onChange={value => update('image',value)} hint="Useful for an existing CDN asset. Uploading above is recommended."/></div></section>
 }
 
 function PreviewRegionEditor({ field, image, onChange }) {
@@ -427,7 +505,77 @@ function OrganizationPanel({ draft, update, allProducts }) {
 
 function PublishRail({ draft, update, completeness, automaticTags }) {
   const primary = draft.media?.find(item => item.url === draft.image) || draft.media?.find(item => item.type === 'IMAGE')
-  return <aside className="listing-publish-rail"><div className="listing-reference"><div>{primary ? <img src={primary.url} alt={primary.alt || ''}/> : draft.image ? <img src={draft.image} alt="Primary listing reference"/> : <ImageIcon size={32}/>}</div><span>AI + STOREFRONT REFERENCE</span><strong>{draft.image ? 'Primary image ready' : 'Add a primary image'}</strong></div><div className="listing-publish-card"><span>Publishing</span><SelectField label="Listing status" value={draft.status} onChange={value => update('status',value)}><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></SelectField><div className="listing-completeness"><div><strong>{completeness.percent}%</strong><span>listing complete</span></div><i><b style={{width:`${completeness.percent}%`}}/></i>{completeness.checks.map(item => <p key={item.key} className={item.done ? 'is-done' : ''}>{item.done ? <Check size={12}/> : <i/>}{item.label}</p>)}</div></div><div className="listing-auto-tags"><span>Automatic filters</span><div>{automaticTags.map(tag => <b key={tag}>{tag}</b>)}</div><p>Generated from status, product type, media, custom fields, sale price and live stock.</p></div><div className="listing-guard"><Lock size={16}/><div><strong>Artwork policy</strong><span>Customer data never becomes a SKU variation. The primary image remains the visual source of truth.</span></div></div></aside>
+  const [refDim, setRefDim] = useState(null)
+  return (
+    <aside className="listing-publish-rail">
+      <div className="listing-reference">
+        <div>
+          {primary ? (
+            <img
+              src={primary.url}
+              alt={primary.alt || ''}
+              onLoad={e => {
+                if (e.target.naturalWidth && e.target.naturalHeight) {
+                  setRefDim({ width: e.target.naturalWidth, height: e.target.naturalHeight })
+                }
+              }}
+            />
+          ) : draft.image ? (
+            <img
+              src={draft.image}
+              alt="Primary listing reference"
+              onLoad={e => {
+                if (e.target.naturalWidth && e.target.naturalHeight) {
+                  setRefDim({ width: e.target.naturalWidth, height: e.target.naturalHeight })
+                }
+              }}
+            />
+          ) : (
+            <ImageIcon size={32} />
+          )}
+        </div>
+        <span>AI + STOREFRONT REFERENCE</span>
+        <strong>
+          {draft.image
+            ? `Primary image ready${refDim ? ` · ${refDim.width}×${refDim.height}` : ''}`
+            : 'Add a primary image'}
+        </strong>
+      </div>
+      <div className="listing-publish-card">
+        <span>Publishing</span>
+        <SelectField label="Listing status" value={draft.status} onChange={value => update('status', value)}>
+          <option>DRAFT</option>
+          <option>PUBLISHED</option>
+          <option>ARCHIVED</option>
+        </SelectField>
+        <div className="listing-completeness">
+          <div>
+            <strong>{completeness.percent}%</strong>
+            <span>listing complete</span>
+          </div>
+          <i><b style={{ width: `${completeness.percent}%` }} /></i>
+          {completeness.checks.map(item => (
+            <p key={item.key} className={item.done ? 'is-done' : ''}>
+              {item.done ? <Check size={12} /> : <i />}
+              {item.label}
+            </p>
+          ))}
+        </div>
+      </div>
+      <div className="listing-auto-tags">
+        <span>Automatic filters</span>
+        <div>{automaticTags.map(tag => <b key={tag}>{tag}</b>)}</div>
+        <p>Generated from status, product type, media, custom fields, sale price and live stock.</p>
+      </div>
+      <div className="listing-guard">
+        <Lock size={16} />
+        <div>
+          <strong>Artwork policy</strong>
+          <span>Customer data never becomes a SKU variation. The primary image remains the visual source of truth.</span>
+        </div>
+      </div>
+    </aside>
+  )
 }
 
 export default function ListingWorkspace({ products, onSaved, onDuplicate }) {
