@@ -19,6 +19,11 @@ export const LEAGUE_MEDIA = Object.freeze({
     src: '/assets/leagues/marks/mls.webp',
     alt: 'MLS league mark',
     label: 'MLS'
+  }),
+  ncaa: Object.freeze({
+    src: '/assets/leagues/marks/ncaa.webp',
+    alt: 'NCAA league mark',
+    label: 'NCAA'
   })
 })
 

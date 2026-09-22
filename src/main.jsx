@@ -910,7 +910,7 @@ function PlayerDiscovery({ customProduct }) {
 }
 
 function LeagueDiscovery() {
-  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', mls: 'SOCCER' }
+  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', mls: 'SOCCER', ncaa: 'COLLEGE' }
   return (
     <section className="league-discovery section" id="leagues">
       <div className="section-title-row">

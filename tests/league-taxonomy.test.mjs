@@ -14,12 +14,21 @@ test('league taxonomy exposes stable league and team URLs', () => {
     '/assets/leagues/marks/nfl.webp',
     '/assets/leagues/marks/mlb.webp',
     '/assets/leagues/marks/nba.webp',
-    '/assets/leagues/marks/mls.webp'
+    '/assets/leagues/marks/mls.webp',
+    '/assets/leagues/marks/ncaa.webp'
   ])
   assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/marks/teams/nfl/arizona-cardinals.webp')
   assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/marks/teams/mlb/new-york-yankees.webp')
   assert.equal(findTeam('mls', 'sporting-kc').media.src, '/assets/leagues/marks/teams/mls/sporting-kc.webp')
   assert.equal(findTeam('nba', 'los-angeles-lakers').media.fallback, true)
+  const ncaa = findLeague('NCAA')
+  const bama = findTeam('ncaa', 'alabama-crimson-tide')
+  assert.equal(ncaa.key, 'ncaa')
+  assert.equal(bama.name, 'Alabama Crimson Tide')
+  assert.equal(leaguePath(ncaa), '/league/ncaa')
+  assert.equal(teamPath(ncaa.key, bama), '/team/ncaa/alabama-crimson-tide')
+  assert.equal(findTeam('ncaa', 'alabama-crimson-tide').media.src, '/assets/leagues/marks/teams/ncaa/alabama-crimson-tide.webp')
+  assert.equal(findTeam('ncaa', 'alabama').slug, 'alabama-crimson-tide')
 })
 
 test('taxonomy matching accepts nested catalog fields and stays selective', () => {
@@ -39,6 +48,10 @@ test('teamMascot extracts concise mascots for mobile team badges', () => {
   assert.equal(teamMascot('Portland Trail Blazers'), 'Trail Blazers')
   assert.equal(teamMascot('Inter Miami CF'), 'Miami')
   assert.equal(teamMascot('Sporting Kansas City'), 'Sporting KC')
+  assert.equal(teamMascot('Alabama Crimson Tide'), 'Crimson Tide')
+  assert.equal(teamMascot('Notre Dame Fighting Irish'), 'Fighting Irish')
+  assert.equal(teamMascot('North Carolina Tar Heels'), 'Tar Heels')
+  assert.equal(teamMascot('Michigan Wolverines'), 'Wolverines')
   assert.equal(teamMascot('Arsenal'), 'Arsenal')
   assert.equal(teamMascot(''), '')
 })

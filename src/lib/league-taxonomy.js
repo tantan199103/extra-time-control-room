@@ -107,6 +107,45 @@ export const LEAGUE_TAXONOMY = [
       ['new-england-revolution', 'New England Revolution'], ['real-salt-lake', 'Real Salt Lake'],
       ['san-diego-fc', 'San Diego FC'], ['san-jose-earthquakes', 'San Jose Earthquakes']
     ].map(([slug, name]) => ({ slug, name, media: teamMedia('mls', slug, name) }))
+  },
+  {
+    key: 'ncaa',
+    name: 'NCAA',
+    sport: 'College',
+    description: 'Custom college jerseys and game-day fanwear for top NCAA teams.',
+    media: leagueMedia('ncaa'),
+    teams: [
+      ['alabama-crimson-tide', 'Alabama Crimson Tide'],
+      ['georgia-bulldogs', 'Georgia Bulldogs'],
+      ['ohio-state-buckeyes', 'Ohio State Buckeyes'],
+      ['michigan-wolverines', 'Michigan Wolverines'],
+      ['texas-longhorns', 'Texas Longhorns'],
+      ['notre-dame-fighting-irish', 'Notre Dame Fighting Irish'],
+      ['lsu-tigers', 'LSU Tigers'],
+      ['oregon-ducks', 'Oregon Ducks'],
+      ['penn-state-nittany-lions', 'Penn State Nittany Lions'],
+      ['florida-gators', 'Florida Gators'],
+      ['usc-trojans', 'USC Trojans'],
+      ['tennessee-volunteers', 'Tennessee Volunteers'],
+      ['oklahoma-sooners', 'Oklahoma Sooners'],
+      ['clemson-tigers', 'Clemson Tigers'],
+      ['florida-state-seminoles', 'Florida State Seminoles'],
+      ['north-carolina-tar-heels', 'North Carolina Tar Heels'],
+      ['kentucky-wildcats', 'Kentucky Wildcats'],
+      ['duke-blue-devils', 'Duke Blue Devils'],
+      ['miami-hurricanes', 'Miami Hurricanes'],
+      ['colorado-buffaloes', 'Colorado Buffaloes'],
+      ['auburn-tigers', 'Auburn Tigers'],
+      ['washington-huskies', 'Washington Huskies'],
+      ['wisconsin-badgers', 'Wisconsin Badgers'],
+      ['ucla-bruins', 'UCLA Bruins'],
+      ['texas-am-aggies', 'Texas A&M Aggies'],
+      ['nebraska-cornhuskers', 'Nebraska Cornhuskers'],
+      ['iowa-hawkeyes', 'Iowa Hawkeyes'],
+      ['michigan-state-spartans', 'Michigan State Spartans'],
+      ['kansas-jayhawks', 'Kansas Jayhawks'],
+      ['indiana-hoosiers', 'Indiana Hoosiers']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('ncaa', slug, name) }))
   }
 ]
 
@@ -127,6 +166,39 @@ export const TEAM_SLUG_ALIASES = Object.freeze({
     'sporting-kansas-city': 'sporting-kc',
     'st-louis-city-sc': 'st-louis-city',
     'vancouver-whitecaps-fc': 'vancouver-whitecaps'
+  }),
+  ncaa: Object.freeze({
+    'alabama': 'alabama-crimson-tide',
+    'georgia': 'georgia-bulldogs',
+    'ohio-state': 'ohio-state-buckeyes',
+    'michigan': 'michigan-wolverines',
+    'texas': 'texas-longhorns',
+    'notre-dame': 'notre-dame-fighting-irish',
+    'lsu': 'lsu-tigers',
+    'oregon': 'oregon-ducks',
+    'penn-state': 'penn-state-nittany-lions',
+    'florida': 'florida-gators',
+    'usc': 'usc-trojans',
+    'tennessee': 'tennessee-volunteers',
+    'oklahoma': 'oklahoma-sooners',
+    'clemson': 'clemson-tigers',
+    'florida-state': 'florida-state-seminoles',
+    'north-carolina': 'north-carolina-tar-heels',
+    'unc': 'north-carolina-tar-heels',
+    'kentucky': 'kentucky-wildcats',
+    'duke': 'duke-blue-devils',
+    'miami': 'miami-hurricanes',
+    'colorado': 'colorado-buffaloes',
+    'auburn': 'auburn-tigers',
+    'washington': 'washington-huskies',
+    'wisconsin': 'wisconsin-badgers',
+    'ucla': 'ucla-bruins',
+    'texas-am': 'texas-am-aggies',
+    'nebraska': 'nebraska-cornhuskers',
+    'iowa': 'iowa-hawkeyes',
+    'michigan-state': 'michigan-state-spartans',
+    'kansas': 'kansas-jayhawks',
+    'indiana': 'indiana-hoosiers'
   }),
   // These clubs are present in the imported catalogue but were absent from
   // the first curated navigation pass. They are still normalized here so a
@@ -207,7 +279,12 @@ export function teamMascot(fullName = '') {
     'Inter Miami CF': 'Miami',
     'Sporting Kansas City': 'Sporting KC',
     'New York City FC': 'NYCFC',
-    'New York Red Bulls': 'Red Bulls'
+    'New York Red Bulls': 'Red Bulls',
+    'Alabama Crimson Tide': 'Crimson Tide',
+    'Notre Dame Fighting Irish': 'Fighting Irish',
+    'North Carolina Tar Heels': 'Tar Heels',
+    'Duke Blue Devils': 'Blue Devils',
+    'Penn State Nittany Lions': 'Nittany Lions'
   }
   if (special[fullName]) return special[fullName]
   const parts = String(fullName || '').trim().split(/\s+/)

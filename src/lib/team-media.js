@@ -24,7 +24,7 @@ export function teamMedia(leagueKey, teamSlug, teamName = teamSlug) {
   if (league === 'nba') {
     return parent ? { ...parent, alt: `${name} / NBA league mark`, label: name, fallback: true } : null
   }
-  if (!['mlb', 'nfl', 'mls'].includes(league) || !slug) return null
+  if (!['mlb', 'nfl', 'mls', 'ncaa'].includes(league) || !slug) return null
   if (MISSING_LOCAL_ART.has(`${league}/${slug}`)) {
     return parent ? { ...parent, alt: `${name} / ${league.toUpperCase()} league mark`, label: name, fallback: true } : null
   }
