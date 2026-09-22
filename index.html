@@ -75,6 +75,15 @@
         ]
       }
     </script>
+    <!-- Google Customer Reviews -->
+    <script src="https://apis.google.com/js/platform.js?onload=renderOptIn" async defer></script>
+    <script>
+      window.renderOptIn = function() {
+        if (typeof window.__triggerGoogleSurveyOptIn === 'function') {
+          window.__triggerGoogleSurveyOptIn();
+        }
+      };
+    </script>
   </head>
   <body>
     <!-- Meta Pixel noscript fallback -->

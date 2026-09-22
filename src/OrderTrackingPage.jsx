@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, CircleAlert, Copy, ExternalLink, Package, RefreshCw, Search, Truck } from 'lucide-react'
 import { statusLabel, trackOrder } from './lib/order-tracking'
+import { renderGoogleSurveyOptIn } from './lib/google-reviews'
 
 const stages = [
   { key: 'PAID', title: 'Payment received', copy: 'Your payment is confirmed.' },
@@ -101,6 +102,26 @@ export default function OrderTrackingPage({ onNavigate, onPaymentConfirmed, init
     return () => window.clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.publicId, order?.paymentStatus, order?.status, pollCount, publicId, token])
+
+  useEffect(() => {
+    if (!order || !order.publicId) return
+    const isConfirmedOrPaid = order.paymentStatus === 'PAID' || ['CONFIRMED', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)
+    if (!isConfirmedOrPaid) return
+
+    const pending = readPendingCheckout()
+    const email = order.customerEmail || pending?.customerEmail || ''
+    const country = order.shippingAddress?.country || pending?.country || 'US'
+
+    if (email) {
+      renderGoogleSurveyOptIn({
+        orderId: order.publicId,
+        email,
+        country,
+        orderDate: order.createdAt,
+        products: (order.lines || []).map(line => ({ gtin: line.sku || '' })).filter(p => p.gtin)
+      })
+    }
+  }, [order?.publicId, order?.paymentStatus, order?.status, order?.customerEmail, order?.createdAt])
 
   const current = stageIndex(order)
   const terminal = terminalStatuses.has(order?.status)

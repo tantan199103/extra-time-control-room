@@ -37,7 +37,7 @@ import {
 import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
-import { deleteAdminProduct, fetchAdminCollections, fetchAdminMenus, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
+import { deleteAdminProduct, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
 import { getMetaPixelId, setMetaPixelId } from './lib/meta-pixel'
 import { resolveMenuImages } from './lib/storefront-model'
@@ -55,19 +55,55 @@ function AdminMark() {
   return <button className="admin-mark" onClick={() => go('/admin')} aria-label="Admin home"><span>90<sup>+</sup></span><strong>EXTRA<br />TIME</strong><small>CONTROL ROOM</small></button>
 }
 
-function AdminShell({ active, source, notice, onRefresh, children }) {
+function AdminShell({ active, source, notice, onRefresh, badges = {}, children }) {
   const [mobileNav, setMobileNav] = useState(false)
-  const items = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/admin' },
-    { id: 'theme', label: 'Theme Studio', icon: Palette, path: '/admin/theme' },
-    { id: 'menus', label: 'Menus', icon: Menu, path: '/admin/theme/menus' },
-    { id: 'collections', label: 'Collections', icon: Boxes, path: '/admin/collections' },
-    { id: 'catalog', label: 'Products', icon: Shirt, path: '/admin/catalog' },
-    { id: 'orders', label: 'Orders', icon: PackageCheck, path: '/admin/orders' },
-    { id: 'membership', label: 'Membership', icon: Ticket, path: '/admin/membership' },
-    { id: 'customizations', label: 'Custom queue', icon: Sparkles, path: '/admin/customizations' },
-    { id: 'bridge', label: 'POD Bridge', icon: Link2, path: '/admin/bridge' },
-    { id: 'settings', label: 'Settings', icon: Settings2, path: '/admin/settings' }
+  const navGroups = [
+    {
+      id: 'main',
+      label: null,
+      items: [
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/admin' }
+      ]
+    },
+    {
+      id: 'operations',
+      label: 'Operations',
+      items: [
+        { id: 'orders', label: 'Orders', icon: PackageCheck, path: '/admin/orders', badgeKey: 'orders' },
+        { id: 'customizations', label: 'Custom queue', icon: Sparkles, path: '/admin/customizations', badgeKey: 'custom' }
+      ]
+    },
+    {
+      id: 'catalog',
+      label: 'Catalog',
+      items: [
+        { id: 'catalog', label: 'Products', icon: Shirt, path: '/admin/catalog', badgeKey: 'products' },
+        { id: 'collections', label: 'Collections', icon: Boxes, path: '/admin/collections' },
+        { id: 'bridge', label: 'POD Bridge', icon: Link2, path: '/admin/bridge' }
+      ]
+    },
+    {
+      id: 'growth',
+      label: 'Growth',
+      items: [
+        { id: 'membership', label: 'Membership', icon: Ticket, path: '/admin/membership', badgeKey: 'membership' }
+      ]
+    },
+    {
+      id: 'storefront',
+      label: 'Storefront',
+      items: [
+        { id: 'theme', label: 'Theme Studio', icon: Palette, path: '/admin/theme' },
+        { id: 'menus', label: 'Menus', icon: Menu, path: '/admin/theme/menus' }
+      ]
+    },
+    {
+      id: 'system',
+      label: 'System',
+      items: [
+        { id: 'settings', label: 'Settings', icon: Settings2, path: '/admin/settings' }
+      ]
+    }
   ]
   return (
     <div className="admin-app">
@@ -75,13 +111,50 @@ function AdminShell({ active, source, notice, onRefresh, children }) {
         <div className="admin-sidebar__top"><AdminMark/><button className="admin-sidebar__close" onClick={() => setMobileNav(false)} aria-label="Close navigation"><X size={18}/></button></div>
         <p className="admin-kicker">MERCH STUDIO / 01</p>
         <nav className="admin-nav" aria-label="Admin navigation">
-          {items.map(item => { const Icon = item.icon; return <button key={item.id} className={active === item.id ? 'is-active' : ''} onClick={() => { go(item.path); setMobileNav(false) }}><Icon size={17}/><span>{item.label}</span>{active === item.id && <i/>}</button> })}
+          {navGroups.map(group => (
+            <div key={group.id} className="admin-nav__group">
+              {group.label && <span className="admin-nav__heading">{group.label}</span>}
+              {group.items.map(item => {
+                const Icon = item.icon
+                const count = item.badgeKey ? (badges[item.badgeKey] || 0) : 0
+                const isActive = active === item.id
+                return (
+                  <button
+                    key={item.id}
+                    className={isActive ? 'is-active' : ''}
+                    onClick={() => { go(item.path); setMobileNav(false) }}
+                  >
+                    <Icon size={17}/>
+                    <span>{item.label}</span>
+                    {count > 0 ? (
+                      <span className={`admin-nav__badge admin-nav__badge--${item.badgeKey === 'custom' ? 'signal' : item.badgeKey === 'orders' ? 'acid' : 'muted'}`}>
+                        {count}
+                      </span>
+                    ) : isActive ? (
+                      <i/>
+                    ) : null}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
         </nav>
         <div className="admin-sidebar__bottom"><div className="admin-user"><span>ET</span><div><strong>Store administrator</strong><small>Authenticated admin</small></div><ChevronDown size={14}/></div><button className="admin-store-link" onClick={() => go('/')}><Eye size={15}/> View storefront <ExternalLink size={13}/></button></div>
       </aside>
       {mobileNav && <button className="admin-sidebar-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
       <div className="admin-main">
-        <header className="admin-topbar"><button className="admin-mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={20}/></button><div className="admin-breadcrumb"><span>EXTRA TIME</span><ChevronDown size={13}/><strong>{active === 'overview' ? 'OVERVIEW' : active.toUpperCase()}</strong></div><div className="admin-topbar__actions"><label className="admin-search"><Search size={15}/><input placeholder="Search · Coming soon" aria-label="Search admin — not available yet" disabled title="Global search is not available yet. Use the Products search field."/></label><span className={`admin-source ${source === 'supabase' ? 'is-live' : ''}`}><i/>{source === 'supabase' ? 'SUPABASE LIVE' : 'PREVIEW DATA'}</span><button className="admin-icon-button" onClick={onRefresh} aria-label="Refresh data"><RefreshCw size={16}/></button></div></header>
+        <header className="admin-topbar">
+          <button className="admin-mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={20}/></button>
+          <div className="admin-breadcrumb"><span>EXTRA TIME</span><ChevronDown size={13}/><strong>{active === 'overview' ? 'OVERVIEW' : active.toUpperCase()}</strong></div>
+          <div className="admin-topbar__actions">
+            <button className="admin-button admin-button--dark admin-topbar__quick-btn" onClick={() => go('/admin/products/new')}>
+              <Plus size={15}/> <span>New product</span>
+            </button>
+            <label className="admin-search"><Search size={15}/><input placeholder="Search · Coming soon" aria-label="Search admin — not available yet" disabled title="Global search is not available yet. Use the Products search field."/></label>
+            <span className={`admin-source ${source === 'supabase' ? 'is-live' : ''}`}><i/>{source === 'supabase' ? 'SUPABASE LIVE' : 'PREVIEW DATA'}</span>
+            <button className="admin-icon-button" onClick={onRefresh} aria-label="Refresh data"><RefreshCw size={16}/></button>
+          </div>
+        </header>
         {notice && <div className="admin-banner-notice" style={{ padding: '8px 16px', background: '#f8f4dc', borderBottom: '1px solid var(--admin-line, #ddd)', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span>{notice}</span></div>}
         {children}
       </div>
@@ -197,7 +270,41 @@ function AdminWorkspace() {
   const [source, setSource] = useState('supabase')
   const [loading, setLoading] = useState(true)
   const [loadNotice, setLoadNotice] = useState('')
+  const [badges, setBadges] = useState({ orders: 0, custom: 0, products: 0, membership: 0 })
   const loadSequence = useRef(0)
+
+  const updateBadges = async (currentProducts = productRows) => {
+    const draftCount = (currentProducts || []).filter(row => row.status === 'DRAFT' || productCompleteness(row).percent < 100).length
+    setBadges(prev => ({ ...prev, products: draftCount }))
+    try {
+      const [ordersRes, customRes, memRes] = await Promise.allSettled([
+        fetchAdminOrders(),
+        fetchAdminCustomizations('PREVIEW'),
+        fetchAdminMembership()
+      ])
+      let unfulfilledOrders = 0
+      if (ordersRes.status === 'fulfilled' && Array.isArray(ordersRes.value?.orders)) {
+        unfulfilledOrders = ordersRes.value.orders.filter(o => o.fulfillment_status === 'UNFULFILLED' || (o.payment_status === 'PAID' && o.fulfillment_status !== 'DELIVERED')).length
+      }
+      let pendingCustom = 0
+      if (customRes.status === 'fulfilled' && Array.isArray(customRes.value?.orders)) {
+        pendingCustom = customRes.value.orders.filter(r => r.status === 'PREVIEW').length
+      }
+      let pendingMembership = 0
+      if (memRes.status === 'fulfilled' && Array.isArray(memRes.value?.data?.requests)) {
+        pendingMembership = memRes.value.data.requests.filter(r => r.status === 'PENDING').length
+      }
+      setBadges({
+        products: draftCount,
+        orders: unfulfilledOrders,
+        custom: pendingCustom,
+        membership: pendingMembership
+      })
+    } catch {
+      // non-blocking
+    }
+  }
+
   const loadPart = (task, fallback, label) => Promise.race([
     task,
     new Promise(resolve => window.setTimeout(() => resolve({ data: fallback, source: 'preview', error: `${label} timed out. Showing the control-room fallback.` }), 12000))
@@ -230,6 +337,7 @@ function AdminWorkspace() {
       ])
       const products = productResult.data?.length ? productResult.data : adminProducts
       setProductRows(products)
+      updateBadges(products)
       if (themeResult.data) setThemeDraft(themeResult.data)
       const collections = collectionResult.data?.length ? collectionResult.data : adminCollections
       setCollectionRows(collections)
@@ -326,5 +434,5 @@ function AdminWorkspace() {
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} onSave={persistMenus}/>
   else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
-  return <AdminShell active={active} source={source} notice={loadNotice} onRefresh={load}>{page}</AdminShell>
+  return <AdminShell active={active} source={source} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>
 }

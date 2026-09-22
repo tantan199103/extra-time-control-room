@@ -27,6 +27,7 @@ function present(order, lines, events) {
     total: Number(order.grand_total),
     memberPricing: Boolean(order.member_pricing),
     customerName: order.customer_name,
+    customerEmail: order.customer_email || '',
     createdAt: order.created_at,
     paidAt: order.paid_at,
     updatedAt: order.updated_at,
@@ -47,7 +48,7 @@ export default async function handler(request, response) {
     const publicId = safeText(body.publicId || body.orderNumber, 80)
     const token = safeText(body.token || body.trackingToken, 180)
     if (!publicId || !token) throw Object.assign(new Error('Enter the order number and secure tracking token.'), { status: 422 })
-    const { data: order, error: orderError } = await client.from('pod_orders').select('id,order_number,tracking_token_hash,status,payment_status,fulfillment_status,currency,subtotal,discount_total,shipping_total,tax_total,grand_total,member_pricing,customer_name,shipping_address,created_at,updated_at,paid_at,tracking_carrier,tracking_number,tracking_url').eq('order_number', publicId).eq('tracking_token_hash', hashToken(token)).maybeSingle()
+    const { data: order, error: orderError } = await client.from('pod_orders').select('id,order_number,tracking_token_hash,status,payment_status,fulfillment_status,currency,subtotal,discount_total,shipping_total,tax_total,grand_total,member_pricing,customer_name,customer_email,shipping_address,created_at,updated_at,paid_at,tracking_carrier,tracking_number,tracking_url').eq('order_number', publicId).eq('tracking_token_hash', hashToken(token)).maybeSingle()
     if (orderError) throw orderError
     if (!order) throw Object.assign(new Error('Order not found. Check the order number and tracking token.'), { status: 404 })
     const [{ data: lines, error: lineError }, { data: events, error: eventError }] = await Promise.all([

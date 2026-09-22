@@ -2157,12 +2157,21 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .admin-mark sup { color:var(--admin-acid); font-size:15px; top:-.5em; position:relative; }
 .admin-mark strong { font:700 13px/.82 var(--headline); letter-spacing:.03em; padding-top:2px; }
 .admin-mark small { grid-column:1/-1; margin-top:12px; color:#94948e; font:600 8px var(--body); letter-spacing:.12em; }
-.admin-kicker { color:#70706c; font:600 8px var(--body); letter-spacing:.12em; margin:58px 0 18px; }
-.admin-nav { display:grid; gap:4px; }
-.admin-nav button { width:100%; height:43px; padding:0 11px; color:#94948e; display:flex; gap:12px; align-items:center; text-align:left; font:600 11px var(--body); position:relative; }
+.admin-kicker { color:#70706c; font:600 8px var(--body); letter-spacing:.12em; margin:24px 0 12px; }
+.admin-nav { display:grid; gap:2px; flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; padding-right:2px; }
+.admin-nav::-webkit-scrollbar { display:none; }
+.admin-nav__group { margin-top:14px; display:flex; flex-direction:column; gap:2px; }
+.admin-nav__group:first-child { margin-top:0; }
+.admin-nav__heading { font:700 8px var(--body); letter-spacing:.14em; color:#61615c; padding:0 11px 4px; text-transform:uppercase; user-select:none; }
+.admin-nav button { width:100%; height:38px; padding:0 11px; color:#94948e; display:flex; gap:11px; align-items:center; text-align:left; font:600 11px var(--body); position:relative; border-radius:2px; transition:background .12s, color .12s; }
 .admin-nav button:hover,.admin-nav button.is-active { color:var(--admin-chalk); background:#1b1b1a; }
 .admin-nav button.is-active { box-shadow:inset 3px 0 0 var(--admin-acid); }
 .admin-nav button i { width:5px; height:5px; background:var(--admin-acid); border-radius:50%; margin-left:auto; }
+.admin-nav__badge { margin-left:auto; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font:700 9px var(--headline); display:inline-flex; align-items:center; justify-content:center; letter-spacing:0; }
+.admin-nav__badge--acid { background:var(--admin-acid); color:#0a0a0a; }
+.admin-nav__badge--signal { background:var(--admin-signal); color:#fff; }
+.admin-nav__badge--muted { background:rgba(255,255,255,.1); color:#c8c7c0; }
+.admin-topbar__quick-btn { height:34px; padding:0 12px; font-size:9.5px; border-radius:2px; }
 .admin-sidebar__bottom { margin-top:auto; }
 .admin-user { border-top:1px solid #292927; padding:17px 5px 16px; display:grid; grid-template-columns:31px 1fr auto; gap:9px; align-items:center; }
 .admin-user > span { width:31px; height:31px; display:grid; place-items:center; border:1px solid #5b5b55; color:var(--admin-acid); font:700 10px var(--body); }
@@ -3639,4 +3648,18 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .fixed-footer-menu { height: 60px; }
   .fixed-footer-menu button { gap: 4px; font-size: 7px; }
   .fixed-footer-menu__bag b { top: 6px; }
+  .gcr-badge-container,
+  iframe[id^="gcr_badge"],
+  div[id^="gcr_badge"] {
+    bottom: 68px !important;
+  }
 }
+
+/* Google Customer Reviews Badge */
+.gcr-badge-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+}
+

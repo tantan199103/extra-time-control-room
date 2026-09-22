@@ -51,6 +51,7 @@ import { buildDeliveryEstimate } from './lib/product-commerce'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quantityDiscountForQty, quantityDiscountLabel } from './lib/quantity-pricing'
 import { adminTheme } from './admin-builder-data'
 import { initMetaPixel, trackPageView, trackViewContent, trackAddToCart, trackCustomizeProduct, trackInitiateCheckout, trackSearch } from './lib/meta-pixel'
+import { renderGoogleRatingBadge } from './lib/google-reviews'
 import './styles.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -2429,6 +2430,9 @@ function App() {
       return
     }
     window.navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }, [])
+  useEffect(() => {
+    renderGoogleRatingBadge({ position: 'BOTTOM_RIGHT' })
   }, [])
   useEffect(() => {
     const captureInstall = event => {

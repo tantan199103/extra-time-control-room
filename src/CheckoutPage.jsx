@@ -167,7 +167,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
         try { approval = new URL(result.approvalUrl, window.location.origin) } catch { approval = null }
         if (!approval || approval.protocol !== 'https:' || !/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) throw new Error('The payment provider returned an invalid approval link. Your bag is still available; try again shortly.')
         trackAddPaymentInfo()
-        sessionStorage.setItem('extra-time-pending-checkout', JSON.stringify({ publicId: result.order.publicId, token: result.order.token, provider: result.provider, lineKeys }))
+        sessionStorage.setItem('extra-time-pending-checkout', JSON.stringify({ publicId: result.order.publicId, token: result.order.token, provider: result.provider, lineKeys, customerEmail: customer.email, country: checkoutShipping.country }))
         window.location.assign(approval.href)
         return
       }
