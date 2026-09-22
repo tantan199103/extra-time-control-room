@@ -146,6 +146,82 @@ export const LEAGUE_TAXONOMY = [
       ['kansas-jayhawks', 'Kansas Jayhawks'],
       ['indiana-hoosiers', 'Indiana Hoosiers']
     ].map(([slug, name]) => ({ slug, name, media: teamMedia('ncaa', slug, name) }))
+  },
+  {
+    key: 'epl',
+    name: 'Premier League',
+    sport: 'Soccer',
+    description: 'Personalized Premier League jerseys and official English soccer fan gear.',
+    media: leagueMedia('epl'),
+    teams: [
+      ['arsenal', 'Arsenal'],
+      ['aston-villa', 'Aston Villa'],
+      ['chelsea', 'Chelsea'],
+      ['everton', 'Everton'],
+      ['fulham', 'Fulham'],
+      ['liverpool', 'Liverpool'],
+      ['manchester-city', 'Manchester City'],
+      ['manchester-united', 'Manchester United'],
+      ['newcastle-united', 'Newcastle United'],
+      ['tottenham-hotspur', 'Tottenham Hotspur'],
+      ['west-ham-united', 'West Ham United'],
+      ['wolverhampton-wanderers', 'Wolverhampton Wanderers'],
+      ['brighton-and-hove-albion', 'Brighton & Hove Albion'],
+      ['crystal-palace', 'Crystal Palace'],
+      ['brentford', 'Brentford'],
+      ['nottingham-forest', 'Nottingham Forest']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('epl', slug, name) }))
+  },
+  {
+    key: 'laliga',
+    name: 'La Liga',
+    sport: 'Soccer',
+    description: 'Custom Spanish La Liga soccer jerseys and official club kits.',
+    media: leagueMedia('laliga'),
+    teams: [
+      ['real-madrid', 'Real Madrid'],
+      ['fc-barcelona', 'FC Barcelona'],
+      ['atletico-madrid', 'Atlético Madrid'],
+      ['athletic-club', 'Athletic Club Bilbao'],
+      ['real-sociedad', 'Real Sociedad'],
+      ['real-betis', 'Real Betis'],
+      ['sevilla', 'Sevilla FC'],
+      ['valencia', 'Valencia CF'],
+      ['villarreal', 'Villarreal CF'],
+      ['girona', 'Girona FC']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('laliga', slug, name) }))
+  },
+  {
+    key: 'seriea',
+    name: 'Serie A',
+    sport: 'Soccer',
+    description: 'Italian Serie A custom football shirts and fanwear for iconic Calcio clubs.',
+    media: leagueMedia('seriea'),
+    teams: [
+      ['inter-milan', 'Inter Milan'],
+      ['juventus', 'Juventus'],
+      ['ac-milan', 'AC Milan'],
+      ['napoli', 'Napoli'],
+      ['as-roma', 'AS Roma'],
+      ['lazio', 'SS Lazio'],
+      ['atalanta', 'Atalanta'],
+      ['fiorentina', 'Fiorentina']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('seriea', slug, name) }))
+  },
+  {
+    key: 'bundesliga',
+    name: 'Bundesliga',
+    sport: 'Soccer',
+    description: 'Custom German Bundesliga jerseys and match-day kits.',
+    media: leagueMedia('bundesliga'),
+    teams: [
+      ['bayern-munich', 'Bayern Munich'],
+      ['borussia-dortmund', 'Borussia Dortmund'],
+      ['bayer-leverkusen', 'Bayer Leverkusen'],
+      ['rb-leipzig', 'RB Leipzig'],
+      ['eintracht-frankfurt', 'Eintracht Frankfurt'],
+      ['vfb-stuttgart', 'VfB Stuttgart']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('bundesliga', slug, name) }))
   }
 ]
 
@@ -200,6 +276,45 @@ export const TEAM_SLUG_ALIASES = Object.freeze({
     'kansas': 'kansas-jayhawks',
     'indiana': 'indiana-hoosiers'
   }),
+  epl: Object.freeze({
+    'man-city': 'manchester-city',
+    'manchester-city-fc': 'manchester-city',
+    'man-united': 'manchester-united',
+    'man-utd': 'manchester-united',
+    'manchester-united-fc': 'manchester-united',
+    'spurs': 'tottenham-hotspur',
+    'tottenham': 'tottenham-hotspur',
+    'wolves': 'wolverhampton-wanderers',
+    'brighton': 'brighton-and-hove-albion',
+    'newcastle': 'newcastle-united',
+    'west-ham': 'west-ham-united'
+  }),
+  laliga: Object.freeze({
+    'barca': 'fc-barcelona',
+    'barcelona': 'fc-barcelona',
+    'real': 'real-madrid',
+    'atletico': 'atletico-madrid',
+    'atletico-de-madrid': 'atletico-madrid',
+    'bilbao': 'athletic-club',
+    'sociedad': 'real-sociedad',
+    'betis': 'real-betis'
+  }),
+  seriea: Object.freeze({
+    'inter': 'inter-milan',
+    'internazionale': 'inter-milan',
+    'milan': 'ac-milan',
+    'roma': 'as-roma',
+    'juve': 'juventus'
+  }),
+  bundesliga: Object.freeze({
+    'bayern': 'bayern-munich',
+    'fc-bayern': 'bayern-munich',
+    'dortmund': 'borussia-dortmund',
+    'bvb': 'borussia-dortmund',
+    'leverkusen': 'bayer-leverkusen',
+    'frankfurt': 'eintracht-frankfurt',
+    'stuttgart': 'vfb-stuttgart'
+  }),
   // These clubs are present in the imported catalogue but were absent from
   // the first curated navigation pass. They are still normalized here so a
   // future curated page can be added without another data migration.
@@ -231,6 +346,17 @@ export function teamPath(leagueKey, team) { return `/team/${taxonomySlug(leagueK
 
 export function findLeague(value) {
   const slug = taxonomySlug(value)
+  if (slug === 'soccer') {
+    const soccerLeagues = LEAGUE_TAXONOMY.filter(l => l.sport === 'Soccer')
+    return {
+      key: 'soccer',
+      name: 'Soccer',
+      sport: 'Soccer',
+      description: 'World soccer jerseys and kits from the Premier League, La Liga, Serie A, Bundesliga and MLS.',
+      media: leagueMedia('soccer'),
+      teams: soccerLeagues.flatMap(l => l.teams)
+    }
+  }
   return LEAGUE_TAXONOMY.find(league => league.key === slug || taxonomySlug(league.name) === slug) || null
 }
 
@@ -255,7 +381,8 @@ export function productMatchesTaxonomy(product, { league = '', team = '' } = {})
   const values = productTaxonomyValues(product)
   const leagueNeedle = taxonomySlug(league)
   const teamNeedle = normalizeTeamSlug(league, team)
-  const leagueMatch = !leagueNeedle || taxonomySlug(values.league) === leagueNeedle || values.haystack.includes(leagueNeedle.replace(/-/g, ' '))
+  const isSoccerMatch = leagueNeedle === 'soccer' && (['mls', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'soccer'].includes(taxonomySlug(values.league)) || values.haystack.includes('soccer'))
+  const leagueMatch = !leagueNeedle || isSoccerMatch || taxonomySlug(values.league) === leagueNeedle || values.haystack.includes(leagueNeedle.replace(/-/g, ' '))
   const teamMatch = !teamNeedle || taxonomySlug(values.team) === teamNeedle || values.haystack.includes(teamNeedle.replace(/-/g, ' '))
   return leagueMatch && teamMatch
 }
@@ -284,7 +411,19 @@ export function teamMascot(fullName = '') {
     'Notre Dame Fighting Irish': 'Fighting Irish',
     'North Carolina Tar Heels': 'Tar Heels',
     'Duke Blue Devils': 'Blue Devils',
-    'Penn State Nittany Lions': 'Nittany Lions'
+    'Penn State Nittany Lions': 'Nittany Lions',
+    'Manchester City': 'Man City',
+    'Manchester United': 'Man United',
+    'Tottenham Hotspur': 'Spurs',
+    'Real Madrid': 'Real Madrid',
+    'FC Barcelona': 'Barcelona',
+    'Atletico Madrid': 'Atlético',
+    'Inter Milan': 'Inter',
+    'AC Milan': 'Milan',
+    'Bayern Munich': 'Bayern',
+    'Borussia Dortmund': 'Dortmund',
+    'Bayer Leverkusen': 'Leverkusen',
+    'Paris Saint-Germain': 'PSG'
   }
   if (special[fullName]) return special[fullName]
   const parts = String(fullName || '').trim().split(/\s+/)

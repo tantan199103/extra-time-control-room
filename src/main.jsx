@@ -338,7 +338,8 @@ function Hero({ content = {}, customProduct }) {
     { label: 'NFL', mark: '/assets/leagues/marks/nfl.webp', path: '/shop?group=FOOTBALL' },
     { label: 'NBA', mark: '/assets/leagues/marks/nba.webp', path: '/shop?group=BASKETBALL' },
     { label: 'MLB', mark: '/assets/leagues/marks/mlb.webp', path: '/shop?group=BASEBALL' },
-    { label: 'MLS', mark: '/assets/leagues/marks/mls.webp', path: '/shop?group=SOCCER' },
+    { label: 'NCAA', mark: '/assets/leagues/marks/ncaa.webp', path: '/league/ncaa' },
+    { label: 'SOCCER', mark: '/assets/leagues/marks/soccer.webp', path: '/shop?group=SOCCER' },
     { label: 'CUSTOM LAB', icon: Sparkles, path: customTarget }
   ]
 
@@ -910,7 +911,7 @@ function PlayerDiscovery({ customProduct }) {
 }
 
 function LeagueDiscovery() {
-  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', mls: 'SOCCER', ncaa: 'COLLEGE' }
+  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', mls: 'SOCCER', ncaa: 'COLLEGE', epl: 'SOCCER', laliga: 'SOCCER', seriea: 'SOCCER', bundesliga: 'SOCCER', soccer: 'SOCCER' }
   return (
     <section className="league-discovery section" id="leagues">
       <div className="section-title-row">

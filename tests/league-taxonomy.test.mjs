@@ -15,7 +15,11 @@ test('league taxonomy exposes stable league and team URLs', () => {
     '/assets/leagues/marks/mlb.webp',
     '/assets/leagues/marks/nba.webp',
     '/assets/leagues/marks/mls.webp',
-    '/assets/leagues/marks/ncaa.webp'
+    '/assets/leagues/marks/ncaa.webp',
+    '/assets/leagues/marks/epl.webp',
+    '/assets/leagues/marks/laliga.webp',
+    '/assets/leagues/marks/seriea.webp',
+    '/assets/leagues/marks/bundesliga.webp'
   ])
   assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/marks/teams/nfl/arizona-cardinals.webp')
   assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/marks/teams/mlb/new-york-yankees.webp')
@@ -29,6 +33,19 @@ test('league taxonomy exposes stable league and team URLs', () => {
   assert.equal(teamPath(ncaa.key, bama), '/team/ncaa/alabama-crimson-tide')
   assert.equal(findTeam('ncaa', 'alabama-crimson-tide').media.src, '/assets/leagues/marks/teams/ncaa/alabama-crimson-tide.webp')
   assert.equal(findTeam('ncaa', 'alabama').slug, 'alabama-crimson-tide')
+
+  const soccer = findLeague('soccer')
+  assert.equal(soccer.key, 'soccer')
+  assert.equal(soccer.media.src, '/assets/leagues/marks/soccer.webp')
+  assert.ok(soccer.teams.length > 30)
+
+  const epl = findLeague('epl')
+  assert.equal(epl.name, 'Premier League')
+  assert.equal(findTeam('epl', 'arsenal').media.src, '/assets/leagues/marks/teams/epl/arsenal.webp')
+  assert.equal(findTeam('epl', 'man-city').slug, 'manchester-city')
+  assert.equal(findTeam('laliga', 'real-madrid').media.src, '/assets/leagues/marks/teams/laliga/real-madrid.webp')
+  assert.equal(findTeam('seriea', 'inter-milan').media.src, '/assets/leagues/marks/teams/seriea/inter-milan.webp')
+  assert.equal(findTeam('bundesliga', 'bayern-munich').media.src, '/assets/leagues/marks/teams/bundesliga/bayern-munich.webp')
 })
 
 test('taxonomy matching accepts nested catalog fields and stays selective', () => {
@@ -53,6 +70,9 @@ test('teamMascot extracts concise mascots for mobile team badges', () => {
   assert.equal(teamMascot('North Carolina Tar Heels'), 'Tar Heels')
   assert.equal(teamMascot('Michigan Wolverines'), 'Wolverines')
   assert.equal(teamMascot('Arsenal'), 'Arsenal')
+  assert.equal(teamMascot('Manchester City'), 'Man City')
+  assert.equal(teamMascot('FC Barcelona'), 'Barcelona')
+  assert.equal(teamMascot('Bayern Munich'), 'Bayern')
   assert.equal(teamMascot(''), '')
 })
 
