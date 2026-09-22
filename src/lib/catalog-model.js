@@ -4,7 +4,7 @@ export const isAdminUser = user => Boolean(user?.id && user?.app_metadata?.extra
 const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo', 'logo'])
 const LOGO_TREATMENTS = new Set(['EXACT', 'FABRIC', 'VINTAGE', 'MONOCHROME'])
 export const SEO_STATUSES = Object.freeze(['BLOCKED', 'READY', 'INDEXABLE'])
-const RIGHTS_REVIEW_TERMS = /\b(?:official|authentic|licensed|replica|nike|adidas|marvel|disney|spider[- ]?man)\b/i
+const RIGHTS_REVIEW_TERMS = /\b(?:official|authentic|licensed|replica|nike|adidas|puma|under[- ]?armour|jordan|fanatics|reebok|new[- ]?balance|champion|starter|mitchell[- ]?&[- ]?ness|majestic|marvel|disney|spider[- ]?man|gucci|louis[- ]?vuitton)\b/i
 const uuid = () => globalThis.crypto.randomUUID()
 const cleanTag = value => String(value || '').trim().toLowerCase().replace(/\s+/g, '-')
 const moneyValue = value => value === '' || value == null ? null : Number(value)
@@ -24,9 +24,18 @@ export const customFieldPresets = [
 export function catalogLegalReview(product = {}) {
   const taxonomy = product.taxonomy && typeof product.taxonomy === 'object' ? product.taxonomy : {}
   const title = String(product.title || product.name || '')
+  const brand = String(product.brand || taxonomy.brand || product.seo?.gmc?.brand || '')
+  const tagsText = (product.tags || []).join(' ')
   const reasons = []
-  if (taxonomy.league || taxonomy.team) reasons.push('LEAGUE_OR_TEAM_REFERENCE')
-  if (RIGHTS_REVIEW_TERMS.test(title) || RIGHTS_REVIEW_TERMS.test((product.tags || []).join(' '))) reasons.push('TRADEMARK_OR_AFFILIATION_LANGUAGE')
+
+  // Fan apparel naturally references leagues (NFL, NBA, MLB, MLS) and teams (Chiefs, Lakers).
+  // These taxonomy tags are permitted without triggering a copyright blocker.
+  // Review is strictly required only when unauthorized major brand names (Nike, Adidas, etc.)
+  // or misleading commercial affiliation terms (official, licensed, authentic) are detected.
+  if (RIGHTS_REVIEW_TERMS.test(title) || RIGHTS_REVIEW_TERMS.test(tagsText) || RIGHTS_REVIEW_TERMS.test(brand)) {
+    reasons.push('TRADEMARK_OR_AFFILIATION_LANGUAGE')
+  }
+
   const status = String(product.aiMetadata?.catalogReview?.status || '').toUpperCase()
   return { required:reasons.length > 0, approved:!reasons.length || status === 'APPROVED', reasons, status:status || 'PENDING' }
 }

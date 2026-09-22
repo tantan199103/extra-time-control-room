@@ -25,19 +25,31 @@ test('visual preview readiness requires an explicit designer region', () => {
   assert.deepEqual(result.missingFields.map(field => field.key), ['name'])
 })
 
-test('league and trademark listings require operator review before publishing', () => {
-  const product = {
-    id:'p', handle:'packers-piece', title:'Packers supporter jersey', price:80, compareAt:null,
+test('league and team listings save freely without review, while major brands require operator review', () => {
+  const cleanFanJersey = {
+    id:'p1', handle:'packers-piece', title:'Packers supporter jersey', price:80, compareAt:null,
     status:'PUBLISHED', image:'/piece.webp', description:'A sufficiently complete product description.',
     seo:{title:'Packers supporter jersey by Extra Time',description:'An independent supporter jersey with clear sizing, tracked delivery and considered personalization.'},
-    seoStatus:'READY', media:[], contentBlocks:[], tags:['football'], type:'READY TO SHIP',
+    seoStatus:'READY', media:[], contentBlocks:[], tags:['football', 'supporter'], type:'READY TO SHIP',
     taxonomy:{league:'nfl',team:'green-bay-packers'}, customFields:[], options:[],
-    variants:[{id:'v',sku:'ET-V',values:{},price:80,inventory:2,status:'ACTIVE'}], aiMetadata:{}
+    variants:[{id:'v1',sku:'ET-V1',values:{},price:80,inventory:2,status:'ACTIVE'}], aiMetadata:{}
   }
-  assert.equal(catalogLegalReview(product).required, true)
-  assert.match(validateListing(product).join(' '), /Rights and affiliation review required/)
-  product.aiMetadata.catalogReview={status:'APPROVED'}
-  assert.doesNotMatch(validateListing(product).join(' '), /Rights and affiliation review required/)
+  // Clean league and team references do NOT require review
+  assert.equal(catalogLegalReview(cleanFanJersey).required, false)
+  assert.doesNotMatch(validateListing(cleanFanJersey).join(' '), /Rights and affiliation review required/)
+
+  // Major brand references (e.g., Nike, Adidas) DO require operator review
+  const brandedProduct = {
+    ...cleanFanJersey,
+    id:'p2',
+    tags:['football', 'nike']
+  }
+  assert.equal(catalogLegalReview(brandedProduct).required, true)
+  assert.match(validateListing(brandedProduct).join(' '), /Rights and affiliation review required/)
+
+  // Once approved by operator, branded listing publishes cleanly
+  brandedProduct.aiMetadata = { catalogReview: { status: 'APPROVED' } }
+  assert.doesNotMatch(validateListing(brandedProduct).join(' '), /Rights and affiliation review required/)
 })
 
 test('newsletter endpoint is routed to the server and stores explicit consent only', async () => {
