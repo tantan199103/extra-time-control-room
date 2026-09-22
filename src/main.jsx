@@ -116,7 +116,151 @@ function menuTarget(target, customProduct) {
   return target || '/'
 }
 
-function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], customProduct, account }) {
+function HeaderOmnibar({ products = [], onSearchSubmit }) {
+  const [query, setQuery] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const wrapperRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const trimmed = query.trim().toLowerCase()
+
+  const matchingLeagues = useMemo(() => {
+    if (!trimmed) return []
+    return LEAGUE_TAXONOMY.filter(l => l.name.toLowerCase().includes(trimmed) || (l.sport && l.sport.toLowerCase().includes(trimmed))).slice(0, 3)
+  }, [trimmed])
+
+  const matchingTeams = useMemo(() => {
+    if (!trimmed) return []
+    const list = []
+    for (const league of LEAGUE_TAXONOMY) {
+      for (const team of league.teams) {
+        if (team.name.toLowerCase().includes(trimmed) || team.slug.toLowerCase().includes(trimmed)) {
+          list.push({ league, team })
+          if (list.length >= 4) return list
+        }
+      }
+    }
+    return list
+  }, [trimmed])
+
+  const matchingProducts = useMemo(() => {
+    if (!trimmed) return []
+    return products.filter(p => `${p.name} ${p.story || ''} ${p.meta || ''}`.toLowerCase().includes(trimmed)).slice(0, 3)
+  }, [trimmed, products])
+
+  const hasSuggestions = trimmed.length > 0 && (matchingLeagues.length > 0 || matchingTeams.length > 0 || matchingProducts.length > 0)
+
+  const handleSubmit = (e) => {
+    e?.preventDefault?.()
+    if (!trimmed) return
+    trackSearch(trimmed)
+    setIsOpen(false)
+    if (onSearchSubmit) onSearchSubmit(trimmed)
+    else navigate(`/shop?q=${encodeURIComponent(trimmed)}`)
+  }
+
+  return (
+    <div ref={wrapperRef} className="header-omnibar">
+      <form className="header-omnibar__form" onSubmit={handleSubmit} role="search">
+        <Search size={15} className="header-omnibar__icon" />
+        <input
+          type="search"
+          className="header-omnibar__input"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setIsOpen(true) }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="Search teams, players, leagues, jerseys…"
+          aria-label="Search store"
+          autoComplete="off"
+        />
+        {query && (
+          <button type="button" className="header-omnibar__clear" onClick={() => setQuery('')} aria-label="Clear search">
+            <X size={13} />
+          </button>
+        )}
+      </form>
+
+      {isOpen && hasSuggestions && (
+        <div className="header-omnibar__dropdown">
+          {matchingLeagues.length > 0 && (
+            <div className="header-omnibar__section">
+              <span className="header-omnibar__section-title">LEAGUES</span>
+              <div className="header-omnibar__list">
+                {matchingLeagues.map(l => (
+                  <button
+                    key={l.key}
+                    type="button"
+                    className="header-omnibar__item header-omnibar__item--league"
+                    onClick={() => { setIsOpen(false); navigate(leaguePath(l)) }}
+                  >
+                    {l.media?.src && <img src={l.media.src} alt="" />}
+                    <span><strong>{l.name}</strong><small>{l.sport}</small></span>
+                    <ArrowRight size={13} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {matchingTeams.length > 0 && (
+            <div className="header-omnibar__section">
+              <span className="header-omnibar__section-title">TEAMS</span>
+              <div className="header-omnibar__list">
+                {matchingTeams.map(({ league, team }) => (
+                  <button
+                    key={`${league.key}-${team.slug}`}
+                    type="button"
+                    className="header-omnibar__item header-omnibar__item--team"
+                    onClick={() => { setIsOpen(false); navigate(teamPath(league.key, team)) }}
+                  >
+                    {team.media?.src && <img src={team.media.src} alt="" />}
+                    <span><strong>{team.name}</strong><small>{league.name}</small></span>
+                    <ArrowRight size={13} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {matchingProducts.length > 0 && (
+            <div className="header-omnibar__section">
+              <span className="header-omnibar__section-title">JERSEYS</span>
+              <div className="header-omnibar__list">
+                {matchingProducts.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="header-omnibar__item header-omnibar__item--product"
+                    onClick={() => { setIsOpen(false); navigate(`/product/${p.handle || p.id}`) }}
+                  >
+                    <img src={p.image} alt="" />
+                    <span><strong>{p.name}</strong><small>{p.meta}</small></span>
+                    <em>{money(p.price)}</em>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button type="button" className="header-omnibar__view-all" onClick={handleSubmit}>
+            VIEW ALL RESULTS FOR &ldquo;{trimmed.toUpperCase()}&rdquo; <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], customProduct, account, products = [] }) {
   const [mega, setMega] = useState(null)
   const [mobile, setMobile] = useState(false)
   const mobileRef = useRef(null)
@@ -149,6 +293,26 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     : [baseLinks[0], taxonomyLink, ...baseLinks.slice(1)].filter(Boolean)
   const hasVaultLink = links.some(item => menuTarget(item.target, customProduct) === '/vault')
   const hasClubLink = links.some(item => menuTarget(item.target, customProduct) === '/membership')
+
+  const leagueSubnavItems = useMemo(() => LEAGUE_TAXONOMY.map(league => ({
+    id: `subnav-league-${league.key}`,
+    label: league.name,
+    target: leaguePath(league),
+    type: 'LEAGUE',
+    leagueKey: league.key,
+    leagueData: league,
+    sport: league.sport,
+    representativeImage: league.media?.src || '',
+    children: league.teams.map(team => ({
+      id: `team-${league.key}-${team.slug}`,
+      label: team.name,
+      target: teamPath(league.key, team),
+      type: 'TEAM',
+      representativeImage: team.media?.src || '',
+      representativeFallback: Boolean(team.media?.fallback)
+    }))
+  })), [])
+
   const openLink = item => {
     const target = menuTarget(item.target,customProduct)
     if (String(item.type || '').toUpperCase() === 'EXTERNAL') window.open(target,'_blank','noopener,noreferrer')
@@ -161,29 +325,58 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     <>
       <Announcement />
       <header className="site-header" onMouseLeave={() => setMega(null)}>
-        <Mark />
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {links.map(item => (
-            <button key={item.id || item.label} onMouseEnter={() => setMega(item)} onFocus={() => setMega(item)} onClick={() => openLink(item)}>
-              {item.label}
+        <div className="site-header__primary">
+          <Mark />
+          <HeaderOmnibar products={products} onSearchSubmit={q => navigate(`/shop?q=${encodeURIComponent(q)}`)} />
+          <div className="header-actions">
+            <button className="text-action desktop-account" onClick={() => navigate('/membership#account')}><CircleUserRound size={16} /> <span>{account?.user ? 'ACCOUNT' : 'SIGN IN'}</span></button>
+            {!appInstalled && <button className="text-action header-install" onClick={openInstall} aria-label="Add Extra Time to your home screen"><Download size={16}/><span>APP</span></button>}
+            <button className="text-action header-bag" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
+            <IconButton label="Open menu" className="mobile-menu-button" onClick={() => setMobile(true)}><Menu /></IconButton>
+          </div>
+        </div>
+
+        <nav className="desktop-nav site-subnav" aria-label="Primary navigation">
+          {leagueSubnavItems.map(item => (
+            <button
+              key={item.id}
+              className="site-subnav__item site-subnav__item--league"
+              onMouseEnter={() => setMega(item)}
+              onFocus={() => setMega(item)}
+              onClick={() => openLink(item)}
+            >
+              {item.representativeImage && <img src={item.representativeImage} alt="" className="site-subnav__logo" />}
+              <span>{item.label}</span>
             </button>
           ))}
-          {!hasClubLink && <button onClick={() => navigate('/membership')}>90+ CLUB</button>}
-          {!hasVaultLink && <button onClick={() => navigate('/vault')}>THE VAULT</button>}
+          <span className="site-subnav__divider" aria-hidden="true" />
+          <button onMouseEnter={() => setMega(null)} onClick={() => navigate('/shop')}>ALL JERSEYS</button>
+          <button onMouseEnter={() => setMega({ id:'custom', label:'CUSTOM LAB', target:'/custom', children:[] })} onFocus={() => setMega({ id:'custom', label:'CUSTOM LAB', target:'/custom', children:[] })} onClick={() => navigate('/custom')}>CUSTOM LAB</button>
+          <button onMouseEnter={() => setMega(null)} onClick={() => navigate('/shop?sort=FEATURED')}>BEST SELLERS</button>
+          {!hasClubLink && <button onMouseEnter={() => setMega(null)} onClick={() => navigate('/membership')}>90+ CLUB</button>}
+          {!hasVaultLink && <button onMouseEnter={() => setMega(null)} onClick={() => navigate('/vault')}>THE VAULT</button>}
         </nav>
-        <div className="header-actions">
-          <button className="text-action" onClick={openSearch}><Search size={16} /> <span>SEARCH</span></button>
-          <button className="text-action desktop-account" onClick={() => navigate('/membership#account')}><CircleUserRound size={16} /> <span>{account?.user ? 'ACCOUNT' : 'SIGN IN'}</span></button>
-          {!appInstalled && <button className="text-action header-install" onClick={openInstall} aria-label="Add Extra Time to your home screen"><Download size={16}/><span>APP</span></button>}
-          <button className="text-action header-bag" onClick={openCart}><ShoppingBag size={16} /> <span>BAG ({bagCount})</span></button>
-          <IconButton label="Open menu" className="mobile-menu-button" onClick={() => setMobile(true)}><Menu /></IconButton>
-        </div>
+
         {mega && <MegaMenu item={mega} customProduct={customProduct} onNavigate={openLink} />}
       </header>
+
       <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
+        <div className="mobile-menu__search">
+          <Search size={15} />
+          <input
+            type="search"
+            placeholder="Search teams, jerseys, leagues…"
+            onKeyDown={e => {
+              if (e.key === 'Enter' && e.target.value.trim()) {
+                setMobile(false)
+                navigate(`/shop?q=${encodeURIComponent(e.target.value.trim())}`)
+              }
+            }}
+          />
+        </div>
         <nav>
-          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><button className="mobile-menu__league" onClick={() => openLink(league)}>{league.representativeImage && <img src={league.representativeImage} alt="" />}<strong>{league.label}</strong><ArrowRight size={13}/></button>{league.children?.slice(0,4).map(team => <button className="mobile-menu__team" key={team.id} onClick={() => openLink(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>}</React.Fragment>)}
+          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><button className="mobile-menu__league" onClick={() => openLink(league)}>{league.representativeImage && <img src={league.representativeImage} alt="" />}<strong>{league.label}</strong><ArrowRight size={13}/></button>{league.children?.slice(0,6).map(team => <button className="mobile-menu__team" key={team.id} onClick={() => openLink(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>}</React.Fragment>)}
           {!hasClubLink && <button onClick={() => { navigate('/membership'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>90+ CLUB<ArrowRight /></button>}
           {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+(hasClubLink?1:2)).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
         </nav>
@@ -198,6 +391,90 @@ function MegaMenu({ item, customProduct, onNavigate }) {
   const fallbacks = item.label === 'CUSTOM LAB' ? [{id:'custom-start',label:'Name, number + details',target:customTarget},{id:'custom-ai',label:'Edit with AI',target:`/studio?product=${customProduct?.handle || customProduct?.id || 'touchline'}`},{id:'custom-how',label:'How it works',target:'/#custom'}] : [{id:'all',label:'All jerseys',target:'/shop'},{id:'story',label:'Story explorer',target:'/#story'},{id:'vault',label:'The archive',target:'/vault'}]
   const children = item.children?.length ? item.children : fallbacks
   const taxonomy = item.type === 'TAXONOMY' || item.label === 'LEAGUES'
+  const isLeague = item.type === 'LEAGUE' || Boolean(item.leagueData)
+  const leagueData = item.leagueData || LEAGUE_TAXONOMY.find(l => l.key === item.leagueKey || l.name === item.label)
+
+  if (isLeague && leagueData) {
+    const teams = leagueData.teams || []
+    const half = Math.ceil(teams.length / 2)
+    const teamsCol1 = teams.slice(0, half)
+    const teamsCol2 = teams.slice(half)
+    return (
+      <div className="mega-menu mega-menu--league">
+        <div className="mega-menu__league-hub">
+          <div className="mega-menu__league-brand">
+            {leagueData.media?.src && <img src={leagueData.media.src} alt="" className="mega-menu__league-emblem" />}
+            <div>
+              <strong>{leagueData.name}</strong>
+              <small>{leagueData.sport.toUpperCase()} GEAR</small>
+            </div>
+          </div>
+          <div className="mega-menu__league-links">
+            <button onClick={() => onNavigate({ target: leaguePath(leagueData) })}>
+              <span>SHOP ALL {leagueData.name}</span>
+              <ArrowRight size={14} />
+            </button>
+            <button onClick={() => onNavigate({ target: `${leaguePath(leagueData)}?custom=1` })}>
+              <span>CUSTOM {leagueData.name} JERSEYS</span>
+              <ArrowRight size={14} />
+            </button>
+            <button onClick={() => onNavigate({ target: `${leaguePath(leagueData)}?sort=FEATURED` })}>
+              <span>FAN FAVORITES</span>
+              <ArrowRight size={14} />
+            </button>
+            <button onClick={() => onNavigate({ target: `${leaguePath(leagueData)}?sort=NEWEST` })}>
+              <span>NEW DROPS</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mega-menu__league-teams-col">
+          <p className="mega-menu__col-title">TEAMS (A–L)</p>
+          <div className="mega-menu__teams-scroll">
+            {teamsCol1.map(team => (
+              <button
+                key={team.slug}
+                className="mega-menu__team-link"
+                onClick={() => onNavigate({ target: teamPath(leagueData.key, team) })}
+              >
+                {team.media?.src && <img src={team.media.src} alt="" />}
+                <span>{team.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mega-menu__league-teams-col">
+          <p className="mega-menu__col-title">TEAMS (M–Z)</p>
+          <div className="mega-menu__teams-scroll">
+            {teamsCol2.map(team => (
+              <button
+                key={team.slug}
+                className="mega-menu__team-link"
+                onClick={() => onNavigate({ target: teamPath(leagueData.key, team) })}
+              >
+                {team.media?.src && <img src={team.media.src} alt="" />}
+                <span>{team.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mega-menu__league-promo">
+          <button className="mega-menu__promo-card" onClick={() => onNavigate({ target: leaguePath(leagueData) })}>
+            <img src={leagueData.media?.src || '/assets/editorial-player.webp'} alt="" />
+            <div className="mega-menu__promo-overlay">
+              <span className="mega-menu__promo-badge">OFFICIAL MATCH CUT</span>
+              <strong>{leagueData.name} COLLECTION</strong>
+              <small>Explore authenticated drops & personalized pieces <ArrowRight size={13}/></small>
+            </div>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`mega-menu ${taxonomy ? 'mega-menu--taxonomy' : ''}`}>
       <div className="mega-menu__index">{taxonomy ? <><strong className="mega-menu__index-copy">FIND<br />YOUR<br />TEAM</strong></> : item.label === 'CUSTOM LAB' ? <>MAKE<br />YOUR<br />MOMENT</> : <>FIND<br />YOUR<br />MOMENT</>}<span>90+</span></div>
@@ -500,11 +777,21 @@ function ProductCard({ product, onQuickView, className = '' }) {
   const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
   const displayRating = product.rating > 0 ? product.rating : 4.9
   const displayReviews = product.reviews > 0 ? product.reviews : 38
+  const secondaryImage = product.media?.[1]?.url || product.backImage || null
+  const discountPercent = product.compareAt && Number(product.compareAt) > Number(product.price)
+    ? Math.round((1 - Number(product.price) / Number(product.compareAt)) * 100)
+    : 0
   return (
-    <article className={`product-card ${className}`}>
+    <article className={`product-card ${secondaryImage ? 'has-secondary-img' : ''} ${className}`}>
       <button className="product-card__image" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
-        <img src={product.image} alt={product.alt} loading="lazy" />
-        <span className="product-badge">{product.badge || (product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP')}</span>
+        <img className="product-card__img--primary" src={product.image} alt={product.alt || product.name} loading="lazy" />
+        {secondaryImage && (
+          <img className="product-card__img--secondary" src={secondaryImage} alt="" loading="lazy" />
+        )}
+        <div className="product-card__badge-stack">
+          <span className="product-badge">{product.badge || (product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP')}</span>
+          {discountPercent > 0 && <span className="product-card__discount-badge">SAVE {discountPercent}%</span>}
+        </div>
         <span className="heart" aria-hidden="true"><Heart size={19}/></span>
         <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
       </button>
@@ -1330,12 +1617,14 @@ function Shop({ onQuickView, products, collection = null }) {
   const [color, setColor] = useState(params.get('color')?.toUpperCase() || 'ALL')
   const [sizeFilter, setSizeFilter] = useState(params.get('size')?.toUpperCase() || 'ALL')
   const [teamFilter, setTeamFilter] = useState(params.get('team')?.toLowerCase() || 'ALL')
+  const [leagueFilter, setLeagueFilter] = useState(params.get('league')?.toLowerCase() || 'ALL')
   const [priceFilter, setPriceFilter] = useState(params.get('price')?.toUpperCase() || 'ALL')
   const [group, setGroup] = useState(params.get('group') || 'ALL')
   const [customOnly, setCustomOnly] = useState(params.get('custom') === '1')
   const [inStock, setInStock] = useState(params.get('stock') === '1')
   const [typeFilter, setTypeFilter] = useState(params.get('type') || 'ALL')
   const [sort, setSort] = useState(params.get('sort') || 'FEATURED')
+  const [teamSearch, setTeamSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
   const filterRef = useRef(null)
   useDialogFocus(filterOpen, filterRef, () => setFilterOpen(false))
@@ -1375,6 +1664,20 @@ function Shop({ onQuickView, products, collection = null }) {
     return Array.from(map.values())
   }, [baseProducts])
 
+  const filteredTeamOptions = useMemo(() => {
+    let list = teamOptions
+    if (leagueFilter !== 'ALL') {
+      const leagueData = LEAGUE_TAXONOMY.find(l => l.key === leagueFilter)
+      if (leagueData) {
+        const slugs = new Set(leagueData.teams.map(t => t.slug))
+        list = list.filter(t => slugs.has(t.slug))
+      }
+    }
+    if (!teamSearch.trim()) return list
+    const q = teamSearch.toLowerCase()
+    return list.filter(t => t.label.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q))
+  }, [teamOptions, leagueFilter, teamSearch])
+
   const PRICE_OPTIONS = [
     { id: 'ALL', label: 'ALL PRICES', test: () => true },
     { id: 'UNDER_90', label: 'UNDER $90', test: p => Number(p.price || 0) < 90 },
@@ -1383,6 +1686,7 @@ function Shop({ onQuickView, products, collection = null }) {
   ]
 
   let shown = baseProducts.filter(product => {
+    if (leagueFilter !== 'ALL' && !productMatchesTaxonomy(product, { league: leagueFilter })) return false
     if (color !== 'ALL' && !productColours(product).some(value => String(value).toUpperCase() === color)) return false
     if (sizeFilter !== 'ALL' && !productSizes(product).some(value => canonicalSize(value).toUpperCase() === sizeFilter)) return false
     if (teamFilter !== 'ALL') {
@@ -1408,14 +1712,16 @@ function Shop({ onQuickView, products, collection = null }) {
   useEffect(() => {
     const next = new URL(window.location.href)
     const set = (key,value,empty) => value === empty ? next.searchParams.delete(key) : next.searchParams.set(key,value)
-    set('color',color,'ALL'); set('size',sizeFilter,'ALL'); set('team',teamFilter,'ALL'); set('price',priceFilter,'ALL'); set('group',group,'ALL'); set('type',typeFilter,'ALL'); set('sort',sort,'FEATURED')
+    set('color',color,'ALL'); set('size',sizeFilter,'ALL'); set('team',teamFilter,'ALL'); set('league',leagueFilter,'ALL'); set('price',priceFilter,'ALL'); set('group',group,'ALL'); set('type',typeFilter,'ALL'); set('sort',sort,'FEATURED')
     customOnly ? next.searchParams.set('custom','1') : next.searchParams.delete('custom')
     inStock ? next.searchParams.set('stock','1') : next.searchParams.delete('stock')
     window.history.replaceState({},'',next.pathname + next.search)
-  }, [color,sizeFilter,teamFilter,priceFilter,group,typeFilter,customOnly,inStock,sort])
+  }, [color,sizeFilter,teamFilter,leagueFilter,priceFilter,group,typeFilter,customOnly,inStock,sort])
 
-  const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setTeamFilter('ALL'); setPriceFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false) }
-  const activeCount = Number(color !== 'ALL') + Number(sizeFilter !== 'ALL') + Number(teamFilter !== 'ALL') + Number(priceFilter !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock)
+  const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setTeamFilter('ALL'); setLeagueFilter('ALL'); setPriceFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false); setTeamSearch('') }
+  const activeCount = Number(color !== 'ALL') + Number(sizeFilter !== 'ALL') + Number(teamFilter !== 'ALL') + Number(leagueFilter !== 'ALL') + Number(priceFilter !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock)
+
+  const swatchColor = value => ({black:'#111111',white:'#eeeeea',chalk:'#eeeeea',oxblood:'#711e25',red:'#b52b2b',blue:'#244c89',navy:'#15233d',green:'#315c43',purple:'#5f3a78'}[String(value).toLowerCase()] || String(value))
 
   return (
     <main className="shop-page">
@@ -1448,57 +1754,193 @@ function Shop({ onQuickView, products, collection = null }) {
         </div>
       </section>
       <StorefrontTrust compact />
-      <div className="filter-bar">
-        <div className="desktop-filters">
-          <span>FILTER</span>
-          {colours.slice(0,5).map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}</button>)}
-          <label className="catalog-select">SIZE<select value={sizeFilter} onChange={event => setSizeFilter(event.target.value)}>{sizes.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label>
-          {teamOptions.length > 0 && <label className="catalog-select">TEAM<select value={teamFilter} onChange={event => setTeamFilter(event.target.value)}><option value="ALL">ALL TEAMS</option>{teamOptions.map(t => <option key={t.slug} value={t.slug}>{t.label}</option>)}</select><ChevronDown size={13}/></label>}
-          <label className="catalog-select">PRICE<select value={priceFilter} onChange={event => setPriceFilter(event.target.value)}>{PRICE_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}</select><ChevronDown size={13}/></label>
-          <label className="catalog-select">GROUP<select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label>
-          <label className="catalog-select">TYPE<select value={typeFilter} onChange={event => setTypeFilter(event.target.value)}><option value="ALL">ALL</option><option value="PERSONALIZED">PERSONALIZED</option><option value="READY">READY TO SHIP</option></select><ChevronDown size={13}/></label>
-          <button className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>CUSTOM</button>
-          <button className={inStock ? 'is-active' : ''} onClick={() => setInStock(value => !value)}>IN STOCK</button>
+
+      <div className="plp-layout">
+        {/* Left Faceted Filter Sidebar (25% desktop) */}
+        <aside className="plp-sidebar" aria-label="Product filters">
+          <div className="plp-sidebar__header">
+            <span className="plp-sidebar__title"><SlidersHorizontal size={14}/> FILTERS</span>
+            {activeCount > 0 && <button type="button" className="plp-sidebar__reset" onClick={clear}>RESET ALL ({activeCount})</button>}
+          </div>
+
+          <div className="plp-filter-group">
+            <h4 className="plp-filter-group__heading">LEAGUE</h4>
+            <div className="plp-filter-group__pills">
+              <button type="button" className={`plp-pill ${leagueFilter === 'ALL' ? 'is-active' : ''}`} onClick={() => setLeagueFilter('ALL')}>ALL</button>
+              {LEAGUE_TAXONOMY.map(l => (
+                <button key={l.key} type="button" className={`plp-pill ${leagueFilter === l.key ? 'is-active' : ''}`} onClick={() => setLeagueFilter(l.key)}>
+                  {l.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {teamOptions.length > 0 && (
+            <div className="plp-filter-group">
+              <h4 className="plp-filter-group__heading">TEAM</h4>
+              <div className="plp-team-search">
+                <Search size={12} />
+                <input
+                  type="text"
+                  placeholder="Find your team…"
+                  value={teamSearch}
+                  onChange={e => setTeamSearch(e.target.value)}
+                  aria-label="Filter teams"
+                />
+                {teamSearch && <button type="button" onClick={() => setTeamSearch('')}><X size={11}/></button>}
+              </div>
+              <div className="plp-team-list">
+                <label className={`plp-team-item ${teamFilter === 'ALL' ? 'is-active' : ''}`}>
+                  <input type="radio" name="plp-team" checked={teamFilter === 'ALL'} onChange={() => setTeamFilter('ALL')} />
+                  <span>All Teams</span>
+                  <small>{baseProducts.length}</small>
+                </label>
+                {filteredTeamOptions.map(t => (
+                  <label key={t.slug} className={`plp-team-item ${teamFilter === t.slug ? 'is-active' : ''}`}>
+                    <input type="radio" name="plp-team" checked={teamFilter === t.slug} onChange={() => setTeamFilter(t.slug)} />
+                    <span>{t.label}</span>
+                    <small>{t.count}</small>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="plp-filter-group">
+            <h4 className="plp-filter-group__heading">CUSTOMIZATION</h4>
+            <div className="plp-filter-group__switches">
+              <label className="plp-checkbox">
+                <input type="checkbox" checked={customOnly} onChange={e => setCustomOnly(e.target.checked)} />
+                <span>Customizable Only</span>
+              </label>
+              <label className="plp-checkbox">
+                <input type="checkbox" checked={inStock} onChange={e => setInStock(e.target.checked)} />
+                <span>In Stock Only</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="plp-filter-group">
+            <h4 className="plp-filter-group__heading">SIZE</h4>
+            <div className="plp-size-grid">
+              {sizes.map(item => (
+                <button
+                  key={item}
+                  type="button"
+                  className={`plp-size-btn ${sizeFilter === item ? 'is-active' : ''}`}
+                  onClick={() => setSizeFilter(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="plp-filter-group">
+            <h4 className="plp-filter-group__heading">PRICE</h4>
+            <div className="plp-price-list">
+              {PRICE_OPTIONS.map(opt => (
+                <label key={opt.id} className={`plp-price-item ${priceFilter === opt.id ? 'is-active' : ''}`}>
+                  <input type="radio" name="plp-price" checked={priceFilter === opt.id} onChange={() => setPriceFilter(opt.id)} />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="plp-filter-group">
+            <h4 className="plp-filter-group__heading">COLOUR</h4>
+            <div className="plp-color-swatches">
+              {colours.slice(0, 8).map(item => (
+                <button
+                  key={item}
+                  type="button"
+                  className={`plp-color-btn ${color === item ? 'is-active' : ''}`}
+                  onClick={() => setColor(item)}
+                  title={item}
+                >
+                  {item === 'ALL' ? <span>ALL</span> : <span className="plp-color-dot" style={{ background: swatchColor(item) }} />}
+                  <small>{item}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Content Area (75% desktop) */}
+        <div className="plp-content">
+          <div className="filter-bar plp-toolbar">
+            <div className="plp-toolbar__summary">
+              <span className="plp-toolbar__count"><strong>{shown.length}</strong> {shown.length === 1 ? 'PIECE' : 'PIECES'}</span>
+              <button className="mobile-filter" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={15}/> FILTER{activeCount ? ` · ${activeCount}` : ''}</button>
+            </div>
+
+            <div className="plp-toolbar__controls">
+              <div className="mobile-grid-toggle" aria-label="Display mode">
+                <button
+                  type="button"
+                  className={`grid-toggle-btn ${mobileCols === 1 ? 'is-active' : ''}`}
+                  onClick={() => setMobileCols(1)}
+                  aria-label="1 product per row"
+                  title="1 Column"
+                >
+                  <Square size={15} />
+                </button>
+                <button
+                  type="button"
+                  className={`grid-toggle-btn ${mobileCols === 2 ? 'is-active' : ''}`}
+                  onClick={() => setMobileCols(2)}
+                  aria-label="2 products per row"
+                  title="2 Columns"
+                >
+                  <Grid2X2 size={15} />
+                </button>
+              </div>
+              <label className="catalog-select plp-sort-label">SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>NEWEST</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={14}/></label>
+            </div>
+          </div>
+
+          {activeCount > 0 && <div className="active-filters">
+            {leagueFilter !== 'ALL' && <button onClick={() => setLeagueFilter('ALL')}>LEAGUE: {leagueFilter.toUpperCase()} <X size={12}/></button>}
+            {color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}
+            {sizeFilter !== 'ALL' && <button onClick={() => setSizeFilter('ALL')}>SIZE: {sizeFilter} <X size={12}/></button>}
+            {teamFilter !== 'ALL' && <button onClick={() => setTeamFilter('ALL')}>TEAM: {teamOptions.find(t => t.slug === teamFilter)?.label || teamFilter.toUpperCase()} <X size={12}/></button>}
+            {priceFilter !== 'ALL' && <button onClick={() => setPriceFilter('ALL')}>PRICE: {PRICE_OPTIONS.find(o => o.id === priceFilter)?.label || priceFilter} <X size={12}/></button>}
+            {group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}
+            {typeFilter !== 'ALL' && <button onClick={() => setTypeFilter('ALL')}>{typeFilter} <X size={12}/></button>}
+            {customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}
+            {inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}
+            <button className="active-filters__clear-all" onClick={clear}>CLEAR ALL</button>
+          </div>}
+
+          <section className="shop-grid section">
+            {shown.length ? (
+              <div className={`product-grid is-col-${mobileCols}`}>
+                {shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}
+              </div>
+            ) : (
+              <div className="catalog-empty">
+                <span>90+</span>
+                <h2>No jerseys match these filters.</h2>
+                <p>Try clearing selected leagues, teams, or sizes to browse available drops.</p>
+                <button onClick={clear}>Clear all filters</button>
+              </div>
+            )}
+          </section>
         </div>
-        <button className="mobile-filter" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={16}/> FILTER{activeCount ? ` · ${activeCount}` : ''}</button>
-        <div className="mobile-grid-toggle" aria-label="Display mode">
-          <button
-            type="button"
-            className={`grid-toggle-btn ${mobileCols === 1 ? 'is-active' : ''}`}
-            onClick={() => setMobileCols(1)}
-            aria-label="1 product per row"
-            title="1 Column"
-          >
-            <Square size={15} />
-          </button>
-          <button
-            type="button"
-            className={`grid-toggle-btn ${mobileCols === 2 ? 'is-active' : ''}`}
-            onClick={() => setMobileCols(2)}
-            aria-label="2 products per row"
-            title="2 Columns"
-          >
-            <Grid2X2 size={15} />
-          </button>
-        </div>
-        <label>SORT <select value={sort} onChange={event => setSort(event.target.value)}><option>FEATURED</option><option>NEWEST</option><option>PRICE LOW</option><option>PRICE HIGH</option></select><ChevronDown size={15}/></label>
       </div>
-      {activeCount > 0 && <div className="active-filters">
-        {color !== 'ALL' && <button onClick={() => setColor('ALL')}>{color} <X size={12}/></button>}
-        {sizeFilter !== 'ALL' && <button onClick={() => setSizeFilter('ALL')}>SIZE: {sizeFilter} <X size={12}/></button>}
-        {teamFilter !== 'ALL' && <button onClick={() => setTeamFilter('ALL')}>TEAM: {teamOptions.find(t => t.slug === teamFilter)?.label || teamFilter.toUpperCase()} <X size={12}/></button>}
-        {priceFilter !== 'ALL' && <button onClick={() => setPriceFilter('ALL')}>PRICE: {PRICE_OPTIONS.find(o => o.id === priceFilter)?.label || priceFilter} <X size={12}/></button>}
-        {group !== 'ALL' && <button onClick={() => setGroup('ALL')}>{group} <X size={12}/></button>}
-        {typeFilter !== 'ALL' && <button onClick={() => setTypeFilter('ALL')}>{typeFilter} <X size={12}/></button>}
-        {customOnly && <button onClick={() => setCustomOnly(false)}>CUSTOM <X size={12}/></button>}
-        {inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}
-        <button onClick={clear}>CLEAR ALL</button>
-      </div>}
-      <section className="shop-grid section">{shown.length ? <div className={`product-grid is-col-${mobileCols}`}>{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
+
       {filterOpen && <div className="filter-sheet__backdrop" onClick={() => setFilterOpen(false)} aria-hidden="true"/>}
       <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}>
         <div className="filter-sheet__header"><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div>
         <div className="filter-sheet__body">
+          <p>LEAGUE</p>
+          <div className="filter-sheet__colours">
+            <button className={leagueFilter === 'ALL' ? 'is-active' : ''} onClick={() => setLeagueFilter('ALL')}>ALL</button>
+            {LEAGUE_TAXONOMY.map(l => (
+              <button key={l.key} className={leagueFilter === l.key ? 'is-active' : ''} onClick={() => setLeagueFilter(l.key)}>{l.name}</button>
+            ))}
+          </div>
           <p>COLOUR</p>
           <div className="filter-sheet__colours">{colours.map(item => <button key={item} className={color === item ? 'is-active' : ''} onClick={() => setColor(item)}>{item}<span>{item === 'ALL' ? baseProducts.length : baseProducts.filter(product => productColours(product).some(value => String(value).toUpperCase() === item)).length}</span></button>)}</div>
           <p>SIZE</p>
@@ -1898,90 +2340,91 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     <div className="pdp__commerce">
       <div className="pdp__gallery-wrapper">
         <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={15}/> BACK TO THE DROP</button>
-        <div className="pdp__gallery-stage">
-          <div
-            ref={galleryRef}
-            className="pdp__gallery"
-            tabIndex={0}
-            aria-label={`${product.name} gallery`}
-            onKeyDown={event => {
-              if (event.key === 'ArrowLeft') prevImage(event)
-              else if (event.key === 'ArrowRight') nextImage(event)
-            }}
-            onScroll={event => {
-              const width = event.currentTarget.clientWidth || 1
-              const idx = Math.round(event.currentTarget.scrollLeft / width)
-              if (idx !== galleryIndex && idx >= 0 && idx < gallery.length) {
-                setGalleryIndex(idx)
-              }
-            }}
-          >
-            {gallery.map((item,index) => (
-              <figure key={`${item.id}-${index}`} className={item.isAi ? 'pdp__gallery-ai' : ''}>
-                {item.type === 'VIDEO' ? (
-                  <video src={item.url} controls preload="metadata"/>
-                ) : (
-                  <div className="pdp__gallery-img-wrap">
-                    <img
-                      src={item.url}
-                      alt={item.alt || `${product.name} view ${index+1}`}
-                      width={item.width || undefined}
-                      height={item.height || undefined}
-                      loading={index === 0 ? 'eager' : 'lazy'}
-                      decoding="async"
-                    />
-                    {item.isAi && <span className="pdp__gallery-ai-badge"><Sparkles size={11}/> AI PREVIEW</span>}
-                  </div>
-                )}
-                <span className="pdp__gallery-slide-tag">{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span>
-              </figure>
-            ))}
-          </div>
-
+        <div className="pdp__gallery-stage-wrapper">
           {gallery.length > 1 && (
-            <>
-              <button
-                type="button"
-                className="pdp__gallery-arrow pdp__gallery-arrow--prev"
-                onClick={prevImage}
-                aria-label="Previous product image"
-              >
-                <ChevronLeft size={20}/>
-              </button>
-              <button
-                type="button"
-                className="pdp__gallery-arrow pdp__gallery-arrow--next"
-                onClick={nextImage}
-                aria-label="Next product image"
-              >
-                <ChevronRight size={20}/>
-              </button>
-            </>
+            <div className="pdp__gallery-thumbs" role="tablist" aria-label="Product image thumbnails">
+              {gallery.map((item,index) => (
+                <button
+                  key={`thumb-${item.id}-${index}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={galleryIndex === index}
+                  aria-label={`View image ${index + 1}`}
+                  className={`pdp__gallery-thumb ${galleryIndex === index ? 'is-active' : ''}`}
+                  onClick={() => scrollGalleryTo(index)}
+                >
+                  {item.type === 'VIDEO' ? (
+                    <span className="pdp__gallery-thumb-video">▶</span>
+                  ) : (
+                    <img src={item.url} alt="" loading="lazy"/>
+                  )}
+                  {item.isAi && <span className="pdp__gallery-thumb-ai" title="AI Preview">✦</span>}
+                </button>
+              ))}
+            </div>
           )}
-        </div>
+          <div className="pdp__gallery-stage">
+            <div
+              ref={galleryRef}
+              className="pdp__gallery"
+              tabIndex={0}
+              aria-label={`${product.name} gallery`}
+              onKeyDown={event => {
+                if (event.key === 'ArrowLeft') prevImage(event)
+                else if (event.key === 'ArrowRight') nextImage(event)
+              }}
+              onScroll={event => {
+                const width = event.currentTarget.clientWidth || 1
+                const idx = Math.round(event.currentTarget.scrollLeft / width)
+                if (idx !== galleryIndex && idx >= 0 && idx < gallery.length) {
+                  setGalleryIndex(idx)
+                }
+              }}
+            >
+              {gallery.map((item,index) => (
+                <figure key={`${item.id}-${index}`} className={item.isAi ? 'pdp__gallery-ai' : ''}>
+                  {item.type === 'VIDEO' ? (
+                    <video src={item.url} controls preload="metadata"/>
+                  ) : (
+                    <div className="pdp__gallery-img-wrap">
+                      <img
+                        src={item.url}
+                        alt={item.alt || `${product.name} view ${index+1}`}
+                        width={item.width || undefined}
+                        height={item.height || undefined}
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                      />
+                      {item.isAi && <span className="pdp__gallery-ai-badge"><Sparkles size={11}/> AI PREVIEW</span>}
+                    </div>
+                  )}
+                  <span className="pdp__gallery-slide-tag">{String(index+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span>
+                </figure>
+              ))}
+            </div>
 
-        {gallery.length > 1 && (
-          <div className="pdp__gallery-thumbs" role="tablist" aria-label="Product image thumbnails">
-            {gallery.map((item,index) => (
-              <button
-                key={`thumb-${item.id}-${index}`}
-                type="button"
-                role="tab"
-                aria-selected={galleryIndex === index}
-                aria-label={`View image ${index + 1}`}
-                className={`pdp__gallery-thumb ${galleryIndex === index ? 'is-active' : ''}`}
-                onClick={() => scrollGalleryTo(index)}
-              >
-                {item.type === 'VIDEO' ? (
-                  <span className="pdp__gallery-thumb-video">▶</span>
-                ) : (
-                  <img src={item.url} alt="" loading="lazy"/>
-                )}
-                {item.isAi && <span className="pdp__gallery-thumb-ai" title="AI Preview">✦</span>}
-              </button>
-            ))}
+            {gallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="pdp__gallery-arrow pdp__gallery-arrow--prev"
+                  onClick={prevImage}
+                  aria-label="Previous product image"
+                >
+                  <ChevronLeft size={20}/>
+                </button>
+                <button
+                  type="button"
+                  className="pdp__gallery-arrow pdp__gallery-arrow--next"
+                  onClick={nextImage}
+                  aria-label="Next product image"
+                >
+                  <ChevronRight size={20}/>
+                </button>
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       </div>
@@ -1994,6 +2437,9 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
               <span className="pdp__discount-tag">SAVE {Math.round((1 - currentPrice / Number(currentCompare)) * 100)}%</span>
             </>
           )}
+        </div>
+        <div className="pdp-delivery-badge">
+          <Truck size={14}/> <span>FREE US SHIPPING OVER $100 · 5–8 BUSINESS DAYS</span>
         </div>
         {bulkOffers.length > 0 && (
           <div className="pdp__discounts-row" aria-label="Volume discounts">
@@ -2554,7 +3000,7 @@ function App() {
   else page = <NotFound/>
   return (
     <>
-      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} customProduct={customProduct} account={account}/>
+      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} customProduct={customProduct} account={account} products={products}/>
       {catalogState.error && <div className="catalog-runtime-notice" role="status">Live catalogue is temporarily unavailable. Purchasing is paused until fresh published data is available.</div>}
       {page}
       <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct}/>
