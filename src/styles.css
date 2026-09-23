@@ -2871,6 +2871,10 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .admin-bulk-bar .admin-bulk-stock input { min-width:95px; width:100px; }
 .admin-bulk-bar button:disabled,.admin-table-head--deep > button:disabled { opacity:.45; cursor:not-allowed; }
 .admin-catalog .admin-banner-notice { padding:11px 16px; background:#f8f4dc; color:#4f482e; border-bottom:1px solid var(--admin-line); font:600 10px/1.5 var(--body); }
+.admin-catalog-selection { padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--admin-line); background:var(--admin-chalk); }
+.admin-catalog-selection button { min-height:32px; padding:0 12px; border:1px solid var(--admin-ink); font:700 10px var(--body); }
+.admin-catalog-selection button:disabled { opacity:.45; cursor:not-allowed; }
+.admin-catalog-selection span { color:var(--admin-muted); font:600 9px var(--body); }
 .admin-catalog details.admin-banner-notice summary { cursor:pointer; }
 .admin-catalog details.admin-banner-notice p { margin:7px 0 0; }
 .admin-catalog-pagination { display:flex; align-items:center; justify-content:center; gap:16px; padding:16px; border:1px solid var(--admin-line); border-top:0; background:var(--admin-chalk); }
