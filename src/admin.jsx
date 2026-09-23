@@ -6,6 +6,7 @@ import AdminMembership from './AdminMembership'
 import AdminCustomizations from './AdminCustomizations'
 import AdminOrders from './AdminOrders'
 import { deriveAutomaticTags, duplicateProductDraft, productCompleteness } from './lib/catalog-model'
+import { runAdminCatalogBulk } from './lib/admin-catalog-bulk'
 import {
   ArrowRight,
   Boxes,
@@ -151,7 +152,7 @@ function AdminShell({ active, source, notice, onRefresh, badges = {}, children }
               <Plus size={15}/> <span>New product</span>
             </button>
             <label className="admin-search"><Search size={15}/><input placeholder="Search · Coming soon" aria-label="Search admin — not available yet" disabled title="Global search is not available yet. Use the Products search field."/></label>
-            <span className={`admin-source ${source === 'supabase' ? 'is-live' : ''}`}><i/>{source === 'supabase' ? 'SUPABASE LIVE' : 'PREVIEW DATA'}</span>
+            <span className={`admin-source ${source === 'supabase' ? 'is-live' : ''}`}><i/>{source === 'supabase' ? 'SUPABASE LIVE' : source === 'partial' ? 'PARTIAL LIVE' : source === 'loading' ? 'CONNECTING' : 'DATA UNAVAILABLE'}</span>
             <button className="admin-icon-button" onClick={onRefresh} aria-label="Refresh data"><RefreshCw size={16}/></button>
           </div>
         </header>
@@ -174,14 +175,18 @@ function StatCard({ item }) {
   return <article className={`admin-stat admin-stat--${item.tone}`}><span>{item.label}</span><strong>{item.value}</strong><small>{item.note}</small></article>
 }
 
-function AdminOverview({ products }) {
+function AdminOverview({ products, catalogLoad }) {
+  const overviewCopy = catalogLoad.complete
+    ? `${catalogLoad.loaded} live listings loaded. Open Products to review variations, pricing and custom fields.`
+    : `Loading ${catalogLoad.loaded}${catalogLoad.total != null ? ` of ${catalogLoad.total}` : ''} listings. Counts update as pages arrive.`
   const stats = [
     {label:'Published listings',value:products.filter(row=>row.status==='PUBLISHED').length,note:'From the catalogue',tone:'acid'},
     {label:'Draft listings',value:products.filter(row=>row.status==='DRAFT').length,note:'Not visible to customers',tone:'paper'},
     {label:'Active variants',value:products.reduce((count,row)=>count+(row._catalogSummary ? Number(row._variantCount || 0) : (row.variants || []).filter(variant=>variant.status==='ACTIVE').length),0),note:'Across all listings',tone:'paper'},
+    {label:'Draft variants',value:products.reduce((count,row)=>count+(row._catalogSummary ? Number(row._draftVariantCount || 0) : (row.variants || []).filter(variant=>variant.status==='DRAFT').length),0),note:'Eligible rows can be activated in Products',tone:'signal'},
     {label:'Needs attention',value:products.filter(row=>productCompleteness(row).percent<100).length,note:'Missing media, SEO or routing',tone:'ink'}
   ]
-  return <main className="admin-page admin-overview"><PageIntro eyebrow="Store operations" title="Your catalogue, at a glance." copy="Each listing now owns its story, media, SEO, variation pricing and customer-editable information in one workspace." action="New product" onAction={()=>go('/admin/products/new')}/><section className="admin-stat-grid">{stats.map(item=><StatCard key={item.label} item={item}/>)}</section><section className="admin-panel admin-overview-review"><div className="admin-panel__head"><div><h2>Ready for review</h2><p>Draft or incomplete listings that need a decision.</p></div><button className="admin-text-button" onClick={()=>go('/admin/catalog')}>Open products</button></div>{products.filter(row=>row.status==='DRAFT' || productCompleteness(row).percent<100).slice(0,6).map(product=><CatalogRow product={product} key={product.id}/>)}{!products.length&&<div className="admin-empty"><Package size={24}/><strong>No listings yet</strong><span>Create the first product to start the catalogue.</span></div>}</section></main>
+  return <main className="admin-page admin-overview"><PageIntro eyebrow="Store operations" title="Your catalogue, at a glance." copy={overviewCopy} action="New product" onAction={()=>go('/admin/products/new')}/><section className="admin-stat-grid">{stats.map(item=><StatCard key={item.label} item={item}/>)}</section><section className="admin-panel admin-overview-review"><div className="admin-panel__head"><div><h2>Ready for review</h2><p>Draft or incomplete listings that need a decision.</p></div><button className="admin-text-button" onClick={()=>go('/admin/catalog')}>Open products</button></div>{products.filter(row=>row.status==='DRAFT' || productCompleteness(row).percent<100).slice(0,6).map(product=><CatalogRow product={product} key={product.id}/>)}{!products.length&&<div className="admin-empty"><Package size={24}/><strong>No listings yet</strong><span>Create the first product to start the catalogue.</span></div>}</section></main>
 }
 
 function CatalogRow({ product, onDuplicate, onDelete, selected = false, onToggle }) {
@@ -189,14 +194,18 @@ function CatalogRow({ product, onDuplicate, onDelete, selected = false, onToggle
   const stock = product._catalogSummary
     ? Number(product.inventory || 0)
     : (product.variants || []).filter(row=>row.status==='ACTIVE').reduce((sum,row)=>sum+Number(row.inventory||0),0)
+  const draftVariants = product._catalogSummary
+    ? Number(product._draftVariantCount || 0)
+    : (product.variants || []).filter(row=>row.status==='DRAFT').length
   const tags = [...new Set([...(product.tags || []),...deriveAutomaticTags(product)])]
-  return <article className={`admin-catalog-row ${selected ? 'is-selected' : ''}`}>{onToggle&&<button className={`admin-catalog-row__select ${selected?'is-checked':''}`} onClick={() => onToggle(product.id)} aria-label={`${selected?'Deselect':'Select'} ${product.title || product.name}`}>{selected&&<Check size={12}/>}</button>}<button className="admin-catalog-row__open" onClick={() => go(`/admin/products/${product.id}`)} aria-label={`Edit ${product.title || product.name}`}><span className="admin-product-thumb">{product.image?<img src={product.image} alt=""/>:<Package size={19}/>}</span><span className="admin-product-name"><strong>{product.name}</strong><small>{product.sku || product.subtitle || 'No SKU'}</small><i>{tags.slice(0,3).map(tag=><b key={tag}>{tag}</b>)}</i></span><span className="admin-product-type">{product.productGroup || product.type || '—'}</span><span className="admin-product-price">{money(product.price)}</span><StatusPill value={product.status}/><span className="admin-product-stock">{stock ? `${stock} units` : '—'}</span><span className="admin-product-score"><b>{completeness.percent}%</b><i><em style={{width:`${completeness.percent}%`}}/></i><small title={(product.seoBlockReasons || []).join(', ') || `SEO quality ${product.seoQualityScore || 0}/100`}>SEO {product.seoStatus || 'BLOCKED'}</small></span><ArrowRight size={16}/></button><div className="admin-catalog-row__actions">{onDuplicate&&<button className="admin-catalog-row__duplicate" onClick={() => onDuplicate(product)} title="Create an unsaved draft copy"><Copy size={14}/><span>Duplicate</span></button>}{onDelete&&<button className="admin-catalog-row__delete" onClick={() => { if(window.confirm(`Permanently delete "${product.name || product.title || product.id}"? This action cannot be undone.`)) onDelete(product.id) }} title="Permanently delete listing"><Trash2 size={14}/><span>Delete</span></button>}</div></article>
+  return <article className={`admin-catalog-row ${selected ? 'is-selected' : ''}`}>{onToggle&&<button className={`admin-catalog-row__select ${selected?'is-checked':''}`} onClick={() => onToggle(product.id)} aria-label={`${selected?'Deselect':'Select'} ${product.title || product.name}`}>{selected&&<Check size={12}/>}</button>}<button className="admin-catalog-row__open" onClick={() => go(`/admin/products/${product.id}`)} aria-label={`Edit ${product.title || product.name}`}><span className="admin-product-thumb">{product.image?<img src={product.image} alt=""/>:<Package size={19}/>}</span><span className="admin-product-name"><strong>{product.name}</strong><small>{product.sku || product.subtitle || 'No SKU'}</small><i>{draftVariants>0&&<b className="is-draft">{draftVariants} Draft variants</b>}{tags.slice(0,2).map(tag=><b key={tag}>{tag}</b>)}</i></span><span className="admin-product-type">{product.productGroup || product.type || '—'}</span><span className="admin-product-price">{money(product.price)}</span><StatusPill value={product.status}/><span className="admin-product-stock">{stock ? `${stock} units` : '—'}</span><span className="admin-product-score"><b>{completeness.percent}%</b><i><em style={{width:`${completeness.percent}%`}}/></i><small title={(product.seoBlockReasons || []).join(', ') || `SEO quality ${product.seoQualityScore || 0}/100`}>SEO {product.seoStatus || 'BLOCKED'}</small></span><ArrowRight size={16}/></button><div className="admin-catalog-row__actions">{onDuplicate&&<button className="admin-catalog-row__duplicate" onClick={() => onDuplicate(product)} title="Create an unsaved draft copy"><Copy size={14}/><span>Duplicate</span></button>}{onDelete&&<button className="admin-catalog-row__delete" onClick={() => { if(window.confirm(`Permanently delete "${product.name || product.title || product.id}"? This action cannot be undone.`)) onDelete(product.id) }} title="Permanently delete listing"><Trash2 size={14}/><span>Delete</span></button>}</div></article>
 }
 
-function AdminCatalog({ products: rows, onDuplicate, onDelete, onBulkUpdate }) {
+function AdminCatalog({ products: rows, onDuplicate, onDelete, onBulkUpdate, catalogLoad }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('ALL')
   const [seoStatus, setSeoStatus] = useState('ALL')
+  const [variantStatus, setVariantStatus] = useState('ALL')
   const [group, setGroup] = useState('ALL')
   const [tag, setTag] = useState('ALL')
   const [sort,setSort] = useState('UPDATED')
@@ -204,14 +213,43 @@ function AdminCatalog({ products: rows, onDuplicate, onDelete, onBulkUpdate }) {
   const [bulkAction,setBulkAction] = useState('DRAFT')
   const [bulkValue,setBulkValue] = useState('')
   const [bulkNotice,setBulkNotice] = useState('')
+  const [bulkBusy,setBulkBusy] = useState(false)
+  const [bulkReport,setBulkReport] = useState(null)
+  const [page,setPage] = useState(1)
+  const catalogReady = catalogLoad.source === 'supabase' && catalogLoad.complete
   const groups = useMemo(()=>[...new Set(rows.map(row=>row.productGroup).filter(Boolean))].sort(),[rows])
   const tags = useMemo(()=>[...new Set(rows.flatMap(row=>[...(row.tags||[]),...deriveAutomaticTags(row)]))].sort(),[rows])
-  const shown = useMemo(() => rows.filter(product => `${product.name} ${product.sku} ${product.type} ${product.productGroup} ${(product.tags||[]).join(' ')} ${deriveAutomaticTags(product).join(' ')} ${(product.seoBlockReasons||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase())).filter(product => status === 'ALL' || product.status === status).filter(product => seoStatus === 'ALL' || product.seoStatus === seoStatus).filter(product => group === 'ALL' || product.productGroup === group).filter(product => tag === 'ALL' || [...(product.tags||[]),...deriveAutomaticTags(product)].includes(tag)).sort((a,b)=>sort==='TITLE'?a.name.localeCompare(b.name):sort==='STOCK'?(b.inventory||0)-(a.inventory||0):String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))), [rows, query, status, seoStatus, group, tag, sort])
-  const clearFilters=()=>{setQuery('');setStatus('ALL');setSeoStatus('ALL');setGroup('ALL');setTag('ALL')}
-  const toggle=id=>setSelected(current=>current.includes(id)?current.filter(item=>item!==id):[...current,id])
-  const toggleShown=()=>setSelected(current=>shown.every(row=>current.includes(row.id))?current.filter(id=>!shown.some(row=>row.id===id)):[...new Set([...current,...shown.map(row=>row.id)])])
-  const applyBulk=async()=>{setBulkNotice('Saving…');const result=await onBulkUpdate?.(selected,bulkAction,bulkValue);setBulkNotice(result?.error?`Not saved: ${result.error}`:`Updated ${selected.length} listings.`);if(!result?.error)setSelected([])}
-  return <main className="admin-page admin-catalog"><PageIntro eyebrow="CATALOG / LISTING OPERATIONS" title="THE DROP, IN ORDER." copy={`${shown.length} of ${rows.length} listings. Filter, select and update related listings without opening each workspace.`} action="New product" onAction={() => go('/admin/products/new')}/><div className="admin-catalog-toolbar admin-catalog-toolbar--deep"><label className="admin-search admin-search--large"><Search size={16}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Title, SKU, type, group, SEO reason"/></label><label className="admin-catalog-select"><span>Storefront</span><select value={status} onChange={event=>setStatus(event.target.value)}><option>ALL</option><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>SEO gate</span><select value={seoStatus} onChange={event=>setSeoStatus(event.target.value)}><option>ALL</option><option>BLOCKED</option><option>READY</option><option>INDEXABLE</option></select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Group</span><select value={group} onChange={event=>setGroup(event.target.value)}><option>ALL</option>{groups.map(item=><option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Tag / signal</span><select value={tag} onChange={event=>setTag(event.target.value)}><option>ALL</option>{tags.map(item=><option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Sort</span><select value={sort} onChange={event=>setSort(event.target.value)}><option>UPDATED</option><option>TITLE</option><option>STOCK</option></select><ChevronDown size={13}/></label><button className="admin-text-button" disabled={query===''&&status==='ALL'&&seoStatus==='ALL'&&group==='ALL'&&tag==='ALL'} title={query===''&&status==='ALL'&&seoStatus==='ALL'&&group==='ALL'&&tag==='ALL'?'No filters are active.':'Clear every catalogue filter.'} onClick={clearFilters}>Clear filters</button></div>{selected.length>0&&<div className="admin-bulk-bar"><strong>{selected.length} selected</strong><select value={bulkAction} onChange={event=>setBulkAction(event.target.value)}><option value="PUBLISHED">Publish storefront (SEO stays gated)</option><option value="DRAFT">Move to draft</option><option value="ARCHIVED">Archive</option><option value="DELETE">Delete permanently</option><option value="ADD_TAG">Add tag</option><option value="SET_GROUP">Set group</option></select>{['ADD_TAG','SET_GROUP'].includes(bulkAction)&&<input value={bulkValue} onChange={event=>setBulkValue(event.target.value)} placeholder={bulkAction==='ADD_TAG'?'tag-name':'Product group'}/>}<button onClick={applyBulk}>Apply</button><button onClick={()=>setSelected([])}>Clear</button><span role={bulkNotice.startsWith('Not saved:')?'alert':'status'}>{bulkNotice}</span></div>}<section className="admin-panel admin-catalog-panel"><div className="admin-table-head admin-table-head--deep"><button className={shown.length&&shown.every(row=>selected.includes(row.id))?'is-checked':''} onClick={toggleShown} aria-label="Select all shown listings">{shown.length&&shown.every(row=>selected.includes(row.id))&&<Check size={12}/>}</button><span>PRODUCT</span><span>GROUP / TYPE</span><span>PRICE</span><span>STATUS</span><span>STOCK</span><span>READY / SEO</span><span/></div><div className="admin-catalog-list">{shown.length ? shown.map(product => <CatalogRow product={product} onDuplicate={onDuplicate} onDelete={onDelete} selected={selected.includes(product.id)} onToggle={toggle} key={product.id}/>) : <div className="admin-empty"><Package size={24}/><strong>No products found</strong><span>Try a different search, group or automatic signal.</span><button className="admin-text-button" onClick={clearFilters}>Reset catalogue filters</button></div>}</div></section><div className="admin-footnote"><span><Lock size={13}/> Custom fields are controlled per listing; design composition stays locked. SEO indexability is a separate review gate.</span><span>{shown.length} of {rows.length} products</span></div></main>
+  const shown = useMemo(() => rows.filter(product => `${product.name} ${product.sku} ${product.type} ${product.productGroup} ${(product.tags||[]).join(' ')} ${deriveAutomaticTags(product).join(' ')} ${(product.seoBlockReasons||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase())).filter(product => status === 'ALL' || product.status === status).filter(product => seoStatus === 'ALL' || product.seoStatus === seoStatus).filter(product => variantStatus === 'ALL' || Number(product._draftVariantCount || (product.variants || []).filter(variant => variant.status === 'DRAFT').length) > 0).filter(product => group === 'ALL' || product.productGroup === group).filter(product => tag === 'ALL' || [...(product.tags||[]),...deriveAutomaticTags(product)].includes(tag)).sort((a,b)=>sort==='TITLE'?a.name.localeCompare(b.name):sort==='STOCK'?(b.inventory||0)-(a.inventory||0):String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))), [rows, query, status, seoStatus, variantStatus, group, tag, sort])
+  const pageSize = 60
+  const pageCount = Math.max(1,Math.ceil(shown.length / pageSize))
+  const currentPage = Math.min(page,pageCount)
+  const pageRows = shown.slice((currentPage - 1) * pageSize,currentPage * pageSize)
+  useEffect(()=>setPage(1),[query,status,seoStatus,variantStatus,group,tag,sort])
+  const clearFilters=()=>{setQuery('');setStatus('ALL');setSeoStatus('ALL');setVariantStatus('ALL');setGroup('ALL');setTag('ALL')}
+  const toggle=id=>{if(bulkBusy)return;setSelected(current=>current.includes(id)?current.filter(item=>item!==id):[...current,id])}
+  const toggleShown=()=>{if(!catalogReady || bulkBusy)return;setSelected(current=>shown.every(row=>current.includes(row.id))?current.filter(id=>!shown.some(row=>row.id===id)):[...new Set([...current,...shown.map(row=>row.id)])])}
+  const applyBulk=async()=>{
+    if(!catalogReady){setBulkNotice('Wait for the full live catalogue before making a bulk change.');return}
+    if(!selected.length || bulkBusy)return
+    const stock = Number(bulkValue)
+    if(bulkAction === 'ACTIVATE_DRAFT_VARIANTS'){
+      if(!Number.isSafeInteger(stock) || stock < 1 || stock > 1000000){setBulkNotice('Enter whole-number stock from 1 to 1,000,000 per Draft variation.');return}
+      if(!window.confirm(`Activate priced Draft variations in ${selected.length} selected listing${selected.length === 1 ? '' : 's'} and set each activated variation to ${stock.toLocaleString()} units? Listing publish status will not change.`))return
+    }
+    setBulkBusy(true);setBulkReport(null);setBulkNotice(`Processing 0 of ${selected.length} listings…`)
+    try{
+      const result=await onBulkUpdate?.(selected,bulkAction,bulkAction === 'ACTIVATE_DRAFT_VARIANTS' ? stock : bulkValue,progress=>{
+        setBulkNotice(`Processing ${progress.processed} of ${progress.total} listings · ${progress.updated} updated${progress.failed ? ` · ${progress.failed} failed` : ''}…`)
+      })
+      if(result?.cancelled){setBulkNotice('Bulk change cancelled.');return}
+      if(result?.error){setBulkNotice(`Not saved: ${result.error}`);return}
+      setBulkReport(result)
+      setBulkNotice(`${result.updated} listing${result.updated === 1 ? '' : 's'} updated${bulkAction === 'ACTIVATE_DRAFT_VARIANTS' ? ` · ${result.activated} Draft variation${result.activated === 1 ? '' : 's'} activated at ${stock.toLocaleString()} units each` : ''}${result.ineligibleVariants ? ` · ${result.ineligibleVariants} unpriced Draft variations left unchanged` : ''}${result.skipped ? ` · ${result.skipped} listings skipped` : ''}${result.failures?.length ? ` · ${result.failures.length} failed` : ''}.`)
+      if(!result.failures?.length)setSelected([])
+    }catch(error){setBulkNotice(`Not saved: ${error instanceof Error ? error.message : 'Bulk update failed.'}`)}
+    finally{setBulkBusy(false)}
+  }
+  return <main className="admin-page admin-catalog"><PageIntro eyebrow="CATALOG / LISTING OPERATIONS" title="THE DROP, IN ORDER." copy={`${shown.length} shown · ${rows.length}${catalogLoad.total != null ? ` of ${catalogLoad.total}` : ''} loaded${catalogLoad.complete ? '' : ' · loading catalogue…'}. Filter, select and update related listings without opening each workspace.`} action="New product" onAction={() => go('/admin/products/new')}/><div className="admin-catalog-toolbar admin-catalog-toolbar--deep"><label className="admin-search admin-search--large"><Search size={16}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Title, SKU, type, group, SEO reason"/></label><label className="admin-catalog-select"><span>Storefront</span><select value={status} onChange={event=>setStatus(event.target.value)}><option>ALL</option><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>SEO gate</span><select value={seoStatus} onChange={event=>setSeoStatus(event.target.value)}><option>ALL</option><option>BLOCKED</option><option>READY</option><option>INDEXABLE</option></select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Variations</span><select value={variantStatus} onChange={event=>setVariantStatus(event.target.value)}><option value="ALL">ALL</option><option value="HAS_DRAFT">HAS DRAFT</option></select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Group</span><select value={group} onChange={event=>setGroup(event.target.value)}><option>ALL</option>{groups.map(item=><option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Tag / signal</span><select value={tag} onChange={event=>setTag(event.target.value)}><option>ALL</option>{tags.map(item=><option key={item}>{item}</option>)}</select><ChevronDown size={13}/></label><label className="admin-catalog-select"><span>Sort</span><select value={sort} onChange={event=>setSort(event.target.value)}><option>UPDATED</option><option>TITLE</option><option>STOCK</option></select><ChevronDown size={13}/></label><button className="admin-text-button" disabled={query===''&&status==='ALL'&&seoStatus==='ALL'&&variantStatus==='ALL'&&group==='ALL'&&tag==='ALL'} title={query===''&&status==='ALL'&&seoStatus==='ALL'&&variantStatus==='ALL'&&group==='ALL'&&tag==='ALL'?'No filters are active.':'Clear every catalogue filter.'} onClick={clearFilters}>Clear filters</button></div>{!catalogLoad.complete&&<div className="admin-banner-notice" role="status">{catalogLoad.source === 'error' ? 'Live catalogue could not load. Refresh Admin to retry.' : catalogLoad.source === 'partial' ? `Loaded ${catalogLoad.loaded}${catalogLoad.total != null ? ` of ${catalogLoad.total}` : ''} listings; a later page failed. Refresh to retry before bulk changes.` : `Loading catalogue: ${catalogLoad.loaded}${catalogLoad.total != null ? ` / ${catalogLoad.total}` : ''} listings. Bulk changes unlock after loading completes.`}</div>}{selected.length>0&&<div className="admin-bulk-bar"><strong>{selected.length} selected</strong><select value={bulkAction} disabled={bulkBusy} onChange={event=>{setBulkAction(event.target.value);setBulkValue(event.target.value==='ACTIVATE_DRAFT_VARIANTS'?'1000':'')}}><option value="PUBLISHED">Publish storefront (SEO stays gated)</option><option value="DRAFT">Move to draft</option><option value="ARCHIVED">Archive</option><option value="DELETE">Delete permanently</option><option value="ADD_TAG">Add tag</option><option value="SET_GROUP">Set group</option><option value="ACTIVATE_DRAFT_VARIANTS">Activate priced Draft variants + set stock</option></select>{['ADD_TAG','SET_GROUP'].includes(bulkAction)&&<input value={bulkValue} disabled={bulkBusy} onChange={event=>setBulkValue(event.target.value)} placeholder={bulkAction==='ADD_TAG'?'tag-name':'Product group'}/>}{bulkAction==='ACTIVATE_DRAFT_VARIANTS'&&<label className="admin-bulk-stock">Stock per Draft variant <input type="number" min="1" max="1000000" step="1" value={bulkValue} disabled={bulkBusy} onChange={event=>setBulkValue(event.target.value)}/></label>}<button onClick={applyBulk} disabled={bulkBusy || !catalogReady}>{bulkBusy?'Updating…':'Apply'}</button><button onClick={()=>setSelected([])} disabled={bulkBusy}>Clear</button><span role={bulkNotice.startsWith('Not saved:')?'alert':'status'}>{bulkNotice}</span></div>}{bulkReport?.failures?.length>0&&<details className="admin-banner-notice"><summary>{bulkReport.failures.length} listings need attention</summary>{bulkReport.failures.slice(0,20).map(item=><p key={item.id}>{item.name}: {item.error}</p>)}</details>}<section className="admin-panel admin-catalog-panel"><div className="admin-table-head admin-table-head--deep"><button className={shown.length&&shown.every(row=>selected.includes(row.id))?'is-checked':''} onClick={toggleShown} disabled={bulkBusy || !catalogReady} title={!catalogReady?'Wait for the full catalogue before selecting all.':'Select all filtered listings across every page'} aria-label="Select all filtered listings">{shown.length&&shown.every(row=>selected.includes(row.id))&&<Check size={12}/>}</button><span>PRODUCT</span><span>GROUP / TYPE</span><span>PRICE</span><span>STATUS</span><span>STOCK</span><span>READY / SEO</span><span/></div><div className="admin-catalog-list">{shown.length ? pageRows.map(product => <CatalogRow product={product} onDuplicate={onDuplicate} onDelete={onDelete} selected={selected.includes(product.id)} onToggle={toggle} key={product.id}/>) : <div className="admin-empty"><Package size={24}/><strong>No products found</strong><span>Try a different search, group or automatic signal.</span><button className="admin-text-button" onClick={clearFilters}>Reset catalogue filters</button></div>}</div></section>{shown.length>pageSize&&<nav className="admin-catalog-pagination" aria-label="Catalogue pages"><button type="button" onClick={()=>setPage(Math.max(1,currentPage-1))} disabled={currentPage===1}>Previous</button><span>Page {currentPage} of {pageCount} · {shown.length} filtered listings</span><button type="button" onClick={()=>setPage(Math.min(pageCount,currentPage+1))} disabled={currentPage===pageCount}>Next</button></nav>}<div className="admin-footnote"><span><Lock size={13}/> Custom fields are controlled per listing; design composition stays locked. SEO indexability is a separate review gate.</span><span>{shown.length ? `${(currentPage-1)*pageSize+1}–${(currentPage-1)*pageSize+pageRows.length} of ${shown.length} filtered` : `0 of ${rows.length} products`}</span></div></main>
 }
 
 function IntegrationCard({ icon: Icon, label, title, copy, status, action, onAction }) {
@@ -263,13 +301,14 @@ export default function AdminApp() { return <AdminAccess><AdminWorkspace/></Admi
 
 function AdminWorkspace() {
   const [path, setPath] = useState(window.location.pathname)
-  const [productRows, setProductRows] = useState(adminProducts)
+  const [productRows, setProductRows] = useState([])
   const [themeDraft, setThemeDraft] = useState(adminTheme)
   const [menuRows, setMenuRows] = useState(adminMenus)
   const [collectionRows, setCollectionRows] = useState(adminCollections)
-  const [source, setSource] = useState('supabase')
+  const [source, setSource] = useState('loading')
   const [loading, setLoading] = useState(true)
   const [loadNotice, setLoadNotice] = useState('')
+  const [catalogLoad, setCatalogLoad] = useState({ source:'loading', loaded:0, total:null, complete:false })
   const [badges, setBadges] = useState({ orders: 0, custom: 0, products: 0, membership: 0 })
   const loadSequence = useRef(0)
 
@@ -312,17 +351,22 @@ function AdminWorkspace() {
   const load = async () => {
     const sequence = ++loadSequence.current
     setLoading(true); setLoadNotice('')
-    const mergeCatalogPage = rows => {
-      if (sequence !== loadSequence.current || !Array.isArray(rows) || !rows.length) return
+    setSource('loading')
+    setCatalogLoad({ source:'loading', loaded:0, total:null, complete:false })
+    const mergeCatalogPage = (rows, progress = {}) => {
+      if (sequence !== loadSequence.current || !Array.isArray(rows)) return
       setProductRows(current => {
+        if (progress.page === 0) return rows
         const byId = new Map(current.map(row => [row.id, row]))
         rows.forEach(row => byId.set(row.id, row))
         return [...byId.values()].sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
       })
+      setCatalogLoad(current => ({ source:'supabase', loaded:Math.max(current.loaded,Number(progress.loaded || 0)), total:progress.total ?? current.total, complete:Boolean(progress.done) }))
     }
     const catalogError = error => {
       if (sequence !== loadSequence.current) return
       const message = error instanceof Error ? error.message : String(error || 'Background catalogue request failed.')
+      setCatalogLoad(current => ({ ...current, source:'partial', complete:false }))
       setLoadNotice(`Catalogue loaded partially; remaining listings could not be loaded (${message}). Click Refresh to retry.`)
     }
     try {
@@ -330,14 +374,19 @@ function AdminWorkspace() {
       // Each workspace data source has its own deadline and can fall back
       // independently while the rest of Admin remains usable.
       const [productResult, themeResult, menuResult, collectionResult] = await Promise.all([
-        loadPart(fetchAdminProducts({ onPage: mergeCatalogPage, onError: catalogError }), adminProducts, 'Catalog'),
+        loadPart(fetchAdminProducts({ onPage: mergeCatalogPage, onError: catalogError }), [], 'Catalog'),
         loadPart(fetchAdminTheme(), adminTheme, 'Theme'),
         loadPart(fetchAdminMenus(), adminMenus, 'Menus'),
         loadPart(fetchAdminCollections(), adminCollections, 'Collections')
       ])
-      const products = productResult.data?.length ? productResult.data : adminProducts
-      setProductRows(products)
-      updateBadges(products)
+      if (sequence !== loadSequence.current) return
+      const products = productResult.data || []
+      // The first page callback may already have received later pages while
+      // Theme/Menu/Collections were loading. Do not replace it with page 1.
+      if (productResult.source !== 'supabase') {
+        setProductRows([])
+        setCatalogLoad({ source:'error', loaded:0, total:null, complete:false })
+      }
       if (themeResult.data) setThemeDraft(themeResult.data)
       const collections = collectionResult.data?.length ? collectionResult.data : adminCollections
       setCollectionRows(collections)
@@ -348,14 +397,15 @@ function AdminWorkspace() {
         pages: themeResult.data?.pages || adminTheme.pages
       }))
       const isLive = [productResult, themeResult, menuResult, collectionResult].every(result => result.source === 'supabase' && !result.error)
-      setSource(isLive ? 'supabase' : 'preview')
+      setSource(isLive ? 'supabase' : productResult.source === 'supabase' ? 'partial' : 'preview')
       if (!isLive) {
-        const err = [productResult, themeResult, menuResult, collectionResult].find(r => r.error)?.error
-        if (err) setLoadNotice(`Operating in preview mode (${err}). Click Refresh to retry live connection.`)
+        const failures = [['Catalog',productResult],['Theme',themeResult],['Menus',menuResult],['Collections',collectionResult]].filter(([,result]) => result.error).map(([name,result]) => `${name}: ${result.error}`)
+        if (failures.length) setLoadNotice(`Some Admin data is unavailable (${failures.join(' · ')}). Click Refresh to retry.`)
       }
     } catch (error) {
       console.error('Admin load error:', error)
-      setProductRows(adminProducts)
+      setProductRows([])
+      setCatalogLoad({ source:'error', loaded:0, total:null, complete:false })
       setThemeDraft(adminTheme)
       setMenuRows(adminMenus)
       setCollectionRows(adminCollections)
@@ -366,6 +416,7 @@ function AdminWorkspace() {
     }
   }
   useEffect(() => { const onPop = () => setPath(window.location.pathname); window.addEventListener('popstate', onPop); load(); return () => window.removeEventListener('popstate', onPop) }, [])
+  useEffect(() => { if (catalogLoad.complete) updateBadges(productRows) }, [catalogLoad.complete, productRows.length])
   const saveProduct = useCallback(product => setProductRows(current => current.some(item => item.id === product.id) ? current.map(item => item.id === product.id ? product : item) : [...current, product]), [])
   const deleteProduct = useCallback(async productId => {
     const result = await deleteAdminProduct(productId)
@@ -390,32 +441,28 @@ function AdminWorkspace() {
     saveProduct(copy)
     go(`/admin/products/${copy.id}`)
   }
-  const bulkUpdateProducts = async (ids,action,value) => {
+  const bulkUpdateProducts = async (ids,action,value,onProgress) => {
     const targets=productRows.filter(product=>ids.includes(product.id))
     if(!targets.length)return {error:'Select at least one listing.'}
     if(action === 'DELETE') {
-      if(!window.confirm(`Permanently delete ${targets.length} listing${targets.length === 1 ? '' : 's'}? This action cannot be undone.`)) return { error: null }
-      const errors = []
+      if(!window.confirm(`Permanently delete ${targets.length} listing${targets.length === 1 ? '' : 's'}? This action cannot be undone.`)) return { cancelled:true }
+      const failures = []
       const deletedIds = []
       for(const product of targets) {
         const result = await deleteAdminProduct(product.id)
-        if(result.error) errors.push(`${product.name || product.id}: ${result.error}`)
+        if(result.error) failures.push({ id:product.id, name:product.name || product.id, error:result.error })
         else deletedIds.push(product.id)
+        onProgress?.({ processed:deletedIds.length + failures.length, total:targets.length, updated:deletedIds.length, failed:failures.length })
       }
       if(deletedIds.length) setProductRows(current => current.filter(row => !deletedIds.includes(row.id)))
-      if(errors.length) return { error: errors.join('; ') }
-      return { data: deletedIds }
+      return { updated:deletedIds.length, activated:0, skipped:0, failures }
     }
-    if(['ADD_TAG','SET_GROUP'].includes(action)&&!value.trim())return {error:'Enter a value for the bulk change.'}
-    const saved=[]
-    for(const product of targets){
-      const candidate=action==='ADD_TAG'?{...product,tags:[...new Set([...(product.tags||[]),value.trim().toLowerCase().replace(/\s+/g,'-')])]}:action==='SET_GROUP'?{...product,productGroup:value.trim()}:{...product,status:action}
-      const result=await saveAdminProduct(candidate)
-      if(result.error){if(saved.length)setProductRows(current=>current.map(row=>saved.find(item=>item.id===row.id)||row));return {error:`${product.name}: ${result.error}`}}
-      saved.push(result.data)
+    const result=await runAdminCatalogBulk(targets,action,value,{fetchProduct:fetchAdminProduct,saveProduct:saveAdminProduct,onProgress})
+    if(result.data?.length){
+      const byId=new Map(result.data.map(row=>[row.id,row]))
+      setProductRows(current=>current.map(row=>byId.get(row.id)||row))
     }
-    setProductRows(current=>current.map(row=>saved.find(item=>item.id===row.id)||row))
-    return {data:saved}
+    return result
   }
   const persistTheme = async theme => { setThemeDraft(theme); return saveAdminTheme(theme) }
   const persistMenus = async menus => { setMenuRows(menus); return saveAdminMenus(menus) }
@@ -423,10 +470,10 @@ function AdminWorkspace() {
   if (loading && !productRows.length) return <main className="admin-access"><p role="status">Loading store data…</p></main>
   const isEditor = path.startsWith('/admin/products/')
   const active = path === '/admin/bridge' ? 'bridge' : path.startsWith('/admin/orders') ? 'orders' : path.startsWith('/admin/membership') ? 'membership' : path.startsWith('/admin/customizations') ? 'customizations' : isEditor || path === '/admin/catalog' ? 'catalog' : path.startsWith('/admin/theme/menus') ? 'menus' : path.startsWith('/admin/theme') ? 'theme' : path.startsWith('/admin/collections') ? 'collections' : path === '/admin/settings' ? 'settings' : 'overview'
-  let page = <AdminOverview products={productRows}/>
+  let page = <AdminOverview products={productRows} catalogLoad={catalogLoad}/>
   if (path === '/admin/bridge') page = <PodBridgeReceiver products={productRows} onSaved={saveProduct}/>
   else if (path.startsWith('/admin/orders')) page = <AdminOrders/>
-  else if (path === '/admin/catalog') page = <AdminCatalog products={productRows} onDuplicate={duplicateProduct} onDelete={deleteProduct} onBulkUpdate={bulkUpdateProducts}/>
+  else if (path === '/admin/catalog') page = <AdminCatalog products={productRows} onDuplicate={duplicateProduct} onDelete={deleteProduct} onBulkUpdate={bulkUpdateProducts} catalogLoad={catalogLoad}/>
   else if (isEditor) page = <ListingWorkspace key={path} products={productRows} onSaved={saveProduct} onDuplicate={saveProduct} onDelete={deleteProduct}/>
   else if (path.startsWith('/admin/membership')) page = <AdminMembership/>
   else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
@@ -434,5 +481,6 @@ function AdminWorkspace() {
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} onSave={persistMenus}/>
   else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
-  return <AdminShell active={active} source={source} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>
+  const displaySource = catalogLoad.source === 'partial' ? 'partial' : catalogLoad.source === 'error' ? 'preview' : source
+  return <AdminShell active={active} source={displaySource} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>
 }

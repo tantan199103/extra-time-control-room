@@ -155,6 +155,29 @@ export function deriveAutomaticTags(product) {
   return [...new Set(tags.filter(Boolean))]
 }
 
+// A catalogue bulk action must never invent a selling price or unarchive an
+// old variation.  Only priced Draft rows can become sellable; the product's
+// publication and search status remain a separate editorial decision.
+export function prepareDraftVariantActivation(product, stock = 1000) {
+  const quantity = Number(stock)
+  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000000) {
+    throw new Error('Stock per variation must be a whole number from 1 to 1,000,000.')
+  }
+  if (product.status === 'ARCHIVED') return { product, activated: 0, skipped: 0, reason: 'Archived listing' }
+  let activated = 0
+  let skipped = 0
+  const variants = (product.variants || []).map(variant => {
+    if (variant.status !== 'DRAFT') return variant
+    if (!String(variant.sku || '').trim() || !(Number(variant.price) > 0)) {
+      skipped += 1
+      return variant
+    }
+    activated += 1
+    return { ...variant, status: 'ACTIVE', inventory: quantity }
+  })
+  return { product: { ...product, variants }, activated, skipped, reason: activated ? '' : 'No priced Draft variants' }
+}
+
 export function productCompleteness(product) {
   const summaryHasVariants = product._catalogSummary
     ? Number(product._variantCount || 0) > 0

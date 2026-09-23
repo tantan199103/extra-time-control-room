@@ -198,31 +198,34 @@ const ADMIN_PRODUCT_LEGACY_FIELDS = [
 ].join(',')
 
 const ADMIN_PRODUCT_PAGE_SIZE = 200
-const ADMIN_PRODUCT_MAX_PAGES = 25
+const ADMIN_PRODUCT_MAX_PAGES = 100
 
 async function fetchAdminProductPages(fields, includeVariantCount = false, { onPage, onError, progressive = false } = {}) {
-  const select = includeVariantCount ? `${fields},pod_product_variants(count)` : fields
+  const select = includeVariantCount
+    ? `${fields},active_variants:pod_product_variants(count),draft_variants:pod_product_variants(count)`
+    : fields
   const readPage = async page => {
     const from = page * ADMIN_PRODUCT_PAGE_SIZE
-    const { data, error } = await supabase
-      .from('pod_products')
-      .select(select)
-      .order('updated_at', { ascending: false })
-      .order('id', { ascending: true })
-      .range(from, from + ADMIN_PRODUCT_PAGE_SIZE - 1)
-    if (error) throw error
-    return Array.isArray(data) ? data : []
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      let query = supabase.from('pod_products').select(select, page === 0 ? { count: 'exact' } : undefined)
+      if (includeVariantCount) query = query.eq('active_variants.status', 'ACTIVE').eq('draft_variants.status', 'DRAFT')
+      const { data, error, count } = await query
+        .order('updated_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, from + ADMIN_PRODUCT_PAGE_SIZE - 1)
+      if (!error) return { rows: Array.isArray(data) ? data : [], total: Number.isInteger(count) ? count : null }
+      if (attempt === 2) throw new Error(`Catalogue page ${page + 1}: ${error.message}`)
+      await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)))
+    }
   }
 
   const normalizeSummaryPage = rows => rows.map(row => {
-    const countRow = Array.isArray(row.pod_product_variants) ? row.pod_product_variants[0] : null
-    const variantCount = countRow && Number.isFinite(Number(countRow.count)) ? Number(countRow.count) : null
+    const countOf = key => Array.isArray(row[key]) && row[key][0]?.count != null ? Number(row[key][0].count) : null
     const normalized = normalizeProduct({
       ...row,
-      // `pod_product_variants(count)` is only a catalogue hint.  Never let
-      // the count object masquerade as a real editable variant.
       pod_product_variants: [],
-      _variantCount: variantCount,
+      _variantCount: countOf('active_variants'),
+      _draftVariantCount: countOf('draft_variants'),
       _catalogSummary: true
     })
     return normalized
@@ -232,27 +235,43 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
   // imported catalogue routinely exceeds PostgREST's statement/response
   // budget. Four concurrent windows keep the first paint quick without
   // opening an unbounded number of database requests.
-  const firstPage = await readPage(0)
-  if (firstPage.length) onPage?.(normalizeSummaryPage(firstPage), { page: 0, done: firstPage.length < ADMIN_PRODUCT_PAGE_SIZE })
-  if (firstPage.length < ADMIN_PRODUCT_PAGE_SIZE) return firstPage
+  const first = await readPage(0)
+  const firstPage = normalizeSummaryPage(first.rows)
+  const total = first.total
+  const firstDone = firstPage.length < ADMIN_PRODUCT_PAGE_SIZE || total != null && firstPage.length >= total
+  onPage?.(firstPage, { page: 0, loaded: firstPage.length, total, done: firstDone })
+  if (firstDone) return firstPage
 
   const loadRemaining = async () => {
     const rows = []
     let page = 1
     while (page < ADMIN_PRODUCT_MAX_PAGES) {
-      const pageCount = Math.min(4, ADMIN_PRODUCT_MAX_PAGES - page)
-      const pages = await Promise.all(
+      const remainingPages = total == null ? ADMIN_PRODUCT_MAX_PAGES - page : Math.ceil(total / ADMIN_PRODUCT_PAGE_SIZE) - page
+      if (remainingPages <= 0) return rows
+      const pageCount = Math.min(4, remainingPages, ADMIN_PRODUCT_MAX_PAGES - page)
+      const results = await Promise.allSettled(
         Array.from({ length: pageCount }, (_, index) => page + index).map(readPage)
       )
+      const failures = results.filter(result => result.status === 'rejected')
       let reachedEnd = false
-      pages.forEach((chunk, index) => {
+      results.forEach((result, index) => {
+        if (result.status !== 'fulfilled') return
+        const chunk = normalizeSummaryPage(result.value.rows)
         rows.push(...chunk)
         if (chunk.length < ADMIN_PRODUCT_PAGE_SIZE) reachedEnd = true
-        if (chunk.length) onPage?.(normalizeSummaryPage(chunk), { page: page + index, done: chunk.length < ADMIN_PRODUCT_PAGE_SIZE })
+        onPage?.(chunk, {
+          page: page + index,
+          loaded: firstPage.length + rows.length,
+          total,
+          done: !failures.length && (total != null ? firstPage.length + rows.length >= total : reachedEnd)
+        })
       })
+      if (failures.length) throw new Error(failures.map(result => result.reason?.message || 'A catalogue page failed.').join(' '))
       if (reachedEnd) break
-      page += pages.length
+      page += results.length
     }
+    if (total != null && firstPage.length + rows.length < total) throw new Error(`Catalogue stopped at ${firstPage.length + rows.length} of ${total} products.`)
+    if (page >= ADMIN_PRODUCT_MAX_PAGES) throw new Error(`Catalogue exceeded ${ADMIN_PRODUCT_MAX_PAGES * ADMIN_PRODUCT_PAGE_SIZE} products.`)
     return rows
   }
 
@@ -260,11 +279,10 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
   // progressive mode the caller receives the first page now and the rest is
   // intentionally detached from the initial Admin render.
   if (progressive) {
-    const background = loadRemaining().catch(error => {
+    loadRemaining().catch(error => {
       onError?.(error)
-      return []
     })
-    return { firstPage, background }
+    return { firstPage, total }
   }
   return [...firstPage, ...(await loadRemaining())]
 }
@@ -300,13 +318,7 @@ export async function fetchAdminProducts({ onPage, onError } = {}) {
     // the control-room shell.
     const result = await fetchAdminProductPages(ADMIN_PRODUCT_SUMMARY_FIELDS, true, { onPage, onError, progressive: Boolean(onPage) })
     const data = Array.isArray(result) ? result : result.firstPage
-    if (data.length) return { data: data.map(row => normalizeProduct({
-      ...row,
-      pod_product_variants: [],
-      _variantCount: Array.isArray(row.pod_product_variants) && row.pod_product_variants[0]?.count != null ? Number(row.pod_product_variants[0].count) : null,
-      _catalogSummary: true
-    })), source: 'supabase', error: null }
-    return { data: adminProducts, source: 'preview', error: 'No catalogue rows were returned for this admin session.' }
+    return { data, total: Array.isArray(result) ? data.length : result.total, source: 'supabase', error: null }
   } catch (err) {
     // Keep older projects usable when the additive listing migration has not
     // been applied yet. This legacy projection is still paginated and avoids
@@ -315,13 +327,11 @@ export async function fetchAdminProducts({ onPage, onError } = {}) {
     try {
       const result = await fetchAdminProductPages(ADMIN_PRODUCT_LEGACY_FIELDS, false, { onPage, onError, progressive: Boolean(onPage) })
       const data = Array.isArray(result) ? result : result.firstPage
-      if (data.length) return { data: data.map(row => normalizeProduct({ ...row, _catalogSummary: true })), source: 'supabase', error: null }
+      return { data, total: Array.isArray(result) ? data.length : result.total, source: 'supabase', error: null }
     } catch (legacyError) {
       onError?.(legacyError)
-      return { data: adminProducts, source: 'preview', error: legacyError instanceof Error ? legacyError.message : 'Product query failed.' }
+      return { data: [], source: 'error', error: legacyError instanceof Error ? legacyError.message : 'Product query failed.' }
     }
-    onError?.(err)
-    return { data: adminProducts, source: 'preview', error: err instanceof Error ? err.message : 'Product query failed.' }
   }
 }
 
