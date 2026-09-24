@@ -40,7 +40,8 @@ import {
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isHeadwearProduct, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
 import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, productMatchesTaxonomy, productTaxonomyValues, teamMascot, teamPath } from './lib/league-taxonomy'
-import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
+import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
+import CategoryIcon from './CategoryIcon'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { listingMediaRole } from './lib/listing-media'
 import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollectionPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
@@ -188,8 +189,8 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
   const baseLinks = (configured.length ? configured : defaults).map(item => {
     if (menuTarget(item.target,customProduct) !== '/shop' || !/^shop$/i.test(String(item.label || ''))) return item
     return { ...item, type:'CATEGORY_INDEX', children:[
-      { id:'category-all', label:'All gear', target:'/shop', type:'PAGE' },
-      ...visibleCategories.map(category => ({ id:`category-${category.handle}`, label:category.label, target:`/category/${category.handle}`, type:'CATEGORY' }))
+      { id:'category-all', label:'All gear', target:'/shop', type:'PAGE', icon:'all' },
+      ...visibleCategories.map(category => ({ id:`category-${category.handle}`, label:category.label, target:`/category/${category.handle}`, type:'CATEGORY', icon:category.icon }))
     ] }
   })
   const withTaxonomy = baseLinks.some(item => item.type === 'TAXONOMY' || /league/i.test(item.label || ''))
@@ -233,7 +234,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
       <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
-          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><button className="mobile-menu__league" onClick={() => openLink(league)}>{league.representativeImage && <img src={league.representativeImage} alt="" />}<strong>{league.label}</strong><ArrowRight size={13}/></button>{league.children?.slice(0,4).map(team => <button className="mobile-menu__team" key={team.id} onClick={() => openLink(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>}{item.type === 'CATEGORY_INDEX' && <div className="mobile-menu__taxonomy mobile-menu__categories">{item.children.map(category => <a key={category.id} href={category.target} onClick={event => { event.preventDefault(); openLink(category) }}>{category.label}<ArrowRight size={13}/></a>)}</div>}</React.Fragment>)}
+          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><button className="mobile-menu__league" onClick={() => openLink(league)}>{league.representativeImage && <img src={league.representativeImage} alt="" />}<strong>{league.label}</strong><ArrowRight size={13}/></button>{league.children?.slice(0,4).map(team => <button className="mobile-menu__team" key={team.id} onClick={() => openLink(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>}{item.type === 'CATEGORY_INDEX' && <div className="mobile-menu__taxonomy mobile-menu__categories">{item.children.map(category => <a key={category.id} href={category.target} onClick={event => { event.preventDefault(); openLink(category) }}><span className="mobile-menu__category-icon"><CategoryIcon kind={category.icon || 'all'} size={17}/></span><span>{category.label}</span><ArrowRight size={13}/></a>)}</div>}</React.Fragment>)}
           {!hasClubLink && <button onClick={() => { navigate('/membership'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>90+ CLUB<ArrowRight /></button>}
           {!hasCustomLink && <button onClick={() => { openLink({target:'/custom'}); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>CUSTOM LAB<ArrowRight /></button>}
           {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+(hasClubLink?1:2)).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
@@ -253,7 +254,7 @@ function MegaMenu({ item, customProduct, onNavigate }) {
   return (
     <div className={`mega-menu ${taxonomy ? 'mega-menu--taxonomy' : ''} ${categoryIndex ? 'mega-menu--categories' : ''}`}>
       <div className="mega-menu__index">{taxonomy ? <><strong className="mega-menu__index-copy">FIND<br />YOUR<br />TEAM</strong></> : categoryIndex ? <>FIND<br />YOUR<br />GEAR</> : item.label === 'CUSTOM LAB' ? <>MAKE<br />YOUR<br />MOMENT</> : <>FIND<br />YOUR<br />MOMENT</>}<span>90+</span></div>
-      {categoryIndex ? <div className="mega-menu__category-grid"><p>SHOP BY PRODUCT</p><div>{children.map(child => <a key={child.id} href={child.target} onClick={event => { event.preventDefault(); onNavigate(child) }}>{child.label}<ArrowRight size={15}/></a>)}</div></div> : taxonomy ? <>
+      {categoryIndex ? <div className="mega-menu__category-grid"><p>SHOP BY PRODUCT</p><div>{children.map(child => <a key={child.id} href={child.target} onClick={event => { event.preventDefault(); onNavigate(child) }}><span className="mega-menu__category-icon"><CategoryIcon kind={child.icon || 'all'} size={20}/></span><span>{child.label}</span><ArrowRight size={15}/></a>)}</div></div> : taxonomy ? <>
         <div className="mega-menu__taxonomy-leagues"><p>SHOP BY LEAGUE</p>{children.map(child => <a href={child.target} key={child.id || child.label} onClick={event => { event.preventDefault(); onNavigate(child) }}>{child.representativeImage && <img src={child.representativeImage} alt="" /> }<span><strong>{child.label}</strong><small>{child.sport || 'Team collections'}</small></span><ArrowRight size={15} /></a>)}</div>
         <div className="mega-menu__taxonomy-teams"><p>POPULAR TEAMS</p>{children.map(league => <div key={league.id}><span>{league.label}</span>{(league.children || []).slice(0,6).map(team => <a className={team.representativeFallback ? 'is-fallback' : ''} key={team.id || team.label} href={team.target} onClick={event => { event.preventDefault(); onNavigate(team) }}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</a>)}</div>)}</div>
       </> : <>
@@ -533,7 +534,7 @@ function ProductCard({ product, onQuickView, className = '' }) {
         <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.preventDefault(); event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
       </a>
       <a className="product-card__info" href={`/product/${product.handle || product.id}`} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(event.currentTarget.getAttribute('href')) } }}>
-        <span><strong>{product.name}</strong><small>{product.meta}</small><em>{product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP'}</em></span>
+        <span><strong>{product.name}</strong><small className="product-card__meta"><CategoryIcon kind={catalogIconForProduct(product)} size={14}/>{product.meta}</small><em>{product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP'}</em></span>
         <span className="product-card__price"><strong>{maxPrice > Number(product.price) ? `FROM ${money(product.price)}` : money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</span>
       </a>
       <div className="product-card__footer">
@@ -1172,7 +1173,7 @@ function Footer({ openSizeGuide, menus = [], customProduct, products = [] }) {
           </a>)}
         </div>
       </section>
-      <nav className="footer__categories" aria-label="Shop by product category"><span>SHOP BY PRODUCT</span>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}>{category.label}</a>)}</nav>
+      <nav className="footer__categories" aria-label="Shop by product category"><span>SHOP BY PRODUCT</span>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><CategoryIcon kind={category.icon} size={15}/>{category.label}</a>)}</nav>
       <div className="footer__links">
         {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(customProductTarget(customProduct))}>Custom lab</button></div>}
         <div><span>STUDIO</span><button onClick={() => navigate('/about')}>About Extra Time</button><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/journal')}>Journal</button></div>
@@ -1290,7 +1291,7 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
   }
   const categoryRows = navigationProducts.length ? navigationProducts : products
   const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
-  return <>{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}>{category.label}<ArrowRight size={16}/></a>)}</div></nav></>
+  return <>{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><span className="home-category-index__icon"><CategoryIcon kind={category.icon} size={22}/></span><span className="home-category-index__label">{category.label}</span><ArrowRight size={16}/></a>)}</div></nav></>
 }
 
 function Shop({ onQuickView, products, collection = null, category = null, page = 1, pagination = null }) {
@@ -1410,7 +1411,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
             </div>
           ) : (
             <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon">
-              <Sparkles size={16} />
+              <CategoryIcon kind={category?.icon || 'all'} size={19} />
             </div>
           )}
           <div className="catalog-compact-bar__title-group">
@@ -1430,7 +1431,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
           <span className="catalog-compact-bar__badge">{resultCount} {resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
         </div>
       </section>
-      {category && <section className="category-intro section"><p>{category.description}</p><nav aria-label="Related jersey categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}>{item.label}<ArrowRight size={13}/></a>)}</nav></section>}
+      {category && <section className="category-intro section"><p>{category.description}</p><nav aria-label="Related product categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav></section>}
       <StorefrontTrust compact />
       <div className="filter-bar">
         <div className="desktop-filters">

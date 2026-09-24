@@ -140,6 +140,8 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   if (parts[0] === 'category' && parts[1]) {
     const categoryMap = {
       accessories:['Caps','Knit Hats'],
+      caps:['Caps'],
+      'knit-hats':['Knit Hats'],
       'football-jerseys':['Football Jersey'],
       'baseball-jerseys':['Baseball Jersey'],
       'basketball-jerseys':['Basketball Jersey'],

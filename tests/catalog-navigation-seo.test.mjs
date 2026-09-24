@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
+import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from '../src/lib/catalog-pagination.js'
 import { findLeague, findTeam, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
 import { applyCollectionMembership, collectionMembershipDiff } from '../src/lib/collection-assignment.js'
@@ -14,6 +14,25 @@ test('category landing pages match the controlled catalogue taxonomy', () => {
   assert.equal(productMatchesCatalogCategory({ customFields:[{ key:'name' }] }, custom), true)
   assert.equal(productMatchesCatalogCategory({ customFields:[] }, custom), false)
   assert.equal(new Set(CATALOG_CATEGORY_PAGES.map(item => item.handle)).size, CATALOG_CATEGORY_PAGES.length)
+  assert.equal(catalogCategoryByHandle('caps').icon,'cap')
+  assert.equal(catalogCategoryByHandle('knit-hats').icon,'beanie')
+  assert.equal(productMatchesCatalogCategory({productGroup:'Caps'},catalogCategoryByHandle('caps')),true)
+  assert.equal(productMatchesCatalogCategory({productGroup:'Knit Hats'},catalogCategoryByHandle('knit-hats')),true)
+  assert.equal(productMatchesCatalogCategory({productGroup:'Caps'},catalogCategoryByHandle('knit-hats')),false)
+  assert.equal(catalogIconForProduct({productGroup:'Caps'}),'cap')
+  assert.equal(catalogIconForProduct({productGroup:'Knit Hats'}),'beanie')
+  assert.equal(catalogIconForProduct({productGroup:'Football Jersey',customFields:[{key:'name'}]}),'custom')
+})
+
+test('merchandise icons appear in menu, landing pages and product cards without replacing labels', async () => {
+  const source = await (await import('node:fs/promises')).readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
+  const icon = await (await import('node:fs/promises')).readFile(new URL('../src/CategoryIcon.jsx',import.meta.url),'utf8')
+  assert.match(source,/mega-menu__category-icon.*<CategoryIcon/)
+  assert.match(source,/mobile-menu__category-icon.*<CategoryIcon/)
+  assert.match(source,/home-category-index__icon.*<CategoryIcon/)
+  assert.match(source,/product-card__meta.*<CategoryIcon/)
+  assert.match(source,/catalog-compact-bar__avatar--icon[\s\S]*?<CategoryIcon kind=\{category\?\.icon/)
+  assert.match(icon,/aria-hidden/)
 })
 
 test('catalog pages get stable crawlable paths with one canonical per page', () => {

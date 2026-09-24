@@ -29,16 +29,18 @@ export const SEASON_DROP_OPTIONS = Object.freeze([
 ])
 
 export const CATALOG_CATEGORY_PAGES = Object.freeze([
-  { value:'Football Jerseys', handle:'football-jerseys', label:'Football jerseys', description:'Shop football jerseys and personalized fan gear with tracked US delivery.' },
-  { value:'Basketball Jerseys', handle:'basketball-jerseys', label:'Basketball jerseys', description:'Shop basketball jerseys and personalized fan gear for game day and beyond.' },
-  { value:'Baseball Jerseys', handle:'baseball-jerseys', label:'Baseball jerseys', description:'Shop baseball jerseys and personalized fan gear with clear size and delivery details.' },
-  { value:'Hockey Jerseys', handle:'hockey-jerseys', label:'Hockey jerseys', description:'Shop hockey jerseys and fan gear with tracked delivery across supported destinations.' },
-  { value:'Soccer Jerseys', handle:'soccer-jerseys', label:'Soccer jerseys', description:'Shop soccer jerseys and personalized fan gear built for match day.' },
-  { value:'Fan Apparel', handle:'fan-apparel', label:'Fan apparel', description:'Explore fan apparel, layers and match-day pieces from Jersevo.' },
-  { value:'Custom Jerseys', handle:'custom-jerseys', label:'Custom jerseys', description:'Choose a fixed jersey design and add the name and number that make it yours.' },
-  { value:'Accessories', handle:'accessories', label:'Accessories', description:'Explore sports accessories and considered fan details from Jersevo.' },
-  { value:'Collectibles', handle:'collectibles', label:'Collectibles', description:'Browse sports collectibles and keepsakes selected for the archive.' },
-  { value:'Fan Gear', handle:'fan-gear', label:'Fan gear', description:'Browse Jersevo fan gear across leagues, teams and match-day moments.' }
+  { value:'Caps', handle:'caps', label:'Caps', icon:'cap', description:'Shop fitted, adjustable and snapback caps across leagues and teams.' },
+  { value:'Knit Hats', handle:'knit-hats', label:'Knit hats', icon:'beanie', description:'Explore knit hats and beanies for game day and colder weather.' },
+  { value:'Football Jerseys', handle:'football-jerseys', label:'Football jerseys', icon:'jersey', description:'Shop football jerseys and personalized fan gear with tracked US delivery.' },
+  { value:'Basketball Jerseys', handle:'basketball-jerseys', label:'Basketball jerseys', icon:'jersey', description:'Shop basketball jerseys and personalized fan gear for game day and beyond.' },
+  { value:'Baseball Jerseys', handle:'baseball-jerseys', label:'Baseball jerseys', icon:'jersey', description:'Shop baseball jerseys and personalized fan gear with clear size and delivery details.' },
+  { value:'Hockey Jerseys', handle:'hockey-jerseys', label:'Hockey jerseys', icon:'jersey', description:'Shop hockey jerseys and fan gear with tracked delivery across supported destinations.' },
+  { value:'Soccer Jerseys', handle:'soccer-jerseys', label:'Soccer jerseys', icon:'jersey', description:'Shop soccer jerseys and personalized fan gear built for match day.' },
+  { value:'Fan Apparel', handle:'fan-apparel', label:'Fan apparel', icon:'apparel', description:'Explore fan apparel, layers and match-day pieces from Jersevo.' },
+  { value:'Custom Jerseys', handle:'custom-jerseys', label:'Custom jerseys', icon:'custom', description:'Choose a fixed jersey design and add the name and number that make it yours.' },
+  { value:'Accessories', handle:'accessories', label:'All accessories', icon:'accessories', description:'Explore caps, knit hats and other sports accessories from Jersevo.' },
+  { value:'Collectibles', handle:'collectibles', label:'Collectibles', icon:'collectibles', description:'Browse sports collectibles and keepsakes selected for the archive.' },
+  { value:'Fan Gear', handle:'fan-gear', label:'Fan gear', icon:'gear', description:'Browse Jersevo fan gear across leagues, teams and match-day moments.' }
 ])
 
 export function catalogCategoryByHandle(handle) {
@@ -50,12 +52,24 @@ export function catalogCategoryHandle(value) {
   return CATALOG_CATEGORY_PAGES.find(item => item.value === value)?.handle || ''
 }
 
+export function catalogIconForProduct(product = {}) {
+  const group = String(product.productGroup || product.product_group || '').toLowerCase()
+  if (/knit hat|beanie/.test(group)) return 'beanie'
+  if (/\bcap\b|\bcaps\b|snapback|fitted hat/.test(group)) return 'cap'
+  if (/jersey/.test(group)) return Array.isArray(product.customFields || product.custom_fields) && (product.customFields || product.custom_fields).length ? 'custom' : 'jersey'
+  if (/apparel|hoodie|shirt|sweat/.test(group)) return 'apparel'
+  if (/collectible|memorabilia|trading card/.test(group)) return 'collectibles'
+  return 'accessories'
+}
+
 export function productMatchesCatalogCategory(product = {}, category = {}) {
   const taxonomy = product.taxonomy && typeof product.taxonomy === 'object' ? product.taxonomy : {}
   const target = String(category.value || category || '').toLowerCase()
   if (!target) return true
   if (target === 'custom jerseys') return Array.isArray(product.customFields || product.custom_fields) && (product.customFields || product.custom_fields).length > 0
   const aliases = {
+    caps:['caps','cap','snapback caps','fitted caps','adjustable caps'],
+    'knit hats':['knit hats','knit hat','beanies','beanie'],
     'football jerseys':['football jerseys','football jersey','football','nfl jerseys'],
     'basketball jerseys':['basketball jerseys','basketball jersey','basketball','nba jerseys'],
     'baseball jerseys':['baseball jerseys','baseball jersey','baseball','mlb jerseys'],
