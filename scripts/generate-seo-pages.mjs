@@ -236,7 +236,7 @@ const collections = await loadCollections()
 const TAXONOMY_MIN_PRODUCTS = 6
 const navigationRows = new Map()
 for (const product of products) {
-  const row = { taxonomy:product.taxonomy,productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [] }
+  const row = { taxonomy:{league:product.taxonomy?.league || '',team:product.taxonomy?.team || '',category:product.taxonomy?.category || ''},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [] }
   navigationRows.set(JSON.stringify(row),row)
 }
 await writeFile(join(DIST,'catalog-navigation.json'),JSON.stringify([...navigationRows.values()]))

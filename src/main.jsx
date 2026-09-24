@@ -43,7 +43,7 @@ import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, p
 import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { listingMediaRole } from './lib/listing-media'
-import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
+import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
 import { fetchStorefrontProduct } from './lib/supabase'
 import { productPreviewReadiness } from './lib/customization-ai'
@@ -1259,7 +1259,7 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
   </div>
 }
 
-function Home({ onQuickView, products, theme, collections = [], onAdd }) {
+function Home({ onQuickView, products, navigationProducts = [], theme, collections = [], onAdd }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
   const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct || featured
   const primaryCollection = collections[0]
@@ -1272,7 +1272,7 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
     rail:<ProductRail key="rail" title={<>BEST SELLERS.<br /><em>YOUR WAY.</em></>} subtitle="Fan favorites, ready to personalize." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
-    leagues:<LeagueDiscovery key="leagues" products={products}/>,
+    leagues:<LeagueDiscovery key="leagues" products={navigationProducts.length ? navigationProducts : products}/>,
     'custom-cta':<CustomTeaser key="custom-cta" product={customProduct} products={products} onAdd={onAdd}/>,
     'custom-options':<CustomOptions key="custom-options" product={customProduct} products={products} onAdd={onAdd}/>,
     quality:<QualityProof key="quality" product={featured}/>,
@@ -1288,7 +1288,8 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
   if (!homeBlocks.includes('hero')) {
     homeBlocks.unshift('hero')
   }
-  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => products.some(product => productMatchesCatalogCategory(product,category)))
+  const categoryRows = navigationProducts.length ? navigationProducts : products
+  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
   return <>{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}>{category.label}<ArrowRight size={16}/></a>)}</div></nav></>
 }
 
@@ -2237,7 +2238,7 @@ function App() {
   }, [])
   useEffect(() => {
     let active = true
-    fetch('/catalog-navigation.json').then(response => response.ok ? response.json() : []).then(rows => {
+    fetchStorefrontNavigationIndex().then(rows => {
       if (active && Array.isArray(rows)) setNavigationProducts(rows)
     }).catch(()=>{})
     return () => { active = false }
@@ -2482,9 +2483,9 @@ function App() {
   let page
   const catalogRoute = path === '/' || path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/category/') || path.startsWith('/league/') || path.startsWith('/team/')
   if (!path.startsWith('/admin') && catalogState.loading && (!products.length || catalogRoute && catalogState.scope !== 'page')) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
-  else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
-  else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
-  else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
+  else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
+  else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
+  else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
   else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory}/> : <NotFound/>
   else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>

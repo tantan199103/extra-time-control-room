@@ -198,6 +198,15 @@ export async function fetchStorefrontSearch(term, limit = 12) {
   return { data:(data || []).map(row => prepareStorefrontProduct(row)),source:'supabase',error:null }
 }
 
+export async function fetchStorefrontNavigationIndex() {
+  try {
+    const response = await fetch('/catalog-navigation.json',{cache:'force-cache'})
+    if (!response.ok) throw new Error(`Navigation index returned ${response.status}`)
+    const rows = await response.json()
+    return Array.isArray(rows) ? rows : []
+  } catch { return [] }
+}
+
 export async function fetchStorefrontCatalog(fallback = []) {
   if (!supabase) return import.meta.env.DEV ? previewResult(fallback) : { data:[], source:'unavailable', error:'Live catalogue is not configured.' }
   const rows = []
