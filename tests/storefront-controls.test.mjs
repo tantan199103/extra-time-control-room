@@ -34,7 +34,7 @@ test('routing observes query changes and isolates different product state', () =
 
 test('shop waits for the full live catalog and does not present PDP related products as the whole shop', () => {
   assert.match(source, /scope:productBootstrap \? 'single' : 'none'/)
-  assert.match(source, /catalogRoute && catalogState\.scope !== 'full'/)
+  assert.match(source, /catalogRoute && catalogState\.scope !== 'page'/)
   assert.match(source, /else if \(!productSlug\) setProducts\(\[\]\)/)
   assert.match(supabaseSource, /\[0, 408, 429, 500, 502, 503, 504\]/)
 })

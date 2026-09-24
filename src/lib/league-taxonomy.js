@@ -396,6 +396,37 @@ export function productTaxonomyValues(product = {}) {
   return { league: String(league), team: String(team), tags, haystack }
 }
 
+const CONTROLLED_PRODUCT_GROUPS = new Map([
+  ['caps','Caps'], ['cap','Caps'], ['hats','Caps'], ['hat','Caps'], ['headwear','Caps'], ['visors','Caps'],
+  ['knit hats','Knit Hats'], ['knit hat','Knit Hats'], ['beanies','Knit Hats'], ['beanie','Knit Hats'],
+  ['football jersey','Football Jersey'], ['football jerseys','Football Jersey'],
+  ['baseball jersey','Baseball Jersey'], ['baseball jerseys','Baseball Jersey'],
+  ['basketball jersey','Basketball Jersey'], ['basketball jerseys','Basketball Jersey'],
+  ['hockey jersey','Hockey Jersey'], ['hockey jerseys','Hockey Jersey'],
+  ['soccer jersey','Soccer Jersey'], ['soccer jerseys','Soccer Jersey']
+])
+
+function inferTeamFromText(league, text) {
+  const value = ` ${taxonomySlug(text).replace(/-/g, ' ')} `
+  const teams = findLeague(league)?.teams || []
+  return teams
+    .filter(team => value.includes(` ${taxonomySlug(team.name).replace(/-/g, ' ')} `))
+    .sort((a,b) => b.name.length - a.name.length)[0]?.slug || ''
+}
+
+export function normalizeCatalogTaxonomy(product = {}) {
+  const nested = product.taxonomy && typeof product.taxonomy === 'object' ? product.taxonomy : {}
+  const league = taxonomySlug(product.league || product.leagueKey || nested.league || nested.leagueKey || '')
+  const text = [product.title,product.name,product.handle,product.productGroup,product.product_group,product.sku].filter(Boolean).join(' ')
+  const team = normalizeTeamSlug(league, product.team || product.teamSlug || nested.team || nested.teamSlug || '') || inferTeamFromText(league,text)
+  const rawGroup = String(product.productGroup || product.product_group || nested.productGroup || '').trim()
+  const groupKey = rawGroup.toLowerCase().replace(/\s+/g,' ')
+  let productGroup = CONTROLLED_PRODUCT_GROUPS.get(groupKey) || rawGroup
+  if (!CONTROLLED_PRODUCT_GROUPS.has(groupKey) && team && !/jersey|apparel|hoodie|shirt/i.test(rawGroup) && !/jersey/i.test(text)) productGroup = 'Accessories'
+  const category = nested.category || (productGroup === 'Accessories' || productGroup === 'Caps' || productGroup === 'Knit Hats' ? 'Accessories' : productGroup)
+  return { ...nested, ...(league ? { league } : {}), ...(team ? { team } : {}), ...(category ? { category } : {}), ...(productGroup ? { productGroup } : {}) }
+}
+
 export function productMatchesTaxonomy(product, { league = '', team = '' } = {}) {
   const values = productTaxonomyValues(product)
   const leagueNeedle = taxonomySlug(league)

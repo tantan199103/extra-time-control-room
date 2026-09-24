@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { availableOptionValue, buildFallbackCatalog, buildMenuTree, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveMenuImages, resolveVariant, sortCollectionProducts } from '../src/lib/storefront-model.js'
+import { normalizeCatalogTaxonomy } from '../src/lib/league-taxonomy.js'
 import { products as fallback } from '../src/data.js'
 
 test('fallback catalogue has published-looking variants while live Supabase is unavailable', () => {
@@ -9,6 +10,14 @@ test('fallback catalogue has published-looking variants while live Supabase is u
   assert.equal(catalog.length,fallback.length)
   assert.ok(catalog.every(product=>product.options.length===2 && product.variants.length===6))
   assert.equal(findStorefrontProduct(catalog,'after-90').handle,'after-90')
+})
+
+test('storefront taxonomy separates normalized team from controlled product group', () => {
+  const normalized = normalizeCatalogTaxonomy({ title:'New York Yankees MLB Mini Cap Key Chain', productGroup:'New York Yankees', taxonomy:{ league:'mlb', team:'new-york-yankees' } })
+  assert.equal(normalized.league,'mlb')
+  assert.equal(normalized.team,'new-york-yankees')
+  assert.equal(normalized.productGroup,'Accessories')
+  assert.equal(normalized.category,'Accessories')
 })
 
 test('variation resolution respects option combinations and availability', () => {
@@ -103,6 +112,17 @@ test('storefront uses the public catalogue and server-validated custom request r
   assert.match(adminQueue,/NOTE_UPDATE/)
   assert.match(order,/assetRefs/)
   assert.match(adapter,/Menu media migration is not installed/)
+})
+
+test('storefront catalog pages use bounded card payloads and remote search', async () => {
+  const adapter = await readFile(new URL('../src/lib/supabase.js',import.meta.url),'utf8')
+  const main = await readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
+  assert.match(adapter,/fetchStorefrontCatalogPage/)
+  assert.match(adapter,/range\(from,from \+ safeSize - 1\)/)
+  assert.match(adapter,/STOREFRONT_CARD_FIELDS/)
+  assert.match(adapter,/fetchStorefrontSearch/)
+  assert.match(main,/catalogState\.scope !== 'page'/)
+  assert.match(main,/fetchStorefrontSearch\(value,12\)/)
 })
 
 test('service worker excludes sensitive routes from runtime caching', async () => {

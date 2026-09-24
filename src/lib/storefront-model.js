@@ -1,5 +1,7 @@
 import { normalizeProduct } from './catalog-model.js'
 
+import { normalizeCatalogTaxonomy } from './league-taxonomy.js'
+
 const FALLBACK_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const optionSlug = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
@@ -30,8 +32,12 @@ export function prepareStorefrontProduct(input, persisted = true) {
   const primaryMedia = publicMedia.find(item => item.type === 'IMAGE' && item.url === product.image)
     || publicMedia.find(item => item.type === 'IMAGE')
 
+  const normalizedTaxonomy = normalizeCatalogTaxonomy({ ...publicProduct, taxonomy:publicProduct.taxonomy, productGroup:publicProduct.productGroup })
+  const normalizedGroup = normalizedTaxonomy.productGroup || publicProduct.productGroup
   return {
     ...publicProduct,
+    productGroup: normalizedGroup,
+    taxonomy: normalizedTaxonomy,
     media: publicMedia,
     handle: product.handle || product.id,
     image: product.image || primaryMedia?.url || '',

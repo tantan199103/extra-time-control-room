@@ -43,7 +43,7 @@ import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, p
 import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { listingMediaRole } from './lib/listing-media'
-import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
+import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
 import { fetchStorefrontProduct } from './lib/supabase'
 import { productPreviewReadiness } from './lib/customization-ai'
@@ -269,6 +269,7 @@ function MegaMenu({ item, customProduct, onNavigate }) {
 
 function SearchOverlay({ open, onClose, products }) {
   const [query, setQuery] = useState('')
+  const [remoteResults, setRemoteResults] = useState([])
   const inputRef = useRef(null)
   const panelRef = useRef(null)
   useDialogFocus(open, panelRef, onClose, inputRef)
@@ -278,7 +279,17 @@ function SearchOverlay({ open, onClose, products }) {
       return () => clearTimeout(timer)
     }
   }, [query])
+  useEffect(() => {
+    const value = query.trim()
+    if (value.length < 2) { setRemoteResults([]); return undefined }
+    let active = true
+    const timer = setTimeout(() => {
+      fetchStorefrontSearch(value,12).then(result => { if (active && result.source === 'supabase') setRemoteResults(result.data || []) }).catch(() => {})
+    },250)
+    return () => { active = false; clearTimeout(timer) }
+  }, [query])
   const matchingProducts = products.filter(product => `${product.name} ${product.story} ${product.meta}`.toLowerCase().includes(query.toLowerCase()))
+  const displayProducts = remoteResults.length ? remoteResults : matchingProducts
   return (
     <div ref={panelRef} className={`overlay search-overlay ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={!open} role="dialog" aria-modal="true" aria-label="Search products" tabIndex={-1}>
       <div className="search-overlay__top">
@@ -296,8 +307,8 @@ function SearchOverlay({ open, onClose, products }) {
         </div>
       ) : (
         <div className="search-results">
-          <p>{matchingProducts.length ? `PRODUCTS · ${matchingProducts.length}` : 'NO MATCHES'}</p>
-          {matchingProducts.map(product => (
+          <p>{displayProducts.length ? `PRODUCTS · ${displayProducts.length}` : 'NO MATCHES'}</p>
+          {displayProducts.map(product => (
             <button key={product.id} onClick={() => { onClose(); navigate(`/product/${product.handle || product.id}`) }}>
               <img src={product.image} alt="" /><span><strong>{product.name}</strong><small>{product.meta}</small></span><span>{money(product.price)}</span>
             </button>
@@ -697,12 +708,14 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
   )
 }
 
-function TaxonomyLanding({ league, team, products, onQuickView, page = 1 }) {
+function TaxonomyLanding({ league, team, products, onQuickView, page = 1, pagination = null }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const filtered = products.filter(product => productMatchesTaxonomy(product, { league: league?.key, team: team?.slug }))
-  const totalPages = pageCount(filtered.length)
+  const serverPaginated = Boolean(pagination?.server)
+  const totalPages = serverPaginated ? Math.max(1,Math.ceil(Number(pagination.total || 0) / CATALOG_PAGE_SIZE)) : pageCount(filtered.length)
   const currentPage = Math.max(1, Math.min(page, totalPages))
-  const pagedProducts = filtered.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE)
+  const pagedProducts = serverPaginated ? filtered : filtered.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE)
+  const resultCount = serverPaginated ? Number(pagination.total || filtered.length) : filtered.length
   const title = team?.name || league?.name || 'League collections'
   const teams = league?.teams || []
   const media = team?.media || league?.media
@@ -750,7 +763,7 @@ function TaxonomyLanding({ league, team, products, onQuickView, page = 1 }) {
           </div>
         </div>
         <div className="catalog-compact-bar__side">
-          <span className="catalog-compact-bar__badge">{filtered.length} {filtered.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
+          <span className="catalog-compact-bar__badge">{resultCount} {resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
           <div className="mobile-grid-toggle" aria-label="Display mode">
             <button
               type="button"
@@ -1279,7 +1292,7 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
   return <>{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}>{category.label}<ArrowRight size={16}/></a>)}</div></nav></>
 }
 
-function Shop({ onQuickView, products, collection = null, category = null, page = 1 }) {
+function Shop({ onQuickView, products, collection = null, category = null, page = 1, pagination = null }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const params = new URLSearchParams(window.location.search)
   const pageSize = CATALOG_PAGE_SIZE
@@ -1363,9 +1376,11 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
     return true
   })
   shown = sort === 'FEATURED' && collection ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
-  const totalPages = Math.max(1, Math.ceil(shown.length / pageSize))
+  const serverPaginated = Boolean(pagination?.server && !collection && sizeFilter === 'ALL' && !inStock)
+  const totalPages = serverPaginated ? Math.max(1,Math.ceil(Number(pagination.total || 0) / pageSize)) : Math.max(1, Math.ceil(shown.length / pageSize))
   const currentPage = Math.max(1, Math.min(page, totalPages))
-  const pagedProducts = shown.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const pagedProducts = serverPaginated ? shown : shown.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const resultCount = serverPaginated ? Number(pagination.total || shown.length) : shown.length
 
   useEffect(() => {
     const next = new URL(window.location.href)
@@ -1378,7 +1393,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
     inStock ? next.searchParams.set('stock','1') : next.searchParams.delete('stock')
     if (changed && page > 1) next.pathname = parseCatalogPagePath(next.pathname).basePath
     window.history.replaceState({},'',next.pathname + next.search)
-    if (changed && page > 1) window.dispatchEvent(new PopStateEvent('popstate'))
+    if (changed) window.dispatchEvent(new PopStateEvent('popstate'))
   }, [color,sizeFilter,teamFilter,priceFilter,group,typeFilter,customOnly,inStock,sort])
 
   const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setTeamFilter('ALL'); setPriceFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false) }
@@ -1411,7 +1426,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
           </div>
         </div>
         <div className="catalog-compact-bar__side">
-          <span className="catalog-compact-bar__badge">{shown.length} {shown.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
+          <span className="catalog-compact-bar__badge">{resultCount} {resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
         </div>
       </section>
       {category && <section className="category-intro section"><p>{category.description}</p><nav aria-label="Related jersey categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}>{item.label}<ArrowRight size={13}/></a>)}</nav></section>}
@@ -2192,6 +2207,7 @@ function App() {
   const [collections,setCollections] = useState([])
   const [theme,setTheme] = useState(() => adminTheme)
   const [catalogState,setCatalogState] = useState({ loading:!path.startsWith('/admin'), source:'preview', error:null, scope:productBootstrap ? 'single' : 'none' })
+  const [catalogMeta,setCatalogMeta] = useState({ total:null, page:1, pageSize:CATALOG_PAGE_SIZE, server:false })
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState(() => readLocal('extra-time-cart-v2', []))
@@ -2247,29 +2263,40 @@ function App() {
     if (path.startsWith('/admin')) return
     let active=true
     setCatalogState(current => ({...current,loading:true}))
+    const catalogRequest = productSlug
+      ? fetchStorefrontProduct(productSlug)
+      : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:CATALOG_PAGE_SIZE, basePath:path, search })
+    const customRequest = !productSlug && path === '/' && featuredCustomProduct?.handle
+      ? fetchStorefrontProduct(featuredCustomProduct.handle)
+      : Promise.resolve({ data:[], source:'none', error:null })
     Promise.all([
-      productSlug ? fetchStorefrontProduct(productSlug) : fetchStorefrontCatalog(initialCatalog),
+      catalogRequest,
+      customRequest,
       fetchStorefrontMenus([]),
-      fetchStorefrontCollections([]),
+      fetchStorefrontCollections([],collectionHandle || ''),
       fetchStorefrontTheme(null)
-    ]).then(([catalogResult,menuResult,collectionResult,themeResult]) => {
+    ]).then(([catalogResult,customResult,menuResult,collectionResult,themeResult]) => {
       if(!active)return
-      if (catalogResult.source === 'supabase' || catalogResult.data?.length) {
-        setProducts(catalogResult.data)
+      const catalogRows = [...(catalogResult.data || [])]
+      for (const row of customResult.data || []) if (!catalogRows.some(item => item.id === row.id)) catalogRows.push(row)
+      if (catalogResult.source === 'supabase' || catalogRows.length) {
+        setProducts(catalogRows)
       } else if (!productSlug) setProducts([])
+      setCatalogMeta({ total:catalogResult.total ?? null, page:catalogResult.page || catalogPage, pageSize:catalogResult.pageSize || CATALOG_PAGE_SIZE, server:Boolean(catalogResult.total != null && !productSlug) })
       const nextCollections = collectionResult.data || []
       const nextTheme = themeResult.data || null
-      setMenus(resolveMenuImages(menuResult.data || [], { products:catalogResult.data || [], collections:nextCollections, pages:nextTheme?.pages || [] }))
+      setMenus(resolveMenuImages(menuResult.data || [], { products:catalogRows, collections:nextCollections, pages:nextTheme?.pages || [] }))
       setCollections(nextCollections)
       setTheme(nextTheme)
-      setCatalogState({loading:false,source:catalogResult.source,error:catalogResult.error,scope:catalogResult.source === 'supabase' ? (productSlug ? 'single' : 'full') : 'none'})
+      setCatalogState({loading:false,source:catalogResult.source,error:catalogResult.error,scope:catalogResult.source === 'supabase' ? (productSlug ? 'single' : 'page') : 'none'})
     }).catch(error => {
       if (!active) return
       if (!productSlug) setProducts([])
+      setCatalogMeta({ total:null, page:catalogPage, pageSize:CATALOG_PAGE_SIZE, server:false })
       setCatalogState({loading:false,source:'unavailable',error:error instanceof Error ? error.message : 'Catalogue unavailable.',scope:'none'})
     })
     return () => { active=false }
-  }, [path.startsWith('/admin'),productSlug])
+  }, [path.startsWith('/admin'),productSlug,path,catalogPage,search])
   useEffect(() => {
     const tokens=theme?.tokens || {}
     const safeColor=value => /^#[0-9a-f]{6}$/i.test(value || '') ? value : null
@@ -2454,14 +2481,14 @@ function App() {
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
   let page
   const catalogRoute = path === '/' || path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/category/') || path.startsWith('/league/') || path.startsWith('/team/')
-  if (!path.startsWith('/admin') && catalogState.loading && (!products.length || catalogRoute && catalogState.scope !== 'full')) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
+  if (!path.startsWith('/admin') && catalogState.loading && (!products.length || catalogRoute && catalogState.scope !== 'page')) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
   else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
-  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop key={path} page={catalogPage} onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
-  else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={routeCategory.handle} page={catalogPage} onQuickView={setQuickViewProduct} products={products} category={routeCategory}/> : <NotFound/>
-  else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding league={routeLeague} page={catalogPage} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
-  else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding league={routeLeague} team={routeTeam} page={catalogPage} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
+  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
+  else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory}/> : <NotFound/>
+  else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
+  else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding key={`${routeTeam.slug}:${catalogPage}:${search}`} league={routeLeague} team={routeTeam} page={catalogPage} pagination={catalogMeta} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path === '/custom') {
     const customProductId = new URLSearchParams(window.location.search).get('product') || featuredCustomProduct?.handle
     const requested = findStorefrontProduct(products,customProductId) || customProduct

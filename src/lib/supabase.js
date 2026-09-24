@@ -130,6 +130,74 @@ export async function fetchStorefrontProduct(handle) {
   return {data:[product,...related],source:'supabase',error:null}
 }
 
+const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,product_group,type,color,custom_fields,media,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode)'
+
+function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {}) {
+  const params = new URLSearchParams(search)
+  const parts = String(basePath || '').split('/').filter(Boolean)
+  if (parts[0] === 'league' && parts[1]) query = query.eq('taxonomy->>league',parts[1])
+  if (parts[0] === 'team' && parts[1] && parts[2]) query = query.eq('taxonomy->>league',parts[1]).eq('taxonomy->>team',parts[2])
+  if (parts[0] === 'category' && parts[1]) {
+    const categoryMap = {
+      accessories:['Caps','Knit Hats'],
+      'football-jerseys':['Football Jersey'],
+      'baseball-jerseys':['Baseball Jersey'],
+      'basketball-jerseys':['Basketball Jersey'],
+      'hockey-jerseys':['Hockey Jersey'],
+      'soccer-jerseys':['Soccer Jersey']
+    }
+    const groups = categoryMap[parts[1]]
+    if (parts[1] === 'accessories') query = query.not('product_group','in','("Football Jersey","Baseball Jersey","Basketball Jersey","Hockey Jersey","Soccer Jersey")')
+    else if (groups?.length === 1) query = query.eq('product_group',groups[0])
+    else if (groups?.length) query = query.in('product_group',groups)
+    if (parts[1] === 'custom-jerseys') query = query.not('custom_fields','eq','[]')
+  }
+  const group = params.get('group')
+  const team = params.get('team')
+  const type = params.get('type')
+  const color = params.get('color')
+  const price = params.get('price')
+  const custom = params.get('custom')
+  if (group && group !== 'ALL') query = query.eq('product_group',group)
+  if (team && team !== 'ALL') query = query.eq('taxonomy->>team',team)
+  if (type && type !== 'ALL') query = query.ilike('type',`%${type}%`)
+  if (color && color !== 'ALL') query = query.ilike('color',color)
+  if (custom === '1') query = query.not('custom_fields','eq','[]')
+  if (price === 'UNDER_90') query = query.lt('price',90)
+  if (price === '90_100') query = query.gte('price',90).lte('price',100)
+  if (price === 'OVER_100') query = query.gt('price',100)
+  return query
+}
+
+export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, basePath = '/shop', search = '' } = {}) {
+  if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
+  const safePage = Math.max(1,Math.trunc(Number(page) || 1))
+  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
+  let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS,{count:'exact'}).eq('status','PUBLISHED')
+  query = applyStorefrontRouteFilters(query,{basePath,search})
+  const sort = new URLSearchParams(search).get('sort') || 'FEATURED'
+  if (sort === 'PRICE LOW') query = query.order('price',{ascending:true})
+  else if (sort === 'PRICE HIGH') query = query.order('price',{ascending:false})
+  else if (sort === 'NEWEST') query = query.order('updated_at',{ascending:false})
+  else query = query.order('updated_at',{ascending:false})
+  query = query.order('id',{ascending:true})
+  const from = (safePage - 1) * safeSize
+  const { data,error,count } = await query.range(from,from + safeSize - 1)
+  if (error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:error.message }
+  return { data:(data || []).map(row => prepareStorefrontProduct(row)), total:Number(count || 0), page:safePage, pageSize:safeSize, source:'supabase', error:null }
+}
+
+export async function fetchStorefrontSearch(term, limit = 12) {
+  if (!supabase) return { data:[],source:'unavailable',error:'Live catalogue is not configured.' }
+  const value = String(term || '').trim().slice(0,80)
+  if (value.length < 2) return { data:[],source:'supabase',error:null }
+  const safeLimit = Math.min(24,Math.max(1,Number(limit) || 12))
+  const pattern = `*${value.replace(/[(),]/g,' ')}*`
+  const { data,error } = await supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED').or(`title.ilike.${pattern},handle.ilike.${pattern},sku.ilike.${pattern}`).order('updated_at',{ascending:false}).limit(safeLimit)
+  if (error) return { data:[],source:'unavailable',error:error.message }
+  return { data:(data || []).map(row => prepareStorefrontProduct(row)),source:'supabase',error:null }
+}
+
 export async function fetchStorefrontCatalog(fallback = []) {
   if (!supabase) return import.meta.env.DEV ? previewResult(fallback) : { data:[], source:'unavailable', error:'Live catalogue is not configured.' }
   const rows = []
@@ -169,9 +237,12 @@ export async function fetchStorefrontMenus(fallback = [], context = {}) {
   return { data:resolved, source:menus.length ? 'supabase' : 'preview', error:null }
 }
 
-export async function fetchStorefrontCollections(fallback = []) {
+export async function fetchStorefrontCollections(fallback = [], requestedHandle = '') {
   if (!supabase) return previewResult(fallback)
-  const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order, featured)').eq('status','PUBLISHED').order('updated_at',{ascending:false})
+  const select = requestedHandle ? 'id,handle,name,description,hero_image,seo,updated_at,status,sort_mode,pod_collection_products(product_id,sort_order,featured)' : 'id,handle,name,description,hero_image,seo,updated_at,status,sort_mode'
+  let query = supabase.from('pod_collections').select(select).eq('status','PUBLISHED').order('updated_at',{ascending:false})
+  if (requestedHandle) query = query.eq('handle',requestedHandle).limit(1)
+  const { data, error } = await query
   if (error) return previewResult(fallback, error.message)
   const collections = (data || []).map(row => ({
     ...row,
