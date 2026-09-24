@@ -29,12 +29,15 @@ test('published PDP metadata and variant schema use the same canonical product U
 })
 
 test('HTML fallback has product copy, variant prices and crawlable related product links', () => {
-  const html = renderProductContent(product,[{id:'listing-2',handle:'related',title:'Related Jersey'}])
+  const html = renderProductContent({...product,customFields:[{key:'name',label:'Name',help:'Up to 12 characters'}],bulkOffers:[{minQty:2,discountPercent:10}],delivery:{production:'3–5 business days',transit:'5–8 business days'}},[{id:'listing-2',handle:'related',title:'Related Jersey'}])
   assert.match(html,/<h1>Test Home Jersey<\/h1>/)
   assert.match(html,/\$59\.99/)
   assert.match(html,/href="\/product\/test-jersey\?variant=v-s"/)
   assert.match(html,/href="\/product\/related"/)
   assert.match(html,/href="\/team\/nfl\/green-bay-packers"/)
+  assert.match(html,/Personalization options/)
+  assert.match(html,/Order programs/)
+  assert.match(html,/Production is usually/)
 })
 
 test('blocked product is not indexable and no fabricated review or return promise enters Product schema', () => {

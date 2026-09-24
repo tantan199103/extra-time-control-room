@@ -5,6 +5,7 @@ import { buildListingInput, normalizeProduct, validateListing } from './catalog-
 import { buildMenuTree, prepareStorefrontProduct, resolveMenuImages } from './storefront-model'
 import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
 import { apiFetch } from './api-client'
+import { collectionMembershipDiff } from './collection-assignment'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -621,23 +622,57 @@ export async function saveAdminMenus(menus) {
 export async function fetchAdminCollections() {
   if (!supabase) return previewResult(adminCollections)
   try {
-    const { data, error } = await supabase.from('pod_collections').select('*, pod_collection_products(product_id, sort_order, featured)').order('updated_at', { ascending: false })
-    if (error || !data?.length) return previewResult(adminCollections, error?.message || null)
+    const { data, error } = await supabase.from('pod_collections').select('*').order('updated_at', { ascending: false })
+    if (error) return { data:[], source:'error', error:error.message }
+    const pageSize = 1000
+    const first = await supabase.from('pod_collection_products').select('collection_id,product_id,sort_order,featured',{count:'exact'}).order('collection_id').order('product_id').range(0,pageSize - 1)
+    if (first.error) return { data:[], source:'error', error:first.error.message }
+    const links = [...(first.data || [])]
+    const total = first.count || links.length
+    for (let from = pageSize; from < total; from += pageSize * 6) {
+      const offsets = Array.from({length:Math.min(6,Math.ceil((total - from) / pageSize))},(_,index) => from + index * pageSize)
+      const pages = await Promise.all(offsets.map(offset => supabase.from('pod_collection_products').select('collection_id,product_id,sort_order,featured').order('collection_id').order('product_id').range(offset,offset + pageSize - 1)))
+      const failed = pages.find(page => page.error)
+      if (failed) return { data:[], source:'error', error:failed.error.message }
+      pages.forEach(page => links.push(...(page.data || [])))
+    }
+    if (links.length !== total) return { data:[], source:'error', error:`Collection membership loaded partially (${links.length}/${total}). Refresh Admin before editing.` }
+    const byCollection = new Map()
+    links.forEach(link => byCollection.set(link.collection_id,[...(byCollection.get(link.collection_id) || []),link]))
     return {
-      data: data.map(collection => ({ ...collection, hero: collection.hero_image, sort: collection.sort_mode, products: (collection.pod_collection_products || []).sort((a, b) => a.sort_order - b.sort_order).map(item => item.product_id), productLinks:(collection.pod_collection_products || []).map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count: collection.pod_collection_products?.length || 0, updatedAt: collection.updated_at })),
+      data: (data || []).map(collection => {
+        const members = (byCollection.get(collection.id) || []).sort((a,b) => a.sort_order - b.sort_order || String(a.product_id).localeCompare(String(b.product_id)))
+        return { ...collection, hero:collection.hero_image, sort:collection.sort_mode, products:members.map(item => item.product_id), productLinks:members.map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count:members.length, updatedAt:collection.updated_at }
+      }),
       source: 'supabase', error: null
     }
   } catch (err) {
-    console.warn('fetchAdminCollections error, using fallback:', err.message)
-    return previewResult(adminCollections, err.message)
+    console.warn('fetchAdminCollections error:', err.message)
+    return { data:[], source:'error', error:err.message }
   }
 }
 
-export async function saveAdminCollections(collections) {
-  if (!supabase) return previewResult(collections)
-  const { data, error } = await supabase.rpc('pod_save_collections', { collection_payload:collections })
-  if (error) return { data:collections, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
-  return { data, source:'supabase', error:null }
+export async function saveAdminCollections(collections, originalCollections = []) {
+  if (!supabase) return { data:collections, source:'error', error:'Live Supabase is not configured. Nothing was saved.' }
+  let additions, removals
+  try { ({additions,removals} = collectionMembershipDiff(collections,originalCollections)) }
+  catch (error) { return { data:collections, source:'error', error:error.message } }
+  // Create/update metadata first, then attach destinations before detaching
+  // sources. A failed move can leave a recoverable duplicate, never a lost link.
+  for (const row of collections) {
+    const payload = {id:row.id,handle:row.handle,name:row.name,description:row.description || '',status:row.status || 'DRAFT',hero_image:row.hero || null,sort_mode:String(row.sort || 'MANUAL').toUpperCase().replace(/\s+/g,'_'),seo:row.seo || {},updated_at:new Date().toISOString()}
+    const { error } = await supabase.from('pod_collections').upsert(payload,{onConflict:'id'})
+    if (error) return { data:collections, source:'error', error:`${row.name}: ${error.message}` }
+  }
+  for (let index = 0; index < additions.length; index += 200) {
+    const { error } = await supabase.from('pod_collection_products').upsert(additions.slice(index,index + 200),{onConflict:'collection_id,product_id'})
+    if (error) return { data:collections, source:'error', error:`Adding listings failed: ${error.message}` }
+  }
+  for (const item of removals) {
+    const { error } = await supabase.from('pod_collection_products').delete().eq('collection_id',item.collectionId).eq('product_id',item.productId)
+    if (error) return { data:collections, source:'error', error:`Removing ${item.productId} failed: ${error.message}` }
+  }
+  return { data:collections, source:'supabase', error:null }
 }
 
 export async function fetchAdminPaymentSettings() {

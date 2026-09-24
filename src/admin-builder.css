@@ -21,6 +21,17 @@
 .admin-block-select:focus-visible,
 .admin-menu-item input:focus-visible,
 .admin-assignment-list button:focus-visible { outline: 2px solid var(--admin-signal); outline-offset: 2px; }
+.admin-assignment-row { display:grid; grid-template-columns:minmax(0,1fr) 148px; border-bottom:1px solid var(--admin-line); }
+.admin-assignment-row:last-child { border-bottom:0; }
+.admin-assignment-row.is-selected { background:#ecebe4; }
+.admin-assignment-row > button { min-width:0; min-height:59px; padding:7px 10px; display:grid; grid-template-columns:22px 44px minmax(0,1fr) auto; gap:10px; align-items:center; text-align:left; }
+.admin-assignment-row > button:hover { background:#e7e6dd; }
+.admin-assignment-row > button > span:nth-child(3) { min-width:0; display:grid; gap:4px; }
+.admin-assignment-row > button strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.admin-assignment-row.is-selected .admin-assignment-check { background:var(--admin-ink); color:var(--admin-acid); }
+.admin-assignment-row > select { align-self:center; min-width:0; height:32px; margin:0 10px; padding:0 7px; border:1px solid var(--admin-line); background:var(--admin-chalk); font:600 9px var(--body); }
+.admin-assignment-row > select:focus-visible { outline:2px solid var(--admin-signal); outline-offset:2px; }
+@media (max-width:780px) { .admin-assignment-row { grid-template-columns:1fr; }.admin-assignment-row > button { grid-template-columns:20px 43px minmax(0,1fr) auto; }.admin-assignment-row > select { width:calc(100% - 20px); margin:0 10px 9px; } }
 
 .admin-theme-page-media { margin:14px 10px 0; padding:12px 10px 4px; border-top:1px solid var(--admin-line); }
 .admin-theme-page-media > small { color:var(--admin-muted); font:600 7px var(--body); letter-spacing:.08em; }

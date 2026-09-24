@@ -8,7 +8,7 @@ import { prepareDraftVariantActivation } from './catalog-model.js'
 export async function runAdminCatalogBulk(targets, action, value, { fetchProduct, saveProduct, onProgress, concurrency = 3 }) {
   if (!Array.isArray(targets) || !targets.length) return { error:'Select at least one listing.' }
   if (['ADD_TAG','SET_GROUP'].includes(action) && !String(value || '').trim()) return { error:'Enter a value for the bulk change.' }
-  if (!['ADD_TAG','SET_GROUP','DRAFT','PUBLISHED','ARCHIVED','ACTIVATE_DRAFT_VARIANTS'].includes(action)) return { error:'Choose a supported bulk action.' }
+  if (!['ADD_TAG','SET_GROUP','CLEAR_GROUP','DRAFT','PUBLISHED','ARCHIVED','ACTIVATE_DRAFT_VARIANTS'].includes(action)) return { error:'Choose a supported bulk action.' }
   if (action === 'ACTIVATE_DRAFT_VARIANTS') {
     try { prepareDraftVariantActivation({ variants:[] }, value) }
     catch (error) { return { error:error.message } }
@@ -49,6 +49,9 @@ export async function runAdminCatalogBulk(targets, action, value, { fetchProduct
         } else if (action === 'SET_GROUP') {
           if (product.productGroup === String(value).trim()) { skipped++; continue }
           candidate = { ...product, productGroup:String(value).trim() }
+        } else if (action === 'CLEAR_GROUP') {
+          if (!product.productGroup) { skipped++; continue }
+          candidate = { ...product, productGroup:'' }
         } else {
           if (product.status === action) { skipped++; continue }
           candidate = { ...product, status:action }

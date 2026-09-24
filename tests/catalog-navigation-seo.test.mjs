@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from '../src/lib/catalog-pagination.js'
 import { findLeague, findTeam, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
+import { applyCollectionMembership, collectionMembershipDiff } from '../src/lib/collection-assignment.js'
 
 test('category landing pages match the controlled catalogue taxonomy', () => {
   const football = catalogCategoryByHandle('football-jerseys')
@@ -32,4 +33,21 @@ test('NHL catalogue links resolve from league through team', () => {
   assert.equal(leaguePath(league), '/league/nhl')
   assert.equal(teamPath(league.key,team), '/team/nhl/boston-bruins')
   assert.equal(league.media.src, '/assets/leagues/marks/nhl.svg')
+})
+
+test('collection membership actions add, remove and move listings without changing product state', () => {
+  const rows = [
+    { id:'a', name:'Drop A', products:['p1','p2'], count:2 },
+    { id:'b', name:'Drop B', products:['p3'], count:1 }
+  ]
+  const added = applyCollectionMembership(rows,['p3'],'ADD_TO_COLLECTION','a')
+  assert.deepEqual(added.collections.find(row => row.id === 'a').products,['p1','p2','p3'])
+  const removed = applyCollectionMembership(added.collections,['p2'],'REMOVE_FROM_COLLECTION','a')
+  assert.deepEqual(removed.collections.find(row => row.id === 'a').products,['p1','p3'])
+  const moved = applyCollectionMembership(removed.collections,['p1'],'MOVE_COLLECTION','b')
+  assert.deepEqual(moved.collections.find(row => row.id === 'a').products,['p3'])
+  assert.deepEqual(moved.collections.find(row => row.id === 'b').products,['p3','p1'])
+  const diff = collectionMembershipDiff(moved.collections,rows)
+  assert.deepEqual(diff.additions.map(item => `${item.collection_id}/${item.product_id}`),['a/p3','b/p1'])
+  assert.deepEqual(diff.removals.map(item => `${item.collectionId}/${item.productId}`),['a/p1','a/p2'])
 })

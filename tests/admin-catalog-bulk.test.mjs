@@ -60,6 +60,20 @@ test('bulk tag changes retain complete variants and media', async () => {
   assert.deepEqual(saved.media, full.media)
 })
 
+test('bulk clear group removes only the product group field', async () => {
+  const summary = { id:'product-group', name:'Grouped listing' }
+  const hydrated = { id:'product-group', title:'Grouped listing', productGroup:'Old group', tags:['keep-me'], media:[{type:'IMAGE',url:'/image.webp'}], variants:[{id:'v',status:'ACTIVE',price:10,inventory:2}] }
+  let saved
+  const result = await runAdminCatalogBulk([summary], 'CLEAR_GROUP', '', {
+    fetchProduct: async () => ({ data:hydrated }),
+    saveProduct: async product => { saved=product; return { data:product } }
+  })
+  assert.equal(result.updated,1)
+  assert.equal(saved.productGroup,'')
+  assert.deepEqual(saved.tags,['keep-me'])
+  assert.deepEqual(saved.media,hydrated.media)
+})
+
 test('activation rejects invalid stock and never touches a saved listing', async () => {
   assert.throws(() => prepareDraftVariantActivation(full, 0), /Stock per variation/)
   let reads = 0
