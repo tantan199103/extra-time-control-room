@@ -672,6 +672,12 @@ export async function saveAdminCollections(collections, originalCollections = []
     const { error } = await supabase.from('pod_collection_products').delete().eq('collection_id',item.collectionId).eq('product_id',item.productId)
     if (error) return { data:collections, source:'error', error:`Removing ${item.productId} failed: ${error.message}` }
   }
+  if (collections.length) {
+    const { data:{ user } = {} } = await supabase.auth.getUser().catch(() => ({ data:{} }))
+    const auditRows = collections.map(row => ({ actor_id:user?.id || null, entity_type:'collection', entity_id:row.id, action:'SAVE_MEMBERSHIP', snapshot:{ collectionId:row.id, productCount:(row.products || []).length, additions:additions.filter(item => item.collection_id === row.id).map(item => item.product_id), removals:removals.filter(item => item.collectionId === row.id).map(item => item.productId) } }))
+    const { error } = await supabase.from('pod_audit_logs').insert(auditRows)
+    if (error) return { data:collections, source:'error', error:`Collection audit failed: ${error.message}` }
+  }
   return { data:collections, source:'supabase', error:null }
 }
 
