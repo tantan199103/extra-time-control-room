@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title">
+  <title id="title">Hockey category</title>
+  <rect width="96" height="96" rx="12" fill="#111111"/>
+  <path d="M14 68h68" stroke="#f8f04a" stroke-width="4"/>
+  <text x="48" y="60" fill="#f4f3ee" font-family="Arial,sans-serif" font-size="31" font-weight="800" text-anchor="middle">NHL</text>
+</svg>

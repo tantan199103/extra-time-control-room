@@ -38,13 +38,18 @@ import {
   X
 } from 'lucide-react'
 import { products as fallbackProducts, searchGroups, storyPoints } from './data'
-import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
-import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamMascot, teamPath } from './lib/league-taxonomy'
+import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isHeadwearProduct, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
+import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, productMatchesTaxonomy, productTaxonomyValues, teamMascot, teamPath } from './lib/league-taxonomy'
+import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
+import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { listingMediaRole } from './lib/listing-media'
 import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalog, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
+import { fetchStorefrontProduct } from './lib/supabase'
 import { productPreviewReadiness } from './lib/customization-ai'
 import { seoDescription } from './lib/seo-text'
+import { productSeoMetadata, productStructuredData, relatedProducts, usd } from './lib/product-seo'
+import { TRUST_PAGES } from './lib/trust-pages'
 import { apiFetch } from './lib/api-client'
 import { availableFinderSizes, canonicalSize, findAudienceOption, recommendCatalogSize, sizeFinderAudiences, sizeProfile, sortSizes } from './lib/size-guide'
 import { buildDeliveryEstimate } from './lib/product-commerce'
@@ -61,8 +66,24 @@ const CheckoutPage = lazy(() => import('./CheckoutPage'))
 const OrderTrackingPage = lazy(() => import('./OrderTrackingPage'))
 const HomeJerseyPersonalizer = lazy(() => import('./HomeJerseyPersonalizer'))
 
-const money = value => `$${value.toFixed(0)}`
+const money = usd
 const initialCatalog = buildFallbackCatalog(fallbackProducts)
+function readProductBootstrap() {
+  try {
+    const data = JSON.parse(document.getElementById('jersevo-route-data')?.textContent || 'null')
+    if (data?.version !== 1 || data.product?.status !== 'PUBLISHED') return null
+    if (window.location.pathname !== `/product/${encodeURIComponent(data.product.handle)}`) return null
+    return data
+  } catch { return null }
+}
+const productBootstrap = readProductBootstrap()
+function readFeaturedCustomProduct() {
+  try {
+    const product = JSON.parse(document.getElementById('jersevo-custom-product')?.textContent || 'null')
+    return /^[a-z0-9-]+$/i.test(product?.handle || '') ? product : null
+  } catch { return null }
+}
+const featuredCustomProduct = readFeaturedCustomProduct()
 const BUSINESS_DETAILS = Object.freeze({
   legalName:'Jersevo',
   brand:'Extra Time',
@@ -109,15 +130,21 @@ function Announcement() {
   )
 }
 
+function customProductTarget(product) {
+  const handle = product?.handle || product?.id
+  return handle ? `/product/${encodeURIComponent(handle)}?custom=1` : '/shop'
+}
+
 function menuTarget(target, customProduct) {
   if (target === '/collection') return '/shop'
-  if (target === '/custom') return `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
+  if (/^\/collection\?type=jerseys$/i.test(String(target || ''))) return '/shop'
+  if (target === '/custom') return customProductTarget(customProduct)
   if (target === '/moments') return '/#story'
   if (target === '/players') return '/#players'
   return target || '/'
 }
 
-function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], customProduct, account }) {
+function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], customProduct, account, products = [] }) {
   const [mega, setMega] = useState(null)
   const [mobile, setMobile] = useState(false)
   const mobileRef = useRef(null)
@@ -136,20 +163,42 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     {id:'shop',label:'SHOP',target:'/shop',children:[]},
     {id:'custom',label:'CUSTOM LAB',target:'/custom',children:[]}
   ]
+  const leagueCounts = useMemo(() => {
+    const counts = new Map()
+    for (const product of products) {
+      const values = productTaxonomyValues(product)
+      const league = String(values.league || '').toLowerCase()
+      if (!league) continue
+      counts.set(league, (counts.get(league) || 0) + 1)
+      const team = normalizeTeamSlug(league, values.team || '')
+      if (team) counts.set(`${league}/${team}`, (counts.get(`${league}/${team}`) || 0) + 1)
+    }
+    return counts
+  }, [products])
+  const visibleLeagues = LEAGUE_TAXONOMY.filter(league => leagueCounts.get(league.key) > 0)
+  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => products.some(product => productMatchesCatalogCategory(product, category)))
   const taxonomyLink = {
     id:'leagues', label:'LEAGUES', target:'/shop', type:'TAXONOMY',
-    children:LEAGUE_TAXONOMY.map(league => ({
+    children:visibleLeagues.map(league => ({
       id:`league-${league.key}`, label:league.name, target:leaguePath(league), type:'LEAGUE', sport:league.sport,
       representativeImage:league.media?.src || '', representativeAlt:league.media?.alt || '',
-      children:league.teams.map(team => ({ id:`team-${league.key}-${team.slug}`, label:team.name, target:teamPath(league.key,team), type:'TEAM', representativeImage:team.media?.src || '', representativeFallback:Boolean(team.media?.fallback) }))
+      children:league.teams.filter(team => leagueCounts.get(`${league.key}/${team.slug}`) > 0).map(team => ({ id:`team-${league.key}-${team.slug}`, label:team.name, target:teamPath(league.key,team), type:'TEAM', representativeImage:team.media?.src || '', representativeFallback:Boolean(team.media?.fallback) }))
     }))
   }
-  const baseLinks = configured.length ? configured : defaults
-  const links = baseLinks.some(item => item.type === 'TAXONOMY' || /league/i.test(item.label || ''))
+  const baseLinks = (configured.length ? configured : defaults).map(item => {
+    if (menuTarget(item.target,customProduct) !== '/shop' || !/^shop$/i.test(String(item.label || ''))) return item
+    return { ...item, type:'CATEGORY_INDEX', children:[
+      { id:'category-all', label:'All gear', target:'/shop', type:'PAGE' },
+      ...visibleCategories.map(category => ({ id:`category-${category.handle}`, label:category.label, target:`/category/${category.handle}`, type:'CATEGORY' }))
+    ] }
+  })
+  const withTaxonomy = baseLinks.some(item => item.type === 'TAXONOMY' || /league/i.test(item.label || ''))
     ? baseLinks
     : [baseLinks[0], taxonomyLink, ...baseLinks.slice(1)].filter(Boolean)
+  const links = withTaxonomy
   const hasVaultLink = links.some(item => menuTarget(item.target, customProduct) === '/vault')
   const hasClubLink = links.some(item => menuTarget(item.target, customProduct) === '/membership')
+  const hasCustomLink = links.some(item => /custom|studio/i.test(`${item.label || ''} ${item.target || ''}`))
   const openLink = item => {
     const target = menuTarget(item.target,customProduct)
     if (String(item.type || '').toUpperCase() === 'EXTERNAL') window.open(target,'_blank','noopener,noreferrer')
@@ -161,14 +210,14 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
   return (
     <>
       <Announcement />
-      <header className="site-header" onMouseLeave={() => setMega(null)}>
+      <header className="site-header" onMouseLeave={() => setMega(null)} onKeyDown={event => { if (event.key === 'Escape') setMega(null) }}>
         <Mark />
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {links.map(item => (
-            <button key={item.id || item.label} onMouseEnter={() => setMega(item)} onFocus={() => setMega(item)} onClick={() => openLink(item)}>
-              {item.label}
-            </button>
-          ))}
+          {links.map(item => <div className="desktop-nav__item" key={item.id || item.label} onMouseEnter={() => setMega(item)}>
+            <a href={menuTarget(item.target,customProduct)} onFocus={() => setMega(item)} onClick={event => { event.preventDefault(); openLink(item) }}>{item.label}</a>
+            {item.children?.length > 0 && <button type="button" aria-label={`Open ${item.label} menu`} aria-expanded={mega?.id === item.id} onFocus={() => setMega(item)} onClick={() => setMega(item)}><ChevronDown size={13}/></button>}
+          </div>)}
+          {!hasCustomLink && <div className="desktop-nav__item"><a href={menuTarget('/custom',customProduct)} onClick={event => { event.preventDefault(); openLink({target:'/custom'}) }}>CUSTOM LAB</a></div>}
           {!hasClubLink && <button onClick={() => navigate('/membership')}>90+ CLUB</button>}
           {!hasVaultLink && <button onClick={() => navigate('/vault')}>THE VAULT</button>}
         </nav>
@@ -184,8 +233,9 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
       <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
-          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><button className="mobile-menu__league" onClick={() => openLink(league)}>{league.representativeImage && <img src={league.representativeImage} alt="" />}<strong>{league.label}</strong><ArrowRight size={13}/></button>{league.children?.slice(0,4).map(team => <button className="mobile-menu__team" key={team.id} onClick={() => openLink(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>}</React.Fragment>)}
+          {links.map((item, index) => <React.Fragment key={item.id || item.label}><button onClick={() => openLink(item)}><span>{String(index+1).padStart(2,'0')}</span>{item.representativeImage && <img src={item.representativeImage} alt={item.representativeAlt || ''} />}<strong>{item.label}</strong><ArrowRight /></button>{item.type === 'TAXONOMY' && <div className="mobile-menu__taxonomy">{item.children?.map(league => <div key={league.id}><button className="mobile-menu__league" onClick={() => openLink(league)}>{league.representativeImage && <img src={league.representativeImage} alt="" />}<strong>{league.label}</strong><ArrowRight size={13}/></button>{league.children?.slice(0,4).map(team => <button className="mobile-menu__team" key={team.id} onClick={() => openLink(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>}{item.type === 'CATEGORY_INDEX' && <div className="mobile-menu__taxonomy mobile-menu__categories">{item.children.map(category => <a key={category.id} href={category.target} onClick={event => { event.preventDefault(); openLink(category) }}>{category.label}<ArrowRight size={13}/></a>)}</div>}</React.Fragment>)}
           {!hasClubLink && <button onClick={() => { navigate('/membership'); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>90+ CLUB<ArrowRight /></button>}
+          {!hasCustomLink && <button onClick={() => { openLink({target:'/custom'}); setMobile(false) }}><span>{String(links.length+1).padStart(2,'0')}</span>CUSTOM LAB<ArrowRight /></button>}
           {!hasVaultLink && <button onClick={() => { navigate('/vault'); setMobile(false) }}><span>{String(links.length+(hasClubLink?1:2)).padStart(2,'0')}</span>THE VAULT<ArrowRight /></button>}
         </nav>
         <div className="mobile-menu__foot"><button onClick={() => { setMobile(false); openSearch() }}>Search the archive</button><span>USD / EN</span></div>
@@ -195,18 +245,19 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
 }
 
 function MegaMenu({ item, customProduct, onNavigate }) {
-  const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
-  const fallbacks = item.label === 'CUSTOM LAB' ? [{id:'custom-start',label:'Name, number + details',target:customTarget},{id:'custom-ai',label:'Edit with AI',target:`/studio?product=${customProduct?.handle || customProduct?.id || 'touchline'}`},{id:'custom-how',label:'How it works',target:'/#custom'}] : [{id:'all',label:'All jerseys',target:'/shop'},{id:'story',label:'Story explorer',target:'/#story'},{id:'vault',label:'The archive',target:'/vault'}]
+  const customTarget = customProductTarget(customProduct)
+  const fallbacks = item.label === 'CUSTOM LAB' ? [{id:'custom-start',label:'Name, number + details',target:customTarget},{id:'custom-ai',label:'Edit with AI',target:customProduct?.handle ? `/studio?product=${encodeURIComponent(customProduct.handle)}` : '/shop'},{id:'custom-how',label:'How it works',target:'/#custom'}] : [{id:'all',label:'All jerseys',target:'/shop'},{id:'story',label:'Story explorer',target:'/#story'},{id:'vault',label:'The archive',target:'/vault'}]
   const children = item.children?.length ? item.children : fallbacks
   const taxonomy = item.type === 'TAXONOMY' || item.label === 'LEAGUES'
+  const categoryIndex = item.type === 'CATEGORY_INDEX'
   return (
-    <div className={`mega-menu ${taxonomy ? 'mega-menu--taxonomy' : ''}`}>
-      <div className="mega-menu__index">{taxonomy ? <><strong className="mega-menu__index-copy">FIND<br />YOUR<br />TEAM</strong></> : item.label === 'CUSTOM LAB' ? <>MAKE<br />YOUR<br />MOMENT</> : <>FIND<br />YOUR<br />MOMENT</>}<span>90+</span></div>
-      {taxonomy ? <>
-        <div className="mega-menu__taxonomy-leagues"><p>SHOP BY LEAGUE</p>{children.map(child => <button key={child.id || child.label} onClick={() => onNavigate(child)}>{child.representativeImage && <img src={child.representativeImage} alt="" /> }<span><strong>{child.label}</strong><small>{child.sport || 'Team collections'}</small></span><ArrowRight size={15} /></button>)}</div>
-        <div className="mega-menu__taxonomy-teams"><p>POPULAR TEAMS</p>{children.map(league => <div key={league.id}><span>{league.label}</span>{(league.children || []).slice(0,6).map(team => <button className={team.representativeFallback ? 'is-fallback' : ''} key={team.id || team.label} onClick={() => onNavigate(team)}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</button>)}</div>)}</div>
+    <div className={`mega-menu ${taxonomy ? 'mega-menu--taxonomy' : ''} ${categoryIndex ? 'mega-menu--categories' : ''}`}>
+      <div className="mega-menu__index">{taxonomy ? <><strong className="mega-menu__index-copy">FIND<br />YOUR<br />TEAM</strong></> : categoryIndex ? <>FIND<br />YOUR<br />GEAR</> : item.label === 'CUSTOM LAB' ? <>MAKE<br />YOUR<br />MOMENT</> : <>FIND<br />YOUR<br />MOMENT</>}<span>90+</span></div>
+      {categoryIndex ? <div className="mega-menu__category-grid"><p>SHOP BY PRODUCT</p><div>{children.map(child => <a key={child.id} href={child.target} onClick={event => { event.preventDefault(); onNavigate(child) }}>{child.label}<ArrowRight size={15}/></a>)}</div></div> : taxonomy ? <>
+        <div className="mega-menu__taxonomy-leagues"><p>SHOP BY LEAGUE</p>{children.map(child => <a href={child.target} key={child.id || child.label} onClick={event => { event.preventDefault(); onNavigate(child) }}>{child.representativeImage && <img src={child.representativeImage} alt="" /> }<span><strong>{child.label}</strong><small>{child.sport || 'Team collections'}</small></span><ArrowRight size={15} /></a>)}</div>
+        <div className="mega-menu__taxonomy-teams"><p>POPULAR TEAMS</p>{children.map(league => <div key={league.id}><span>{league.label}</span>{(league.children || []).slice(0,6).map(team => <a className={team.representativeFallback ? 'is-fallback' : ''} key={team.id || team.label} href={team.target} onClick={event => { event.preventDefault(); onNavigate(team) }}>{team.representativeImage && <img src={team.representativeImage} alt="" />}{team.label}</a>)}</div>)}</div>
       </> : <>
-        <div className="mega-menu__links"><p>{item.label}</p>{children.map(child => <button className={child.representativeImage ? 'has-image' : ''} key={child.id || child.label} onClick={() => onNavigate(child)}>{child.representativeImage && <img src={child.representativeImage} alt={child.representativeAlt || ''} /> }<span>{child.label}<small>{child.representativeSource === 'CUSTOM' ? 'CUSTOM ARTWORK' : child.type || 'PAGE'}</small></span><ArrowRight size={15} /></button>)}</div>
+        <div className="mega-menu__links"><p>{item.label}</p>{children.map(child => <a href={menuTarget(child.target,customProduct)} className={child.representativeImage ? 'has-image' : ''} key={child.id || child.label} onClick={event => { event.preventDefault(); onNavigate(child) }}>{child.representativeImage && <img src={child.representativeImage} alt={child.representativeAlt || ''} /> }<span>{child.label}<small>{child.representativeSource === 'CUSTOM' ? 'CUSTOM ARTWORK' : child.type || 'PAGE'}</small></span><ArrowRight size={15} /></a>)}</div>
         <button className="mega-menu__feature" onClick={() => onNavigate(item.label === 'CUSTOM LAB' ? {target:customTarget} : {target:'/shop'})}>
           <img src={item.representativeImage || (item.label === 'CUSTOM LAB' ? customProduct?.image || '/assets/jersey-white.webp' : '/assets/editorial-player.webp')} alt={item.representativeAlt || ''} />
           <span>{item.label === 'CUSTOM LAB' ? 'CUSTOM LAB' : 'THE 90+ DROP'}<small>{item.label === 'CUSTOM LAB' ? 'BUILD YOURS' : 'DISCOVER THE STORY'} <ArrowRight size={14} /></small></span>
@@ -329,7 +380,7 @@ function ButtonLink({ children, light = false, onClick, className = '' }) {
 }
 
 function Hero({ content = {}, customProduct }) {
-  const customTarget = `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`
+  const customTarget = customProductTarget(customProduct)
   const legacyHeadline = /minutes nobody forgets/i.test(String(content.headline || ''))
   const headline = !content.headline || legacyHeadline ? 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.' : String(content.headline)
   const eyebrow = !content.eyebrow || /drop 01|extra time/i.test(String(content.eyebrow)) ? 'CUSTOM JERSEYS' : content.eyebrow
@@ -356,7 +407,7 @@ function Hero({ content = {}, customProduct }) {
           <button className="button button--acid hero__cta-primary" onClick={() => navigate(customTarget)}>
             <Sparkles size={16}/> {primaryLabel}
           </button>
-          <ButtonLink light onClick={() => navigate('/shop')}>SHOP JERSEYS</ButtonLink>
+          <ButtonLink light onClick={() => navigate('/category/custom-jerseys')}>SHOP JERSEYS</ButtonLink>
         </div>
         <div className="hero__quick-sports">
           <span className="hero__quick-label">POPULAR LEAGUES:</span>
@@ -461,23 +512,22 @@ function Rating({ value, reviews }) {
 function ProductCard({ product, onQuickView, className = '' }) {
   const available = sellableVariants(product)
   const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
-  const displayRating = product.rating > 0 ? product.rating : 4.9
-  const displayReviews = product.reviews > 0 ? product.reviews : 38
+  const sizeOption = (product.options || []).find(option => /^(size|fit)$/i.test(option.name))
   return (
     <article className={`product-card ${className}`}>
-      <button className="product-card__image" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
+      <a className="product-card__image" href={`/product/${product.handle || product.id}`} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(event.currentTarget.getAttribute('href')) } }}>
         <img src={product.image} alt={product.alt} loading="lazy" />
         <span className="product-badge">{product.badge || (product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP')}</span>
         <span className="heart" aria-hidden="true"><Heart size={19}/></span>
-        <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
-      </button>
-      <button className="product-card__info" onClick={() => navigate(`/product/${product.handle || product.id}`)}>
+        <span className={`quick-add ${available.length ? '' : 'is-disabled'}`} onClick={event => { event.preventDefault(); event.stopPropagation(); if (available.length) onQuickView(product) }}>{available.length ? 'QUICK VIEW' : 'SOLD OUT'} {available.length ? <Plus size={16}/> : null}</span>
+      </a>
+      <a className="product-card__info" href={`/product/${product.handle || product.id}`} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(event.currentTarget.getAttribute('href')) } }}>
         <span><strong>{product.name}</strong><small>{product.meta}</small><em>{product.customFields?.length ? 'CUSTOMIZABLE' : 'READY TO SHIP'}</em></span>
         <span className="product-card__price"><strong>{maxPrice > Number(product.price) ? `FROM ${money(product.price)}` : money(product.price)}</strong>{product.compareAt && <del>{money(product.compareAt)}</del>}</span>
-      </button>
+      </a>
       <div className="product-card__footer">
-        <Rating value={displayRating} reviews={displayReviews}/>
-        <span className="product-card__sizes">S · M · L · XL · 2XL – 7XL</span>
+        {product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}
+        {sizeOption && <span className="product-card__sizes">{sizeOption.values.join(' · ')}</span>}
       </div>
     </article>
   )
@@ -522,7 +572,7 @@ function ProductRail({ onQuickView, title = 'BEST SELLERS. YOUR WAY.', subtitle 
             <button className="slider-arrow" onClick={() => scroll('left')} aria-label="Previous products"><ArrowLeft size={16}/></button>
             <button className="slider-arrow" onClick={() => scroll('right')} aria-label="Next products"><ArrowRight size={16}/></button>
           </div>
-          <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL JERSEYS</ButtonLink>
+          <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL GEAR</ButtonLink>
         </div>
       </div>
       <div className="product-rail__tabs" role="tablist" aria-label="Starting Lineup Category Filters">
@@ -550,7 +600,24 @@ function ProductRail({ onQuickView, title = 'BEST SELLERS. YOUR WAY.', subtitle 
 }
 
 function Breadcrumbs({ items = [] }) {
-  return <nav className="breadcrumbs" aria-label="Breadcrumb"><button onClick={() => navigate('/')}>Home</button>{items.map((item, index) => <React.Fragment key={`${item.label}-${index}`}><span aria-hidden="true">/</span>{item.href ? <button onClick={() => navigate(item.href)}>{item.label}</button> : <strong aria-current="page">{item.label}</strong>}</React.Fragment>)}</nav>
+  return <nav className="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a>{items.map((item, index) => <React.Fragment key={`${item.label}-${index}`}><span aria-hidden="true">/</span>{item.href ? <a href={item.href}>{item.label}</a> : <strong aria-current="page">{item.label}</strong>}</React.Fragment>)}</nav>
+}
+
+function CatalogPagination({ page, totalPages, label = 'Products' }) {
+  if (totalPages <= 1) return null
+  const numbers = [...new Set([1, page - 1, page, page + 1, totalPages].filter(value => value >= 1 && value <= totalPages))].sort((a, b) => a - b)
+  const hrefFor = target => {
+    const url = new URL(window.location.href)
+    const { basePath } = parseCatalogPagePath(url.pathname)
+    url.searchParams.delete('page')
+    return `${catalogPagePath(basePath,target)}${url.search}`
+  }
+  const go = target => navigate(hrefFor(target))
+  return <nav className="catalog-pagination" aria-label={`${label} pagination`}>
+    <a className="catalog-pagination__previous" href={hrefFor(Math.max(1, page - 1))} aria-disabled={page === 1} onClick={event => { if (page === 1) event.preventDefault(); else { event.preventDefault(); go(page - 1) } }}><ArrowLeft size={14}/> Previous</a>
+    <div className="catalog-pagination__numbers">{numbers.map((number, index) => <React.Fragment key={number}>{index > 0 && numbers[index - 1] !== number - 1 && <span aria-hidden="true">…</span>}<a href={hrefFor(number)} className={number === page ? 'is-active' : ''} aria-current={number === page ? 'page' : undefined} onClick={event => { event.preventDefault(); go(number) }}>{number}</a></React.Fragment>)}</div>
+    <a className="catalog-pagination__next" href={hrefFor(Math.min(totalPages, page + 1))} aria-disabled={page === totalPages} onClick={event => { if (page === totalPages) event.preventDefault(); else { event.preventDefault(); go(page + 1) } }}>Next <ArrowRight size={14}/></a>
+  </nav>
 }
 
 function useMobileCols() {
@@ -630,9 +697,12 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
   )
 }
 
-function TaxonomyLanding({ league, team, products, onQuickView }) {
+function TaxonomyLanding({ league, team, products, onQuickView, page = 1 }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const filtered = products.filter(product => productMatchesTaxonomy(product, { league: league?.key, team: team?.slug }))
+  const totalPages = pageCount(filtered.length)
+  const currentPage = Math.max(1, Math.min(page, totalPages))
+  const pagedProducts = filtered.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE)
   const title = team?.name || league?.name || 'League collections'
   const teams = league?.teams || []
   const media = team?.media || league?.media
@@ -759,7 +829,7 @@ function TaxonomyLanding({ league, team, products, onQuickView }) {
       <section className="taxonomy-products section">
         {filtered.length ? (
           <div className={`product-grid is-col-${mobileCols}`}>
-            {filtered.map(product => (
+            {pagedProducts.map(product => (
               <ProductCard key={product.id} product={product} onQuickView={onQuickView} />
             ))}
           </div>
@@ -771,11 +841,12 @@ function TaxonomyLanding({ league, team, products, onQuickView }) {
             <button onClick={() => navigate('/shop')}>SHOP ALL PRODUCTS</button>
           </div>
         )}
+        <CatalogPagination page={currentPage} totalPages={totalPages} label={title}/>
       </section>
       <section className="taxonomy-related">
         <span>SHOP BY LEAGUE</span>
         <div>
-          {LEAGUE_TAXONOMY.filter(item => item.key !== league?.key).map(item => (
+          {LEAGUE_TAXONOMY.filter(item => item.key !== league?.key && products.some(product => productMatchesTaxonomy(product,{ league:item.key }))).map(item => (
             <a key={item.key} href={leaguePath(item)} onClick={event => { event.preventDefault(); navigate(leaguePath(item)) }}>
               {item.name}
               <ArrowRight size={15} />
@@ -861,7 +932,7 @@ function PlayerDiscovery({ customProduct }) {
       </div>
       <div className="player-grid">
         {cards.map(card => (
-          <button key={card.name} onClick={() => card.custom ? navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`) : navigate('/shop')}>
+          <button key={card.name} onClick={() => navigate(card.custom ? customProductTarget(customProduct) : '/shop')}>
             <img src={card.img} alt={card.name} style={{ objectPosition: `${card.pos} center` }} loading="lazy" />
             <span>{card.name}<small>{card.count} <ArrowRight size={15}/></small></span>
           </button>
@@ -871,8 +942,9 @@ function PlayerDiscovery({ customProduct }) {
   )
 }
 
-function LeagueDiscovery() {
-  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', mls: 'SOCCER', ncaa: 'COLLEGE', epl: 'SOCCER', laliga: 'SOCCER', seriea: 'SOCCER', bundesliga: 'SOCCER', soccer: 'SOCCER' }
+function LeagueDiscovery({ products = [] }) {
+  const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', nhl:'HOCKEY', mls: 'SOCCER', ncaa: 'COLLEGE', epl: 'SOCCER', laliga: 'SOCCER', seriea: 'SOCCER', bundesliga: 'SOCCER', soccer: 'SOCCER' }
+  const leagues = LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
   return (
     <section className="league-discovery section" id="leagues">
       <div className="section-title-row">
@@ -883,7 +955,7 @@ function LeagueDiscovery() {
         <ButtonLink onClick={() => navigate('/shop')}>SHOP ALL LEAGUES</ButtonLink>
       </div>
       <div className="league-discovery__grid">
-        {LEAGUE_TAXONOMY.map(league => (
+        {leagues.map(league => (
           <a
             key={league.key}
             href={leaguePath(league)}
@@ -943,7 +1015,7 @@ function CustomTeaser({ product, products = [], onAdd }) {
   return (
     <section className="custom-teaser" id="custom">
       <div className="custom-teaser__grid" aria-hidden="true" />
-      <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>PERSONALIZE<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">The artwork stays fixed.<br />Add only the name and number that make it yours.</p><button className="button button--acid" onClick={() => navigate(`/product/${product?.handle || product?.id || 'touchline'}?custom=1`)}>START PERSONALIZING <ArrowRight size={17}/></button></div>
+      <div className="custom-teaser__copy"><p>CUSTOM LAB / DESIGNER EDITION</p><h2>PERSONALIZE<br /><span>YOUR JERSEY.</span></h2><p className="custom-teaser__body">The artwork stays fixed.<br />Add only the name and number that make it yours.</p><button className="button button--acid" onClick={() => navigate(customProductTarget(product))}>START PERSONALIZING <ArrowRight size={17}/></button></div>
       <div className="custom-teaser__jersey"><Suspense fallback={<div className="home-personalizer__loading">Loading live jersey listings…</div>}><HomeJerseyPersonalizer onAdd={onAdd} product={product} products={products} /></Suspense></div>
       <div className="custom-teaser__steps"><span>DESIGN / LOCKED</span><span>NAME + NUMBER</span><span>LIVE REAR VIEW</span><span>MADE ON DEMAND</span></div>
     </section>
@@ -984,40 +1056,6 @@ function QualityProof({ product }) {
 }
 
 function CommunityProof() {
-  const reviewsRef = useRef(null)
-  const scrollReviews = direction => {
-    if (reviewsRef.current) {
-      const offset = reviewsRef.current.offsetWidth * 0.8
-      reviewsRef.current.scrollBy({ left: direction === 'left' ? -offset : offset, behavior: 'smooth' })
-    }
-  }
-
-  const reviews = [
-    {
-      author: 'Marcus T.',
-      location: 'Austin, TX',
-      product: 'Touchline Custom #10',
-      badge: 'Verified Buyer',
-      title: 'Print quality blew my expectations away',
-      text: 'Name and number feel completely embedded into the jersey fabric rather than a cheap heat transfer. Worn to 3 matchdays and through 5 washes with zero cracking.'
-    },
-    {
-      author: 'Elena R.',
-      location: 'Seattle, WA',
-      product: 'After Ninety Nightway',
-      badge: 'Verified Buyer',
-      title: 'Streetwear cut meets authentic matchday',
-      text: 'Fits perfectly over a hoodie or standalone. The subtle 90+ details and back collar stitching give it a legit high-fashion editorial vibe. Ordered a second piece.'
-    },
-    {
-      author: 'David M.',
-      location: 'Chicago, IL',
-      product: 'Custom Basketball Edition',
-      badge: 'Verified Buyer',
-      title: 'Delivered faster than promised for custom POD',
-      text: 'Turnaround was under 5 days from order to front door. Tracking was clear every step of the way. Custom number placement is spot on.'
-    }
-  ]
 
   return (
     <section className="community-proof section" id="community" aria-labelledby="community-heading">
@@ -1044,46 +1082,6 @@ function CommunityProof() {
         </div>
       </div>
 
-      <div className="community-proof__reviews">
-        <div className="community-proof__reviews-head">
-          <div className="community-proof__reviews-title">
-            <span className="community-proof__stars" aria-hidden="true">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={15} fill="#e5a914" stroke="#e5a914" />
-              ))}
-            </span>
-            <h3>VERIFIED FAN REVIEWS</h3>
-            <span className="community-proof__avg">4.9/5 AVERAGE RATING ACROSS 2,400+ ORDERS</span>
-          </div>
-          <div className="community-proof__reviews-actions">
-            <div className="product-rail__arrows">
-              <button className="slider-arrow" onClick={() => scrollReviews('left')} aria-label="Previous reviews"><ArrowLeft size={16}/></button>
-              <button className="slider-arrow" onClick={() => scrollReviews('right')} aria-label="Next reviews"><ArrowRight size={16}/></button>
-            </div>
-            <ButtonLink onClick={() => navigate('/shop')}>BROWSE ALL GEAR</ButtonLink>
-          </div>
-        </div>
-        <div ref={reviewsRef} className="community-proof__grid" tabIndex={0} aria-label="Customer review cards">
-          {reviews.map(r => (
-            <article key={r.author} className="review-card">
-              <div className="review-card__header">
-                <span className="review-card__stars" aria-hidden="true">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={13} fill="#e5a914" stroke="#e5a914" />
-                  ))}
-                </span>
-                <span className="review-card__badge"><Check size={12}/> {r.badge}</span>
-              </div>
-              <h4 className="review-card__title">"{r.title}"</h4>
-              <p className="review-card__text">{r.text}</p>
-              <div className="review-card__meta">
-                <strong>{r.author}</strong>
-                <span>{r.location} · <em>{r.product}</em></span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
     </section>
   )
 }
@@ -1145,22 +1143,25 @@ function Newsletter() {
   )
 }
 
-function Footer({ openSizeGuide, menus = [], customProduct }) {
+function Footer({ openSizeGuide, menus = [], customProduct, products = [] }) {
   const configured = (menuAtLocation(menus,'FOOTER')?.items || []).filter(item => !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
+  const visibleLeagues = LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
+  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => products.some(product => productMatchesCatalogCategory(product,category)))
   return (
     <footer>
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
       <section className="footer__leagues" aria-label="Browse by league">
         <div className="footer__leagues-copy"><span>LEAGUES</span><p>Start with the competition.<br />Stay for the team connection.</p></div>
         <div className="footer__league-grid">
-          {LEAGUE_TAXONOMY.map(league => <button key={league.key} onClick={() => navigate(leaguePath(league))}>
+          {visibleLeagues.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>
             <span className="footer__league-icon">{league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <Trophy size={18}/>}</span>
             <span><strong>{league.name}</strong><small>{league.sport}</small></span><ArrowRight size={15}/>
-          </button>)}
+          </a>)}
         </div>
       </section>
+      <nav className="footer__categories" aria-label="Shop by product category"><span>SHOP BY PRODUCT</span>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}>{category.label}</a>)}</nav>
       <div className="footer__links">
-        {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(`/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`)}>Custom lab</button></div>}
+        {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(customProductTarget(customProduct))}>Custom lab</button></div>}
         <div><span>STUDIO</span><button onClick={() => navigate('/about')}>About Extra Time</button><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/journal')}>Journal</button></div>
         <div><span>90+ CLUB</span><button onClick={() => navigate('/membership')}>Membership</button><button onClick={() => navigate('/membership#join')}>Plans & benefits</button><button onClick={() => navigate('/membership#account')}>Member account</button></div>
         <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button onClick={() => navigate('/track-order')}>Track an order</button><button onClick={() => navigate('/shipping')}>Shipping</button><button onClick={() => navigate('/returns')}>Returns</button><button onClick={() => navigate('/warranty')}>Warranty</button></div>
@@ -1173,16 +1174,17 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
   )
 }
 
-function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, hidden = false }) {
+function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, products = [], hidden = false }) {
   const [leagueOpen, setLeagueOpen] = useState(false)
   const isCustom = path === '/custom' || path === '/studio' || (path.startsWith('/product/') && new URLSearchParams(window.location.search).get('custom') === '1')
   const routeLeague = path.startsWith('/league/') || path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
+  const visibleLeagues = LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
   useEffect(() => { setLeagueOpen(false) }, [path])
   useEffect(() => { if (hidden) setLeagueOpen(false) }, [hidden])
   const defaults = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
-    { id: 'custom', label: 'Custom', target: `/product/${customProduct?.handle || customProduct?.id || 'touchline'}?custom=1`, icon: Sparkles, active: isCustom },
+    { id: 'custom', label: 'Custom', target: customProductTarget(customProduct), icon: Sparkles, active: isCustom },
     { id: 'leagues', label: 'Leagues', target: '#leagues', icon: Trophy, active: Boolean(routeLeague) || leagueOpen },
   ]
   const configured = menuAtLocation(menus,'FIXED_FOOTER_MOBILE')?.items || []
@@ -1194,7 +1196,7 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
   const openLeagueMenu = () => setLeagueOpen(current => !current)
   return <div className={`fixed-footer-stack ${hidden ? 'is-hidden' : ''}`} aria-hidden={hidden}>
     {leagueOpen && <div className="fixed-league-panel" role="menu" aria-label="League categories">
-      {LEAGUE_TAXONOMY.map(league => <button key={league.key} role="menuitem" tabIndex={hidden ? -1 : 0} className={routeLeague?.key === league.key ? 'is-active' : ''} onClick={() => { setLeagueOpen(false); navigate(leaguePath(league)) }}>
+      {visibleLeagues.map(league => <button key={league.key} role="menuitem" tabIndex={hidden ? -1 : 0} className={routeLeague?.key === league.key ? 'is-active' : ''} onClick={() => { setLeagueOpen(false); navigate(leaguePath(league)) }}>
         <span className="fixed-league-panel__icon">{league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <Trophy size={16}/>}</span><span><strong>{league.name}</strong><small>{league.sport}</small></span><ArrowRight size={14}/>
       </button>)}
     </div>}
@@ -1246,7 +1248,7 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
 
 function Home({ onQuickView, products, theme, collections = [], onAdd }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
-  const customProduct = products.find(product => product.customFields?.length) || products.find(product => /touchline/i.test(`${product.handle || ''} ${product.name || ''}`)) || featured
+  const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct || featured
   const primaryCollection = collections[0]
   const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,10) : products.slice(0,10)
   const renderBlock = id => ({
@@ -1257,7 +1259,7 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
     rail:<ProductRail key="rail" title={<>BEST SELLERS.<br /><em>YOUR WAY.</em></>} subtitle="Fan favorites, ready to personalize." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
-    leagues:<LeagueDiscovery key="leagues"/>,
+    leagues:<LeagueDiscovery key="leagues" products={products}/>,
     'custom-cta':<CustomTeaser key="custom-cta" product={customProduct} products={products} onAdd={onAdd}/>,
     'custom-options':<CustomOptions key="custom-options" product={customProduct} products={products} onAdd={onAdd}/>,
     quality:<QualityProof key="quality" product={featured}/>,
@@ -1273,12 +1275,14 @@ function Home({ onQuickView, products, theme, collections = [], onAdd }) {
   if (!homeBlocks.includes('hero')) {
     homeBlocks.unshift('hero')
   }
-  return <>{homeBlocks.map(renderBlock)}</>
+  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => products.some(product => productMatchesCatalogCategory(product,category)))
+  return <>{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}>{category.label}<ArrowRight size={16}/></a>)}</div></nav></>
 }
 
-function Shop({ onQuickView, products, collection = null }) {
+function Shop({ onQuickView, products, collection = null, category = null, page = 1 }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const params = new URLSearchParams(window.location.search)
+  const pageSize = CATALOG_PAGE_SIZE
   const [color, setColor] = useState(params.get('color')?.toUpperCase() || 'ALL')
   const [sizeFilter, setSizeFilter] = useState(params.get('size')?.toUpperCase() || 'ALL')
   const [teamFilter, setTeamFilter] = useState(params.get('team')?.toLowerCase() || 'ALL')
@@ -1290,8 +1294,11 @@ function Shop({ onQuickView, products, collection = null }) {
   const [sort, setSort] = useState(params.get('sort') || 'FEATURED')
   const [filterOpen, setFilterOpen] = useState(false)
   const filterRef = useRef(null)
+  const filterStateRef = useRef([color,sizeFilter,teamFilter,priceFilter,group,customOnly,inStock,typeFilter,sort].join('|'))
   useDialogFocus(filterOpen, filterRef, () => setFilterOpen(false))
-  const baseProducts = collection ? sortCollectionProducts(products,collection) : products
+  const baseProducts = category
+    ? products.filter(product => productMatchesCatalogCategory(product, category))
+    : collection ? sortCollectionProducts(products,collection) : products
   const productColours = product => {
     const name = optionNameLike(product,['color','colour'])
     return name ? [...new Set(product.variants.flatMap(variant => variant.values?.[name] || []))] : [product.color].filter(Boolean)
@@ -1356,14 +1363,22 @@ function Shop({ onQuickView, products, collection = null }) {
     return true
   })
   shown = sort === 'FEATURED' && collection ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
+  const totalPages = Math.max(1, Math.ceil(shown.length / pageSize))
+  const currentPage = Math.max(1, Math.min(page, totalPages))
+  const pagedProducts = shown.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   useEffect(() => {
     const next = new URL(window.location.href)
+    const fingerprint = [color,sizeFilter,teamFilter,priceFilter,group,customOnly,inStock,typeFilter,sort].join('|')
+    const changed = fingerprint !== filterStateRef.current
+    filterStateRef.current = fingerprint
     const set = (key,value,empty) => value === empty ? next.searchParams.delete(key) : next.searchParams.set(key,value)
     set('color',color,'ALL'); set('size',sizeFilter,'ALL'); set('team',teamFilter,'ALL'); set('price',priceFilter,'ALL'); set('group',group,'ALL'); set('type',typeFilter,'ALL'); set('sort',sort,'FEATURED')
     customOnly ? next.searchParams.set('custom','1') : next.searchParams.delete('custom')
     inStock ? next.searchParams.set('stock','1') : next.searchParams.delete('stock')
+    if (changed && page > 1) next.pathname = parseCatalogPagePath(next.pathname).basePath
     window.history.replaceState({},'',next.pathname + next.search)
+    if (changed && page > 1) window.dispatchEvent(new PopStateEvent('popstate'))
   }, [color,sizeFilter,teamFilter,priceFilter,group,typeFilter,customOnly,inStock,sort])
 
   const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setTeamFilter('ALL'); setPriceFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false) }
@@ -1371,7 +1386,7 @@ function Shop({ onQuickView, products, collection = null }) {
 
   return (
     <main className="shop-page">
-      <section className="catalog-compact-bar" aria-label={collection?.name || 'Shop catalog'}>
+      <section className="catalog-compact-bar" aria-label={category?.label || collection?.name || 'Shop catalog'}>
         <div className="catalog-compact-bar__main">
           {collection?.hero ? (
             <div className="catalog-compact-bar__avatar">
@@ -1385,20 +1400,21 @@ function Shop({ onQuickView, products, collection = null }) {
           <div className="catalog-compact-bar__title-group">
             <nav className="catalog-compact-bar__crumb" aria-label="Breadcrumb">
               <button type="button" onClick={() => navigate('/shop')}>SHOP</button>
-              {collection && (
+              {(collection || category) && (
                 <>
                   <span aria-hidden="true">/</span>
-                  <strong aria-current="page">{collection.name}</strong>
+                  <strong aria-current="page">{category?.label || collection.name}</strong>
                 </>
               )}
             </nav>
-            <h1 className="catalog-compact-bar__title">{(collection?.name || 'ALL JERSEYS').toUpperCase()}</h1>
+            <h1 className="catalog-compact-bar__title">{(category?.label || collection?.name || 'ALL GEAR').toUpperCase()}</h1>
           </div>
         </div>
         <div className="catalog-compact-bar__side">
           <span className="catalog-compact-bar__badge">{shown.length} {shown.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
         </div>
       </section>
+      {category && <section className="category-intro section"><p>{category.description}</p><nav aria-label="Related jersey categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}>{item.label}<ArrowRight size={13}/></a>)}</nav></section>}
       <StorefrontTrust compact />
       <div className="filter-bar">
         <div className="desktop-filters">
@@ -1446,7 +1462,7 @@ function Shop({ onQuickView, products, collection = null }) {
         {inStock && <button onClick={() => setInStock(false)}>IN STOCK <X size={12}/></button>}
         <button onClick={clear}>CLEAR ALL</button>
       </div>}
-      <section className="shop-grid section">{shown.length ? <div className={`product-grid is-col-${mobileCols}`}>{shown.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
+      <section className="shop-grid section">{shown.length ? <><div className={`product-grid is-col-${mobileCols}`}>{pagedProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div><CatalogPagination page={currentPage} totalPages={totalPages} label={category?.label || collection?.name || 'Shop'}/></> : <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}</section>
       {filterOpen && <div className="filter-sheet__backdrop" onClick={() => setFilterOpen(false)} aria-hidden="true"/>}
       <div ref={filterRef} className={`filter-sheet ${filterOpen ? 'is-open' : ''}`} aria-hidden={!filterOpen} inert={!filterOpen} role="dialog" aria-modal="true" aria-label="Filter products" tabIndex={-1}>
         <div className="filter-sheet__header"><h2>FILTER</h2><IconButton label="Close filters" onClick={() => setFilterOpen(false)}><X/></IconButton></div>
@@ -1565,11 +1581,12 @@ function productCommerceConfig(product) {
     : Array.isArray(source.bulkOffers)
       ? source.bulkOffers
       : DEFAULT_QUANTITY_DISCOUNT_POLICY
+  const headwear = isHeadwearProduct(product)
   return {
     print: {
-      title: !printTitle || /design-led print detail|production note/i.test(printTitle) ? 'PERFORMANCE FABRIC. PRINT THAT LASTS.' : printTitle,
-      copy: !printCopy || /designer-defined print area|artwork stays fixed/i.test(printCopy) ? 'Breathable performance jersey fabric uses durable full-colour sublimation for sharp colour that stays part of the garment. Names, numbers and requested artwork are checked for placement, contrast and legibility before production.' : printCopy,
-      note: !printNote || /70\s*%|30\s*%|artwork locked|personal layer/i.test(printNote) ? 'Breathable knit · sublimated colour · custom quality check' : printNote
+      title: headwear ? 'SEE EVERY ANGLE. CHOOSE YOUR FIT.' : !printTitle || /design-led print detail|production note/i.test(printTitle) ? 'PERFORMANCE FABRIC. PRINT THAT LASTS.' : printTitle,
+      copy: headwear ? 'Use the product gallery to review the visible color and design. Choose from the fit or size options listed for this hat before checkout.' : !printCopy || /designer-defined print area|artwork stays fixed/i.test(printCopy) ? 'Breathable performance jersey fabric uses durable full-colour sublimation for sharp colour that stays part of the garment. Names, numbers and requested artwork are checked for placement, contrast and legibility before production.' : printCopy,
+      note: headwear ? 'Product photos · listed fit options · checkout confirmation' : !printNote || /70\s*%|30\s*%|artwork locked|personal layer/i.test(printNote) ? 'Breathable knit · sublimated colour · custom quality check' : printNote
     },
     delivery: {
       production: delivery.production || '3–5 business days',
@@ -1584,23 +1601,24 @@ function ProductPurchaseHighlights({ product, personalized = false }) {
   const config = productCommerceConfig(product)
   const offers = config.bulkOffers
   const estimate = buildDeliveryEstimate(config.delivery)
+  const headwear = isHeadwearProduct(product)
   return <section className="pdp-highlights" id="pdp-highlights" aria-label="Product delivery and purchase highlights">
     <article className="pdp-highlight-card pdp-highlight-card--delivery" id="pdp-delivery-timeline">
       <div className="pdp-highlight-card__eyebrow">
         <PackageCheck size={17}/>
-        <span>ESTIMATED DELIVERY</span>
+        <span>{headwear ? 'SHIPPING & DELIVERY' : 'ESTIMATED DELIVERY'}</span>
         <span className={`pdp-highlight-badge ${personalized ? 'is-personalized' : ''}`}>
-          {personalized ? 'CUSTOM ARTWORK' : 'STANDARD JERSEY'}
+          {headwear ? 'HEADWEAR' : personalized ? 'CUSTOM ARTWORK' : 'STANDARD JERSEY'}
         </span>
       </div>
-      <h2>FROM ORDER TO YOUR DOOR.</h2>
-      <div className="pdp-delivery-track" aria-label="Order, production and delivery timeline">
+      <h2>{headwear ? 'CONFIRM THE DETAILS AT CHECKOUT.' : 'FROM ORDER TO YOUR DOOR.'}</h2>
+      {headwear ? <p className="pdp-estimate-note">Shipping options, charges and the delivery estimate are confirmed for your address at checkout. Tracking is available after the carrier accepts the order.</p> : <><div className="pdp-delivery-track" aria-label="Order, production and delivery timeline">
         <div className="is-current"><i/><strong>ORDERED</strong><span>{estimate.ordered}</span><small>{estimate.orderCutoff}</small></div>
         <div className={personalized ? 'is-active-step' : ''}><i/><strong>{personalized ? 'CUSTOM CRAFT' : 'PRODUCTION'}</strong><span>{estimate.production}</span><small>{personalized ? 'Studio review & print' : estimate.productionDays}</small></div>
         <div><i/><strong>DELIVERY</strong><span>{estimate.delivered}</span><small>Estimated arrival</small></div>
       </div>
       <div className="pdp-shipping-pill"><Globe2 size={16}/><strong>{config.delivery.shippingLabel}</strong></div>
-      <p className="pdp-estimate-note">{personalized ? 'Timeline includes custom name & number review by the studio. Orders placed today start processing immediately.' : 'Estimate for orders placed today. Weekends, holidays and destination can change the final date shown at checkout.'}</p>
+      <p className="pdp-estimate-note">{personalized ? 'Timeline includes custom name & number review by the studio. Orders placed today start processing immediately.' : 'Estimate for orders placed today. Weekends, holidays and destination can change the final date shown at checkout.'}</p></>}
     </article>
     <article className="pdp-highlight-card pdp-highlight-card--bundle pdp-highlight-card--featured">
       <div className="pdp-highlight-card__eyebrow"><Tag size={17}/><span>QUANTITY SAVINGS</span></div>
@@ -1613,7 +1631,7 @@ function ProductPurchaseHighlights({ product, personalized = false }) {
       )}
     </article>
     <article className="pdp-highlight-card pdp-highlight-card--dark">
-      <div className="pdp-highlight-card__eyebrow"><Sparkles size={16}/><span>JERSEVO PRINT & BUILD</span></div>
+      <div className="pdp-highlight-card__eyebrow"><Sparkles size={16}/><span>{headwear ? 'PRODUCT DETAILS' : 'JERSEVO PRINT & BUILD'}</span></div>
       <h2>{config.print.title}</h2>
       <p>{config.print.copy}</p>
       <span className="pdp-highlight-card__note">{config.print.note}</span>
@@ -1652,6 +1670,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const customFields = product.customFields || []
   const options = product.options || []
   const sizeName = optionNameLike(product,['size'])
+  const headwear = isHeadwearProduct(product)
   const customIntent = Boolean(customFields.length && (startPersonalized || new URLSearchParams(window.location.search).get('custom') === '1' || initialPreview))
   const initial = { ...(savedDraft?.selections || {}) }
   // Merchant Center links each size/color offer to the same PDP with a stable
@@ -1796,7 +1815,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
     }
   }
   const add = async () => {
-    if (!selectedVariant) { if (sizeName && !selections[sizeName]) setFinder(true); else setCustomError('Choose every product option before adding to your bag.'); return }
+    if (!selectedVariant) { if (!headwear && sizeName && !selections[sizeName]) setFinder(true); else setCustomError('Choose every product option before adding to your bag.'); return }
     if (soldOut) { setCustomError('This variation is sold out. Choose another option.'); return }
     if (!personalized) { onAdd(product,{variant:selectedVariant,options:selections}); setAdded(true); return }
     const missing = customFields.filter(field => field.required && !String(customValues[field.key] || '').trim())
@@ -1887,6 +1906,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
                       width={item.width || undefined}
                       height={item.height || undefined}
                       loading={index === 0 ? 'eager' : 'lazy'}
+                      fetchPriority={index === 0 ? 'high' : 'auto'}
                       decoding="async"
                     />
                     {item.isAi && <span className="pdp__gallery-ai-badge"><Sparkles size={11}/> AI PREVIEW</span>}
@@ -1967,12 +1987,12 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
           </div>
         )}
         <button className="pdp__club" onClick={()=>navigate('/membership')}><Ticket size={18}/><span><small>90+ CLUB BENEFIT</small><strong>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'Your member price is ready':'SAVE 20–40% ON ELIGIBLE PIECES'}</strong><em>{['ACTIVE','TRIALING'].includes(account?.membership?.status)?'The secure member price is calculated in your bag.':'Member pricing plus eligible standard-shipping benefits.'}</em></span><ArrowRight size={16}/></button>
-        {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); const isSize = option.name === sizeName; const displayValue = value => isSize ? canonicalSize(value) : value; const values = isSize ? sortSizes(option.values) : option.values; return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{isSize && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] ? displayValue(selections[option.name]) : 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${displayValue(value)}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : displayValue(value)}</button> })}</div></div> })}
+        {options.map(option => { const swatch = ['color','colour'].includes(option.name.toLowerCase()); const isSize = option.name === sizeName; const displayValue = value => isSize ? canonicalSize(value) : value; const values = isSize ? sortSizes(option.values) : option.values; return <div className="option-block" key={option.name}><div><span>{option.name.toUpperCase()}</span>{isSize && !headwear && <button onClick={() => setFinder(true)}>FIND MY SIZE</button>}<strong>{selections[option.name] ? displayValue(selections[option.name]) : 'Choose'}</strong></div><div className={swatch ? 'swatches swatches--dynamic' : 'sizes'}>{values.map(value => { const other = Object.fromEntries(Object.entries(selections).filter(([name]) => name !== option.name)); const available=availableOptionValue(product,option.name,value,other); return <button key={value} disabled={!available} className={`${selections[option.name] === value ? 'is-active' : ''} ${swatch ? 'dynamic-swatch' : ''}`} style={swatch ? {'--swatch':swatchColor(value)} : undefined} aria-label={`${option.name} ${displayValue(value)}${available ? '' : ' unavailable'}`} onClick={() => chooseOption(option.name,value)}>{swatch ? <span>{value}</span> : displayValue(value)}</button> })}</div></div> })}
         {selectedVariant && <p className={`pdp-stock ${soldOut ? 'is-out' : Number(selectedVariant.inventory) <= 5 ? 'is-low' : ''}`}><i/>{soldOut ? 'Sold out' : Number(selectedVariant.inventory) <= 5 ? `Only ${selectedVariant.inventory} left` : 'In stock'}</p>}
        {customFields.length > 0 && <section className={`pdp-custom ${personalized ? 'is-open' : ''}`}><div className="pdp-custom__choice" aria-label="Order type"><button type="button" className={`pdp-custom__choice-btn pdp-custom__choice-btn--standard ${!personalized ? 'is-active' : ''}`} onClick={() => chooseOrderType(false)}><span className="pdp-custom__choice-title">Standard</span><small className="pdp-custom__choice-sub">Clean blank jersey as shown</small></button><button type="button" className={`pdp-custom__choice-btn pdp-custom__choice-btn--personalized ${personalized ? 'is-active' : ''}`} onClick={() => chooseOrderType(true)}><span className="pdp-custom__choice-badge"><Sparkles size={10}/> POPULAR CHOICE</span><span className="pdp-custom__choice-title"><Sparkles size={14} className="pdp-custom__choice-sparkle"/> Personalized</span><small className="pdp-custom__choice-sub">{customFields.slice(0,2).map(field => field.label).join(' + ')}{customFields.length > 2 ? ' + more' : ''} (Free)</small></button></div>{personalized && <div className="pdp-custom__body"><div className="pdp-custom__intro"><span><Lock size={14}/> DESIGNER ARTWORK STAYS FIXED</span><p>Only the fields enabled for this listing can change.</p></div><div className="pdp-custom__fields">{customFields.map(field => <CustomFieldControl key={field.id || field.key} field={field} value={customValues[field.key]} assetRef={assetRefs[field.key]} preview={attachedPreview} onLogoPreview={attachLogoPreview} onChange={(value,assetRef) => updateCustom(field,value,assetRef)} productId={product.id}/>)}</div>{hasUploadedLogo&&<label className="pdp-logo-consent"><input type="checkbox" checked={logoConsent} onChange={event=>{setLogoConsent(event.target.checked);setCustomError('');setAdded(false)}}/><span><strong>I own this logo or have permission to use it.</strong><small>Customer-supplied artwork stays private to this request and does not imply team or league affiliation.</small></span></label>}<label className="pdp-custom__note"><span>Note to the studio <small>Optional</small></span><textarea value={customNote} onChange={event => {setCustomNote(event.target.value.slice(0,500));setCustomError('');setAdded(false)}} placeholder="Placement, spelling or anything the studio should confirm…"/><small>{customNote.length}/500</small></label>{attachedPreview && <div className="pdp-custom__ai-ready"><Sparkles size={15}/><span><strong>{attachedPreview.mode?.includes('logo')?'Logo preview attached':'Visual preview attached'}</strong><small>Stored securely and reviewed before production.</small></span><img src={attachedPreview.imageUrl} alt="Attached personalisation preview"/></div>}<button className={`pdp-custom__ai ${hasStructuredPreview ? '' : 'is-unavailable'}`} onClick={previewWithAi} disabled={!hasStructuredPreview || previewingAi} title={hasStructuredPreview ? 'Render your personal details directly onto this jersey.' : 'Personalization will be reviewed manually by the studio.'}><Sparkles size={18} className="pdp-custom__ai-icon"/><span><strong>{previewingAi ? 'RENDERING CUSTOM JERSEY…' : hasStructuredPreview ? (attachedPreview ? 'UPDATE & REVIEW CUSTOM JERSEY' : 'REVIEW WITH CUSTOM JERSEY') : 'VISUAL PREVIEW AWAITING SETUP'}</strong><small>{previewingAi ? 'Analyzing jersey design & applying custom details…' : hasStructuredPreview ? (attachedPreview ? 'Click to re-render preview with your latest changes.' : 'Instant AI mockup · See your customized name & number on this jersey live') : 'Personalization will be reviewed manually by the studio.'}</small></span><span className="pdp-custom__ai-action">{hasStructuredPreview ? <ArrowRight size={17}/> : <Lock size={16}/>}</span></button><button type="button" className="pdp-custom__studio-link" onClick={openAi}><Sparkles size={12}/> Edit with AI in Studio</button>{customError && <p className="pdp-custom__error" role="alert">{customError}</p>}</div>}</section>}
         <button className={`pdp__add ${added ? 'is-added' : ''}`} onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING CUSTOM REQUEST…' : added ? <><Check size={17}/> ADDED TO BAG</> : !selectedVariant ? 'CHOOSE OPTIONS TO ADD' : soldOut ? 'SOLD OUT' : `${personalized ? 'ADD PERSONALIZED' : 'ADD TO BAG'} — ${money(currentPrice)}`}</button>
         <div className="pdp__trust-line" aria-label="Checkout and order assurances"><span><Lock size={14}/> Secure checkout</span><span><PackageCheck size={14}/> Tracked delivery</span><span><ShieldCheck size={14}/> {personalized ? 'Custom checked' : 'Quality checked'}</span></div>
-        <div className="pdp-delivery-badge" aria-label="Estimated delivery timing">
+        {headwear ? <div className="pdp-delivery-badge" aria-label="Delivery information"><div className="pdp-delivery-badge__top"><div className="pdp-delivery-badge__title"><Truck size={15} className="pdp-delivery-badge__icon"/><span>DELIVERY ESTIMATE AT CHECKOUT</span></div></div><div className="pdp-delivery-badge__details"><span>Shipping options and timing are confirmed before payment.</span></div></div> : <div className="pdp-delivery-badge" aria-label="Estimated delivery timing">
           <div className="pdp-delivery-badge__top">
             <div className="pdp-delivery-badge__title">
               <Truck size={15} className="pdp-delivery-badge__icon" />
@@ -2006,13 +2026,13 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
               <Globe2 size={11} /> {commerceConfig.delivery.shippingLabel}
             </span>
           </div>
-        </div>
-        <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || 'A performance jersey made for match-day stories and personal details.'}</p><p><strong>Fit & care</strong>Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.</p></div></details></div>
+        </div>}
+        <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || (headwear ? 'Review product photos and listed details.' : 'A performance jersey made for match-day stories and personal details.')}</p><p><strong>Fit & care</strong>{headwear ? 'Choose a listed fit or size option and follow the care label supplied with the product.' : 'Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.'}</p></div></details></div>
       </aside>
     </div>
     <ProductPurchaseHighlights product={product} personalized={personalized}/><ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
-    <ProductRail title="THE SAME FEELING" items={products.filter(item => item.id !== product.id).slice(0,4)} onQuickView={onQuickView}/>
-    <SizeFinder open={finder} onClose={() => setFinder(false)} product={product} sizeOptionName={sizeName || 'Size'} selections={selections} onRecommend={({size,audienceOptionName,audienceValue}) => { setSelections(current => ({...current,...(audienceOptionName ? {[audienceOptionName]:audienceValue} : {}),...(sizeName ? {[sizeName]:size} : {})})); setAdded(false); setCustomError('') }}/>
+    <ProductRail title="MORE FROM THIS COLLECTION" subtitle="Explore related teams and styles." items={relatedProducts(product,products,8)} onQuickView={onQuickView}/>
+    {!headwear && <SizeFinder open={finder} onClose={() => setFinder(false)} product={product} sizeOptionName={sizeName || 'Size'} selections={selections} onRecommend={({size,audienceOptionName,audienceValue}) => { setSelections(current => ({...current,...(audienceOptionName ? {[audienceOptionName]:audienceValue} : {}),...(sizeName ? {[sizeName]:size} : {})})); setAdded(false); setCustomError('') }}/>}
     <div className="mobile-sticky-atc"><div className="mobile-sticky-atc__product"><img src={displayVariant?.image || product.image} alt=""/><span><strong>{money(currentPrice)}</strong><small>{selectedVariant ? `${selectionSummary} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</small></span></div><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'BUY NOW') : 'CHOOSE OPTIONS'}</button></div>
   </main>
 }
@@ -2032,116 +2052,6 @@ function VaultPage() {
   )
 }
 
-const TRUST_PAGES = {
-  shipping: {
-    eyebrow:'The trust desk / delivery',
-    title:'On the way.',
-    accent:'With a plan.',
-    intro:'Tracked delivery, clear hand-offs and a live quote before you pay. The checkout estimate is always the final word for your destination.',
-    image:'/assets/hero-tunnel.webp',
-    imageAlt:'A football player walking through a lit stadium tunnel before a match.',
-    facts:[['US standard','5–8 business days'],['Express option','2–4 business days'],['Free threshold','$100+ in the US'],['Tracking','Sent at carrier hand-off']],
-    sections:[
-      {heading:'Quote first. Promise second.',body:'Shipping is calculated from the destination, order contents and selected speed. Checkout shows the live delivery charge, tax treatment and estimated window before payment is confirmed.',list:['Standard tracked delivery is the default option where available.','Express delivery is shown only when the destination and current production queue support it.','The order confirmation keeps the destination and selected method attached to the order.']},
-      {heading:'How the clock works',body:'The delivery window starts after the order is confirmed. Standard pieces move into preparation first; personalized pieces enter production after the artwork direction has been reviewed.',list:['Payment provider confirmation creates the order.','The studio reviews personalization before production begins.','Tracking appears in the order status page after the carrier accepts the parcel.']},
-      {heading:'Current destinations',body:'The launch checkout currently supports the United States, Canada, United Kingdom, Australia, Singapore, Vietnam, Germany, France and Japan. Availability, taxes and rates can change by destination.',list:['If your country is not shown, do not pay through a different route.','Use the private tracking link for order questions; the order token keeps details out of public URLs.']}
-    ],
-    faqs:[['What is the free-shipping threshold?','US orders over $100 qualify for free standard shipping. The checkout quote confirms eligibility after the address and cart are validated.'],['Can I change my address?','Send the request before the order is handed to the carrier. After hand-off, the carrier rules control any redirect or address correction.'],['Do personalized pieces take longer?','They can. Artwork is reviewed before production, and checkout or the order status page is the source of truth for the current estimate.']]
-  },
-  returns: {
-    eyebrow:'The trust desk / returns',
-    title:'No surprises.',
-    accent:'Just the right fit.',
-    intro:'We want the piece to feel right when it arrives. This page separates standard returns, defects and personalized work so the next step is clear.',
-    image:'/assets/jersey-oxblood.webp',
-    imageAlt:'Oxblood Extra Time football jersey hanging against a dark studio background.',
-    facts:[['Standard pieces','30-day return window'],['Condition','Unused, unworn, unwashed'],['Personalized work','Review before production'],['Defects','Contact us promptly']],
-    sections:[
-      {heading:'Standard pieces',body:'Eligible standard pieces can be returned within 30 days of delivery when they are unused, unworn and in original condition. The item must be packaged safely so it can travel back without damage.',list:['Start from the order status page and keep the order number ready.','Return shipping and any refund timing are confirmed during the return review.','Refunds go back through the original payment provider after inspection.']},
-      {heading:'Personalized work',body:'Names, numbers, photos and other approved artwork are made for one order. Review the artwork direction carefully before approval; once production begins, a change-of-mind return may not be available.',list:['Spelling and sizing are the customer’s responsibility after approval.','A production issue, wrong item or transit damage is handled separately from a change-of-mind return.','Do not send a replacement or second payment before the studio confirms the next step.']},
-      {heading:'Damage or wrong item',body:'Photograph the package and piece as soon as you notice an issue. Keep the packaging until the review is complete; it helps the studio and carrier investigate the hand-off.',list:['Use the private order link so the correct order record is attached.','Include the order number, a short description and clear photos of the issue.']}
-    ],
-    faqs:[['When does the 30-day window start?','The window starts on the delivery date recorded by the carrier. If a parcel is split, each item is considered from its own delivery date.'],['Are sale items returnable?','The checkout and order record show any item-specific restriction before payment. If no restriction is shown, the standard eligibility rules apply.'],['Can I return a personalized jersey?','A change-of-mind return may not be available once artwork has been approved and production has started. Defects and studio errors are still reviewed.']]
-  },
-  warranty: {
-    eyebrow:'The trust desk / warranty',
-    title:'Made to last.',
-    accent:'Reviewed with care.',
-    intro:'If a piece arrives with a manufacturing defect or a studio mistake, we want a clear path to review it. This page explains what to document, what is normally covered and what happens next.',
-    image:'/assets/jersey-black.webp',
-    imageAlt:'Black Extra Time football jersey photographed in a high-contrast studio.',
-    facts:[['Coverage','Manufacturing and studio errors'],['Timing','Report promptly after delivery'],['Care','Follow the care label'],['Outcome','Repair, replacement or refund review']],
-    sections:[
-      {heading:'What this covers',body:'We review problems that appear to come from production or fulfilment: damaged construction, print or embroidery defects, a wrong item, or an item missing from the shipment. This review is separate from a change-of-mind return.',list:['Keep the item and packaging while the review is open.','Photographs of the full piece and the affected area help the studio compare the order record.','If the studio made the error, we will explain the available remedy before asking you to send anything back.']},
-      {heading:'What is usually not a defect',body:'Normal wear, accidental damage, changes caused by washing outside the care instructions, a fit choice or customer-supplied artwork approved before production may not qualify as a manufacturing defect.',list:['Check the care and fit guidance before washing or altering a piece.','Do not repair, customise or discard an item before the review is complete.','A personalized piece can still be reviewed for a studio or manufacturing error even when change-of-mind returns are unavailable.']},
-      {heading:'How to start a review',body:'Open the private order status link and keep the order number ready. Describe what changed, when you noticed it and whether the packaging was damaged in transit.',list:['Attach clear photos without payment details or unrelated personal information.','Use the private order route so the request is matched to the correct product, size and production record.','The studio may ask for one additional image or a return inspection before confirming the outcome.']},
-      {heading:'What happens next',body:'The team checks the order, payment and fulfilment record, then confirms whether the issue is a production defect, transit damage, wrong item or normal wear. Any repair, replacement or refund is agreed before the next step.',list:['Refunds use the original payment provider when a refund is the approved remedy.','Do not pay a second time or ship a replacement until the studio confirms the instruction.','Your consumer-law rights are not removed by this review process.']}
-    ],
-    faqs:[['Is there a separate warranty period?','The store currently publishes a defect review process rather than a separate fixed warranty term. Report a suspected production or fulfilment problem promptly after delivery so it can be assessed with the order record and applicable consumer law.'],['What evidence should I send?','Include the order number, a short description and clear photos of the full item, the issue and the packaging if it was damaged. Never include card numbers.'],['What if the carrier damaged the parcel?','Keep the packaging and photograph it before disposal. The studio will coordinate the review with the carrier and tell you whether the next step is a replacement, refund or additional inspection.']]
-  },
-  privacy: {
-    eyebrow:'The trust desk / privacy',
-    title:'Your details.',
-    accent:'Handled with care.',
-    intro:'The store needs a few details to make, charge and deliver an order. It should never need more than that to give you a good experience.',
-    image:'/assets/editorial-player.webp',
-    imageAlt:'Football player in an editorial studio portrait wearing an Extra Time jersey.',
-    facts:[['Used for','Orders, delivery and support'],['Payments','Handled by the provider'],['References','Private to the order'],['Public media','Never without permission']],
-    sections:[
-      {heading:'What we collect',body:'Depending on the action, Extra Time may receive your name, email, delivery address, order details, selected size and personalization instructions. Optional reference images stay attached to the private request that needs them.',list:['Cart and session storage keeps the bag working on your device.','Order records keep the details needed for fulfillment, support and legal accounting.','Payment details are entered with the payment provider; the store does not keep full card numbers.']},
-      {heading:'What we do with it',body:'We use information to validate a cart, prepare a quote, create an order, deliver it, prevent abuse and answer support requests. We do not turn customer references into public product media without permission.',list:['Operational providers receive only the information needed for their job.','Staff access is limited to the order and workflow context they need.','AI artwork directions are treated as private order inputs and reviewed before production.']},
-      {heading:'Your choices',body:'You can ask to review or correct the details attached to an order. Some records must remain for fraud prevention, tax or accounting obligations; the team will explain any limit instead of silently ignoring the request.',list:['Email support@jersevo.com or use the private order link for an order-specific question.','Sign out on shared devices and do not upload someone else’s image without their permission.','The storefront supports Meta / Facebook Pixel conversion tracking to measure e-commerce purchases and match personalized product catalog views.','We will update this page when a material privacy practice changes.']},
-      {heading:'Contact for privacy requests',body:'Jersevo operates the Extra Time storefront from Texas, United States. Privacy, correction and deletion requests can be sent to support@jersevo.com.',list:['Include the relevant order number, but never include a full payment card number.','We may need to verify that the request belongs to the customer or account concerned.','A verified mailing address will be added here when the business address is finalised.']}
-    ],
-    faqs:[['Does Extra Time sell customer data?','No. Customer order details and references are used to operate the store, not sold as an audience list.'],['How are reference images handled?','They remain private to the relevant customization request and are used to review the requested artwork direction.'],['How do I request a correction?','Use the order status link or account session and include the order number so the request can be matched safely.']]
-  },
-  terms: {
-    eyebrow:'The trust desk / terms',
-    title:'Read the fine print.',
-    accent:'Then make it yours.',
-    intro:'A clear purchase flow matters more than clever wording. These terms explain what happens from the first click to the final hand-off.',
-    image:'/assets/jersey-black.webp',
-    imageAlt:'Black Extra Time football jersey photographed in a high-contrast studio.',
-    facts:[['Currency','USD at checkout'],['Order state','Pending until verified payment'],['Personalization','Approved before production'],['Affiliation','Independent fan apparel']],
-    sections:[
-      {heading:'The purchase contract',body:'Product information, available variants, price, taxes and shipping are shown before payment. An order is pending while the provider confirms payment; it becomes confirmed only after a verified provider response.',list:['A browser return alone is not proof of payment.','If stock, price or a provider response changes, the order may pause for review.','The order status page is the record to use when a payment result is unclear.']},
-      {heading:'Personalization and content',body:'You confirm the spelling, number, size and artwork direction you submit. Do not upload content that you do not have permission to use, that impersonates another person or that infringes a team, league or creator’s rights.',list:['The studio may refuse or pause a request that is unlawful, unsafe or impossible to produce.','Artwork approval is a production checkpoint, not a promise that every requested mark is an official logo or affiliation.','Extra Time is independent fan apparel and is not an official team or league store.']},
-      {heading:'Prices, availability and changes',body:'Small-batch products can sell out. We may correct an obvious listing error, retire a product or update a policy before a new order is placed. A material change to an existing confirmed order is handled with the customer rather than hidden in the interface.',list:['Taxes and shipping are calculated for the checkout destination.','The payment provider’s terms also apply to the payment step.','The published policy pages are part of the pre-purchase information set.']},
-      {heading:'Business and support',body:'Jersevo operates the Extra Time storefront from Texas, United States. Questions about an order, these terms or a policy can be sent to support@jersevo.com.',list:['Extra Time is the storefront brand; Jersevo is the business name supplied for the operator.','Do not send payment card numbers or account passwords by email.','A verified mailing and return address is provided through the applicable support or return process when required.']}
-    ],
-    faqs:[['When is my order confirmed?','After the payment provider returns a verified result and the server records the order as paid. The browser’s success page is not enough on its own.'],['Can Extra Time use my custom design publicly?','Not by default. Customer references and order directions stay private unless you separately give permission for a case study or editorial feature.'],['Are team names and logos official?','No. Extra Time is an independent fan-apparel studio. Product pages should make that distinction clear.']]
-  },
-  accessibility: {
-    eyebrow:'The trust desk / access',
-    title:'Everyone gets in.',
-    accent:'Every step matters.',
-    intro:'The store is built for keyboard, touch and assistive technology. If a route or control blocks you, the issue belongs with us—not with you.',
-    image:'/assets/jersey-white.webp',
-    imageAlt:'White Extra Time football jersey shown clearly against a pale studio background.',
-    facts:[['Keyboard','Visible focus and usable controls'],['Screen readers','Labels and meaningful headings'],['Motion','Reduced-motion friendly'],['Contrast','Text and controls checked']],
-    sections:[
-      {heading:'How the interface is built',body:'Navigation uses real buttons and links, headings follow the page structure and important product images include descriptive alternative text. Forms keep labels next to the fields they describe.',list:['The cart, checkout and order tracking flows can be reached without a pointer.','Focus is kept inside open dialogs and returned to the control that opened them.','Private account, checkout and order routes are excluded from public indexing.']},
-      {heading:'Motion and media',body:'Motion supports an action rather than competing with the content. Decorative imagery is not the only way to understand a product or policy, and reduced-motion preferences are respected where the browser exposes them.',list:['Product images include an alt description or are marked decorative when they add no information.','Video controls remain native and are not required to complete a purchase.','Error and success states use text as well as colour.']},
-      {heading:'If something is blocked',body:'Note the page URL, the action you were trying to complete and the device or assistive technology involved. Use the order status or account route when the issue concerns an existing purchase.',list:['Do not include payment card details in a support request.','A screenshot can help explain a visual issue, but it is optional.','We prioritise checkout, account access and order tracking barriers first.']}
-    ],
-    faqs:[['Can I shop without a mouse?','Yes. Header navigation, product options, the bag and checkout use keyboard-operable controls with visible focus states.'],['Are product photos described?','Published product and taxonomy images receive alt text from the catalogue or a safe fallback. Decorative marks are hidden from assistive technology.'],['How do I report a barrier?','Use the order status or account route for an existing purchase and include the page URL and action that failed.']]
-  },
-  journal: {
-    eyebrow:'The journal / behind the drop',
-    title:'The stories stay.',
-    accent:'The shirts move on.',
-    intro:'A small archive of the references, rituals and late-match details that shape each Extra Time release.',
-    image:'/assets/editorial-player.webp',
-    imageAlt:'Editorial portrait of a football player wearing a dark Extra Time jersey.',
-    facts:[['Field notes','Design references'],['Drop archive','Past stories'],['Studio view','Material and fit'],['Next issue','When the next story is ready']],
-    sections:[
-      {heading:'The tunnel before the noise',body:'The first reference is always the moment before the match: the walk, the floodlights and the quiet confidence of a shirt that has not met the pitch yet.',list:['Explore the current drop for the pieces built from this season’s visual language.','The Vault keeps past stories visible without pretending they are still available.']},
-      {heading:'Made for the game after the game',body:'Extra Time designs for the memory that stays after the final whistle. Names, numbers, colour and small references make a piece personal without turning it into a costume.',list:['Read the product story before choosing a standard or personalized version.','Use the size guide and care notes before adding a piece to the bag.']},
-      {heading:'A living archive',body:'New entries will be published when there is a real story to tell. Until then, the shop, league pages and Vault are the most useful ways to explore the studio.',list:['Browse by league or team to find the collection route.','Join 90+ Club for early access to selected drops.']}
-    ],
-    faqs:[['How often is the journal updated?','When a real studio story is ready. The page will not pretend that a placeholder is a finished editorial.'],['Can I submit a story?','The studio is not accepting a public submission form yet. Keep an eye on the current drop and account updates for future releases.'],['Where can I find older releases?','The Vault keeps selected past drops as an archive; sold-out pieces are not represented as available inventory.']]
-  }
-}
 
 function AboutPage() {
   return <main className="about-page">
@@ -2184,11 +2094,14 @@ function setLink(rel, href, extra = {}) {
   return node
 }
 
-function useRouteMetadata({ path, product, collection, league, team }) {
+function useRouteMetadata({ path, page = 1, paginated = false, search = '', product, collection, category, league, team, products = [], loading = false, unavailable = false }) {
   useEffect(() => {
+    // Preserve authoritative initial HTML while the browser refreshes data.
+    if (loading || unavailable) return
     const publicOrigin = import.meta.env.VITE_SITE_URL || 'https://www.jersevo.com'
     const storefrontBrand = 'Jersevo'
-    const productTitle = product?.seo?.title || product?.name
+    const pdpMetadata = product ? productSeoMetadata(product,publicOrigin) : null
+    const productTitle = pdpMetadata?.title
     const collectionTitle = collection?.seo?.title || collection?.name
     const taxonomyTitle = team?.name || league?.name
     const withBrand = value => /(?:extra time|jersevo)/i.test(value || '') ? value : `${value} — ${storefrontBrand}`
@@ -2202,44 +2115,44 @@ function useRouteMetadata({ path, product, collection, league, team }) {
       '/accessibility':['Accessibility — Extra Time',TRUST_PAGES.accessibility.intro],
       '/journal':['The Journal — Extra Time',TRUST_PAGES.journal.intro]
     }[path]
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : taxonomyTitle ? withBrand(`${taxonomyTitle} custom fan gear`) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop the drop — Extra Time' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
-    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : (team ? `Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
-    const description = seoDescription(rawDescription, '', 160)
+    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : category ? withBrand(category.label) : taxonomyTitle ? withBrand(`${taxonomyTitle} fan gear`) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop fan gear by league and team — Jersevo' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
+    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : category ? category.description : (team ? `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/shop' ? 'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const description = pdpMetadata?.description || seoDescription(rawDescription, '', 160)
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
-    const canonical = `${publicOrigin.replace(/\/$/, '')}${canonicalPath}`
+    const catalogRoute = path === '/shop' || path.startsWith('/category/') || path.startsWith('/collection/') || path.startsWith('/league/') || path.startsWith('/team/')
+    const query = new URLSearchParams(search)
+    const requestedPage = Number.parseInt(query.get('page') || '1', 10)
+    const canonical = pdpMetadata?.canonical || `${publicOrigin.replace(/\/$/, '')}${catalogRoute ? catalogPagePath(canonicalPath,page) : canonicalPath}`
     const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
-    const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team))
-    const indexable = !privateRoute && !unresolvedRoute
+    const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection) || (path.startsWith('/category/') && !category) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team))
+    const indexableProducts = products.filter(item => String(item.seoStatus || item.seo?.status || '').toUpperCase() === 'INDEXABLE')
+    const catalogCount = category ? indexableProducts.filter(item => productMatchesCatalogCategory(item,category)).length : collection ? indexableProducts.filter(item => (collection.products || []).includes(item.id)).length : team ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league?.key, team:team.slug })).length : league ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league.key })).length : indexableProducts.length
+    const pageValid = !catalogRoute || !query.has('page') && (!paginated || page >= 2 && page <= pageCount(catalogCount))
+    const faceted = catalogRoute && query.size > 0
+    const productIndexable = !product || pdpMetadata.indexable
+    const collectionIndexable = !collection || String(collection.seo?.status || '').toUpperCase() === 'INDEXABLE' && catalogCount >= 6
+    const knownPublicRoute = ['/', '/shop', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
+    const indexable = knownPublicRoute && !privateRoute && !unresolvedRoute && !faceted && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
     const routePage = routeMeta ? TRUST_PAGES[path.slice(1)] : null
+    const pageTitle = catalogRoute && page > 1 ? `${title} · Page ${page}` : title
     const image = product?.image || collection?.hero || routePage?.image || `${publicOrigin}/assets/hero-tunnel.webp`
     const absoluteImage = new URL(image,publicOrigin).toString()
     document.documentElement.lang='en-US'
-    document.title=indexable ? title : `${title} · Extra Time`
-    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name',storefrontBrand,true); setMeta('og:locale','en_US',true); setMeta('og:title',title,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${title} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',title); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
+    document.title=pageTitle
+    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name',storefrontBrand,true); setMeta('og:locale','en_US',true); setMeta('og:title',pageTitle,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${pageTitle} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',pageTitle); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
     setLink('canonical',canonical); setLink('alternate',canonical,{hreflang:'en-US'}); setLink('alternate',canonical,{hreflang:'x-default'})
     let schema=document.getElementById('route-structured-data')
-    if(indexable && (product || collection || league)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
+    if(indexable && (product || collection || category || league || routeMeta)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
       const breadcrumb=[{'@type':'ListItem',position:1,name:'Home',item:`${publicOrigin}/`}]
       if(product){
-        const canonicalProduct=`${publicOrigin}/product/${encodeURIComponent(product.handle || product.id)}`
-        const taxonomy = productTaxonomyValues(product)
-        const productLeague = findLeague(taxonomy.league)
-        const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
-        breadcrumb.push({'@type':'ListItem',position:2,name:'Shop',item:`${publicOrigin}/shop`})
-        if(productLeague) breadcrumb.push({'@type':'ListItem',position:breadcrumb.length + 1,name:productLeague.name,item:`${publicOrigin}${leaguePath(productLeague)}`})
-        if(productTeam) breadcrumb.push({'@type':'ListItem',position:breadcrumb.length + 1,name:productTeam.name,item:`${publicOrigin}${teamPath(productLeague.key,productTeam)}`})
-        breadcrumb.push({'@type':'ListItem',position:breadcrumb.length + 1,name:product.name,item:canonicalProduct})
-        const prices=(product.variants || []).map(row=>Number(row.price)).filter(value=>Number.isFinite(value) && value>0)
-        const lowest=prices.length ? Math.min(...prices) : Number(product.price || 0)
-        const inventory=Number(product.inventory || 0)
-        const variantOffers=(product.variants || []).filter(variant => variant.status === 'ACTIVE' && Number.isFinite(Number(variant.price)) && Number(variant.price) > 0).slice(0,80).map(variant => ({'@type':'Offer',url:`${canonicalProduct}?variant=${encodeURIComponent(variant.id)}`,priceCurrency:'USD',price:Number(variant.price).toFixed(2),sku:variant.sku,availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`}}))
-        const productSchema={'@context':'https://schema.org','@type':'Product','@id':`${canonicalProduct}#product`,name:product.name,description,image:[...new Set([product.image,...(product.media || []).map(item=>item.url)].filter(Boolean).map(item=>new URL(item,publicOrigin).toString()))],url:canonicalProduct,brand:{'@type':'Brand',name:'Extra Time'},category:'Apparel & Accessories > Clothing > Jerseys',sku:product.variants?.[0]?.sku,offers:variantOffers.length ? (variantOffers.length === 1 ? variantOffers[0] : variantOffers) : {'@type':'Offer',url:canonicalProduct,priceCurrency:'USD',price:lowest.toFixed(2),availability:`https://schema.org/${inventory>0?'InStock':'OutOfStock'}`,itemCondition:'https://schema.org/NewCondition',seller:{'@type':'Organization',name:BUSINESS_DETAILS.legalName,alternateName:BUSINESS_DETAILS.brand,url:`${publicOrigin}/`,email:BUSINESS_DETAILS.email,address:{'@type':'PostalAddress',addressRegion:'TX',addressCountry:'US'}}}}
-        if(Number(product.rating)>0 && Number(product.reviews)>0) productSchema.aggregateRating={'@type':'AggregateRating',ratingValue:Number(product.rating).toFixed(1),reviewCount:Number(product.reviews)}
-        schema.textContent=JSON.stringify([productSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
-      } else if (collection) {
-        const canonicalCollection=`${publicOrigin}/collection/${encodeURIComponent(collection.handle || collection.id)}`
-        breadcrumb.push({'@type':'ListItem',position:2,name:collection.name,item:canonicalCollection})
-        schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:collection.name,description:collection.description,url:canonicalCollection,image:collection.hero ? [new URL(collection.hero,publicOrigin).toString()] : undefined,inLanguage:'en-US'},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
+        schema.textContent=JSON.stringify(productStructuredData(product,publicOrigin))
+      } else if (collection || category) {
+        const canonicalCollection=collection ? `${publicOrigin}/collection/${encodeURIComponent(collection.handle || collection.id)}` : ''
+        const categoryCanonical = category ? `${publicOrigin}/category/${category.handle}` : canonicalCollection
+        const pageName = category?.label || collection.name
+        const pageDescription = category?.description || collection.description
+        breadcrumb.push({'@type':'ListItem',position:2,name:'Shop',item:`${publicOrigin}/shop`},{'@type':'ListItem',position:3,name:pageName,item:categoryCanonical})
+        schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:pageName,description:pageDescription,url:categoryCanonical,image:collection?.hero ? [new URL(collection.hero,publicOrigin).toString()] : undefined,inLanguage:'en-US'},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
       } else if (routeMeta) {
         const routePageSchema = {
           '@context':'https://schema.org',
@@ -2265,18 +2178,20 @@ function useRouteMetadata({ path, product, collection, league, team }) {
         schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:taxonomyTitle,description,url:canonicalTaxonomy,inLanguage:'en-US',about:{'@type':'SportsOrganization',name:taxonomyTitle}},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
       }
     } else schema?.remove()
-  }, [path,product?.id,product?.updatedAt,collection?.id,league?.key,team?.slug])
+  }, [path,page,paginated,search,product?.id,product?.updatedAt,collection?.id,category?.handle,league?.key,team?.slug,products,loading,unavailable])
 }
 
 function App() {
   const [route, setRoute] = useState(() => window.location.pathname + window.location.search + window.location.hash)
-  const path = route.split(/[?#]/)[0]
+  const rawPath = route.split(/[?#]/)[0]
+  const { basePath:path, page:catalogPage, paginated } = parseCatalogPagePath(rawPath)
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
-  const [products,setProducts] = useState(() => readLocal('jersevo_cached_catalog', null) || initialCatalog)
+  const [products,setProducts] = useState(() => productBootstrap ? [productBootstrap.product,...(productBootstrap.related || [])] : (import.meta.env.DEV ? initialCatalog : []))
   const [menus,setMenus] = useState([])
+  const [navigationProducts,setNavigationProducts] = useState([])
   const [collections,setCollections] = useState([])
   const [theme,setTheme] = useState(() => adminTheme)
-  const [catalogState,setCatalogState] = useState({ loading:!path.startsWith('/admin'), source:'preview', error:null })
+  const [catalogState,setCatalogState] = useState({ loading:!path.startsWith('/admin'), source:'preview', error:null, scope:productBootstrap ? 'single' : 'none' })
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState(() => readLocal('extra-time-cart-v2', []))
@@ -2292,16 +2207,24 @@ function App() {
   const [installPrompt, setInstallPrompt] = useState(null)
   const [appInstalled, setAppInstalled] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const lastScrollY = useRef(window.scrollY)
-  const customProduct = products.find(product => product.customFields?.length) || products[0]
+  const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct
   const productSlug = path.startsWith('/product/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : ''
   const routeProduct = productSlug ? findStorefrontProduct(products,productSlug) : null
   const collectionHandle = path.startsWith('/collection/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : new URLSearchParams(search).get('collection')
   const routeCollection = collectionHandle ? collections.find(collection => collection.handle === collectionHandle || collection.id === collectionHandle) : null
+  const routeCategory = /^\/category\/[a-z0-9-]+$/.test(path) ? catalogCategoryByHandle(decodeURIComponent(path.split('/')[2] || '')) : null
   const routeLeague = path.startsWith('/league/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
   const routeTeam = path.startsWith('/team/') ? findTeam(routeLeague?.key, decodeURIComponent(path.split('/')[3] || '')) : null
-  useRouteMetadata({ path, product:routeProduct, collection:routeCollection, league:routeLeague, team:routeTeam })
+  useRouteMetadata({ path, page:catalogPage, paginated, search, product:routeProduct, collection:routeCollection, category:routeCategory, league:routeLeague, team:routeTeam, products, loading:catalogState.loading, unavailable:catalogState.source === 'unavailable' })
   useEffect(() => {
     initMetaPixel()
+  }, [])
+  useEffect(() => {
+    let active = true
+    fetch('/catalog-navigation.json').then(response => response.ok ? response.json() : []).then(rows => {
+      if (active && Array.isArray(rows)) setNavigationProducts(rows)
+    }).catch(()=>{})
+    return () => { active = false }
   }, [])
   useEffect(() => {
     trackPageView(path)
@@ -2325,25 +2248,28 @@ function App() {
     let active=true
     setCatalogState(current => ({...current,loading:true}))
     Promise.all([
-      fetchStorefrontCatalog(initialCatalog),
+      productSlug ? fetchStorefrontProduct(productSlug) : fetchStorefrontCatalog(initialCatalog),
       fetchStorefrontMenus([]),
       fetchStorefrontCollections([]),
       fetchStorefrontTheme(null)
     ]).then(([catalogResult,menuResult,collectionResult,themeResult]) => {
       if(!active)return
-      if (catalogResult.data?.length) {
+      if (catalogResult.source === 'supabase' || catalogResult.data?.length) {
         setProducts(catalogResult.data)
-        try { window.localStorage.setItem('jersevo_cached_catalog', JSON.stringify(catalogResult.data)) } catch {}
-      }
+      } else if (!productSlug) setProducts([])
       const nextCollections = collectionResult.data || []
       const nextTheme = themeResult.data || null
       setMenus(resolveMenuImages(menuResult.data || [], { products:catalogResult.data || [], collections:nextCollections, pages:nextTheme?.pages || [] }))
       setCollections(nextCollections)
       setTheme(nextTheme)
-      setCatalogState({loading:false,source:catalogResult.source,error:catalogResult.error})
-    }).catch(error => active && setCatalogState({loading:false,source:'preview',error:error instanceof Error ? error.message : 'Catalogue unavailable.'}))
+      setCatalogState({loading:false,source:catalogResult.source,error:catalogResult.error,scope:catalogResult.source === 'supabase' ? (productSlug ? 'single' : 'full') : 'none'})
+    }).catch(error => {
+      if (!active) return
+      if (!productSlug) setProducts([])
+      setCatalogState({loading:false,source:'unavailable',error:error instanceof Error ? error.message : 'Catalogue unavailable.',scope:'none'})
+    })
     return () => { active=false }
-  }, [path.startsWith('/admin')])
+  }, [path.startsWith('/admin'),productSlug])
   useEffect(() => {
     const tokens=theme?.tokens || {}
     const safeColor=value => /^#[0-9a-f]{6}$/i.test(value || '') ? value : null
@@ -2382,13 +2308,13 @@ function App() {
     return()=>{active=false}
   },[cart.length,catalogState.loading,path])
   useEffect(() => {
-    if (catalogState.loading || catalogState.source !== 'supabase') return
+    if (catalogState.loading || catalogState.source !== 'supabase' || productSlug) return
     setCart(current => {
       const result=reconcileCart(current,products)
       if(result.issues.length)setCartNotice(result.issues.map(issue=>issue.message).join(' '))
       return result.items
     })
-  }, [products,catalogState.loading,catalogState.source])
+  }, [products,catalogState.loading,catalogState.source,productSlug])
   useEffect(() => {
     const onPop = () => {
       setRoute(window.location.pathname + window.location.search + window.location.hash)
@@ -2403,7 +2329,7 @@ function App() {
   }, [])
   useEffect(() => {
     if (path !== '/custom') return
-    const id = new URLSearchParams(window.location.search).get('product') || 'touchline'
+    const id = new URLSearchParams(window.location.search).get('product') || featuredCustomProduct?.handle
     const product = findStorefrontProduct(products,id) || customProduct
     if(!product)return
     const next = `/product/${product.handle || product.id}?custom=1`
@@ -2527,15 +2453,17 @@ function App() {
   }).filter(item => item.qty > 0))
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
   let page
-  if (!path.startsWith('/admin') && catalogState.loading && !products.length) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
+  const catalogRoute = path === '/' || path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/category/') || path.startsWith('/league/') || path.startsWith('/team/')
+  if (!path.startsWith('/admin') && catalogState.loading && (!products.length || catalogRoute && catalogState.scope !== 'full')) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
   else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} theme={theme} collections={collections} onAdd={addToCart}/>
-  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
-  else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding league={routeLeague} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
-  else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding league={routeLeague} team={routeTeam} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
+  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop key={path} page={catalogPage} onQuickView={setQuickViewProduct} products={products} collection={routeCollection}/>
+  else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={routeCategory.handle} page={catalogPage} onQuickView={setQuickViewProduct} products={products} category={routeCategory}/> : <NotFound/>
+  else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding league={routeLeague} page={catalogPage} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
+  else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding league={routeLeague} team={routeTeam} page={catalogPage} products={products} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path === '/custom') {
-    const customProductId = new URLSearchParams(window.location.search).get('product') || 'touchline'
+    const customProductId = new URLSearchParams(window.location.search).get('product') || featuredCustomProduct?.handle
     const requested = findStorefrontProduct(products,customProductId) || customProduct
     page = requested ? <ProductPage key={requested.id} product={requested} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized account={account}/> : <NotFound/>
   }
@@ -2551,11 +2479,11 @@ function App() {
   else page = <NotFound/>
   return (
     <>
-      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} customProduct={customProduct} account={account}/>
+      <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} customProduct={customProduct} account={account} products={navigationProducts.length ? navigationProducts : products}/>
       {catalogState.error && <div className="catalog-runtime-notice" role="status">Live catalogue is temporarily unavailable. Purchasing is paused until fresh published data is available.</div>}
       {page}
-      <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct}/>
-      <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} menus={menus} customProduct={customProduct} hidden={footerActuallyHidden}/>
+      <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct} products={navigationProducts.length ? navigationProducts : products}/>
+      <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} menus={menus} customProduct={customProduct} products={navigationProducts.length ? navigationProducts : products} hidden={footerActuallyHidden}/>
       <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)} onPromptUsed={() => setInstallPrompt(null)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={products}/>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} account={account} memberQuote={memberQuote} quoteLoading={quoteLoading} quoteError={quoteError} cartNotice={cartNotice} onCheckout={openCheckout} products={products} onAdd={addToCart}/>

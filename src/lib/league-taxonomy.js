@@ -85,6 +85,25 @@ export const LEAGUE_TAXONOMY = [
     ].map(([slug, name]) => ({ slug, name, media: teamMedia('nba', slug, name) }))
   },
   {
+    key: 'nhl',
+    name: 'NHL',
+    sport: 'Hockey',
+    description: 'Explore NHL hockey fan gear by team, including jerseys, caps and game-day layers.',
+    media: leagueMedia('nhl'),
+    teams: [
+      ['boston-bruins', 'Boston Bruins'], ['new-york-rangers', 'New York Rangers'],
+      ['chicago-blackhawks', 'Chicago Blackhawks'], ['vegas-golden-knights', 'Vegas Golden Knights'],
+      ['new-york-islanders', 'New York Islanders'], ['los-angeles-kings', 'Los Angeles Kings'],
+      ['pittsburgh-penguins', 'Pittsburgh Penguins'], ['toronto-maple-leafs', 'Toronto Maple Leafs'],
+      ['philadelphia-flyers', 'Philadelphia Flyers'], ['colorado-avalanche', 'Colorado Avalanche'],
+      ['vancouver-canucks', 'Vancouver Canucks'], ['san-jose-sharks', 'San Jose Sharks'],
+      ['seattle-kraken', 'Seattle Kraken'], ['anaheim-ducks', 'Anaheim Ducks'],
+      ['new-jersey-devils', 'New Jersey Devils'], ['detroit-red-wings', 'Detroit Red Wings'],
+      ['washington-capitals', 'Washington Capitals'], ['buffalo-sabres', 'Buffalo Sabres'],
+      ['edmonton-oilers', 'Edmonton Oilers'], ['st-louis-blues', 'St. Louis Blues']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('nhl', slug, name) }))
+  },
+  {
     key: 'mls',
     name: 'MLS',
     sport: 'Soccer',
@@ -381,9 +400,17 @@ export function productMatchesTaxonomy(product, { league = '', team = '' } = {})
   const values = productTaxonomyValues(product)
   const leagueNeedle = taxonomySlug(league)
   const teamNeedle = normalizeTeamSlug(league, team)
-  const isSoccerMatch = leagueNeedle === 'soccer' && (['mls', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'soccer'].includes(taxonomySlug(values.league)) || values.haystack.includes('soccer'))
-  const leagueMatch = !leagueNeedle || isSoccerMatch || taxonomySlug(values.league) === leagueNeedle || values.haystack.includes(leagueNeedle.replace(/-/g, ' '))
-  const teamMatch = !teamNeedle || taxonomySlug(values.team) === teamNeedle || values.haystack.includes(teamNeedle.replace(/-/g, ' '))
+  const structuredLeague = taxonomySlug(values.league)
+  const structuredTeam = taxonomySlug(values.team)
+  const isSoccerMatch = leagueNeedle === 'soccer' && (structuredLeague
+    ? ['mls', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'soccer'].includes(structuredLeague)
+    : values.haystack.includes('soccer'))
+  const leagueMatch = !leagueNeedle || isSoccerMatch || (structuredLeague
+    ? structuredLeague === leagueNeedle
+    : values.haystack.includes(leagueNeedle.replace(/-/g, ' ')))
+  const teamMatch = !teamNeedle || (structuredTeam
+    ? structuredTeam === teamNeedle
+    : values.haystack.includes(teamNeedle.replace(/-/g, ' ')))
   return leagueMatch && teamMatch
 }
 

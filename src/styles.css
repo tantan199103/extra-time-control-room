@@ -34,6 +34,9 @@ button:disabled { cursor:not-allowed; opacity:.55; }
 [inert] { pointer-events:none; }
 img { display: block; width: 100%; }
 a { color: inherit; }
+.product-card__image, .product-card__info { text-decoration:none; }
+.breadcrumbs a { text-decoration:none; }
+.breadcrumbs a:hover { text-decoration:underline; }
 ::selection { background: var(--acid); color: var(--ink); }
 :focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
 
@@ -79,6 +82,12 @@ a { color: inherit; }
 }
 .desktop-nav > button::after { content: ''; position: absolute; left: 0; right: 100%; bottom: 19px; height: 1px; background: var(--ink); transition: right 160ms ease; }
 .desktop-nav > button:hover::after, .desktop-nav > button:focus-visible::after { right: 0; }
+.desktop-nav__item { display:flex; align-items:center; gap:3px; position:relative; font:600 13px var(--headline); letter-spacing:.04em; white-space:nowrap; }
+.desktop-nav__item > a { display:flex; align-items:center; height:100%; text-decoration:none; }
+.desktop-nav__item > button { display:grid; place-items:center; width:18px; height:26px; }
+.desktop-nav__item > a:hover, .desktop-nav__item > a:focus-visible { text-decoration:underline; text-underline-offset:6px; }
+.desktop-nav__item > a, .desktop-nav__item > button { font:inherit; }
+@media (min-width: 781px) and (max-width: 960px) { .desktop-nav { display:none; }.mobile-menu-button { display:grid; }.site-header { grid-template-columns:1fr auto; }.header-actions { grid-column:2; } }
 .header-actions { display: flex; gap: 24px; align-items: center; }
 .text-action { display: inline-flex; gap: 7px; align-items: center; white-space: nowrap; }
 .header-install { color: #8c7500; }
@@ -107,6 +116,12 @@ a { color: inherit; }
 .mega-menu__links { border-left: 1px solid var(--line); padding-left: 32px; }
 .mega-menu__links p { margin: 0 0 26px; color: var(--muted); font: 600 11px var(--body); }
 .mega-menu__links button { width: 100%; padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; text-align:left; font: 600 20px var(--headline); text-transform: uppercase; }
+.mega-menu__links a { width:100%; padding:10px 0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; text-align:left; font:600 20px var(--headline); text-transform:uppercase; text-decoration:none; }
+.mega-menu__links a.has-image { grid-template-columns:34px minmax(0,1fr) auto; }
+.mega-menu__links a > img { width:34px; height:34px; object-fit:cover; background:#deddd7; }
+.mega-menu__links a > span { min-width:0; display:grid; gap:2px; }
+.mega-menu__links a > span small { color:var(--muted); font:600 7px var(--body); letter-spacing:.06em; }
+.mega-menu__links a:hover { color:var(--signal); }
 .mega-menu__links button.has-image { grid-template-columns:34px minmax(0,1fr) auto; }
 .mega-menu__links button > img { width:34px; height:34px; object-fit:cover; background:#deddd7; filter:grayscale(.25); }
 .mega-menu__links button > span { min-width:0; display:grid; gap:2px; }
@@ -121,6 +136,10 @@ a { color: inherit; }
 .mega-menu__taxonomy-leagues, .mega-menu__taxonomy-teams { min-width:0; border-left:1px solid var(--line); padding-left:28px; }
 .mega-menu__taxonomy-leagues > p, .mega-menu__taxonomy-teams > p { margin:0 0 13px; color:var(--muted); font:600 10px var(--body); letter-spacing:.08em; }
 .mega-menu__taxonomy-leagues > button { width:100%; padding:9px 0; display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:10px; align-items:center; border-bottom:1px solid var(--line); text-align:left; }
+.mega-menu__taxonomy-leagues > a { width:100%; padding:9px 0; display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:10px; align-items:center; border-bottom:1px solid var(--line); text-decoration:none; }
+.mega-menu__taxonomy-leagues > a > img { width:30px; height:34px; object-fit:contain; }
+.mega-menu__taxonomy-leagues > a span { display:grid; gap:2px; }
+.mega-menu__taxonomy-leagues > a:hover { color:var(--signal); }
 .mega-menu__taxonomy-leagues > button > img { width:30px; height:34px; object-fit:contain; }
 .mega-menu__taxonomy-leagues > button span { display:grid; gap:2px; }
 .mega-menu__taxonomy-leagues strong { font:700 22px var(--headline); }
@@ -130,6 +149,15 @@ a { color: inherit; }
 .mega-menu__taxonomy-teams > div { break-inside:avoid; margin-bottom:12px; }
 .mega-menu__taxonomy-teams > div > span { display:block; margin-bottom:5px; color:var(--signal); font:700 10px var(--body); }
 .mega-menu__taxonomy-teams > div button { width:100%; min-height:22px; padding:3px 0; display:grid; grid-template-columns:20px minmax(0,1fr); gap:6px; align-items:center; color:var(--muted); text-align:left; font-size:9px; }
+.mega-menu__taxonomy-teams > div a { min-height:22px; padding:3px 0; display:grid; grid-template-columns:20px minmax(0,1fr); gap:6px; align-items:center; color:var(--muted); font-size:9px; text-decoration:none; }
+.mega-menu__taxonomy-teams > div a img { width:18px; height:18px; object-fit:contain; }
+.mega-menu__taxonomy-teams > div a:hover { color:var(--ink); text-decoration:underline; }
+.mega-menu--categories { grid-template-columns:minmax(180px,.35fr) minmax(0,1fr); height:auto; min-height:330px; }
+.mega-menu__category-grid { border-left:1px solid var(--line); padding-left:32px; }
+.mega-menu__category-grid > p { margin:0 0 16px; color:var(--muted); font:600 10px var(--body); letter-spacing:.08em; }
+.mega-menu__category-grid > div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 26px; }
+.mega-menu__category-grid a { min-height:49px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; font:700 18px var(--headline); text-decoration:none; }
+.mega-menu__category-grid a:hover { color:var(--signal); }
 .mega-menu__taxonomy-teams > div button img { width:18px; height:18px; object-fit:contain; }
 .mega-menu__taxonomy-teams > div button.is-fallback img { opacity:.35; filter:grayscale(1); }
 .mega-menu__taxonomy-teams > div button:hover { color:var(--ink); text-decoration:underline; }
@@ -998,11 +1026,11 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .footer__leagues-copy > span { color:var(--acid); font:700 9px var(--body); letter-spacing:.09em; }
 .footer__leagues-copy p { margin:0; color:#989891; font-size:11px; line-height:1.45; }
 .footer__league-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:#363633; }
-.footer__league-grid button { min-height:74px; padding:11px 12px; display:grid; grid-template-columns:30px minmax(0,1fr) 15px; align-items:center; gap:9px; background:var(--ink); color:var(--chalk); text-align:left; }
-.footer__league-grid button:hover { background:#242422; color:var(--acid); }
+.footer__league-grid a { min-height:74px; padding:11px 12px; display:grid; grid-template-columns:30px minmax(0,1fr) 15px; align-items:center; gap:9px; background:var(--ink); color:var(--chalk); text-align:left; text-decoration:none; }
+.footer__league-grid a:hover { background:#242422; color:var(--acid); }
 .footer__league-icon { width:30px; height:35px; display:grid; place-items:center; }
 .footer__league-icon img { width:26px; height:32px; object-fit:contain; }
-.footer__league-grid button > span:nth-child(2) { display:grid; gap:3px; min-width:0; }
+.footer__league-grid a > span:nth-child(2) { display:grid; gap:3px; min-width:0; }
 .footer__league-grid strong { font:700 14px var(--headline); }
 .footer__league-grid small { color:#8f8f88; font-size:8px; letter-spacing:.04em; }
 .footer__links { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); padding: 54px 0 80px; }
@@ -1502,6 +1530,27 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 .filter-bar select { appearance: none; border: 0; background: transparent; padding-right: 2px; outline: 0; }
 .mobile-filter { display: none; }
 .shop-grid { padding-top: 48px; padding-bottom: 140px; background: var(--paper); }
+.category-intro { padding-top:18px; padding-bottom:18px; border-bottom:1px solid var(--line); background:var(--paper); display:flex; justify-content:space-between; align-items:center; gap:30px; }
+.category-intro p { margin:0; max-width:490px; color:var(--muted); font-size:12px; line-height:1.5; }
+.category-intro nav { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px 17px; }
+.category-intro a { display:inline-flex; align-items:center; gap:5px; font:600 10px var(--body); text-decoration:none; border-bottom:1px solid var(--ink); padding-bottom:3px; }
+.catalog-pagination { display:flex; align-items:center; justify-content:center; gap:22px; margin:48px auto 0; padding:18px 0; border-top:1px solid var(--line); font:700 11px var(--body); }
+.catalog-pagination > a { display:inline-flex; align-items:center; gap:7px; text-decoration:none; }
+.catalog-pagination a[aria-disabled="true"] { opacity:.35; pointer-events:none; }
+.catalog-pagination__numbers { display:flex; align-items:center; gap:5px; }
+.catalog-pagination__numbers a { min-width:30px; min-height:30px; display:grid; place-items:center; text-decoration:none; }
+.catalog-pagination__numbers a.is-active { background:var(--ink); color:var(--chalk); }
+.catalog-pagination__numbers span { padding:0 5px; color:var(--muted); }
+.footer__categories { display:flex; align-items:center; flex-wrap:wrap; gap:9px 18px; padding:17px 0 23px; border-bottom:1px solid #363633; }
+.footer__categories span { color:#8c8c86; font:600 9px var(--body); letter-spacing:.08em; margin-right:8px; }
+.footer__categories a { color:#c4c3bc; font:600 10px var(--body); text-decoration:none; }
+.footer__categories a:hover { color:var(--acid); text-decoration:underline; }
+.home-category-index { display:grid; grid-template-columns:minmax(230px,.45fr) minmax(0,1fr); gap:6vw; background:var(--chalk); }
+.home-category-index > div:first-child > span { color:var(--muted); font:600 9px var(--body); letter-spacing:.08em; }
+.home-category-index h2 { margin:18px 0 0; font:700 clamp(48px,6vw,86px)/.8 var(--headline); }
+.home-category-index > div:last-child { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 24px; }
+.home-category-index a { min-height:58px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; font:700 22px var(--headline); text-decoration:none; }
+.home-category-index a:hover { color:var(--signal); }
 .shop-grid .product-grid { row-gap: 70px; }
 .filter-sheet { display: none; }
 .filter-sheet__backdrop { display: none; }
@@ -2012,7 +2061,7 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 
 @media (max-width: 1100px) {
   .site-header { grid-template-columns: 160px 1fr auto; }
-  .desktop-nav { gap: 18px; }
+  .desktop-nav { gap: 12px; }.desktop-nav__item { font-size:11px; }
   .desktop-account { display: none; }
   .product-grid { grid-template-columns: repeat(2,1fr); row-gap: 54px; }
   .story-card { right: 0; }
@@ -2146,7 +2195,7 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .vault-teaser { padding:76px 16px;grid-template-columns:1fr;gap:75px }.vault-teaser h2{font-size:69px;margin:30px 0 38px}.vault-list button{grid-template-columns:50px 1fr 20px;padding:23px 0}.vault-list small{display:none}.vault-list strong{font-size:22px}
   .manifesto { text-align:left; }.manifesto h2{font-size:55px;margin-top:35px}.manifesto h2.outline{-webkit-text-stroke:1px var(--ink)}.manifesto > div{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:45px;justify-content:start}
   .newsletter { min-height:620px;padding:70px 16px;grid-template-columns:1fr;align-content:center;gap:65px }.newsletter h2{font-size:21vw}.newsletter form{justify-self:stretch}.newsletter__success{justify-self:stretch}.newsletter__number{font-size:100vw;bottom:-25vw}
-  footer { padding:50px 16px calc(92px + env(safe-area-inset-bottom)) }.pdp + footer { padding-bottom:calc(158px + env(safe-area-inset-bottom)) }.footer__leagues{display:block;padding:25px 0 27px}.footer__leagues-copy{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:16px}.footer__leagues-copy p{text-align:right;font-size:9px}.footer__league-grid{grid-template-columns:1fr 1fr}.footer__league-grid button{min-height:66px;padding:9px}.footer__league-grid strong{font-size:13px}.footer__links{grid-template-columns:1fr 1fr;row-gap:38px;padding:38px 0 55px}.footer__wordmark{font-size:25.5vw}.footer__legal{display:grid;gap:8px}.footer__legal span:nth-child(2){display:none}
+  footer { padding:50px 16px calc(92px + env(safe-area-inset-bottom)) }.pdp + footer { padding-bottom:calc(158px + env(safe-area-inset-bottom)) }.footer__leagues{display:block;padding:25px 0 27px}.footer__leagues-copy{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:16px}.footer__leagues-copy p{text-align:right;font-size:9px}.footer__league-grid{grid-template-columns:1fr 1fr}.footer__league-grid a{min-height:66px;padding:9px}.footer__league-grid strong{font-size:13px}.footer__links{grid-template-columns:1fr 1fr;row-gap:38px;padding:38px 0 55px}.footer__wordmark{font-size:25.5vw}.footer__legal{display:grid;gap:8px}.footer__legal span:nth-child(2){display:none}
   .fixed-footer-stack { position:fixed; z-index:65; left:8px; right:8px; bottom:max(8px, env(safe-area-inset-bottom)); display:block; will-change:transform,opacity; transition:transform 220ms cubic-bezier(.22,.61,.36,1),opacity 180ms ease; }
   .fixed-footer-stack.is-hidden { transform:translateY(calc(100% + 18px + env(safe-area-inset-bottom))); opacity:0; pointer-events:none; }
   .fixed-league-panel { margin-bottom:6px; padding:6px; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(10,10,10,.98); color:var(--chalk); border:1px solid #3a3a36; box-shadow:0 12px 34px rgba(0,0,0,.28); }
@@ -2197,6 +2246,9 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .mobile-filter { display:flex; align-items:center; gap:6px; font-size:10px; padding:5px 8px; background:var(--chalk); border:1px solid var(--line); border-radius:4px; }
   .mobile-grid-toggle { display:inline-flex; }
   .shop-grid, .taxonomy-products { padding-left:10px !important; padding-right:10px !important; padding-top:14px !important; padding-bottom:calc(85px + env(safe-area-inset-bottom)) !important; }
+  .category-intro { display:block; padding:14px 10px; }.category-intro p { font-size:11px; }.category-intro nav { justify-content:flex-start; margin-top:12px; }
+  .home-category-index { display:block; padding:45px 16px; }.home-category-index h2 { font-size:46px; margin-bottom:24px; }.home-category-index > div:last-child { gap:0 12px; }.home-category-index a { min-height:46px; font-size:16px; }
+  .catalog-pagination { gap:10px; margin-top:25px; font-size:9px; }.catalog-pagination__numbers a { min-width:26px; min-height:28px; }
   .filter-sheet__backdrop { display:block; position:fixed; inset:0; background:rgba(10,10,10,.6); z-index:89; backdrop-filter:blur(3px); }
   .filter-sheet { display:flex; flex-direction:column; position:fixed; inset:auto 0 0; max-height:85vh; z-index:90; background:var(--chalk); padding:0 16px; transform:translateY(101%); transition:transform 220ms cubic-bezier(.16,1,.3,1); box-shadow:0 -30px 80px rgba(0,0,0,.35); overflow:hidden; }
   .filter-sheet.is-open { transform:none; }
@@ -2454,6 +2506,8 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 @media (max-width:780px) {
   .mega-menu--taxonomy { display:none; }
   .mobile-menu.is-open .mobile-menu__taxonomy { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:2px 0 18px 36px; border-bottom:1px solid #3b3b37; }
+  .mobile-menu.is-open .mobile-menu__categories { gap:8px 16px; }
+  .mobile-menu__categories a { display:flex; align-items:center; justify-content:space-between; gap:5px; color:#aaa9a2; font:500 10px var(--body); text-decoration:none; }
   .mobile-menu__taxonomy > div { display:grid; align-content:start; gap:5px; }
   .mobile-menu__taxonomy strong { color:var(--acid); font:700 10px var(--body); }
   .mobile-menu__taxonomy button { min-height:0; height:auto; padding:2px 0; border:0; color:#aaa9a2; font:500 10px var(--body); text-align:left; }

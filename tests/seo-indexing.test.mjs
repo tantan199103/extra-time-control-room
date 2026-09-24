@@ -1,65 +1,84 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { productSeoMetadata, productStructuredData, relatedProducts, usd, safeJson } from '../src/lib/product-seo.js'
+import { renderProductContent, renderSitemap } from '../scripts/seo-render.mjs'
 
-test('initial HTML exposes US indexable metadata and canonical site signals', async () => {
-  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8')
-  assert.match(html, /<html lang="en-US">/)
-  assert.match(html, /name="robots" content="index,follow/)
-  assert.match(html, /rel="canonical" href="https:\/\/www\.jersevo\.com\//)
-  assert.match(html, /hreflang="en-US"/)
-  assert.match(html, /application\/ld\+json/)
-  assert.match(html, /"areaServed".*United States/s)
-  assert.match(html, /"legalName": "Jersevo"/)
-  assert.match(html, /support@jersevo\.com/)
-  assert.match(html, /"addressRegion": "TX"/)
+const product = {
+  id:'listing-1', handle:'test-jersey',title:'Test Home Jersey',status:'PUBLISHED',seoStatus:'INDEXABLE',
+  description:'A test jersey with a verified size selection.',price:59.99,image:'/jersey.webp',
+  media:[{type:'IMAGE',url:'/jersey.webp',alt:'Home view'}],taxonomy:{league:'nfl',team:'green-bay-packers'},
+  options:[{name:'Size',values:['S','M']}], variants:[
+    {id:'v-s',sku:'S-1',status:'ACTIVE',price:59.99,inventory:2,values:{Size:'S'}},
+    {id:'v-m',sku:'M-1',status:'ACTIVE',price:69.5,inventory:0,values:{Size:'M'}}
+  ]
+}
+
+test('published PDP metadata and variant schema use the same canonical product URL and exact USD prices', () => {
+  const meta = productSeoMetadata(product)
+  const [schema,breadcrumbs] = productStructuredData(product)
+  assert.equal(meta.canonical,'https://www.jersevo.com/product/test-jersey')
+  assert.equal(meta.indexable,true)
+  assert.equal(schema['@type'],'ProductGroup')
+  assert.deepEqual(schema.variesBy,['https://schema.org/size'])
+  assert.deepEqual(schema.hasVariant.map(v=>v.offers.price),['59.99','69.50'])
+  assert.deepEqual(schema.hasVariant.map(v=>v.offers.availability),['https://schema.org/InStock','https://schema.org/OutOfStock'])
+  assert.equal(usd(59.99),'$59.99')
+  assert.equal(usd(69.5),'$69.50')
+  assert.equal(breadcrumbs.itemListElement.at(-1).item,meta.canonical)
 })
 
-test('robots and sitemap use the canonical production host', async () => {
-  const robots = await readFile(new URL('../public/robots.txt', import.meta.url), 'utf8')
-  const sitemap = await readFile(new URL('../api/sitemap.js', import.meta.url), 'utf8')
-  assert.match(robots, /Sitemap: https:\/\/www\.jersevo\.com\/sitemap\.xml/)
-  assert.match(sitemap, /https:\/\/www\.jersevo\.com/)
-  assert.match(sitemap, /X-Robots-Tag/)
-  for (const route of ['/about', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility', '/journal']) assert.match(sitemap, new RegExp(`path:'${route}'`))
+test('HTML fallback has product copy, variant prices and crawlable related product links', () => {
+  const html = renderProductContent(product,[{id:'listing-2',handle:'related',title:'Related Jersey'}])
+  assert.match(html,/<h1>Test Home Jersey<\/h1>/)
+  assert.match(html,/\$59\.99/)
+  assert.match(html,/href="\/product\/test-jersey\?variant=v-s"/)
+  assert.match(html,/href="\/product\/related"/)
+  assert.match(html,/href="\/team\/nfl\/green-bay-packers"/)
 })
 
-test('SEO build creates initial HTML for product pages and protects private routes', async () => {
-  const generator = await readFile(new URL('../scripts/generate-seo-pages.mjs', import.meta.url), 'utf8')
-  const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'))
-  assert.match(generator, /Product/)
-  assert.match(generator, /Generated \$\{products\.length\} indexable product pages/)
-  assert.match(generator, /blocked product pages/)
-  assert.match(generator, /variant=\$\{encodeURIComponent\(variant\.id\)\}/)
-  assert.match(generator, /pod_product_variants\(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image\)/)
-  assert.match(generator, /Jersevo operates the Extra Time storefront/)
-  assert.match(generator, /Custom Jerseys & Personalized Fan Gear \| Jersevo/)
-  assert.match(generator, /Jersevo makes designer-led custom jerseys and personalized fan gear/)
-  assert.match(generator, /Shop personalized jerseys/)
-  assert.match(generator, /Create your jersey/)
-  assert.equal(vercel.headers.find(rule => rule.source === '/admin').headers[0].value, 'noindex, nofollow')
-  assert.equal(vercel.headers.find(rule => rule.source === '/account/(.*)').headers[0].value, 'noindex, nofollow')
+test('blocked product is not indexable and no fabricated review or return promise enters Product schema', () => {
+  const blocked = productSeoMetadata({...product,seoStatus:'BLOCKED'})
+  const [schema] = productStructuredData(product)
+  assert.equal(blocked.indexable,false)
+  assert.equal('aggregateRating' in schema,false)
+  assert.equal(JSON.stringify(schema).includes('MerchantReturnPolicy'),false)
+  assert.equal(safeJson({text:'</script>'}).includes('</script>'),false)
 })
 
-test('client route metadata marks unavailable and private routes noindex', async () => {
-  const main = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
-  assert.match(main, /unresolvedRoute/)
-  assert.match(main, /noindex,nofollow/)
-  assert.match(main, /VITE_SITE_URL \|\| 'https:\/\/www\.jersevo\.com'/)
-  assert.match(main, /AggregateRating/)
-  assert.match(main, /variant=\$\{encodeURIComponent\(variant\.id\)\}/)
+test('sitemap contains supplied canonical pages with useful lastmod and product images', () => {
+  const xml = renderSitemap([
+    {path:'/product/test-jersey'},
+    {path:'/product/test-jersey',lastmod:'2026-09-24T00:00:00Z',images:['/jersey.webp']},
+    {path:'/shop'}
+  ],'https://www.jersevo.com')
+  assert.equal((xml.match(/<url>/g)||[]).length,2)
+  assert.match(xml,/<image:loc>https:\/\/www\.jersevo\.com\/jersey\.webp<\/image:loc>/)
+  assert.match(xml,/<lastmod>2026-09-24T00:00:00\.000Z<\/lastmod>/)
 })
 
-test('launch trust desk includes warranty coverage and crawlable metadata', async () => {
-  const main = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
-  const model = await readFile(new URL('../src/lib/storefront-model.js', import.meta.url), 'utf8')
-  const generator = await readFile(new URL('../scripts/generate-seo-pages.mjs', import.meta.url), 'utf8')
-  assert.match(main, /\/warranty','\/journal/)
-  assert.match(main, /Warranty and defect review — Extra Time/)
-  assert.match(main, /Manufacturing and studio errors/)
-  assert.match(model, /'\/warranty'/)
-  assert.match(generator, /\['\/warranty'/)
-  assert.match(main, /legalName:'Jersevo'/)
-  assert.match(main, /support@jersevo\.com/)
-  assert.match(main, /Texas, United States/)
+test('server routing does not send arbitrary paths to the indexable homepage shell', async () => {
+  const config = JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'))
+  assert.equal(config.rewrites.some(row=>row.source==='/(.*)' && row.destination==='/index.html'),false)
+  assert.equal(config.rewrites.some(row=>row.source==='/sitemap.xml'),false)
+  assert.equal(config.headers.find(row=>row.source==='/admin').headers[0].value,'noindex, nofollow')
+})
+
+test('custom jersey links use a published catalog target, not the retired touchline handle', async () => {
+  const generator = await readFile(new URL('../scripts/generate-seo-pages.mjs',import.meta.url),'utf8')
+  const storefront = await readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
+  assert.match(generator,/jersevo-custom-product/)
+  assert.match(generator,/featuredCustomProduct\.handle/)
+  assert.match(storefront,/customProductTarget\(customProduct\)/)
+  assert.doesNotMatch(generator,/\/product\/touchline/)
+  assert.doesNotMatch(storefront,/\|\| 'touchline'/)
+})
+
+test('related products prioritize same team and group', () => {
+  const catalog=[
+    {id:'a',handle:'same-league',status:'PUBLISHED',taxonomy:{league:'nfl',team:'other'},productGroup:'Jerseys'},
+    {id:'b',handle:'same-team',status:'PUBLISHED',taxonomy:{league:'nfl',team:'green-bay-packers'},productGroup:'Jerseys'},
+    {id:'c',handle:'other',status:'PUBLISHED',taxonomy:{league:'nba',team:'lakers'},productGroup:'Jerseys'}
+  ]
+  assert.deepEqual(relatedProducts({...product,productGroup:'Jerseys'},catalog).map(row=>row.id),['b','a','c'])
 })

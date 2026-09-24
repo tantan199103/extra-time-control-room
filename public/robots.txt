@@ -2,5 +2,14 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api
+Disallow: /*?*color=
+Disallow: /*?*size=
+Disallow: /*?*team=
+Disallow: /*?*price=
+Disallow: /*?*group=
+Disallow: /*?*type=
+Disallow: /*?*sort=
+Disallow: /*?*stock=
+Disallow: /*?*custom=
 
 Sitemap: https://www.jersevo.com/sitemap.xml

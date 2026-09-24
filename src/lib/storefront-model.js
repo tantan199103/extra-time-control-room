@@ -4,6 +4,14 @@ const FALLBACK_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const optionSlug = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
+export function isHeadwearProduct(product = {}) {
+  const group = String(product.productGroup || product.product_group || '').trim()
+  if (/^(?:caps?|hats?|knit hats?|beanies?|headwear|visors?)$/i.test(group)) return true
+  const category = String(product.taxonomy?.category || '').trim()
+  const title = String(product.title || product.name || '').trim()
+  return category === 'Accessories' && /\b(?:cap|hat|beanie|snapback|headwear|visor)\b/i.test(title)
+}
+
 export function prepareStorefrontProduct(input, persisted = true) {
   const product = normalizeProduct(input, persisted)
   const { aiMetadata: _privateAiMetadata, ai_metadata: _privateAiMetadataRow, ...publicProduct } = product

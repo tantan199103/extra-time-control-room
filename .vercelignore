@@ -29,3 +29,6 @@ artifacts
 .vercel
 supabase/.temp
 *.local
+.env*
+!.env.example
+!.env.backend.example

@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises'
 const source = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
 const css = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
 const focus = await readFile(new URL('../src/useDialogFocus.js', import.meta.url), 'utf8')
+const supabaseSource = await readFile(new URL('../src/lib/supabase.js', import.meta.url), 'utf8')
 
 test('closed install sheet cannot intercept pointer events', () => {
   const rule = css.match(/\.install-sheet \{([^}]+)\}/)?.[1]
@@ -29,6 +30,13 @@ test('routing observes query changes and isolates different product state', () =
   assert.match(source, /<ProductPage key=\{routeProduct\.id\}/)
   assert.match(source, /startPersonalized=\{new URLSearchParams\(search\)\.get\('custom'\) === '1'\}/)
   assert.match(source, /useEffect\(\(\) => \{ if \(startPersonalized && customFields\.length\) setPersonalized\(true\) \}, \[startPersonalized,customFields\.length\]\)/)
+})
+
+test('shop waits for the full live catalog and does not present PDP related products as the whole shop', () => {
+  assert.match(source, /scope:productBootstrap \? 'single' : 'none'/)
+  assert.match(source, /catalogRoute && catalogState\.scope !== 'full'/)
+  assert.match(source, /else if \(!productSlug\) setProducts\(\[\]\)/)
+  assert.match(supabaseSource, /\[0, 408, 429, 500, 502, 503, 504\]/)
 })
 
 test('navigation closes overlays and product drafts remain scoped by listing', () => {

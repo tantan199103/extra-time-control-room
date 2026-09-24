@@ -21,8 +21,8 @@ export function teamMedia(leagueKey, teamSlug, teamName = teamSlug) {
 
   // Fangear currently exposes no NBA team-logo assets; keep the parent mark as
   // a deliberate fallback instead of inventing a URL that would 404.
-  if (league === 'nba') {
-    return parent ? { ...parent, alt: `${name} / NBA league mark`, label: name, fallback: true } : null
+  if (league === 'nba' || league === 'nhl') {
+    return parent ? { ...parent, alt: `${name} / ${league.toUpperCase()} league mark`, label: name, fallback: true } : null
   }
   if (!['mlb', 'nfl', 'mls', 'ncaa', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'ucl', 'soccer'].includes(league) || !slug) return null
   if (MISSING_LOCAL_ART.has(`${league}/${slug}`)) {

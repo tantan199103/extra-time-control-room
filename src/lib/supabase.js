@@ -113,15 +113,46 @@ async function requestLogoPreview(path, { productId, fieldKey, assetRef, treatme
 export const createExactLogoPreview = input => requestLogoPreview('/api/logo-preview', input)
 export const createAiLogoPreview = input => requestLogoPreview('/api/ai-logo-preview', input)
 
+export async function fetchStorefrontProduct(handle) {
+  if (!supabase) return { data:[],source:'unavailable',error:'Live catalogue is not configured.' }
+  const fields = '*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))'
+  const { data:row,error } = await supabase.from('pod_products').select(fields).eq('status','PUBLISHED').eq('handle',handle).maybeSingle()
+  if (error) return {data:[],source:'unavailable',error:error.message}
+  if (!row) return {data:[],source:'supabase',error:null}
+  const product = prepareStorefrontProduct(row)
+  let related = []
+  const league = product.taxonomy?.league
+  if (league) {
+    const result = await supabase.from('pod_products').select(fields).eq('status','PUBLISHED').eq('taxonomy->>league',league).neq('id',product.id).order('id').limit(12)
+    if (!result.error) related = (result.data || []).map(item=>prepareStorefrontProduct(item))
+  }
+  return {data:[product,...related],source:'supabase',error:null}
+}
+
 export async function fetchStorefrontCatalog(fallback = []) {
   if (!supabase) return import.meta.env.DEV ? previewResult(fallback) : { data:[], source:'unavailable', error:'Live catalogue is not configured.' }
-  const { data, error } = await supabase
-    .from('pod_products')
-    .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
-    .eq('status', 'PUBLISHED')
-    .order('updated_at', { ascending:false })
-  if (error) return import.meta.env.DEV ? previewResult(fallback, error.message) : { data:[], source:'unavailable', error:error.message }
-  const products = (data || []).map(row => prepareStorefrontProduct(row))
+  const rows = []
+  const pageSize = 250
+  for (let from = 0; ; from += pageSize) {
+    let data, error
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const result = await supabase
+        .from('pod_products')
+        .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
+        .eq('status', 'PUBLISHED')
+        .order('updated_at', { ascending:false })
+        .order('id', { ascending:true })
+        .range(from, from + pageSize - 1)
+      data = result.data
+      error = result.error
+      if (!error || ![0, 408, 429, 500, 502, 503, 504].includes(Number(result.status))) break
+      if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)))
+    }
+    if (error) return import.meta.env.DEV ? previewResult(fallback, error.message) : { data:[], source:'unavailable', error:error.message }
+    rows.push(...(data || []))
+    if (!data || data.length < pageSize) break
+  }
+  const products = rows.map(row => prepareStorefrontProduct(row))
   return { data:products, source:'supabase', error:null }
 }
 

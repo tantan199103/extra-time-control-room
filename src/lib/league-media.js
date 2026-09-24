@@ -15,6 +15,11 @@ export const LEAGUE_MEDIA = Object.freeze({
     alt: 'NBA league mark',
     label: 'NBA'
   }),
+  nhl: Object.freeze({
+    src: '/assets/leagues/marks/nhl.svg',
+    alt: 'Hockey league category mark',
+    label: 'NHL'
+  }),
   mls: Object.freeze({
     src: '/assets/leagues/marks/mls.webp',
     alt: 'MLS league mark',

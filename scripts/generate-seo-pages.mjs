@@ -1,12 +1,19 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
-import { buildFallbackCatalog } from '../src/lib/storefront-model.js'
+import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/storefront-model.js'
 import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
+import { CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
+import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
 import { seoDescription } from '../src/lib/seo-text.js'
+import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
+import { TRUST_PAGES } from '../src/lib/trust-pages.js'
+import { productBootstrap, renderProductContent, renderSitemap } from './seo-render.mjs'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
+const sitemapEntries = []
+let featuredCustomProduct = null
 
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[character]))
 const stripMarkup = value => String(value ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
@@ -17,31 +24,53 @@ const absolute = value => {
 const slug = value => encodeURIComponent(String(value || '').trim())
 
 function normalizeProduct(row) {
-  const title = text(row.title || row.name, 'Extra Time football jersey')
-  const description = seoDescription(row.seo?.description, text(row.description || row.subtitle || row.story, `A designer-led ${title} football jersey from Extra Time.`), 160)
-  const image = absolute(row.image || row.media?.find?.(item => item.type === 'IMAGE')?.url || '/assets/hero-tunnel.webp')
-  const variants = Array.isArray(row.pod_product_variants) ? row.pod_product_variants : Array.isArray(row.variants) ? row.variants : []
-  const prices = variants.map(item => Number(item.price)).filter(Number.isFinite).filter(value => value > 0)
-  const price = Number(row.price) > 0 ? Number(row.price) : (prices.length ? Math.min(...prices) : 0)
-  const inventory = variants.filter(item => String(item.status || '').toUpperCase() === 'ACTIVE').reduce((total, item) => total + Math.max(0,Number(item.inventory || 0) - Number(item.reserved_inventory || 0)), 0)
-  const handle = text(row.handle || row.id, title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
-  return {
-    handle, title, description, image, price, inventory, sku:text(row.sku || variants[0]?.sku),
-    variants:variants.map(item => ({
-      id:text(item.id), sku:text(item.sku), price:Number(item.price), compareAt:Number(item.compare_at ?? item.compareAt),
-      inventory:Math.max(0,Number(item.inventory || 0) - Number(item.reserved_inventory || 0)), status:String(item.status || '').toUpperCase(), image:absolute(item.image || image), values:item.option_values || item.values || {}
-    })),
-    updatedAt:row.updated_at || row.updatedAt || '', taxonomy:row.taxonomy || {}, seoStatus:String(row.seo_status || row.seo?.status || '').toUpperCase()
-  }
+  const product = prepareStorefrontProduct(row)
+  const metadata = productSeoMetadata(product, PUBLIC_ORIGIN)
+  return { ...product, images:[...new Set([product.image,...product.media.filter(m=>m.type==='IMAGE').map(m=>m.url)].filter(Boolean))], brand:product.taxonomy?.brand || product.seo?.gmc?.brand || 'Jersevo', metadata }
 }
 
-async function fetchRows(path, key, query = '') {
-  const response = await fetch(`${path}${query}`, {
-    headers: { apikey:key, Authorization:`Bearer ${key}`, Accept:'application/json' },
-    signal:AbortSignal.timeout(8000)
-  })
-  if (!response.ok) throw new Error(`Supabase SEO query failed (${response.status}).`)
-  return response.json()
+const storefrontOrder = (a,b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) || String(a.id || '').localeCompare(String(b.id || ''))
+
+async function fetchRows(path, key) {
+  const rows = []
+  const pageSize = 50
+  let cursor = ''
+  for (;;) {
+    const url = new URL(path)
+    url.searchParams.set('limit', String(pageSize))
+    if (cursor) url.searchParams.set('id', `gt.${cursor}`)
+    let page
+    let lastError
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        const response = await fetch(url, {
+          headers: { apikey:key, Authorization:`Bearer ${key}`, Accept:'application/json' },
+          signal:AbortSignal.timeout(30000)
+        })
+        if (!response.ok) {
+          const detail = (await response.text()).slice(0, 180)
+          const error = new Error(`Supabase SEO query failed (${response.status}) after id ${cursor || '(start)'}: ${detail}`)
+          if (response.status !== 429 && response.status < 500) throw error
+          lastError = error
+          await new Promise(resolvePromise => setTimeout(resolvePromise, Math.min(8000, 1000 * (attempt + 1))))
+          continue
+        }
+        page = await response.json()
+        break
+      } catch (error) {
+        lastError = error
+        if (attempt === 3 || !/abort|fetch|network|429|5\d\d/i.test(String(error?.message || error))) throw error
+        await new Promise(resolvePromise => setTimeout(resolvePromise, Math.min(8000, 1000 * (attempt + 1))))
+      }
+    }
+    if (!page) throw lastError || new Error(`Supabase SEO query failed after id ${cursor || '(start)'}.`)
+    if (!Array.isArray(page)) throw new Error('Supabase SEO query did not return an array.')
+    rows.push(...page)
+    if (page.length < pageSize) return rows
+    const nextCursor = String(page.at(-1)?.id || '')
+    if (!nextCursor || nextCursor === cursor) throw new Error('Supabase SEO pagination did not advance.')
+    cursor = nextCursor
+  }
 }
 
 async function loadProducts() {
@@ -49,27 +78,37 @@ async function loadProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (base && key) {
     try {
-      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=updated_at.desc&limit=5000`
+      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=id.asc`
       const rows = await fetchRows(query, key)
-      if (Array.isArray(rows)) return rows.map(normalizeProduct)
+      if (Array.isArray(rows)) return rows.map(normalizeProduct).sort(storefrontOrder)
     } catch (error) {
+      if (!/42703|column[^]*seo_status[^]*does not exist/i.test(String(error?.message || error))) throw error
       // Older deployments may not have the gate column yet. In that case only
       // rows carrying the explicit structured status can be generated.
       try {
-        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=5000`
+        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&order=id.asc`
         const legacyRows = await fetchRows(legacyQuery, key)
-        return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct)
+        return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct).sort(storefrontOrder)
       } catch (legacyError) {
         // A configured production database that is temporarily unavailable is
-        // not permission to publish the bundled demo catalogue. Return an
-        // empty set so the build keeps only the homepage/static trust pages;
-        // fallback products are reserved for local builds without Supabase.
-        console.warn(`[seo] Live catalogue unavailable; skipping product pages. ${legacyError.message}`)
-        return []
+        // not permission to publish the bundled demo catalogue. Fail the
+        // build instead of silently replacing every product page with a shell.
+        throw new Error(`Live catalogue unavailable while generating SEO pages: ${legacyError.message}`)
       }
     }
   }
+  if (process.env.VERCEL) throw new Error('Production SEO build requires the live Supabase catalogue; demo catalogue is not publishable.')
   return buildFallbackCatalog(fallbackProducts).map(normalizeProduct)
+}
+
+function relatedProductLinks(product, products) {
+  const league = String(product.taxonomy?.league || '').toLowerCase()
+  const team = normalizeTeamSlug(league, product.taxonomy?.team || '')
+  const related = products.filter(candidate => candidate.handle !== product.handle && (
+    league && String(candidate.taxonomy?.league || '').toLowerCase() === league ||
+    team && normalizeTeamSlug(league, candidate.taxonomy?.team || '') === team
+  )).slice(0, 8)
+  return related.map(candidate => `<li><a href="/product/${slug(candidate.handle)}">${escapeHtml(candidate.title)}</a></li>`).join('')
 }
 
 // Published rows that fail the SEO gate still need a deterministic HTML
@@ -82,15 +121,12 @@ async function loadBlockedProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!base || !key) return []
   try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=updated_at.desc&limit=5000`
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=id.asc`
     const rows = await fetchRows(query, key)
     return (Array.isArray(rows) ? rows : []).map(normalizeProduct)
   } catch (error) {
-    // Older databases may not have the gate column yet. The indexable query
-    // already has a legacy fallback; there is no safe blocked-row fallback in
-    // that schema, so simply keep the build successful.
-    console.warn(`[seo] Blocked product pages unavailable; continuing without them. ${error.message}`)
-    return []
+    if (/42703|column[^]*seo_status[^]*does not exist/i.test(String(error?.message || error))) return []
+    throw error
   }
 }
 
@@ -99,13 +135,14 @@ async function loadCollections() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!base || !key) return []
   try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_collections?select=handle,name,description,hero_image,seo,updated_at&status=eq.PUBLISHED&order=updated_at.desc&limit=1000`
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_collections?select=id,handle,name,description,hero_image,seo,updated_at,pod_collection_products(product_id,sort_order)&status=eq.PUBLISHED&order=id.asc`
     const rows = await fetchRows(query, key)
     return (Array.isArray(rows) ? rows : []).map(row => ({
       handle:text(row.handle || row.id),
       title:text(row.seo?.title || row.name, 'Extra Time collection'),
       description:text(row.seo?.description || row.description, 'Explore the latest Extra Time football jersey collection.'),
       image:absolute(row.hero_image || '/assets/hero-tunnel.webp'),
+      productIds:(row.pod_collection_products || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0)).map(link => link.product_id),
       updatedAt:row.updated_at || ''
     })).filter(row => row.handle && String((rows.find(item => item.handle === row.handle)?.seo || {}).status || '').toUpperCase() === 'INDEXABLE')
   } catch (error) {
@@ -114,41 +151,6 @@ async function loadCollections() {
   }
 }
 
-function productSchema(product) {
-  const canonical = `${PUBLIC_ORIGIN}/product/${slug(product.handle)}`
-  const variantOffers = (product.variants || [])
-    .filter(variant => variant.status === 'ACTIVE' && Number.isFinite(Number(variant.price)) && Number(variant.price) > 0)
-    .map(variant => {
-      const price = Number(variant.price)
-      const url = `${canonical}?variant=${encodeURIComponent(variant.id)}`
-      return {
-        '@type':'Offer', url, priceCurrency:'USD', price:price.toFixed(2),
-        availability:`https://schema.org/${Number(variant.inventory || 0) > 0 ? 'InStock' : 'OutOfStock'}`,
-        itemCondition:'https://schema.org/NewCondition',
-        ...(variant.sku ? { sku:variant.sku } : {}),
-        seller:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', url:`${PUBLIC_ORIGIN}/`, email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } }
-      }
-    })
-  const schema = {
-    '@context':'https://schema.org',
-    '@type':'Product',
-    '@id':`${canonical}#product`,
-    name:product.title,
-    description:product.description,
-    image:[product.image],
-    url:canonical,
-    brand:{ '@type':'Brand', name:'Extra Time' },
-    category:'Apparel & Accessories > Clothing > Jerseys',
-    offers:variantOffers.length ? (variantOffers.length === 1 ? variantOffers[0] : variantOffers) : {
-      '@type':'Offer', url:canonical, priceCurrency:'USD', price:product.price.toFixed(2),
-      availability:`https://schema.org/${product.inventory > 0 ? 'InStock' : 'OutOfStock'}`,
-      itemCondition:'https://schema.org/NewCondition',
-      seller:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', url:`${PUBLIC_ORIGIN}/`, email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } }
-    }
-  }
-  if (product.sku) schema.sku = product.sku
-  return schema
-}
 
 function breadcrumbSchema(items) {
   return {
@@ -165,7 +167,7 @@ function upsertMeta(html, attribute, name, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `    ${tag}\n  </head>`)
 }
 
-function pageHtml(shell, { path, title, description, image, noindex = false, fallback, schema }) {
+function pageHtml(shell, { path, title, description, image, noindex = false, fallback, schema, bootstrap = '' }) {
   const canonical = `${PUBLIC_ORIGIN}${path === '/' ? '/' : path}`
   let html = shell
     .replace(/<html[^>]*>/i, '<html lang="en-US">')
@@ -186,9 +188,11 @@ function pageHtml(shell, { path, title, description, image, noindex = false, fal
   html = upsertMeta(html, 'name', 'twitter:description', metaDescription)
   html = upsertMeta(html, 'name', 'twitter:image', image)
   html = html.replace(/<link\s+rel=["']alternate["'][^>]*hreflang=["'](?:en-US|x-default)["'][^>]*>\s*/gi, '')
-  const structured = schema ? `    <script type="application/ld+json" id="route-structured-data">${JSON.stringify(schema)}</script>\n` : ''
+  const structured = schema ? `    <script type="application/ld+json" id="route-structured-data">${safeJson(schema)}</script>\n` : ''
   html = html.replace('</head>', `    <link rel="alternate" hreflang="en-US" href="${escapeHtml(canonical)}" />\n    <link rel="alternate" hreflang="x-default" href="${escapeHtml(canonical)}" />\n${structured}  </head>`)
+  if (featuredCustomProduct) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:featuredCustomProduct.image })}</script>\n  </head>`)
   if (fallback) html = html.replace('<div id="root"></div>', `<div id="root">${fallback}</div>`)
+  if (bootstrap) html = html.replace('</head>', `${bootstrap}</head>`)
   return html
 }
 
@@ -196,33 +200,74 @@ async function writePage(path, html) {
   const target = join(DIST, path === '/' ? 'index.html' : path.replace(/^\//, '').replace(/\/$/, ''), 'index.html')
   await mkdir(dirname(target), { recursive:true })
   await writeFile(target, html)
+  if (!/<meta name="robots" content="noindex/i.test(html)) sitemapEntries.push({path})
+}
+
+async function writeCatalogPagination(basePath, rows, title, description, image) {
+  const totalPages = pageCount(rows.length)
+  for (let page = 2; page <= totalPages; page += 1) {
+    const path = catalogPagePath(basePath, page)
+    const pageProducts = rows.slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE)
+    const prev = catalogPagePath(basePath, page - 1)
+    const next = page < totalPages ? catalogPagePath(basePath, page + 1) : ''
+    const links = `<nav aria-label="Catalogue pages"><a href="${prev}">Previous page</a>${next ? ` · <a href="${next}">Next page</a>` : ''}</nav>`
+    const fallback = `<main class="seo-fallback"><h1>${escapeHtml(title)} · Page ${page}</h1><p>${escapeHtml(description)}</p><ul>${pageProducts.map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${links}</main>`
+    await writePage(path, pageHtml(shell, {
+      path,
+      title:`${title} · Page ${page} — Jersevo`,
+      description,
+      image,
+      fallback,
+      schema:[
+        { '@context':'https://schema.org', '@type':'CollectionPage', name:title, url:`${PUBLIC_ORIGIN}${path}`, description, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },
+        { '@context':'https://schema.org', '@type':'ItemList', itemListElement:pageProducts.map((product,index) => ({ '@type':'ListItem', position:(page - 1) * CATALOG_PAGE_SIZE + index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title })) },
+        breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:`${title} page ${page}`,url:`${PUBLIC_ORIGIN}${path}`}])
+      ]
+    }))
+  }
 }
 
 const shell = await readFile(join(DIST, 'index.html'), 'utf8')
 const products = await loadProducts()
+featuredCustomProduct = products.find(product => product.customFields?.length && product.inventory > 0 && /jersey/i.test(product.title || ''))
+  || products.find(product => product.customFields?.length && product.inventory > 0)
 const blockedProducts = await loadBlockedProducts()
 const collections = await loadCollections()
+const TAXONOMY_MIN_PRODUCTS = 6
+const navigationRows = new Map()
+for (const product of products) {
+  const row = { taxonomy:product.taxonomy,productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [] }
+  navigationRows.set(JSON.stringify(row),row)
+}
+await writeFile(join(DIST,'catalog-navigation.json'),JSON.stringify([...navigationRows.values()]))
 
 const home = pageHtml(shell, {
   path:'/',
   title:'Custom Jerseys & Personalized Fan Gear | Jersevo',
   description:'Design custom jerseys and personalized fan gear with your name, number and approved listing options. Browse football, baseball, basketball and soccer-inspired styles at Jersevo.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="/product/touchline?custom=1">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav></main>`
+  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct ? `/product/${slug(featuredCustomProduct.handle)}?custom=1` : '/shop'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
+sitemapEntries.push({path:'/'})
 
 for (const product of products) {
   const path = `/product/${slug(product.handle)}`
+  const metadata = productSeoMetadata(product,PUBLIC_ORIGIN)
+  const related = relatedProducts(product,products)
   const html = pageHtml(shell, {
     path,
-    title:`${product.title} — Extra Time`,
-    description:product.description,
+    title:metadata.title,
+    description:metadata.description,
     image:product.image,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(product.title)}</h1><p>${escapeHtml(product.description)}</p><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)} football jersey" /></main>`,
-    schema:[productSchema(product), breadcrumbSchema([{ name:'Home', url:`${PUBLIC_ORIGIN}/` }, { name:'Shop', url:`${PUBLIC_ORIGIN}/shop` }, { name:product.title, url:`${PUBLIC_ORIGIN}${path}` }])]
+    fallback:renderProductContent(product,related),
+    schema:productStructuredData(product,PUBLIC_ORIGIN),
+    bootstrap:productBootstrap(product,related)
   })
   await writePage(path, html)
+  const entry = sitemapEntries.at(-1)
+  entry.lastmod = product.updatedAt
+  entry.images = product.images
 }
 
 for (const product of blockedProducts) {
@@ -233,30 +278,55 @@ for (const product of blockedProducts) {
     description:'This product page is not currently available for organic search.',
     image:product.image,
     noindex:true,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(product.title)}</h1><p>This listing is not currently available.</p></main>`
+    fallback:renderProductContent(product),
+    bootstrap:productBootstrap(product)
   }))
 }
 
-const itemList = products.map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
+const itemList = products.slice(0,CATALOG_PAGE_SIZE).map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
 await writePage('/shop', pageHtml(shell, {
   path:'/shop',
-  title:'Shop the drop — Extra Time',
-  description:'Shop Extra Time designer-led football jerseys, personalized match-day pieces and the latest US collection.',
+  title:'Shop fan gear by league and team — Jersevo',
+  description:'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.',
   image:absolute('/assets/jersey-black.webp'),
-  fallback:`<main class="seo-fallback"><h1>Shop the drop</h1><p>Designer-led football jerseys and personalized pieces.</p><ul>${products.map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul></main>`,
-  schema:{ '@context':'https://schema.org', '@type':'ItemList', itemListElement:itemList }
+  fallback:`<main class="seo-fallback"><h1>All fan gear</h1><p>Shop by league, team and product type, including caps, apparel and personalized jerseys.</p><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav><ul>${products.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${products.length > CATALOG_PAGE_SIZE ? '<a href="/shop/page/2">Next page</a>' : ''}</main>`,
+  schema:[{ '@context':'https://schema.org', '@type':'ItemList', itemListElement:itemList },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`}])]
 }))
+await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute('/assets/jersey-black.webp'))
 
 for (const collection of collections) {
   const path = `/collection/${slug(collection.handle)}`
+  const byId = new Map(products.map(product => [product.id,product]))
+  const collectionProducts = collection.productIds.map(id => byId.get(id)).filter(Boolean)
+  const indexable = collectionProducts.length >= TAXONOMY_MIN_PRODUCTS
   await writePage(path, pageHtml(shell, {
     path,
     title:`${collection.title} — Extra Time`,
     description:collection.description,
     image:collection.image,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(collection.title)}</h1><p>${escapeHtml(collection.description)}</p></main>`,
-    schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:collection.title, description:collection.description, url:`${PUBLIC_ORIGIN}${path}`, image:collection.image }
+    noindex:!indexable,
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(collection.title)}</h1><p>${escapeHtml(collection.description)}</p><ul>${collectionProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${collectionProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
+    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:collection.title, description:collection.description, url:`${PUBLIC_ORIGIN}${path}`, image:collection.image },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:collection.title,url:`${PUBLIC_ORIGIN}${path}`}])]
   }))
+  if (indexable) await writeCatalogPagination(path, collectionProducts, collection.title, collection.description, collection.image)
+}
+
+const categoryCounts = new Map(CATALOG_CATEGORY_PAGES.map(category => [category.handle, products.filter(product => productMatchesCatalogCategory(product, category)).length]))
+for (const category of CATALOG_CATEGORY_PAGES) {
+  const path = `/category/${category.handle}`
+  const count = categoryCounts.get(category.handle) || 0
+  const indexable = count >= TAXONOMY_MIN_PRODUCTS
+  const categoryProducts = products.filter(product => productMatchesCatalogCategory(product, category))
+  await writePage(path, pageHtml(shell, {
+    path,
+    title:`${category.label} — Jersevo`,
+    description:category.description,
+    image:absolute('/assets/jersey-black.webp'),
+    noindex:!indexable,
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(category.label)}</h1><p>${escapeHtml(category.description)}</p><ul>${categoryProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${categoryProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
+    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:category.label, description:category.description, url:`${PUBLIC_ORIGIN}${path}`, numberOfItems:count, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:category.label,url:`${PUBLIC_ORIGIN}${path}`}])]
+  }))
+  if (indexable) await writeCatalogPagination(path, categoryProducts, category.label, category.description, absolute('/assets/jersey-black.webp'))
 }
 
 // Taxonomy pages are generated from the same source used by the runtime mega
@@ -271,31 +341,34 @@ for (const product of products) {
   const team = normalizeTeamSlug(league, product.taxonomy?.team || '')
   if (team) taxonomyCounts.set(`team:${league}/${team}`, (taxonomyCounts.get(`team:${league}/${team}`) || 0) + 1)
 }
-const TAXONOMY_MIN_PRODUCTS = 6
 for (const league of LEAGUE_TAXONOMY) {
   const path = leaguePath(league)
   const leagueIndexable = (taxonomyCounts.get(`league:${league.key}`) || 0) >= TAXONOMY_MIN_PRODUCTS
+  const leagueProducts = products.filter(product => String(product.taxonomy?.league || '').toLowerCase() === league.key)
   await writePage(path, pageHtml(shell, {
     path,
-    title:`${league.name} custom fan gear — Extra Time`,
+    title:`${league.name} fan gear — Jersevo`,
     description:league.description,
     image:absolute('/assets/editorial-player.webp'),
     noindex:!leagueIndexable,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} custom fan gear</h1><p>${escapeHtml(league.description)}</p><ul>${league.teams.slice(0, 12).map(team => `<li><a href="${teamPath(league.key, team)}">${escapeHtml(team.name)}</a></li>`).join('')}</ul></main>`,
-    schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} custom fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } }
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} fan gear</h1><p>${escapeHtml(league.description)}</p><nav aria-label="${escapeHtml(league.name)} teams">${league.teams.slice(0, 12).map(team => `<a href="${teamPath(league.key, team)}">${escapeHtml(team.name)}</a>`).join(' · ')}</nav><ul>${leagueProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${leagueProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
+    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`}])]
   }))
+  if (leagueIndexable) await writeCatalogPagination(path, leagueProducts, `${league.name} fan gear`, league.description, absolute('/assets/editorial-player.webp'))
   for (const team of league.teams) {
     const teamPage = teamPath(league.key, team)
     const teamIndexable = (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) >= TAXONOMY_MIN_PRODUCTS
+    const teamProducts = leagueProducts.filter(product => normalizeTeamSlug(league.key, product.taxonomy?.team || '') === team.slug)
     await writePage(teamPage, pageHtml(shell, {
       path:teamPage,
-      title:`${team.name} custom fan gear — Extra Time`,
-      description:`Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.`,
+      title:`${team.name} fan gear — Jersevo`,
+      description:`Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`,
       image:absolute('/assets/editorial-player.webp'),
       noindex:!teamIndexable,
-      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} custom fan gear</h1><p>Shop ${escapeHtml(team.name)} custom fan gear and personalized jerseys with tracked US delivery.</p><p><a href="${path}">Browse all ${escapeHtml(league.name)} collections</a></p></main>`,
-      schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} custom fan gear`, description:`Shop ${team.name} custom fan gear and personalized jerseys with tracked US delivery.`, url:`${PUBLIC_ORIGIN}${teamPage}`, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } }
+      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} fan gear</h1><p>Shop ${escapeHtml(team.name)} fan gear, including available jerseys, caps and apparel, with tracked US delivery.</p><p><a href="${path}">Browse all ${escapeHtml(league.name)} collections</a></p><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</main>`,
+      schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} fan gear`, description:`Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`, url:`${PUBLIC_ORIGIN}${teamPage}`, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`}])]
     }))
+    if (teamIndexable) await writeCatalogPagination(teamPage, teamProducts, `${team.name} fan gear`, `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`, absolute('/assets/editorial-player.webp'))
   }
 }
 
@@ -313,15 +386,18 @@ const staticPages = [
 ]
 for (const [path, title, description, pageImage = '/assets/hero-tunnel.webp'] of staticPages) {
   const pageHeading = title.replace(' — Extra Time', '')
+  const policy = TRUST_PAGES[path.slice(1)]
+  const policyBody = policy ? (policy.sections || []).map(section => `<section><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.body)}</p><ul>${section.list.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ul></section>`).join('') : ''
+  const policyFaq = policy ? `<section><h2>Common questions</h2>${policy.faqs.map(([q,a])=>`<h3>${escapeHtml(q)}</h3><p>${escapeHtml(a)}</p>`).join('')}</section>` : ''
   const publicContact = `<section><h2>Jersevo</h2><p>Jersevo operates the Extra Time storefront from Texas, United States. For order, privacy or policy questions, email <a href="mailto:support@jersevo.com">support@jersevo.com</a>.</p></section>`
   await writePage(path, pageHtml(shell, {
-    path, title, description, image:absolute(pageImage),
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(pageHeading)}</h1><p>${escapeHtml(description)}</p>${publicContact}</main>`,
+    path, title, description, image:absolute(pageImage), noindex:['/vault','/journal'].includes(path),
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(pageHeading)}</h1><p>${escapeHtml(policy?.intro || description)}</p>${policyBody}${policyFaq}${publicContact}<nav><a href="/shipping">Shipping</a> · <a href="/returns">Returns</a> · <a href="/warranty">Warranty</a> · <a href="/shop">Shop</a></nav></main>`,
     schema:{ '@context':'https://schema.org', '@type':'WebPage', name:title, description, url:`${PUBLIC_ORIGIN}${path}`, inLanguage:'en-US', publisher:{ '@type':'Organization', name:'Jersevo', alternateName:'Extra Time', email:'support@jersevo.com', address:{ '@type':'PostalAddress', addressRegion:'TX', addressCountry:'US' } } }
   }))
 }
 
-for (const path of ['/custom', '/studio', '/account', '/account/membership', '/admin']) {
+for (const path of ['/custom', '/studio', '/account', '/account/membership', '/admin', '/checkout', '/track-order']) {
   await writePage(path, pageHtml(shell, {
     path, title:'Extra Time', description:'Extra Time account and studio tools.', image:absolute('/assets/hero-tunnel.webp'), noindex:true,
     fallback:'<main class="seo-fallback"><h1>Extra Time</h1></main>', schema:{ '@context':'https://schema.org', '@type':'WebPage', name:'Extra Time', url:`${PUBLIC_ORIGIN}${path}` }
@@ -329,3 +405,6 @@ for (const path of ['/custom', '/studio', '/account', '/account/membership', '/a
 }
 
 console.log(`[seo] Generated ${products.length} indexable product pages, ${blockedProducts.length} blocked product pages, ${collections.length} collection pages and ${staticPages.length} static pages.`)
+await writeFile(join(DIST,'sitemap.xml'),renderSitemap(sitemapEntries,PUBLIC_ORIGIN))
+await writeFile(join(DIST,'404.html'),pageHtml(shell,{path:'/404',title:'Page not found | Jersevo',description:'This page is not available.',image:absolute('/assets/hero-tunnel.webp'),noindex:true,fallback:'<main class="seo-fallback"><h1>Page not found</h1><p>This URL is not available.</p><a href="/shop">Browse the shop</a></main>'}))
+await writeFile(join(DIST,'seo-build-manifest.json'),JSON.stringify({generatedAt:new Date().toISOString(),indexable:sitemapEntries.length,products:products.length,blocked:blockedProducts.length}))

@@ -3,6 +3,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/collection", "destination": "/shop", "permanent": true },
+    { "source": "/moments", "destination": "/#story", "permanent": true },
+    { "source": "/players", "destination": "/#players", "permanent": true }
+  ],
   "regions": ["iad1"],
   "functions": {
     "api/sitemap.js": { "maxDuration": 15 },
@@ -84,7 +90,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/api/google-merchant-feed", "destination": "/api/google-merchant-feed.js" },
     { "source": "/api/facebook-catalog-feed", "destination": "/api/google-merchant-feed.js" },
     { "source": "/api/newsletter-subscribe", "destination": "/api/newsletter-subscribe.js" },
@@ -94,6 +99,8 @@
     { "source": "/api/ai-listing-media", "destination": "/api/ai-listing-media.js" },
     { "source": "/api/admin-import-fanatics", "destination": "/api/admin-import-fanatics.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/admin/:path*", "destination": "/admin/index.html" },
+    { "source": "/account/:path*", "destination": "/account/index.html" },
+    { "source": "/order/:path*", "destination": "/track-order/index.html" }
   ]
 }

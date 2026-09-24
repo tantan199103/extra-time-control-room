@@ -15,6 +15,7 @@ test('league taxonomy exposes stable league and team URLs', () => {
     '/assets/leagues/marks/nfl.webp',
     '/assets/leagues/marks/mlb.webp',
     '/assets/leagues/marks/nba.webp',
+    '/assets/leagues/marks/nhl.svg',
     '/assets/leagues/marks/mls.webp',
     '/assets/leagues/marks/ncaa.webp',
     '/assets/leagues/marks/epl.webp',
@@ -26,6 +27,8 @@ test('league taxonomy exposes stable league and team URLs', () => {
   assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/marks/teams/mlb/new-york-yankees.webp')
   assert.equal(findTeam('mls', 'sporting-kc').media.src, '/assets/leagues/marks/teams/mls/sporting-kc.webp')
   assert.equal(findTeam('nba', 'los-angeles-lakers').media.fallback, true)
+  assert.equal(findTeam('nhl', 'boston-bruins').media.fallback, true)
+  assert.match(findTeam('nhl', 'boston-bruins').media.alt, /NHL league mark/)
   const ncaa = findLeague('NCAA')
   const bama = findTeam('ncaa', 'alabama-crimson-tide')
   assert.equal(ncaa.key, 'ncaa')
@@ -54,6 +57,7 @@ test('taxonomy matching accepts nested catalog fields and stays selective', () =
   assert.equal(productMatchesTaxonomy(product, { league:'nfl' }), true)
   assert.equal(productMatchesTaxonomy(product, { league:'nfl', team:'green-bay-packers' }), true)
   assert.equal(productMatchesTaxonomy(product, { league:'mlb', team:'green-bay-packers' }), false)
+  assert.equal(productMatchesTaxonomy({ title:'Premier League inspired graphic', taxonomy:{ league:'nfl', team:'new-york-jets' } }, { league:'epl' }), false)
 })
 
 test('teamMascot extracts concise mascots for mobile team badges', () => {
