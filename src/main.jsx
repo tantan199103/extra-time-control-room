@@ -43,7 +43,7 @@ import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, p
 import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { listingMediaRole } from './lib/listing-media'
-import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
+import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollectionPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
 import { fetchStorefrontProduct } from './lib/supabase'
 import { productPreviewReadiness } from './lib/customization-ai'
@@ -1377,7 +1377,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
     return true
   })
   shown = sort === 'FEATURED' && collection ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
-  const serverPaginated = Boolean(pagination?.server && !collection && sizeFilter === 'ALL' && !inStock)
+  const serverPaginated = Boolean(pagination?.server && sizeFilter === 'ALL' && !inStock)
   const totalPages = serverPaginated ? Math.max(1,Math.ceil(Number(pagination.total || 0) / pageSize)) : Math.max(1, Math.ceil(shown.length / pageSize))
   const currentPage = Math.max(1, Math.min(page, totalPages))
   const pagedProducts = serverPaginated ? shown : shown.slice((currentPage - 1) * pageSize, currentPage * pageSize)
@@ -2266,7 +2266,7 @@ function App() {
     setCatalogState(current => ({...current,loading:true}))
     const catalogRequest = productSlug
       ? fetchStorefrontProduct(productSlug)
-      : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:CATALOG_PAGE_SIZE, basePath:path, search })
+      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:CATALOG_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:CATALOG_PAGE_SIZE, basePath:path, search })
     const customRequest = !productSlug && path === '/' && featuredCustomProduct?.handle
       ? fetchStorefrontProduct(featuredCustomProduct.handle)
       : Promise.resolve({ data:[], source:'none', error:null })

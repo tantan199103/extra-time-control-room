@@ -187,6 +187,24 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
   return { data:(data || []).map(row => prepareStorefrontProduct(row)), total:Number(count || 0), page:safePage, pageSize:safeSize, source:'supabase', error:null }
 }
 
+export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize = 36 } = {}) {
+  if (!supabase) return { data:[],total:0,page,pageSize,source:'unavailable',error:'Live catalogue is not configured.' }
+  const collection = await supabase.from('pod_collections').select('id').eq('status','PUBLISHED').eq('handle',handle).maybeSingle()
+  if (collection.error) return { data:[],total:0,page,pageSize,source:'unavailable',error:collection.error.message }
+  if (!collection.data) return { data:[],total:0,page,pageSize,source:'supabase',error:null }
+  const safePage = Math.max(1,Math.trunc(Number(page) || 1))
+  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
+  const from = (safePage - 1) * safeSize
+  const links = await supabase.from('pod_collection_products').select('product_id,sort_order',{count:'exact'}).eq('collection_id',collection.data.id).order('sort_order',{ascending:true}).range(from,from + safeSize - 1)
+  if (links.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:links.error.message }
+  const ids = (links.data || []).map(row => row.product_id)
+  if (!ids.length) return { data:[],total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null }
+  const products = await supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED').in('id',ids)
+  if (products.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:products.error.message }
+  const byId = new Map((products.data || []).map(row => [row.id,row]))
+  return { data:ids.map(id => byId.get(id)).filter(Boolean).map(row => prepareStorefrontProduct(row)),total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null }
+}
+
 export async function fetchStorefrontSearch(term, limit = 12) {
   if (!supabase) return { data:[],source:'unavailable',error:'Live catalogue is not configured.' }
   const value = String(term || '').trim().slice(0,80)
