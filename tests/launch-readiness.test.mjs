@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { catalogLegalReview, validateListing } from '../src/lib/catalog-model.js'
+import { catalogLegalReview, seoReviewGate, validateListing } from '../src/lib/catalog-model.js'
 import { productPreviewReadiness } from '../src/lib/customization-ai.js'
 import { looksTruncatedSeoText, seoDescription, truncateSeoText } from '../src/lib/seo-text.js'
 
@@ -25,7 +25,7 @@ test('visual preview readiness requires an explicit designer region', () => {
   assert.deepEqual(result.missingFields.map(field => field.key), ['name'])
 })
 
-test('league and team listings save freely without review, while major brands require operator review', () => {
+test('league and team listings save freely while major brands are flagged for operator review', () => {
   const cleanFanJersey = {
     id:'p1', handle:'packers-piece', title:'Packers supporter jersey', price:80, compareAt:null,
     status:'PUBLISHED', image:'/piece.webp', description:'A sufficiently complete product description.',
@@ -45,7 +45,8 @@ test('league and team listings save freely without review, while major brands re
     tags:['football', 'nike']
   }
   assert.equal(catalogLegalReview(brandedProduct).required, true)
-  assert.match(validateListing(brandedProduct).join(' '), /Rights and affiliation review required/)
+  assert.match(seoReviewGate(brandedProduct).warnings.join(' '), /RIGHTS_REVIEW_RECOMMENDED/)
+  assert.doesNotMatch(validateListing(brandedProduct).join(' '), /Rights and affiliation review required/)
 
   // Once approved by operator, branded listing publishes cleanly
   brandedProduct.aiMetadata = { catalogReview: { status: 'APPROVED' } }

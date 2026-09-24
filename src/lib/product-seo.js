@@ -14,7 +14,7 @@ export function productSeoMetadata(product, origin = 'https://www.jersevo.com') 
   const title = cleanSeoText(product.seo?.title || name).replace(/\s*(?:\||—|–|-)\s*(?:Extra Time|Jersevo)\s*$/i,'')
   return {
     title:`${words(title,60)} | Jersevo`,
-    description:seoDescription(product.seo?.description, product.description || product.subtitle || name,160),
+    description:cleanSeoText(product.seo?.description) || seoDescription('', product.description || product.subtitle || name,160),
     canonical:new URL(productPath(product),origin).href,
     image:absolute(product.image || product.media?.find(item => item.type === 'IMAGE')?.url || '/assets/hero-tunnel.webp',origin),
     indexable:product.status === 'PUBLISHED' && String(product.seoStatus || product.seo_status || product.seo?.status).toUpperCase() === 'INDEXABLE'

@@ -5,7 +5,7 @@ import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/store
 import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 import { CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
-import { seoDescription } from '../src/lib/seo-text.js'
+import { cleanSeoText, seoDescription } from '../src/lib/seo-text.js'
 import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
 import { TRUST_PAGES } from '../src/lib/trust-pages.js'
 import { productBootstrap, renderProductContent, renderSitemap } from './seo-render.mjs'
@@ -174,7 +174,7 @@ function pageHtml(shell, { path, title, description, image, noindex = false, fal
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`)
     .replace(/<link\s+rel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${escapeHtml(canonical)}" />`)
     .replace(/<link\s+rel=["']preload["'][^>]*id=["']route-lcp-image["'][^>]*>/i, `<link rel="preload" as="image" href="${escapeHtml(image)}" fetchpriority="high" id="route-lcp-image" />`)
-  const metaDescription = seoDescription(description, '', 160)
+  const metaDescription = path.startsWith('/product/') ? cleanSeoText(description) : seoDescription(description, '', 160)
   html = upsertMeta(html, 'name', 'description', metaDescription)
   html = upsertMeta(html, 'name', 'robots', noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
   html = upsertMeta(html, 'name', 'googlebot', noindex ? 'noindex,nofollow' : 'index,follow')
@@ -190,8 +190,13 @@ function pageHtml(shell, { path, title, description, image, noindex = false, fal
   html = html.replace(/<link\s+rel=["']alternate["'][^>]*hreflang=["'](?:en-US|x-default)["'][^>]*>\s*/gi, '')
   const structured = schema ? `    <script type="application/ld+json" id="route-structured-data">${safeJson(schema)}</script>\n` : ''
   html = html.replace('</head>', `    <link rel="alternate" hreflang="en-US" href="${escapeHtml(canonical)}" />\n    <link rel="alternate" hreflang="x-default" href="${escapeHtml(canonical)}" />\n${structured}  </head>`)
-  if (featuredCustomProduct) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:featuredCustomProduct.image })}</script>\n  </head>`)
-  if (fallback) html = html.replace('<div id="root"></div>', `<div id="root">${fallback}</div>`)
+  if (featuredCustomProduct && !html.includes('id="jersevo-custom-product"')) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:featuredCustomProduct.image })}</script>\n  </head>`)
+  if (fallback) {
+    const marked = `<!-- SEO_FALLBACK_START -->${fallback}<!-- SEO_FALLBACK_END -->`
+    html = html.includes('<!-- SEO_FALLBACK_START -->')
+      ? html.replace(/<!-- SEO_FALLBACK_START -->[\s\S]*?<!-- SEO_FALLBACK_END -->/, marked)
+      : html.replace('<div id="root"></div>', `<div id="root">${marked}</div>`)
+  }
   if (bootstrap) html = html.replace('</head>', `${bootstrap}</head>`)
   return html
 }
@@ -236,7 +241,7 @@ const collections = await loadCollections()
 const TAXONOMY_MIN_PRODUCTS = 6
 const navigationRows = new Map()
 for (const product of products) {
-  const row = { taxonomy:{league:product.taxonomy?.league || '',team:product.taxonomy?.team || '',category:product.taxonomy?.category || ''},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [] }
+  const row = { taxonomy:{league:product.taxonomy?.league || '',team:product.taxonomy?.team || '',category:product.taxonomy?.category || '',brand:product.taxonomy?.brand || ''},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [] }
   navigationRows.set(JSON.stringify(row),row)
 }
 await writeFile(join(DIST,'catalog-navigation.json'),JSON.stringify([...navigationRows.values()]))
@@ -286,13 +291,45 @@ for (const product of blockedProducts) {
 const itemList = products.slice(0,CATALOG_PAGE_SIZE).map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
 await writePage('/shop', pageHtml(shell, {
   path:'/shop',
-  title:'Shop fan gear by league and team — Jersevo',
-  description:'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.',
+  title:'Shop fan gear by sport, team and product | Jersevo',
+  description:'Start with a sport, find your team or choose the product you want. Browse live jerseys, headwear and fan gear at Jersevo.',
   image:absolute('/assets/jersey-black.webp'),
-  fallback:`<main class="seo-fallback"><h1>All fan gear</h1><p>Shop by league, team and product type, including caps, apparel and personalized jerseys.</p><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav><ul>${products.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${products.length > CATALOG_PAGE_SIZE ? '<a href="/shop/page/2">Next page</a>' : ''}</main>`,
+  fallback:`<main class="seo-fallback"><h1>Find your route to the gear</h1><p>Shop by sport, team or product type. The full published catalog follows.</p><nav aria-label="Shop by sport">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)}</a>`).join(' · ')}</nav><nav aria-label="Find a team"><a href="/teams">Browse teams</a> · <a href="/sports">Explore sports</a></nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav><h2>All products</h2><ul>${products.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${products.length > CATALOG_PAGE_SIZE ? '<a href="/shop/page/2">Next page</a>' : ''}</main>`,
   schema:[{ '@context':'https://schema.org', '@type':'ItemList', itemListElement:itemList },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`}])]
 }))
 await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute('/assets/jersey-black.webp'))
+
+const leagueCountsForIndex = new Map()
+const teamCountsForIndex = new Map()
+for (const product of products) {
+  const league = String(product.taxonomy?.league || '').toLowerCase()
+  if (!league) continue
+  leagueCountsForIndex.set(league,(leagueCountsForIndex.get(league) || 0) + 1)
+  const team = normalizeTeamSlug(league,product.taxonomy?.team || '')
+  if (team) teamCountsForIndex.set(`${league}/${team}`,(teamCountsForIndex.get(`${league}/${team}`) || 0) + 1)
+}
+const availableLeagues = LEAGUE_TAXONOMY.filter(league => leagueCountsForIndex.get(league.key) > 0)
+await writePage('/sports', pageHtml(shell, {
+  path:'/sports', title:'Shop sports and leagues | Jersevo',
+  description:'Explore football, baseball, basketball, hockey, soccer and college fan gear by league and team.',
+  image:absolute('/assets/hero-tunnel.webp'),
+  fallback:`<main class="seo-fallback"><h1>Choose a sport</h1><p>Follow your league into the teams and gear that matter to you.</p>${[...new Set(availableLeagues.map(league => league.sport))].map(sport => `<section><h2>${escapeHtml(sport)}</h2><ul>${availableLeagues.filter(league => league.sport === sport).map(league => `<li><a href="${leaguePath(league)}">${escapeHtml(league.name)}</a></li>`).join('')}</ul></section>`).join('')}</main>`,
+  schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:'Sports and leagues at Jersevo', url:`${PUBLIC_ORIGIN}/sports` },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Sports',url:`${PUBLIC_ORIGIN}/sports`}])]
+}))
+await writePage('/teams', pageHtml(shell, {
+  path:'/teams', title:'Find your team | Jersevo',
+  description:'Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.',
+  image:absolute('/assets/hero-tunnel.webp'),
+  fallback:`<main class="seo-fallback"><h1>Find your team</h1><p>Browse teams with published fan gear by league.</p>${availableLeagues.map(league => `<section><h2><a href="${leaguePath(league)}">${escapeHtml(league.name)}</a></h2><ul>${league.teams.filter(team => (teamCountsForIndex.get(`${league.key}/${team.slug}`) || 0) >= TAXONOMY_MIN_PRODUCTS).map(team => `<li><a href="${teamPath(league.key,team)}">${escapeHtml(team.name)}</a></li>`).join('')}</ul></section>`).join('')}</main>`,
+  schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:'Find your team at Jersevo', url:`${PUBLIC_ORIGIN}/teams` },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Teams',url:`${PUBLIC_ORIGIN}/teams`}])]
+}))
+await writePage('/collections', pageHtml(shell, {
+  path:'/collections', title:'Shop collections | Jersevo',
+  description:'Explore currently published Jersevo collections and shop fan gear by sport, team and product type.',
+  image:absolute('/assets/hero-tunnel.webp'), noindex:collections.length === 0,
+  fallback:`<main class="seo-fallback"><h1>Explore collections</h1>${collections.length ? `<ul>${collections.map(collection => `<li><a href="/collection/${slug(collection.handle)}">${escapeHtml(collection.title)}</a></li>`).join('')}</ul>` : '<p>Editorial collections are being prepared. Browse the live catalog by sport, team or product type.</p><a href="/shop">Browse all gear</a>'}</main>`,
+  schema:{ '@context':'https://schema.org', '@type':'CollectionPage', name:'Jersevo collections', url:`${PUBLIC_ORIGIN}/collections` }
+}))
 
 for (const collection of collections) {
   const path = `/collection/${slug(collection.handle)}`

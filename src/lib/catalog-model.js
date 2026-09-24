@@ -30,8 +30,8 @@ export function catalogLegalReview(product = {}) {
 
   // Fan apparel naturally references leagues (NFL, NBA, MLB, MLS) and teams (Chiefs, Lakers).
   // These taxonomy tags are permitted without triggering a copyright blocker.
-  // Review is strictly required only when unauthorized major brand names (Nike, Adidas, etc.)
-  // or misleading commercial affiliation terms (official, licensed, authentic) are detected.
+  // Flag major brand or affiliation language for operator review. This flag is
+  // advisory for storefront publication and SEO indexing, not proof of rights.
   if (RIGHTS_REVIEW_TERMS.test(title) || RIGHTS_REVIEW_TERMS.test(tagsText) || RIGHTS_REVIEW_TERMS.test(brand)) {
     reasons.push('TRADEMARK_OR_AFFILIATION_LANGUAGE')
   }
@@ -63,11 +63,11 @@ export function seoReviewGate(product = {}) {
   if (!title) blockers.push('TITLE_REQUIRED')
   if (description.length < 160) blockers.push('DESCRIPTION_160_CHARACTERS')
   if (seoTitle.length < 30 || seoTitle.length > 60) blockers.push('SEO_TITLE_30_60_CHARACTERS')
-  if (seoDescription.length < 120 || seoDescription.length > 160) blockers.push('SEO_DESCRIPTION_120_160_CHARACTERS')
+  if (seoDescription.length < 120) blockers.push('SEO_DESCRIPTION_120_CHARACTERS')
   if (!images.length) blockers.push('MEDIA_IMAGE_REQUIRED')
   if (images.some(item => !String(item.alt || '').trim())) blockers.push('ALT_TEXT_REQUIRED_ON_EVERY_IMAGE')
   if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) blockers.push('PRICED_IN_STOCK_VARIANT_REQUIRED')
-  if (legal.required && !legal.approved) blockers.push('RIGHTS_REVIEW_REQUIRED')
+  if (legal.required && !legal.approved) warnings.push('RIGHTS_REVIEW_RECOMMENDED')
   if (!seo.primaryKeyword) warnings.push('PRIMARY_KEYWORD_RECOMMENDED')
   if (!Array.isArray(product.tags) || !product.tags.length) warnings.push('CATALOGUE_TAG_RECOMMENDED')
   const quality = Math.max(0, Math.round(100 - blockers.length * 12 - warnings.length * 3))
@@ -103,6 +103,7 @@ export function normalizeCustomFields(fields = []) {
       options: Array.isArray(input.options) ? input.options.map(value => String(value).trim()).filter(Boolean) : [],
       allowAiFinish: input.type === 'logo' ? input.allowAiFinish !== false : false,
       requiresConsent: input.type === 'logo' ? input.requiresConsent !== false : false,
+      studioReviewRequired: Boolean(input.studioReviewRequired),
       logoTreatment: input.type === 'logo' ? (LOGO_TREATMENTS.has(String(input.logoTreatment || 'EXACT').toUpperCase()) ? String(input.logoTreatment || 'EXACT').toUpperCase() : 'EXACT') : null,
       minWidth: input.type === 'logo' ? Math.max(256, Math.min(4000, Number(input.minWidth) || 800)) : null,
       previewRegion: (() => {
@@ -348,7 +349,7 @@ export function validateListing(product) {
     if (field.type === 'select' && !field.options?.length) errors.push(`${field.label || 'Select field'} needs at least one option.`)
     if (field.type === 'logo' && !LOGO_TREATMENTS.has(String(field.logoTreatment || 'EXACT').toUpperCase())) errors.push(`${field.label || 'Logo'} has an invalid finish treatment.`)
     if (field.type === 'logo' && (!Number.isInteger(Number(field.minWidth)) || Number(field.minWidth) < 256 || Number(field.minWidth) > 4000)) errors.push(`${field.label || 'Logo'} needs a minimum size between 256 and 4000 pixels.`)
-    if (field.type === 'logo' && product.status === 'PUBLISHED' && !field.previewRegion) errors.push(`${field.label || 'Logo'} needs a designer-approved logo area.`)
+    if (field.type === 'logo' && product.status === 'PUBLISHED' && !field.previewRegion && !field.studioReviewRequired) errors.push(`${field.label || 'Logo'} needs a designer-approved logo area.`)
     customKeys.add(field.key)
   }
   const options = product.options || []
@@ -386,8 +387,6 @@ export function validateListing(product) {
     if (!String(product.seo?.title || '').trim() || !String(product.seo?.description || '').trim()) errors.push('SEO title and description are required before publishing.')
     if (!String(product.type || '').trim() || !(product.tags || []).length) errors.push('Product type and at least one catalogue tag are required before publishing.')
     if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) errors.push('At least one priced, in-stock active variant is required before publishing.')
-    const legal = catalogLegalReview(product)
-    if (legal.required && !legal.approved) errors.push(`Rights and affiliation review required before publishing (${legal.reasons.join(', ')}). Mark the admin review as approved only after verifying the source and wording.`)
   }
   return [...new Set(errors)]
 }

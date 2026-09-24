@@ -28,6 +28,13 @@ test('published PDP metadata and variant schema use the same canonical product U
   assert.equal(breadcrumbs.itemListElement.at(-1).item,meta.canonical)
 })
 
+test('PDP keeps a complete merchant-written meta description beyond 160 characters', () => {
+  const description = 'Detailed product information about the pictured jersey, listed sizes and customization choices. '.repeat(3)
+  const metadata = productSeoMetadata({ ...product, seo:{description} })
+  assert.equal(metadata.description,description.trim())
+  assert.ok(metadata.description.length > 160)
+})
+
 test('HTML fallback has product copy, variant prices and crawlable related product links', () => {
   const html = renderProductContent({...product,customFields:[{key:'name',label:'Name',help:'Up to 12 characters'}],bulkOffers:[{minQty:2,discountPercent:10}],delivery:{production:'3–5 business days',transit:'5–8 business days'}},[{id:'listing-2',handle:'related',title:'Related Jersey'}])
   assert.match(html,/<h1>Test Home Jersey<\/h1>/)

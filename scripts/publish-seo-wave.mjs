@@ -56,7 +56,7 @@ function gateFor(product, taxonomy, variants, image) {
   if (!image) reasons.push('MISSING_PRIMARY_IMAGE')
   if (description.length < 160) reasons.push('DESCRIPTION_TOO_SHORT')
   if (!clean(seo.title) || clean(seo.title).length < 30 || clean(seo.title).length > 65) reasons.push('SEO_TITLE_LENGTH')
-  if (!clean(seo.description) || clean(seo.description).length < 120 || clean(seo.description).length > 180) reasons.push('SEO_DESCRIPTION_LENGTH')
+  if (!clean(seo.description) || clean(seo.description).length < 120) reasons.push('SEO_DESCRIPTION_LENGTH')
   if (!taxonomy.league && !taxonomy.team) reasons.push('TAXONOMY_REVIEW_REQUIRED')
   const sellable = activeSellable(variants)
   if (!sellable.length) reasons.push('NO_STOCKED_VARIANT')

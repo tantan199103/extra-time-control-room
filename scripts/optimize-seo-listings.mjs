@@ -14,6 +14,7 @@ const TARGET_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TARGET_SERVICE_KEY || ''
 const REPORT_PATH = process.env.SEO_OPTIMIZATION_REPORT || resolve('artifacts', 'seo-optimization-report.json')
 const WRITE = process.argv.includes('--write')
+const ONLY_FAILING = process.argv.includes('--only-failing') || String(process.env.SEO_ONLY_FAILING || '').toLowerCase() === 'true'
 const LIMIT = Math.max(0, Number(process.argv.includes('--limit') ? process.argv[process.argv.indexOf('--limit') + 1] : 0) || 0)
 const ONLY_ID = process.argv.includes('--id') ? process.argv[process.argv.indexOf('--id') + 1] : ''
 const WRITE_CONCURRENCY = Math.max(1, Number(process.env.SEO_WRITE_CONCURRENCY || 12))
@@ -203,7 +204,7 @@ function scoreAndReasons(product, next, stats) {
   if (next.description.length < 160) reasons.push('DESCRIPTION_TOO_SHORT')
   if (next.description.length > 950) reasons.push('DESCRIPTION_TOO_LONG')
   if (next.seo.title.length < 30 || next.seo.title.length > 65) reasons.push('SEO_TITLE_LENGTH')
-  if (next.seo.description.length < 120 || next.seo.description.length > 180) reasons.push('SEO_DESCRIPTION_LENGTH')
+  if (next.seo.description.length < 120) reasons.push('SEO_DESCRIPTION_LENGTH')
   if (next.media.length < 1) reasons.push('MISSING_MEDIA')
   if (next.contentBlocks.length < 2 || next.contentBlocks.reduce((sum, row) => sum + clean(row.content).length, 0) < 250) reasons.push('CONTENT_TOO_THIN')
   if (!stats.hasActive) reasons.push('NO_ACTIVE_VARIANT')
@@ -267,7 +268,7 @@ async function main() {
     list.push(variant)
     variantsByProduct.set(variant.product_id, list)
   }
-  let scope = products
+  let scope = ONLY_FAILING ? products.filter(product => !(product.status === 'PUBLISHED' && product.seo_status === 'INDEXABLE')) : products
   if (ONLY_ID) scope = scope.filter(product => product.id === ONLY_ID)
   if (LIMIT) scope = scope.slice(0, LIMIT)
   const beforeDescriptionDuplicates = duplicateGroups(scope, 'description')
@@ -330,7 +331,7 @@ async function main() {
   const afterDescriptionDuplicates = duplicateGroups(nextRows, 'description')
   const afterSeoDuplicates = duplicateGroups(nextRows, 'seo')
   const report = {
-    generatedAt: new Date().toISOString(), mode: WRITE ? 'WRITE' : 'DRY_RUN', targetProject: new URL(TARGET_URL).hostname.split('.')[0],
+    generatedAt: new Date().toISOString(), mode: WRITE ? 'WRITE' : 'DRY_RUN', onlyFailing: ONLY_FAILING, targetProject: new URL(TARGET_URL).hostname.split('.')[0],
     scope: scope.length, importedInScope: scope.filter(row => imported.has(row.id)).length,
     changed: changes.length, indexable: nextRows.filter(row => row.seoStatus === 'INDEXABLE').length,
     ready: nextRows.filter(row => row.seoStatus === 'READY').length, blocked: nextRows.filter(row => row.seoStatus === 'BLOCKED').length,

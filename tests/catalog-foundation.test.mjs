@@ -93,6 +93,12 @@ test('SEO review gate stays blocked until content, alt text and a sellable varia
   product.media[0].alt = 'Black football jersey product image'
   const ready = seoReviewGate(product)
   assert.equal(ready.ready, true)
+  product.seo.description = 'A detailed search summary about the same product and its listed options. '.repeat(4)
+  product.tags = ['nike']
+  const advisory = seoReviewGate(product)
+  assert.equal(advisory.ready, true)
+  assert.ok(advisory.warnings.includes('RIGHTS_REVIEW_RECOMMENDED'))
+  assert.ok(product.seo.description.length > 160)
   product.seoStatus = 'INDEXABLE'
   assert.deepEqual(validateListing(product).filter(error => error.startsWith('SEO review gate')), [])
 })
