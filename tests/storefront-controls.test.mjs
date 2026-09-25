@@ -119,12 +119,24 @@ test('sport and team discovery stay available across header, footer and mobile',
   assert.match(discovery, /'Sports', 'Teams'/)
   assert.match(source, /mobile-discovery-group/)
   assert.match(source, /mega-menu--discovery/)
-  assert.match(source, /className="footer__leagues"/)
-  assert.match(source, /className="footer__league-grid"/)
+  assert.doesNotMatch(source, /className="footer__leagues"/)
+  assert.doesNotMatch(source, /className="footer__league-grid"/)
+  assert.doesNotMatch(source, /className="footer__categories"/)
+  assert.match(source, /label:'SHOP'/)
+  assert.match(source, /label:'HELP'/)
   assert.match(source, /id:'leagues', label:'Leagues'/)
   assert.match(source, /className="fixed-league-panel"/)
   assert.doesNotMatch(source, /className="fixed-league-menu"/)
   assert.match(css, /\.pdp \+ footer/)
+})
+
+test('homepage hero stays focused and trust ribbon keeps all four pillars readable', () => {
+  assert.doesNotMatch(source, /POPULAR LEAGUES:/)
+  assert.doesNotMatch(source, /hero__quick-sports/)
+  assert.match(source, /\['Made Just for You', '', Sparkles\]/)
+  assert.match(source, /\['Tracked to Your Door', '', Truck\]/)
+  assert.match(source, /idx < items\.length - 1/)
+  assert.match(css, /\.storefront-trust__pill-title\s*\{[^}]*text-overflow:\s*ellipsis/)
 })
 
 test('product page integrates inline estimated delivery with purchase options and highlights timeline', () => {

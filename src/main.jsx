@@ -383,14 +383,6 @@ function Hero({ content = {}, customProduct }) {
   const headline = !content.headline || legacyHeadline ? 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.' : String(content.headline)
   const eyebrow = !content.eyebrow || /drop 01|extra time/i.test(String(content.eyebrow)) ? 'CUSTOM JERSEYS' : content.eyebrow
   const primaryLabel = !content.button || /explore the drop|create your jersey/i.test(String(content.button)) ? 'START CUSTOMIZING' : content.button
-  const quickSports = [
-    { label: 'NFL', mark: '/assets/leagues/marks/nfl.webp', path: '/shop?group=FOOTBALL' },
-    { label: 'NBA', mark: '/assets/leagues/marks/nba.webp', path: '/shop?group=BASKETBALL' },
-    { label: 'MLB', mark: '/assets/leagues/marks/mlb.webp', path: '/shop?group=BASEBALL' },
-    { label: 'NCAA', mark: '/assets/leagues/marks/ncaa.webp', path: '/league/ncaa' },
-    { label: 'SOCCER', mark: '/assets/leagues/marks/soccer.webp', path: '/shop?group=SOCCER' },
-    { label: 'CUSTOM LAB', icon: Sparkles, path: customTarget }
-  ]
 
   return (
     <section className="hero">
@@ -406,21 +398,6 @@ function Hero({ content = {}, customProduct }) {
             <Sparkles size={16}/> {primaryLabel}
           </button>
           <ButtonLink light onClick={() => navigate('/category/custom-jerseys')}>SHOP JERSEYS</ButtonLink>
-        </div>
-        <div className="hero__quick-sports">
-          <span className="hero__quick-label">POPULAR LEAGUES:</span>
-          <div className="hero__quick-chips">
-            {quickSports.map(sport => (
-              <button key={sport.label} type="button" className="hero__sport-chip" onClick={() => navigate(sport.path)}>
-                {sport.mark ? (
-                  <img src={sport.mark} alt="" className="hero__sport-mark" loading="lazy" decoding="async" />
-                ) : sport.icon ? (
-                  <sport.icon size={13} className="hero__sport-icon" aria-hidden="true" />
-                ) : null}
-                <span>{sport.label}</span>
-              </button>
-            ))}
-          </div>
         </div>
         <span className="hero__brand-line">Jersevo · Sports memories, made wearable.</span>
       </div>
@@ -720,10 +697,10 @@ function useMobileCols() {
 
 function StorefrontTrust({ compact = false, variant = 'default' }) {
   const items = variant === 'home' ? [
-    ['Made Just for You', 'Crafted on demand, never mass-produced.', Sparkles],
-    ['Personalized Your Way', 'Add your name, number, and make it unmistakably yours.', Tag],
-    ['Secure from Cart to Checkout', 'Protected payments for a worry-free purchase.', ShieldCheck],
-    ['Tracked to Your Door', 'Follow your order from production to delivery.', Truck]
+    ['Made Just for You', '', Sparkles],
+    ['Personalized Your Way', '', Tag],
+    ['Secure from Cart to Checkout', '', ShieldCheck],
+    ['Tracked to Your Door', '', Truck]
   ] : [
     ['SHIPPING', 'Free US shipping over $100', Truck],
     ['DELIVERY', 'Tracked delivery with clear updates', PackageCheck],
@@ -738,8 +715,7 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
             <div key={`${label}-${idx}`} className="storefront-trust__pill">
               {IconComponent && <span className="storefront-trust__pill-icon" aria-hidden="true"><IconComponent size={14}/></span>}
               <strong className="storefront-trust__pill-title">{label}</strong>
-              <span className="storefront-trust__pill-sep">•</span>
-              <span className="storefront-trust__pill-copy">{copy}</span>
+              {!copy && idx < items.length - 1 ? <span className="storefront-trust__pill-sep" aria-hidden="true">•</span> : copy && <><span className="storefront-trust__pill-sep" aria-hidden="true">•</span><span className="storefront-trust__pill-copy">{copy}</span></>}
             </div>
           ))}
         </div>
@@ -1209,30 +1185,46 @@ function Newsletter() {
   )
 }
 
-function Footer({ openSizeGuide, menus = [], customProduct, products = [] }) {
-  const configured = (menuAtLocation(menus,'FOOTER')?.items || []).filter(item => !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
-  const visibleLeagues = LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
-  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => products.some(product => productMatchesCatalogCategory(product,category)))
+function Footer({ openSizeGuide, menus = [], customProduct }) {
+  const configured = (menuAtLocation(menus,'FOOTER')?.items || [])
+    .filter(item => item.visible !== false && !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
+    .slice(0, 4)
+  const configuredTargets = new Set(configured.map(item => menuTarget(item.target,customProduct)))
+  const compactGroups = [
+    { label:'SHOP', links:[
+      { label:'Shop all gear', target:'/shop' },
+      { label:'Custom jerseys', target:customProductTarget(customProduct) },
+      { label:'90+ Club', target:'/membership' }
+    ] },
+    { label:'STUDIO', links:[
+      { label:'About Extra Time', target:'/about' },
+      { label:'Moments', target:'/#story' },
+      { label:'The vault', target:'/vault' }
+    ] },
+    { label:'HELP', links:[
+      { label:'Size guide', action:'size' },
+      { label:'Track an order', target:'/track-order' },
+      { label:'Shipping & returns', target:'/shipping', targets:['/shipping','/returns'] },
+      { label:'Warranty', target:'/warranty' }
+    ] },
+  ].map(group => ({
+    ...group,
+    links:group.links.filter(link => {
+      const targets = link.targets || (link.target ? [link.target] : [])
+      return !targets.some(target => configuredTargets.has(target))
+    })
+  }))
+  const openFooterLink = item => {
+    if (item.action === 'size') return openSizeGuide()
+    if (item.type === 'EXTERNAL') return window.open(item.target,'_blank','noopener,noreferrer')
+    return navigate(item.target)
+  }
   return (
     <footer>
       <div className="footer__top"><Mark inverted/><p>Football memories,<br />made wearable.</p></div>
-      <section className="footer__leagues" aria-label="Browse by league">
-        <div className="footer__leagues-copy"><span>LEAGUES</span><p>Start with the competition.<br />Stay for the team connection.</p></div>
-        <div className="footer__league-grid">
-          {visibleLeagues.map(league => <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>
-            <span className="footer__league-icon">{league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <Trophy size={18}/>}</span>
-            <span><strong>{league.name}</strong><small>{league.sport}</small></span><ArrowRight size={15}/>
-          </a>)}
-        </div>
-      </section>
-      <nav className="footer__categories" aria-label="Shop by product category"><span>SHOP BY PRODUCT</span>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><CategoryIcon kind={category.icon} size={15}/>{category.label}</a>)}</nav>
       <div className="footer__links">
-        {configured.length ? <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => item.type === 'EXTERNAL' ? window.open(item.target,'_blank','noopener,noreferrer') : navigate(menuTarget(item.target,customProduct))}>{item.label}</button>)}</div> : <div><span>SHOP</span><button onClick={() => navigate('/shop')}>New drop</button><button onClick={() => navigate('/shop')}>Jerseys</button><button onClick={() => navigate(customProductTarget(customProduct))}>Custom lab</button></div>}
-        <div><span>STUDIO</span><button onClick={() => navigate('/about')}>About Extra Time</button><button onClick={() => navigate('/#story')}>Moments</button><button onClick={() => navigate('/vault')}>The vault</button><button onClick={() => navigate('/journal')}>Journal</button></div>
-        <div><span>90+ CLUB</span><button onClick={() => navigate('/membership')}>Membership</button><button onClick={() => navigate('/membership#join')}>Plans & benefits</button><button onClick={() => navigate('/membership#account')}>Member account</button></div>
-        <div><span>HELP</span><button onClick={openSizeGuide}>Size guide</button><button onClick={() => navigate('/track-order')}>Track an order</button><button onClick={() => navigate('/shipping')}>Shipping</button><button onClick={() => navigate('/returns')}>Returns</button><button onClick={() => navigate('/warranty')}>Warranty</button></div>
-        <div><span>TRUST</span><button onClick={() => navigate('/privacy')}>Privacy</button><button onClick={() => navigate('/terms')}>Terms</button><button onClick={() => navigate('/warranty')}>Warranty</button><button onClick={() => navigate('/accessibility')}>Accessibility</button></div>
-        <div><span>FOLLOW · COMING SOON</span><button disabled title="Official Instagram link is not configured">Instagram</button><button disabled title="Official TikTok link is not configured">TikTok</button></div>
+        {configured.length > 0 && <div><span>NAVIGATE</span>{configured.map(item => <button key={item.id} onClick={() => openFooterLink({ ...item, target:menuTarget(item.target,customProduct) })}>{item.label}</button>)}</div>}
+        {compactGroups.filter(group => group.links.length > 0).map(group => <div key={group.label}><span>{group.label}</span>{group.links.map(item => <button key={item.label} onClick={() => openFooterLink(item)}>{item.label}</button>)}</div>)}
       </div>
       <div className="footer__wordmark">EXTRA TIME<span>+</span></div>
       <div className="footer__legal"><span>© 2026 JERSEVO · EXTRA TIME</span><span><button onClick={() => navigate('/privacy')}>PRIVACY</button> · <button onClick={() => navigate('/terms')}>TERMS</button> · <button onClick={() => navigate('/accessibility')}>ACCESSIBILITY</button></span><span><a href={`mailto:${BUSINESS_DETAILS.email}`}>{BUSINESS_DETAILS.email}</a> · {BUSINESS_DETAILS.location}</span></div>
@@ -2829,7 +2821,7 @@ function App() {
       <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} collections={collections} customProduct={customProduct} account={account} products={navigationProducts.length ? navigationProducts : products}/>
       {catalogState.error && path !== '/' && <div className={`catalog-runtime-notice ${catalogState.source === 'cache' ? 'is-cached' : ''}`} role="status"><span>{catalogState.source === 'cache' ? 'Showing recently loaded products while the live catalogue reconnects. Price and stock are checked again at checkout.' : 'The catalogue connection was interrupted. Refresh the product list to continue.'}</span><button type="button" onClick={() => setCatalogRefresh(value => value + 1)}>Refresh products</button></div>}
       {page}
-      <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct} products={navigationProducts.length ? navigationProducts : products}/>
+      <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct}/>
       <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} menus={menus} customProduct={customProduct} products={navigationProducts.length ? navigationProducts : products} hidden={footerActuallyHidden}/>
       <InstallAppSheet open={installOpen} onClose={() => setInstallOpen(false)} deferredPrompt={installPrompt} onInstalled={() => setAppInstalled(true)} onPromptUsed={() => setInstallPrompt(null)}/>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={products} navigationProducts={navigationProducts} collections={collections}/>
