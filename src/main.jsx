@@ -697,10 +697,10 @@ function useMobileCols() {
 
 function StorefrontTrust({ compact = false, variant = 'default' }) {
   const items = variant === 'home' ? [
-    ['Made Just for You', '', Sparkles],
-    ['Personalized Your Way', '', Tag],
-    ['Secure from Cart to Checkout', '', ShieldCheck],
-    ['Tracked to Your Door', '', Truck]
+    ['Made Just for You', 'Crafted on demand', Sparkles],
+    ['Personalized Your Way', 'Name, number & approved details', Tag],
+    ['Secure from Cart to Checkout', 'Protected payment flow', ShieldCheck],
+    ['Tracked to Your Door', 'Delivery updates included', Truck]
   ] : [
     ['SHIPPING', 'Free US shipping over $100', Truck],
     ['DELIVERY', 'Tracked delivery with clear updates', PackageCheck],
@@ -711,11 +711,13 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
     return (
       <section className="storefront-trust storefront-trust--home" aria-label="Storefront trust pillars">
         <div className="storefront-trust__track">
-          {items.map(([label, copy, IconComponent], idx) => (
-            <div key={`${label}-${idx}`} className="storefront-trust__pill">
+          {items.map(([label, copy, IconComponent]) => (
+            <div key={label} className="storefront-trust__pill">
               {IconComponent && <span className="storefront-trust__pill-icon" aria-hidden="true"><IconComponent size={14}/></span>}
-              <strong className="storefront-trust__pill-title">{label}</strong>
-              {!copy && idx < items.length - 1 ? <span className="storefront-trust__pill-sep" aria-hidden="true">•</span> : copy && <><span className="storefront-trust__pill-sep" aria-hidden="true">•</span><span className="storefront-trust__pill-copy">{copy}</span></>}
+              <span className="storefront-trust__pill-text">
+                <strong className="storefront-trust__pill-title">{label}</strong>
+                <span className="storefront-trust__pill-copy">{copy}</span>
+              </span>
             </div>
           ))}
         </div>

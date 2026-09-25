@@ -133,10 +133,11 @@ test('sport and team discovery stay available across header, footer and mobile',
 test('homepage hero stays focused and trust ribbon keeps all four pillars readable', () => {
   assert.doesNotMatch(source, /POPULAR LEAGUES:/)
   assert.doesNotMatch(source, /hero__quick-sports/)
-  assert.match(source, /\['Made Just for You', '', Sparkles\]/)
-  assert.match(source, /\['Tracked to Your Door', '', Truck\]/)
-  assert.match(source, /idx < items\.length - 1/)
-  assert.match(css, /\.storefront-trust__pill-title\s*\{[^}]*text-overflow:\s*ellipsis/)
+  assert.match(source, /\['Made Just for You', 'Crafted on demand', Sparkles\]/)
+  assert.match(source, /\['Tracked to Your Door', 'Delivery updates included', Truck\]/)
+  assert.match(source, /className="storefront-trust__pill-text"/)
+  assert.match(css, /\.storefront-trust:not\(\.storefront-trust--home\) > \.storefront-trust__item/)
+  assert.doesNotMatch(css, /\.storefront-trust__pill-title\s*\{[^}]*text-overflow:\s*ellipsis/)
 })
 
 test('product page integrates inline estimated delivery with purchase options and highlights timeline', () => {
