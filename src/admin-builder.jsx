@@ -39,6 +39,8 @@ import { adminProductOptions, themeBlocks } from './admin-builder-data'
 import { menuImageProblem, menuTargetProblem, normalizeMenuLocation } from './lib/storefront-model'
 import { addToCollection, applyCollectionMembership, changeCollectionMembership } from './lib/collection-assignment'
 import { DEFAULT_COLLECTION_AUTOMATION, collectionAutomationHasConditions, normalizeCollectionAutomation, parseCollectionKeywords } from './lib/collection-rules'
+import { ACCESSORY_FAMILY_OPTIONS, ACCESSORY_TYPE_OPTIONS, CATALOG_CATEGORY_OPTIONS, accessoryTaxonomyForProduct, catalogCategoryByHandle, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
+import { buildCollectionTree, collectionDescendantIds } from './lib/collection-tree'
 import './admin-builder.css'
 
 const navigate = path => {
@@ -202,6 +204,24 @@ export function AdminMenus({ menus, collections = [], onSave }) {
   return <main className="admin-page admin-menus-page"><BuilderIntro eyebrow="STOREFRONT / NAVIGATION" title={<>MAKE IT<br /><em>FINDABLE.</em></>} copy="Build a nested menu, assign its storefront location and control whether every thumbnail follows the linked page automatically." action="Save navigation" onAction={save} /><div className="admin-menu-workspace"><aside className="admin-menu-list"><div className="admin-builder-panel-head"><span>{draftMenus.length} MENUS</span><button className="admin-text-button" onClick={addMenu}><Plus size={13} /> New menu</button></div>{draftMenus.map(menu => <button key={menu.id} className={menu.id === selectedId ? 'is-active' : ''} onClick={() => setSelectedId(menu.id)}><MenuIcon size={15} /><span><strong>{menu.name}</strong><small>{normalizeMenuLocation(menu.location)} · {(menu.items || []).length} top links</small></span><Status value={menu.status} /></button>)}<div className="admin-menu-tip"><Link2 size={14} /><span><strong>Verified navigation</strong><small>Internal routes are checked before saving. Auto thumbnails follow the linked product, collection or page.</small></span></div></aside><section className="admin-menu-editor">{selected ? <><div className="admin-menu-editor__head"><div><p>MENU BUILDER / {normalizeMenuLocation(selected.location)}</p><h2>{selected.name}</h2></div><div><button className="admin-button admin-button--outline" onClick={preview}><Eye size={14} /> Preview storefront</button><button className="admin-button admin-button--dark" onClick={save}><Save size={14} /> Save</button></div></div><div className="admin-menu-location"><label className="admin-builder-field"><span>Menu name</span><input value={selected.name || ''} onChange={event => updateMenu(menu => ({ ...menu, name: event.target.value }))} /></label><label className="admin-builder-field"><span>Theme location</span><select value={normalizeMenuLocation(selected.location)} onChange={event => updateMenu(menu => ({ ...menu, location: event.target.value }))}><option value="HEADER">Header</option><option value="FOOTER">Footer</option><option value="FIXED_FOOTER_MOBILE">Fixed footer / mobile</option><option value="MOBILE_DRAWER">Mobile drawer</option></select></label><label className="admin-builder-field"><span>Publishing status</span><select value={selected.status || 'DRAFT'} onChange={event => updateMenu(menu => ({ ...menu, status: event.target.value }))}><option value="PUBLISHED">Published</option><option value="DRAFT">Draft</option><option value="ARCHIVED">Archived</option></select></label></div><div className="admin-menu-items-head"><span>LINKS / USE ARROWS TO REORDER / NESTED STRUCTURE / THUMBNAILS</span><button className="admin-text-button" onClick={addItem}><Plus size={13} /> Add top-level link</button></div><div className="admin-menu-items">{(selected.items || []).map(item => <MenuItemEditor key={item.id} item={item} depth={0} collections={collections} onUpdate={updateItem} onMove={moveItem} onDelete={deleteItem} onAddChild={addChild} />)}{!(selected.items || []).length && <div className="admin-empty"><MenuIcon size={24} /><strong>This menu is empty</strong><span>Add a top-level link to start building the tree.</span><button className="admin-text-button" onClick={addItem}>Add first link</button></div>}</div><div className="admin-menu-preview"><div className="admin-builder-panel-head"><span>STOREFRONT PREVIEW</span><button className="admin-text-button" onClick={preview}><Monitor size={13} /> Open live storefront</button></div><div className="admin-menu-preview__bar"><strong>90<sup>+</sup> EXTRA TIME</strong>{(selected.items || []).filter(item => item.visible !== false).map(item => <span key={item.id}>{item.label}</span>)}<b>BAG (0)</b></div><div className="admin-menu-preview__mobile"><Smartphone size={14} /><strong>90+</strong><span>{normalizeMenuLocation(selected.location) === 'FIXED_FOOTER_MOBILE' ? 'Quick nav' : 'Menu'}</span></div></div></> : <div className="admin-empty"><MenuIcon size={24} /><strong>No menu selected</strong><span>Create a menu to configure navigation.</span></div>}</section></div><SaveNotice notice={notice} /></main>
 }
 
+function CollectionTreeNode({ node, depth = 0, selectedId, expandedIds, onToggle, onSelect }) {
+  const hasChildren = node.children?.length > 0
+  const expanded = expandedIds.has(String(node.id))
+  return <div className="admin-collection-tree__node">
+    <div className={`admin-collection-tree__row ${selectedId === node.id ? 'is-active' : ''}`} style={{ '--tree-depth': depth }}>
+      <button type="button" className="admin-collection-tree__toggle" onClick={() => hasChildren && onToggle(node.id)} disabled={!hasChildren} aria-label={hasChildren ? `${expanded ? 'Collapse' : 'Expand'} ${node.name}` : `${node.name} has no child collections`} aria-expanded={hasChildren ? expanded : undefined}>
+        {hasChildren ? <ChevronDown size={13} className={expanded ? '' : 'is-collapsed'} /> : <span className="admin-collection-tree__leaf" />}
+      </button>
+      <button type="button" className="admin-collection-tree__select" onClick={() => onSelect(node.id)}>
+        <span className={`admin-collection-list__image ${node.hero ? '' : 'is-missing'}`}>{node.hero ? <img src={node.hero} alt="" /> : <><Image size={16}/><i>NO COVER</i></>}</span>
+        <span><strong>{node.name}</strong><small>{node.count ?? 0} assigned · {node.publishedCount ?? node.count ?? 0} live · {node.sort || 'Manual'}</small></span>
+        <Status value={node.status}/>
+      </button>
+    </div>
+    {hasChildren && expanded && <div className="admin-collection-tree__children">{node.children.map(child => <CollectionTreeNode key={child.id} node={child} depth={depth + 1} selectedId={selectedId} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} />)}</div>}
+  </div>
+}
+
 export function AdminCollections({
   collections, products, onSave, onDelete, loadCatalog, onPreviewAutomation, onApplyAutomation, onUploadImage, canEdit = true
 }) {
@@ -213,6 +233,9 @@ export function AdminCollections({
   const [catalogStatus, setCatalogStatus] = useState('ALL')
   const [catalogGroup, setCatalogGroup] = useState('ALL')
   const [catalogType, setCatalogType] = useState('ALL')
+  const [catalogCategory, setCatalogCategory] = useState('ALL')
+  const [catalogAccessoryFamily, setCatalogAccessoryFamily] = useState('ALL')
+  const [catalogAccessoryType, setCatalogAccessoryType] = useState('ALL')
   const [catalogState, setCatalogState] = useState({ rows:[], total:0, loading:true, error:'' })
   const [notice, setNotice] = useState('')
   const [dirtyIds, setDirtyIds] = useState([])
@@ -223,10 +246,14 @@ export function AdminCollections({
   const [rulePreview, setRulePreview] = useState(null)
   const [includeText, setIncludeText] = useState(() => normalizeCollectionAutomation(collections[0]?.automation).includeKeywords.join(', '))
   const [excludeText, setExcludeText] = useState(() => normalizeCollectionAutomation(collections[0]?.automation).excludeKeywords.join(', '))
+  const [expandedCollectionIds, setExpandedCollectionIds] = useState(() => new Set())
   const fileInputRef = useRef(null)
   const catalogRequest = useRef(0)
   const pageSize = 50
   const selected = draftCollections.find(collection => collection.id === selectedId) || draftCollections[0]
+  const collectionTree = useMemo(() => buildCollectionTree(draftCollections), [draftCollections])
+  const collectionDescendants = useMemo(() => selected ? collectionDescendantIds(draftCollections, selected.id) : new Set(), [draftCollections, selected?.id])
+  const parentOptions = useMemo(() => draftCollections.filter(collection => collection.id !== selected?.id && !collectionDescendants.has(String(collection.id))).sort((a,b) => String(a.name || '').localeCompare(String(b.name || ''))), [draftCollections, selected?.id, collectionDescendants])
   const automation = useMemo(() => normalizeCollectionAutomation(selected?.automation || DEFAULT_COLLECTION_AUTOMATION), [selected?.id, selected?.automation])
   const effectiveAutomation = useMemo(() => normalizeCollectionAutomation({ ...automation, includeKeywords:parseCollectionKeywords(includeText), excludeKeywords:parseCollectionKeywords(excludeText) }), [automation, includeText, excludeText])
   const fallbackProducts = loadCatalog ? null : products
@@ -234,6 +261,7 @@ export function AdminCollections({
   useEffect(() => {
     setDraftCollections(collections)
     setDirtyIds([])
+    setExpandedCollectionIds(new Set(buildCollectionTree(collections).filter(node => node.children?.length).map(node => String(node.id))))
     if (!collections.some(collection => collection.id === selectedId)) setSelectedId(collections[0]?.id)
   }, [collections])
 
@@ -257,13 +285,23 @@ export function AdminCollections({
         if (catalogStatus !== 'ALL' && product.status !== catalogStatus) return false
         if (catalogGroup !== 'ALL' && product.productGroup !== catalogGroup) return false
         if (catalogType !== 'ALL' && product.type !== catalogType) return false
+        if (catalogCategory !== 'ALL' || catalogAccessoryFamily !== 'ALL' || catalogAccessoryType !== 'ALL') {
+          const category = catalogCategoryByHandle(catalogCategory) || { value:catalogCategory === 'ALL' ? '' : catalogCategory }
+          const matches = productMatchesCatalogCategory(product, {
+            ...category,
+            value:catalogCategory === 'ALL' ? 'Accessories' : category.value,
+            accessoryFamily:catalogAccessoryFamily === 'ALL' ? '' : catalogAccessoryFamily,
+            accessoryType:catalogAccessoryType === 'ALL' ? '' : catalogAccessoryType
+          })
+          if (!matches) return false
+        }
         return !term || `${product.name} ${product.handle} ${product.sku} ${product.type} ${product.productGroup}`.toLowerCase().includes(term)
       }).sort((a,b) => String(a.name).localeCompare(String(b.name)))
       const from = (catalogPage - 1) * pageSize
       return { data:fallbackRows(matches, from, pageSize), total:matches.length, error:null }
     }
     const task = loadCatalog
-      ? loadCatalog({ page:catalogPage, pageSize, search:debouncedQuery, status:catalogStatus, productGroup:catalogGroup, productType:catalogType })
+      ? loadCatalog({ page:catalogPage, pageSize, search:debouncedQuery, status:catalogStatus, productGroup:catalogGroup, productType:catalogType, category:catalogCategory, accessoryFamily:catalogAccessoryFamily, accessoryType:catalogAccessoryType })
       : Promise.resolve(fallback())
     Promise.resolve(task).then(result => {
       if (sequence !== catalogRequest.current) return
@@ -272,10 +310,12 @@ export function AdminCollections({
     }).catch(error => {
       if (sequence === catalogRequest.current) setCatalogState({ rows:[], total:0, loading:false, error:error.message || 'Catalogue query failed.' })
     })
-  }, [loadCatalog, fallbackProducts, debouncedQuery, catalogPage, catalogStatus, catalogGroup, catalogType])
+  }, [loadCatalog, fallbackProducts, debouncedQuery, catalogPage, catalogStatus, catalogGroup, catalogType, catalogCategory, catalogAccessoryFamily, catalogAccessoryType])
 
   const productGroups = useMemo(() => [...new Set([...(products || []).map(product => product.productGroup), ...catalogState.rows.map(product => product.productGroup), automation.productGroup].filter(Boolean))].sort(), [products, catalogState.rows, automation.productGroup])
   const productTypes = useMemo(() => [...new Set([...(products || []).map(product => product.type), ...catalogState.rows.map(product => product.type), automation.productType].filter(Boolean))].sort(), [products, catalogState.rows, automation.productType])
+  const accessoryFamilies = ACCESSORY_FAMILY_OPTIONS
+  const accessoryTypes = ACCESSORY_TYPE_OPTIONS.filter(option => catalogAccessoryFamily === 'ALL' || option.family === catalogAccessoryFamily)
   const totalPages = Math.max(1, Math.ceil(catalogState.total / pageSize))
   const rangeStart = catalogState.total ? (catalogPage - 1) * pageSize + 1 : 0
   const rangeEnd = Math.min(catalogState.total, (catalogPage - 1) * pageSize + catalogState.rows.length)
@@ -368,14 +408,22 @@ export function AdminCollections({
     } catch (error) { setNotice(`Not saved: ${error.message}`) }
     finally { setRulesBusy('') }
   }
-  const createCollection = () => {
+  const toggleCollection = id => setExpandedCollectionIds(current => {
+    const next = new Set(current)
+    const key = String(id)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    return next
+  })
+  const createCollection = (parentId = '') => {
     if (!canEdit) return
     const id = `collection-${Date.now()}`
     setDraftCollections(current => [...current, {
-      id, name:'New collection', handle:id, status:'DRAFT', description:'', hero:'', products:[], count:0, publishedCount:0, _localOnly:true,
+      id, name:parentId ? 'New child collection' : 'New collection', handle:id, parentId, status:'DRAFT', description:'', hero:'', products:[], count:0, publishedCount:0, _localOnly:true,
       updatedAt:'Not saved', sort:'Manual', automation:{ ...DEFAULT_COLLECTION_AUTOMATION }
     }])
     setSelectedId(id)
+    if (parentId) setExpandedCollectionIds(current => new Set([...current, String(parentId)]))
     markDirty([id])
   }
   const deleteSelected = async () => {
@@ -398,15 +446,28 @@ export function AdminCollections({
     } finally { setDeleting(false) }
   }
 
+  const collectionStats = useMemo(() => ({
+    total:draftCollections.length,
+    roots:collectionTree.length,
+    automated:draftCollections.filter(row => normalizeCollectionAutomation(row.automation).enabled).length,
+    assigned:new Set(draftCollections.flatMap(row => row.products || [])).size
+  }), [draftCollections, collectionTree])
+
   return <main className="admin-page admin-collections-page">
-    <BuilderIntro eyebrow="COMMERCE / COLLECTIONS" title={<>CURATE THE<br /><em>DROP.</em></>} copy="Build collection stories, automate repeatable routing and reach every listing through a paginated live catalogue." action="New collection" onAction={createCollection}/>
+    <BuilderIntro eyebrow="COMMERCE / COLLECTIONS" title={<>CURATE THE<br /><em>DROP.</em></>} copy="Organize drops, departments and accessory families in a parent-child tree. Load and assign listings page by page." action="New collection" onAction={() => createCollection()}/>
+    <section className="admin-collection-summary" aria-label="Collection overview">
+      <div><strong>{collectionStats.total}</strong><span>Collections</span></div>
+      <div><strong>{collectionStats.roots}</strong><span>Top level</span></div>
+      <div><strong>{collectionStats.automated}</strong><span>Automatic rules</span></div>
+      <div><strong>{collectionStats.assigned.toLocaleString()}</strong><span>Unique listings assigned</span></div>
+    </section>
     <div className="admin-collection-workspace">
       <aside className="admin-collection-list">
-        <div className="admin-builder-panel-head"><span>{draftCollections.length} COLLECTIONS</span><button className="admin-text-button" disabled title="Collection sorting is not available yet."><ArrowDown size={13}/> Sort · Coming soon</button></div>
-        {draftCollections.map(collection => <button key={collection.id} className={selected?.id === collection.id ? 'is-active' : ''} onClick={() => setSelectedId(collection.id)}>
-          <span className={`admin-collection-list__image ${collection.hero ? '' : 'is-missing'}`}>{collection.hero ? <img src={collection.hero} alt=""/> : <><Image size={19}/><i>NO COVER</i></>}</span>
-          <span><strong>{collection.name}</strong><small>{collection.count ?? 0} assigned · {collection.publishedCount ?? collection.count ?? 0} live · {collection.sort}</small></span><Status value={collection.status}/>
-        </button>)}
+        <div className="admin-builder-panel-head"><span>{draftCollections.length} COLLECTIONS</span><button className="admin-text-button" onClick={() => createCollection(selected?.id || '')} disabled={!canEdit || !selected} title={selected ? 'Create a child collection under the selected collection.' : 'Select a parent collection first.'}><Plus size={13}/> New child</button></div>
+        <div className="admin-collection-tree" aria-label="Collection hierarchy">
+          {collectionTree.length ? collectionTree.map(node => <CollectionTreeNode key={node.id} node={node} selectedId={selected?.id} expandedIds={expandedCollectionIds} onToggle={toggleCollection} onSelect={setSelectedId}/>) : <div className="admin-empty"><Layers3 size={22}/><strong>No collections yet</strong><span>Create a top-level collection to start the tree.</span></div>}
+        </div>
+        <div className="admin-collection-tree__hint"><Layers3 size={14}/><span><strong>Parent / child structure</strong><small>Use Parent collection in the editor to nest drops, leagues or Accessories families.</small></span></div>
       </aside>
       <section className="admin-collection-editor">
         {selected ? <>
@@ -424,6 +485,7 @@ export function AdminCollections({
               <label className="admin-builder-field admin-builder-field--wide"><span>Description</span><textarea value={selected.description || ''} onChange={event => updateSelected(collection => ({ ...collection, description:event.target.value }))}/></label>
               <label className="admin-builder-field"><span>Status</span><select value={selected.status || 'DRAFT'} onChange={event => updateSelected(collection => ({ ...collection, status:event.target.value }))}><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select></label>
               <label className="admin-builder-field"><span>Sort products by</span><select value={selected.sort || 'Manual'} onChange={event => updateSelected(collection => ({ ...collection, sort:event.target.value }))}><option>Manual</option><option>Featured first</option><option>Newest</option><option>Best selling</option><option>Low stock</option></select></label>
+              <label className="admin-builder-field"><span>Parent collection</span><select value={selected.parentId || ''} onChange={event => updateSelected(collection => ({ ...collection, parentId:event.target.value }))}><option value="">Top level</option>{parentOptions.map(collection => <option key={collection.id} value={collection.id}>{collection.name}</option>)}</select><small>Use this for department → family → drop nesting.</small></label>
             </div>
             <div className="admin-collection-hero">
               <div className="admin-collection-hero__preview">{selected.hero ? <img src={selected.hero} alt={`${selected.name} collection cover`}/> : <div><Image size={25}/><span>No cover image</span></div>}</div>
@@ -462,13 +524,18 @@ export function AdminCollections({
               <label className="admin-catalog-select"><span>Status</span><select value={catalogStatus} onChange={event => { setCatalogStatus(event.target.value); setCatalogPage(1) }}><option>ALL</option><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select></label>
               <label className="admin-catalog-select"><span>Group</span><select value={catalogGroup} onChange={event => { setCatalogGroup(event.target.value); setCatalogPage(1) }}><option>ALL</option>{productGroups.map(group => <option key={group}>{group}</option>)}</select></label>
               <label className="admin-catalog-select"><span>Type</span><select value={catalogType} onChange={event => { setCatalogType(event.target.value); setCatalogPage(1) }}><option>ALL</option>{productTypes.map(type => <option key={type}>{type}</option>)}</select></label>
+              <label className="admin-catalog-select"><span>Department</span><select value={catalogCategory} onChange={event => { const value = event.target.value; setCatalogCategory(value); setCatalogAccessoryFamily(value === 'Accessories' ? catalogAccessoryFamily : 'ALL'); setCatalogAccessoryType(value === 'Accessories' ? catalogAccessoryType : 'ALL'); setCatalogPage(1) }}><option value="ALL">All departments</option>{CATALOG_CATEGORY_OPTIONS.map(category => <option key={category.value} value={category.value}>{category.label}</option>)}</select></label>
+              <label className="admin-catalog-select"><span>Accessory family</span><select value={catalogAccessoryFamily} disabled={catalogCategory !== 'ALL' && catalogCategory !== 'Accessories'} onChange={event => { setCatalogAccessoryFamily(event.target.value); setCatalogAccessoryType('ALL'); setCatalogCategory(event.target.value === 'ALL' && catalogCategory === 'Accessories' ? 'Accessories' : catalogCategory); setCatalogPage(1) }}><option value="ALL">All families</option>{accessoryFamilies.map(family => <option key={family.value} value={family.value}>{family.label}</option>)}</select></label>
+              <label className="admin-catalog-select"><span>Accessory type</span><select value={catalogAccessoryType} disabled={catalogAccessoryFamily === 'ALL'} onChange={event => { setCatalogAccessoryType(event.target.value); setCatalogCategory('Accessories'); setCatalogPage(1) }}><option value="ALL">All types</option>{accessoryTypes.map(type => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
             </div>
             <div className="admin-collection-page-actions"><span>{catalogState.loading ? 'Loading live catalogue…' : `${rangeStart.toLocaleString()}–${rangeEnd.toLocaleString()} of ${catalogState.total.toLocaleString()}`}</span><div><button className="admin-text-button" disabled={!canEdit || !catalogState.rows.length || saving} onClick={() => updateCurrentPage('ADD_TO_COLLECTION')}><Check size={13}/> Add this page</button><button className="admin-text-button" disabled={!canEdit || !catalogState.rows.length || saving} onClick={() => updateCurrentPage('REMOVE_FROM_COLLECTION')}><X size={13}/> Remove this page</button></div></div>
             {catalogState.error && <div className="admin-banner-notice" role="alert">Catalogue query failed: {catalogState.error}</div>}
             <div className={`admin-assignment-list ${catalogState.loading ? 'is-loading' : ''}`}>
               {catalogState.loading ? <div className="admin-collection-loading"><LoaderCircle className="is-spinning" size={20}/><span>Loading page {catalogPage}…</span></div> : catalogState.rows.length ? catalogState.rows.map(product => {
                 const checked = (selected.products || []).includes(product.id)
-                return <div key={product.id} className={`admin-assignment-row ${checked ? 'is-selected' : ''}`}><button type="button" disabled={!canEdit || saving} onClick={() => toggleProduct(product.id)} aria-label={checked ? `Remove ${product.name} from ${selected.name}` : `Add ${product.name} to ${selected.name}`}><span className="admin-assignment-check">{checked && <Check size={13}/>}</span>{product.image ? <img src={product.image} alt=""/> : <span className="admin-assignment-image"><Image size={14}/></span>}<span><strong>{product.name}</strong><small>{product.productGroup || product.type || 'Uncategorized'} · {product.sku || product.id} · {product.status}</small></span><b>{checked ? 'Remove' : 'Add'}</b></button>{checked && <select aria-label={`Move ${product.name} to another collection`} value="" disabled={!canEdit || saving} onChange={event => moveProduct(product.id,event.target.value)}><option value="">Move to…</option>{draftCollections.filter(row => row.id !== selected.id).map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select>}</div>
+                const accessory = accessoryTaxonomyForProduct(product)
+                const descriptor = accessory.isAccessory ? `${accessory.family} · ${accessory.type || 'Accessories'}` : (product.productGroup || product.type || 'Uncategorized')
+                return <div key={product.id} className={`admin-assignment-row ${checked ? 'is-selected' : ''}`}><button type="button" disabled={!canEdit || saving} onClick={() => toggleProduct(product.id)} aria-label={checked ? `Remove ${product.name} from ${selected.name}` : `Add ${product.name} to ${selected.name}`}><span className="admin-assignment-check">{checked && <Check size={13}/>}</span>{product.image ? <img src={product.image} alt=""/> : <span className="admin-assignment-image"><Image size={14}/></span>}<span><strong>{product.name}</strong><small>{descriptor} · {product.sku || product.id} · {product.status}</small></span><b>{checked ? 'Remove' : 'Add'}</b></button>{checked && <select aria-label={`Move ${product.name} to another collection`} value="" disabled={!canEdit || saving} onChange={event => moveProduct(product.id,event.target.value)}><option value="">Move to…</option>{draftCollections.filter(row => row.id !== selected.id).map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select>}</div>
               }) : <div className="admin-empty"><SlidersHorizontal size={22}/><strong>No listings found</strong><span>Clear a filter or search with a broader title, SKU, type or group.</span></div>}
             </div>
             <nav className="admin-collection-pagination" aria-label="Collection product catalogue pages"><button type="button" onClick={() => setCatalogPage(page => Math.max(1,page - 1))} disabled={catalogPage <= 1 || catalogState.loading}><ChevronLeft size={14}/> Previous</button><span>Page {catalogPage.toLocaleString()} of {totalPages.toLocaleString()}</span><button type="button" onClick={() => setCatalogPage(page => Math.min(totalPages,page + 1))} disabled={catalogPage >= totalPages || catalogState.loading}>Next <ChevronRight size={14}/></button></nav>

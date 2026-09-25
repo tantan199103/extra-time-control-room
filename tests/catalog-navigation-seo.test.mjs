@@ -4,6 +4,7 @@ import { ACCESSORY_FAMILY_OPTIONS, ACCESSORY_TYPE_OPTIONS, ALL_CATALOG_CATEGORY_
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from '../src/lib/catalog-pagination.js'
 import { findLeague, findTeam, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
 import { applyCollectionMembership, collectionMembershipDiff } from '../src/lib/collection-assignment.js'
+import { buildCollectionTree, collectionDescendantIds, collectionParentId, flattenCollectionTree } from '../src/lib/collection-tree.js'
 
 test('category landing pages match the controlled catalogue taxonomy', () => {
   const football = catalogCategoryByHandle('football-jerseys')
@@ -89,4 +90,20 @@ test('collection membership actions add, remove and move listings without changi
   const diff = collectionMembershipDiff(moved.collections,rows)
   assert.deepEqual(diff.additions.map(item => `${item.collection_id}/${item.product_id}`),['a/p3','b/p1'])
   assert.deepEqual(diff.removals.map(item => `${item.collectionId}/${item.productId}`),['a/p1','a/p2'])
+})
+
+test('collection admin tree preserves parent child order and rejects cycles', () => {
+  const rows = [
+    { id:'root', name:'Accessories', sortOrder:1 },
+    { id:'bags', name:'Bags', parentId:'root', sortOrder:2 },
+    { id:'caps', name:'Caps', parentId:'root', sortOrder:1 },
+    { id:'orphan', name:'Orphan', parentId:'missing' },
+    { id:'cycle', name:'Cycle', parentId:'cycle' }
+  ]
+  const tree = buildCollectionTree(rows)
+  assert.deepEqual(tree.map(row => row.id), ['Accessories', 'Cycle', 'Orphan'].map(name => rows.find(row => row.name === name).id))
+  assert.deepEqual(tree[0].children.map(row => row.id), ['caps','bags'])
+  assert.deepEqual(flattenCollectionTree(tree).map(row => row.id), ['root','caps','bags','cycle','orphan'])
+  assert.equal(collectionParentId({ id:'bags', seo:{ parentId:'root' } }), 'root')
+  assert.deepEqual([...collectionDescendantIds(rows,'root')].sort(), ['bags','caps'])
 })

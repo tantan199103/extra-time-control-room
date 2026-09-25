@@ -8,6 +8,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeTeamSlug, taxonomySlug } from '../src/lib/league-taxonomy.js'
+import { validateCatalogTaxonomy } from '../src/lib/taxonomy-validator.js'
 
 const TARGET_URL = [process.env.SUPABASE_URL, process.env.VITE_SUPABASE_URL, 'https://ofetusgarxcwloxxkhnr.supabase.co'].find(value => /^https?:\/\//.test(String(value || ''))) || 'https://ofetusgarxcwloxxkhnr.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TARGET_SERVICE_KEY || ''
@@ -51,6 +52,7 @@ function eligibleVariants(variants) {
 
 function gateFor(product, taxonomy, variants, image) {
   const reasons = []
+  const taxonomyCheck = validateCatalogTaxonomy({ ...product, taxonomy, productGroup: product.product_group })
   const description = clean(product.description)
   const seo = product.seo && typeof product.seo === 'object' ? product.seo : {}
   if (!image) reasons.push('MISSING_PRIMARY_IMAGE')
@@ -58,6 +60,7 @@ function gateFor(product, taxonomy, variants, image) {
   if (!clean(seo.title) || clean(seo.title).length < 30 || clean(seo.title).length > 65) reasons.push('SEO_TITLE_LENGTH')
   if (!clean(seo.description) || clean(seo.description).length < 120) reasons.push('SEO_DESCRIPTION_LENGTH')
   if (!taxonomy.league && !taxonomy.team) reasons.push('TAXONOMY_REVIEW_REQUIRED')
+  reasons.push(...taxonomyCheck.blockers)
   const sellable = activeSellable(variants)
   if (!sellable.length) reasons.push('NO_STOCKED_VARIANT')
   const score = Math.max(0, Math.min(100,

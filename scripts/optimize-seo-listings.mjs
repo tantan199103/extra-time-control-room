@@ -9,6 +9,7 @@ import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 import { truncateSeoText } from '../src/lib/seo-text.js'
+import { validateCatalogTaxonomy } from '../src/lib/taxonomy-validator.js'
 
 const TARGET_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ofetusgarxcwloxxkhnr.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TARGET_SERVICE_KEY || ''
@@ -200,6 +201,7 @@ function variantStats(product, variantsByProduct) {
 
 function scoreAndReasons(product, next, stats) {
   const reasons = []
+  const taxonomyCheck = validateCatalogTaxonomy(next)
   if (!next.image) reasons.push('MISSING_PRIMARY_IMAGE')
   if (next.description.length < 160) reasons.push('DESCRIPTION_TOO_SHORT')
   if (next.description.length > 950) reasons.push('DESCRIPTION_TOO_LONG')
@@ -211,6 +213,7 @@ function scoreAndReasons(product, next, stats) {
   if (!stats.hasPrice) reasons.push('NO_PRICED_VARIANT')
   if (!stats.hasStock) reasons.push('NO_STOCKED_VARIANT')
   if (!next.taxonomy.league && !next.taxonomy.team) reasons.push('TAXONOMY_REVIEW_REQUIRED')
+  reasons.push(...taxonomyCheck.blockers)
   const score = Math.max(0, Math.min(100,
     (next.image ? 15 : 0) + (next.media.length >= 2 ? 10 : next.media.length ? 6 : 0) +
     (next.description.length >= 220 ? 20 : next.description.length >= 160 ? 14 : 0) +
@@ -219,7 +222,7 @@ function scoreAndReasons(product, next, stats) {
     (next.contentBlocks.length >= 4 ? 10 : next.contentBlocks.length >= 2 ? 6 : 0) +
     (stats.hasActive ? 5 : 0) + (stats.hasPrice ? 5 : 0) + (stats.hasStock ? 5 : 0)
   ))
-  const technicalReady = reasons.every(reason => !['MISSING_PRIMARY_IMAGE', 'DESCRIPTION_TOO_SHORT', 'SEO_TITLE_LENGTH', 'SEO_DESCRIPTION_LENGTH', 'MISSING_MEDIA', 'CONTENT_TOO_THIN', 'NO_ACTIVE_VARIANT', 'NO_PRICED_VARIANT', 'NO_STOCKED_VARIANT'].includes(reason))
+  const technicalReady = reasons.every(reason => !['MISSING_PRIMARY_IMAGE', 'DESCRIPTION_TOO_SHORT', 'SEO_TITLE_LENGTH', 'SEO_DESCRIPTION_LENGTH', 'MISSING_MEDIA', 'CONTENT_TOO_THIN', 'NO_ACTIVE_VARIANT', 'NO_PRICED_VARIANT', 'NO_STOCKED_VARIANT', 'TAXONOMY_LEAGUE_TEXT_MISMATCH', 'TAXONOMY_TEAM_LEAGUE_MISMATCH', 'TAXONOMY_UNKNOWN_LEAGUE', 'TAXONOMY_SPORT_MISMATCH', 'TAXONOMY_PRODUCT_GROUP_MISMATCH'].includes(reason))
   const seoStatus = technicalReady ? (product.status === 'PUBLISHED' ? 'INDEXABLE' : 'READY') : 'BLOCKED'
   return { score, reasons, seoStatus }
 }

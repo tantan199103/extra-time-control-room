@@ -350,9 +350,9 @@ function AdminWorkspace() {
     }
   }
 
-  const loadPart = (task, fallback, label) => Promise.race([
+  const loadPart = (task, fallback, label, timeoutMs = 12000) => Promise.race([
     task,
-    new Promise(resolve => window.setTimeout(() => resolve({ data: fallback, source: 'preview', error: `${label} timed out. Showing the control-room fallback.` }), 12000))
+    new Promise(resolve => window.setTimeout(() => resolve({ data: fallback, source: 'preview', error: `${label} timed out. Showing the control-room fallback.` }), timeoutMs))
   ]).catch(error => ({ data: fallback, source: 'preview', error: error instanceof Error ? error.message : `${label} failed.` }))
   const load = async () => {
     const sequence = ++loadSequence.current
@@ -384,7 +384,7 @@ function AdminWorkspace() {
         loadPart(fetchAdminProducts({ onPage: mergeCatalogPage, onError: catalogError }), [], 'Catalog'),
         loadPart(fetchAdminTheme(), adminTheme, 'Theme'),
         loadPart(fetchAdminMenus(), adminMenus, 'Menus'),
-        loadPart(fetchAdminCollections(), adminCollections, 'Collections')
+        loadPart(fetchAdminCollections(), adminCollections, 'Collections', 30000)
       ])
       if (sequence !== loadSequence.current) return
       const products = productResult.data || []

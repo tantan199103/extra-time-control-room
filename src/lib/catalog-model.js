@@ -2,6 +2,7 @@
 export const isAdminUser = user => Boolean(user?.id && user?.app_metadata?.extra_time_role === 'admin')
 
 import { normalizeAccessoryTaxonomy } from './catalog-taxonomy.js'
+import { validateCatalogTaxonomy } from './taxonomy-validator.js'
 
 const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo', 'logo'])
 const LOGO_TREATMENTS = new Set(['EXACT', 'FABRIC', 'VINTAGE', 'MONOCHROME'])
@@ -59,6 +60,7 @@ export function seoReviewGate(product = {}) {
   const images = media.filter(item => String(item?.type || '').toUpperCase() === 'IMAGE' && String(item?.url || '').trim())
   const variants = Array.isArray(product.variants) ? product.variants : []
   const legal = catalogLegalReview(product)
+  const taxonomy = validateCatalogTaxonomy(product)
 
   if (String(product.status || '').toUpperCase() !== 'PUBLISHED') blockers.push('PUBLISH_LISTING_FIRST')
   if (!String(product.image || '').trim()) blockers.push('PRIMARY_IMAGE_REQUIRED')
@@ -70,10 +72,19 @@ export function seoReviewGate(product = {}) {
   if (images.some(item => !String(item.alt || '').trim())) blockers.push('ALT_TEXT_REQUIRED_ON_EVERY_IMAGE')
   if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) blockers.push('PRICED_IN_STOCK_VARIANT_REQUIRED')
   if (legal.required && !legal.approved) warnings.push('RIGHTS_REVIEW_RECOMMENDED')
+  blockers.push(...taxonomy.blockers)
+  warnings.push(...taxonomy.warnings)
   if (!seo.primaryKeyword) warnings.push('PRIMARY_KEYWORD_RECOMMENDED')
   if (!Array.isArray(product.tags) || !product.tags.length) warnings.push('CATALOGUE_TAG_RECOMMENDED')
   const quality = Math.max(0, Math.round(100 - blockers.length * 12 - warnings.length * 3))
-  return { ready:blockers.length === 0, blockers, warnings, quality, reviewedAt:product.seoReviewedAt || product.aiMetadata?.seoReview?.reviewedAt || null }
+  return {
+    ready:blockers.length === 0,
+    blockers:[...new Set(blockers)],
+    warnings:[...new Set(warnings)],
+    quality,
+    taxonomy,
+    reviewedAt:product.seoReviewedAt || product.aiMetadata?.seoReview?.reviewedAt || null
+  }
 }
 
 export function slugify(value, fallback = 'untitled-listing') {

@@ -97,3 +97,15 @@ test('large admin catalogues use paginated summaries and hydrate one listing on 
   assert.match(admin, /catalogLoad\.complete/)
   assert.match(listing, /sourceProduct\._catalogSummary/)
 })
+
+test('collections load with a lean membership projection and expose a parent child accessory tree', () => {
+  assert.match(adapter, /ADMIN_COLLECTION_FIELDS/)
+  assert.match(adapter, /pod_products\(status\)/)
+  assert.doesNotMatch(adapter, /pod_collections'\)\.select\('\*'/)
+  assert.match(builder, /buildCollectionTree/)
+  assert.match(builder, /Parent collection/)
+  assert.match(builder, /Accessory family/)
+  assert.match(builder, /Accessory type/)
+  assert.match(builder, /New child/)
+  assert.match(admin, /fetchAdminCollections\(\), adminCollections, 'Collections', 30000\)/)
+})

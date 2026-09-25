@@ -868,7 +868,7 @@ function safeCollectionSearch(value) {
     .slice(0, 100)
 }
 
-export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, search = '', status = 'ALL', productGroup = 'ALL', productType = 'ALL' } = {}) {
+export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, search = '', status = 'ALL', productGroup = 'ALL', productType = 'ALL', category = 'ALL', accessoryFamily = 'ALL', accessoryType = 'ALL' } = {}) {
   if (!supabase) return { data:[], total:0, page:1, pageSize, source:'error', error:'Supabase is not configured.' }
   const safePageSize = Math.max(20, Math.min(100, Number(pageSize) || 50))
   const safePage = Math.max(1, Number(page) || 1)
@@ -880,6 +880,9 @@ export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, sea
     if (String(status).toUpperCase() !== 'ALL') request = request.eq('status', String(status).toUpperCase())
     if (productGroup && productGroup !== 'ALL') request = request.eq('product_group', productGroup)
     if (productType && productType !== 'ALL') request = request.eq('type', productType)
+    if (category && category !== 'ALL') request = request.eq('taxonomy->>category', category)
+    if (accessoryFamily && accessoryFamily !== 'ALL') request = request.eq('taxonomy->>accessoryCategory', accessoryFamily)
+    if (accessoryType && accessoryType !== 'ALL') request = request.eq('taxonomy->>accessoryType', accessoryType)
     const { data, count, error } = await request
       .order('title', { ascending:true })
       .order('id', { ascending:true })
@@ -920,42 +923,75 @@ export async function applyAdminCollectionAutomation(collectionId, rules) {
   return { data, source:'supabase', error:null }
 }
 
+const ADMIN_COLLECTION_FIELDS = 'id,handle,name,description,status,hero_image,sort_mode,seo,automation,created_at,updated_at'
+const ADMIN_COLLECTION_LINK_FIELDS = 'collection_id,product_id,sort_order,featured,pod_products(status)'
+const ADMIN_COLLECTION_LINK_FIELDS_LEGACY = 'collection_id,product_id,sort_order,featured'
+
+function collectionStatusFromLink(row) {
+  const relation = Array.isArray(row?.pod_products) ? row.pod_products[0] : row?.pod_products
+  return String(relation?.status || row?.product_status || '').toUpperCase()
+}
+
+async function fetchCollectionLinks(fields) {
+  const pageSize = 1000
+  const first = await supabase.from('pod_collection_products').select(fields,{count:'exact'}).order('collection_id').order('product_id').range(0,pageSize - 1)
+  if (first.error) return { error:first.error }
+  const links = [...(first.data || [])]
+  const total = Number(first.count || links.length)
+  for (let from = pageSize; from < total; from += pageSize * 6) {
+    const offsets = Array.from({length:Math.min(6,Math.ceil((total - from) / pageSize))},(_,index) => from + index * pageSize)
+    const pages = await Promise.all(offsets.map(offset => supabase.from('pod_collection_products').select(fields).order('collection_id').order('product_id').range(offset,offset + pageSize - 1)))
+    const failed = pages.find(page => page.error)
+    if (failed) return { error:failed.error }
+    pages.forEach(page => links.push(...(page.data || [])))
+  }
+  if (links.length !== total) return { error:new Error(`Collection membership loaded partially (${links.length}/${total}). Refresh Admin before editing.`) }
+  return { links, total }
+}
+
 export async function fetchAdminCollections() {
   if (!supabase) return previewResult(adminCollections)
   try {
-    const { data, error } = await supabase.from('pod_collections').select('*').order('updated_at', { ascending: false })
+    // Keep this request small. The previous select('*') plus a second full
+    // catalogue scan made Collections exceed the Admin 12 second deadline.
+    const { data, error } = await supabase.from('pod_collections').select(ADMIN_COLLECTION_FIELDS).order('updated_at', { ascending: false })
     if (error) return { data:[], source:'error', error:error.message }
-    const pageSize = 1000
-    const first = await supabase.from('pod_collection_products').select('collection_id,product_id,sort_order,featured',{count:'exact'}).order('collection_id').order('product_id').range(0,pageSize - 1)
-    if (first.error) return { data:[], source:'error', error:first.error.message }
-    const links = [...(first.data || [])]
-    const total = first.count || links.length
-    for (let from = pageSize; from < total; from += pageSize * 6) {
-      const offsets = Array.from({length:Math.min(6,Math.ceil((total - from) / pageSize))},(_,index) => from + index * pageSize)
-      const pages = await Promise.all(offsets.map(offset => supabase.from('pod_collection_products').select('collection_id,product_id,sort_order,featured').order('collection_id').order('product_id').range(offset,offset + pageSize - 1)))
-      const failed = pages.find(page => page.error)
-      if (failed) return { data:[], source:'error', error:failed.error.message }
-      pages.forEach(page => links.push(...(page.data || [])))
+
+    // Read product status through the existing foreign key in the membership
+    // pages. This removes the old sequential scan of every pod_products row.
+    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS)
+    let hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
+    if (linkResult.error) {
+      // Older projects may not expose the relationship in PostgREST yet. The
+      // membership editor still works with the lean legacy projection.
+      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY)
+      hasProductStatus = false
     }
-    if (links.length !== total) return { data:[], source:'error', error:`Collection membership loaded partially (${links.length}/${total}). Refresh Admin before editing.` }
+    if (linkResult.error) return { data:[], source:'error', error:linkResult.error.message }
+
     const byCollection = new Map()
-    links.forEach(link => byCollection.set(link.collection_id,[...(byCollection.get(link.collection_id) || []),link]))
-    const productIds = new Set(links.map(link => link.product_id))
-    const productStatus = new Map()
-    // Avoid a very large `in (...)` URL when a catalogue has thousands of
-    // imported listings. Small range pages are predictable and stay below
-    // PostgREST/Undici header limits.
-    for (let from = 0; ; from += 1000) {
-      const statusPage = await supabase.from('pod_products').select('id,status').order('id').range(from,from + 999)
-      if (statusPage.error) break
-      ;(statusPage.data || []).forEach(row => { if (productIds.has(row.id)) productStatus.set(row.id,row.status) })
-      if (!statusPage.data || statusPage.data.length < 1000) break
-    }
+    ;(linkResult.links || []).forEach(link => byCollection.set(link.collection_id,[...(byCollection.get(link.collection_id) || []),link]))
     return {
       data: (data || []).map(collection => {
-        const members = (byCollection.get(collection.id) || []).sort((a,b) => a.sort_order - b.sort_order || String(a.product_id).localeCompare(String(b.product_id)))
-        const publishedCount = members.filter(item => productStatus.get(item.product_id) === 'PUBLISHED').length
-        return { ...collection, hero:collection.hero_image, sort:collection.sort_mode, automation:normalizeCollectionAutomation(collection.automation), products:members.map(item => item.product_id), productLinks:members.map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count:members.length, publishedCount, updatedAt:collection.updated_at }
+        const members = (byCollection.get(collection.id) || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.product_id).localeCompare(String(b.product_id)))
+        const publishedCount = hasProductStatus
+          ? members.filter(item => collectionStatusFromLink(item) === 'PUBLISHED').length
+          : members.length
+        const seo = collection.seo && typeof collection.seo === 'object' ? collection.seo : {}
+        const parentId = String(seo.parentId || seo.parent_id || '').trim()
+        return {
+          ...collection,
+          seo,
+          parentId:parentId && parentId !== collection.id ? parentId : '',
+          hero:collection.hero_image,
+          sort:collection.sort_mode,
+          automation:normalizeCollectionAutomation(collection.automation),
+          products:members.map(item => item.product_id),
+          productLinks:members.map(item => ({productId:item.product_id,sortOrder:Number(item.sort_order || 0),featured:Boolean(item.featured)})),
+          count:members.length,
+          publishedCount,
+          updatedAt:collection.updated_at
+        }
       }),
       source: 'supabase', error: null
     }
@@ -975,7 +1011,11 @@ export async function saveAdminCollections(collections, originalCollections = []
   // Create/update metadata first, then attach destinations before detaching
   // sources. A failed move can leave a recoverable duplicate, never a lost link.
   for (const row of collections) {
-    const payload = {id:row.id,handle:row.handle,name:row.name,description:row.description || '',status:row.status || 'DRAFT',hero_image:row.hero || null,sort_mode:String(row.sort || 'MANUAL').toUpperCase().replace(/\s+/g,'_'),seo:row.seo || {},automation:normalizeCollectionAutomation(row.automation),updated_at:new Date().toISOString()}
+    const parentId = String(row.parentId || row.parent_id || '').trim()
+    const seo = { ...(row.seo && typeof row.seo === 'object' ? row.seo : {}) }
+    if (parentId && parentId !== row.id) seo.parentId = parentId
+    else delete seo.parentId
+    const payload = {id:row.id,handle:row.handle,name:row.name,description:row.description || '',status:row.status || 'DRAFT',hero_image:row.hero || null,sort_mode:String(row.sort || 'MANUAL').toUpperCase().replace(/\s+/g,'_'),seo,automation:normalizeCollectionAutomation(row.automation),updated_at:new Date().toISOString()}
     const { error } = await supabase.from('pod_collections').upsert(payload,{onConflict:'id'})
     if (error) return { data:collections, source:'error', error:`${row.name}: ${error.message}` }
   }
