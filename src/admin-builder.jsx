@@ -1,10 +1,12 @@
 import VariantMatrix from './VariantMatrix'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   ChevronDown,
   ChevronUp,
   Copy,
@@ -13,6 +15,7 @@ import {
   Image,
   Layers3,
   LayoutTemplate,
+  LoaderCircle,
   Link2,
   Lock,
   Menu as MenuIcon,
@@ -20,10 +23,13 @@ import {
   PackageCheck,
   Plus,
   Save,
+  Search,
+  Sparkles,
   Smartphone,
   SlidersHorizontal,
   Trash2,
   Type,
+  Upload,
   Undo2,
   Redo2,
   Monitor,
@@ -31,7 +37,8 @@ import {
 } from 'lucide-react'
 import { adminProductOptions, themeBlocks } from './admin-builder-data'
 import { menuImageProblem, menuTargetProblem, normalizeMenuLocation } from './lib/storefront-model'
-import { addToCollection, changeCollectionMembership } from './lib/collection-assignment'
+import { addToCollection, applyCollectionMembership, changeCollectionMembership } from './lib/collection-assignment'
+import { DEFAULT_COLLECTION_AUTOMATION, collectionAutomationHasConditions, normalizeCollectionAutomation, parseCollectionKeywords } from './lib/collection-rules'
 import './admin-builder.css'
 
 const navigate = path => {
@@ -195,43 +202,127 @@ export function AdminMenus({ menus, collections = [], onSave }) {
   return <main className="admin-page admin-menus-page"><BuilderIntro eyebrow="STOREFRONT / NAVIGATION" title={<>MAKE IT<br /><em>FINDABLE.</em></>} copy="Build a nested menu, assign its storefront location and control whether every thumbnail follows the linked page automatically." action="Save navigation" onAction={save} /><div className="admin-menu-workspace"><aside className="admin-menu-list"><div className="admin-builder-panel-head"><span>{draftMenus.length} MENUS</span><button className="admin-text-button" onClick={addMenu}><Plus size={13} /> New menu</button></div>{draftMenus.map(menu => <button key={menu.id} className={menu.id === selectedId ? 'is-active' : ''} onClick={() => setSelectedId(menu.id)}><MenuIcon size={15} /><span><strong>{menu.name}</strong><small>{normalizeMenuLocation(menu.location)} · {(menu.items || []).length} top links</small></span><Status value={menu.status} /></button>)}<div className="admin-menu-tip"><Link2 size={14} /><span><strong>Verified navigation</strong><small>Internal routes are checked before saving. Auto thumbnails follow the linked product, collection or page.</small></span></div></aside><section className="admin-menu-editor">{selected ? <><div className="admin-menu-editor__head"><div><p>MENU BUILDER / {normalizeMenuLocation(selected.location)}</p><h2>{selected.name}</h2></div><div><button className="admin-button admin-button--outline" onClick={preview}><Eye size={14} /> Preview storefront</button><button className="admin-button admin-button--dark" onClick={save}><Save size={14} /> Save</button></div></div><div className="admin-menu-location"><label className="admin-builder-field"><span>Menu name</span><input value={selected.name || ''} onChange={event => updateMenu(menu => ({ ...menu, name: event.target.value }))} /></label><label className="admin-builder-field"><span>Theme location</span><select value={normalizeMenuLocation(selected.location)} onChange={event => updateMenu(menu => ({ ...menu, location: event.target.value }))}><option value="HEADER">Header</option><option value="FOOTER">Footer</option><option value="FIXED_FOOTER_MOBILE">Fixed footer / mobile</option><option value="MOBILE_DRAWER">Mobile drawer</option></select></label><label className="admin-builder-field"><span>Publishing status</span><select value={selected.status || 'DRAFT'} onChange={event => updateMenu(menu => ({ ...menu, status: event.target.value }))}><option value="PUBLISHED">Published</option><option value="DRAFT">Draft</option><option value="ARCHIVED">Archived</option></select></label></div><div className="admin-menu-items-head"><span>LINKS / USE ARROWS TO REORDER / NESTED STRUCTURE / THUMBNAILS</span><button className="admin-text-button" onClick={addItem}><Plus size={13} /> Add top-level link</button></div><div className="admin-menu-items">{(selected.items || []).map(item => <MenuItemEditor key={item.id} item={item} depth={0} collections={collections} onUpdate={updateItem} onMove={moveItem} onDelete={deleteItem} onAddChild={addChild} />)}{!(selected.items || []).length && <div className="admin-empty"><MenuIcon size={24} /><strong>This menu is empty</strong><span>Add a top-level link to start building the tree.</span><button className="admin-text-button" onClick={addItem}>Add first link</button></div>}</div><div className="admin-menu-preview"><div className="admin-builder-panel-head"><span>STOREFRONT PREVIEW</span><button className="admin-text-button" onClick={preview}><Monitor size={13} /> Open live storefront</button></div><div className="admin-menu-preview__bar"><strong>90<sup>+</sup> EXTRA TIME</strong>{(selected.items || []).filter(item => item.visible !== false).map(item => <span key={item.id}>{item.label}</span>)}<b>BAG (0)</b></div><div className="admin-menu-preview__mobile"><Smartphone size={14} /><strong>90+</strong><span>{normalizeMenuLocation(selected.location) === 'FIXED_FOOTER_MOBILE' ? 'Quick nav' : 'Menu'}</span></div></div></> : <div className="admin-empty"><MenuIcon size={24} /><strong>No menu selected</strong><span>Create a menu to configure navigation.</span></div>}</section></div><SaveNotice notice={notice} /></main>
 }
 
-export function AdminCollections({ collections, products, onSave, canEdit = true }) {
+export function AdminCollections({
+  collections, products, onSave, onDelete, loadCatalog, onPreviewAutomation, onApplyAutomation, onUploadImage, canEdit = true
+}) {
   const [selectedId, setSelectedId] = useState(collections[0]?.id)
   const [draftCollections, setDraftCollections] = useState(collections)
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [catalogPage, setCatalogPage] = useState(1)
+  const [catalogStatus, setCatalogStatus] = useState('ALL')
+  const [catalogGroup, setCatalogGroup] = useState('ALL')
+  const [catalogType, setCatalogType] = useState('ALL')
+  const [catalogState, setCatalogState] = useState({ rows:[], total:0, loading:true, error:'' })
   const [notice, setNotice] = useState('')
   const [dirtyIds, setDirtyIds] = useState([])
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [rulesBusy, setRulesBusy] = useState('')
+  const [rulePreview, setRulePreview] = useState(null)
+  const [includeText, setIncludeText] = useState(() => normalizeCollectionAutomation(collections[0]?.automation).includeKeywords.join(', '))
+  const [excludeText, setExcludeText] = useState(() => normalizeCollectionAutomation(collections[0]?.automation).excludeKeywords.join(', '))
+  const fileInputRef = useRef(null)
+  const catalogRequest = useRef(0)
+  const pageSize = 50
+  const selected = draftCollections.find(collection => collection.id === selectedId) || draftCollections[0]
+  const automation = useMemo(() => normalizeCollectionAutomation(selected?.automation || DEFAULT_COLLECTION_AUTOMATION), [selected?.id, selected?.automation])
+  const effectiveAutomation = useMemo(() => normalizeCollectionAutomation({ ...automation, includeKeywords:parseCollectionKeywords(includeText), excludeKeywords:parseCollectionKeywords(excludeText) }), [automation, includeText, excludeText])
+  const fallbackProducts = loadCatalog ? null : products
+
   useEffect(() => {
     setDraftCollections(collections)
     setDirtyIds([])
-    if (!collections.some(c => c.id === selectedId)) setSelectedId(collections[0]?.id)
+    if (!collections.some(collection => collection.id === selectedId)) setSelectedId(collections[0]?.id)
   }, [collections])
-  const selected = draftCollections.find(collection => collection.id === selectedId) || draftCollections[0]
-  const available = useMemo(() => {
-    const matches = products.filter(product => `${product.name} ${product.sku} ${product.type}`.toLowerCase().includes(query.toLowerCase()))
-    const members = new Set(selected?.products || [])
-    return matches.sort((a,b) => Number(members.has(b.id)) - Number(members.has(a.id)) || String(a.name).localeCompare(String(b.name))).slice(0,100)
-  }, [products, query, selected?.id, selected?.products])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => { setDebouncedQuery(query); setCatalogPage(1) }, 250)
+    return () => window.clearTimeout(timeout)
+  }, [query])
+
+  useEffect(() => {
+    setRulePreview(null)
+    setIncludeText(automation.includeKeywords.join(', '))
+    setExcludeText(automation.excludeKeywords.join(', '))
+  }, [selectedId])
+
+  useEffect(() => {
+    const sequence = ++catalogRequest.current
+    setCatalogState(current => ({ ...current, loading:true, error:'' }))
+    const fallback = () => {
+      const term = debouncedQuery.trim().toLowerCase()
+      const matches = (fallbackProducts || []).filter(product => {
+        if (catalogStatus !== 'ALL' && product.status !== catalogStatus) return false
+        if (catalogGroup !== 'ALL' && product.productGroup !== catalogGroup) return false
+        if (catalogType !== 'ALL' && product.type !== catalogType) return false
+        return !term || `${product.name} ${product.handle} ${product.sku} ${product.type} ${product.productGroup}`.toLowerCase().includes(term)
+      }).sort((a,b) => String(a.name).localeCompare(String(b.name)))
+      const from = (catalogPage - 1) * pageSize
+      return { data:fallbackRows(matches, from, pageSize), total:matches.length, error:null }
+    }
+    const task = loadCatalog
+      ? loadCatalog({ page:catalogPage, pageSize, search:debouncedQuery, status:catalogStatus, productGroup:catalogGroup, productType:catalogType })
+      : Promise.resolve(fallback())
+    Promise.resolve(task).then(result => {
+      if (sequence !== catalogRequest.current) return
+      if (result?.error) setCatalogState({ rows:[], total:0, loading:false, error:result.error })
+      else setCatalogState({ rows:result?.data || [], total:Number(result?.total || 0), loading:false, error:'' })
+    }).catch(error => {
+      if (sequence === catalogRequest.current) setCatalogState({ rows:[], total:0, loading:false, error:error.message || 'Catalogue query failed.' })
+    })
+  }, [loadCatalog, fallbackProducts, debouncedQuery, catalogPage, catalogStatus, catalogGroup, catalogType])
+
+  const productGroups = useMemo(() => [...new Set([...(products || []).map(product => product.productGroup), ...catalogState.rows.map(product => product.productGroup), automation.productGroup].filter(Boolean))].sort(), [products, catalogState.rows, automation.productGroup])
+  const productTypes = useMemo(() => [...new Set([...(products || []).map(product => product.type), ...catalogState.rows.map(product => product.type), automation.productType].filter(Boolean))].sort(), [products, catalogState.rows, automation.productType])
+  const totalPages = Math.max(1, Math.ceil(catalogState.total / pageSize))
+  const rangeStart = catalogState.total ? (catalogPage - 1) * pageSize + 1 : 0
+  const rangeEnd = Math.min(catalogState.total, (catalogPage - 1) * pageSize + catalogState.rows.length)
+  const hasRuleConditions = collectionAutomationHasConditions(effectiveAutomation)
+
   const markDirty = ids => setDirtyIds(current => [...new Set([...current,...ids])])
-  const updateSelected = updater => { if (!selected || !canEdit) return; setDraftCollections(current => current.map(collection => collection.id === selected.id ? updater(collection) : collection)); markDirty([selected.id]) }
+  const updateSelected = updater => {
+    if (!selected || !canEdit) return
+    setDraftCollections(current => current.map(collection => collection.id === selected.id ? updater(collection) : collection))
+    markDirty([selected.id])
+  }
+  const updateAutomation = patch => {
+    updateSelected(collection => ({ ...collection, automation:normalizeCollectionAutomation({ ...automation, ...patch }) }))
+    setRulePreview(null)
+  }
+  const updateKeywordText = (kind, value) => {
+    if (kind === 'include') setIncludeText(value)
+    else setExcludeText(value)
+    if (selected) markDirty([selected.id])
+    setRulePreview(null)
+  }
+  const commitKeywordText = kind => updateAutomation(kind === 'include'
+    ? { includeKeywords:parseCollectionKeywords(includeText) }
+    : { excludeKeywords:parseCollectionKeywords(excludeText) })
   const toggleProduct = productId => {
     if (!selected || !canEdit) return
     const result = (selected.products || []).includes(productId)
-      ? changeCollectionMembership(draftCollections,productId,selected.id)
-      : addToCollection(draftCollections,productId,selected.id)
+      ? changeCollectionMembership(draftCollections, productId, selected.id)
+      : addToCollection(draftCollections, productId, selected.id)
     setDraftCollections(result.collections)
     markDirty(result.changedIds)
   }
   const moveProduct = (productId, destinationId) => {
     if (!selected || !destinationId || !canEdit) return
-    const result = changeCollectionMembership(draftCollections,productId,selected.id,destinationId)
+    const result = changeCollectionMembership(draftCollections, productId, selected.id, destinationId)
+    setDraftCollections(result.collections)
+    markDirty(result.changedIds)
+  }
+  const updateCurrentPage = action => {
+    if (!selected || !catalogState.rows.length || !canEdit) return
+    const result = applyCollectionMembership(draftCollections, catalogState.rows.map(product => product.id), action, selected.id)
     setDraftCollections(result.collections)
     markDirty(result.changedIds)
   }
   const save = async () => {
-    if (!canEdit) { setNotice('Live collections are not ready. Refresh Admin and wait for the full catalogue.'); return }
-    const changed = draftCollections.filter(row => dirtyIds.includes(row.id))
+    if (!canEdit) { setNotice('Live collections are not ready. Refresh Admin and try again.'); return }
+    const changed = draftCollections.filter(row => dirtyIds.includes(row.id)).map(row => row.id === selected?.id ? { ...row, automation:effectiveAutomation } : row)
     if (!changed.length) { setNotice('No collection changes to save.'); return }
     setSaving(true)
     try {
@@ -241,7 +332,156 @@ export function AdminCollections({ collections, products, onSave, canEdit = true
     } catch (error) { setNotice(`Not saved: ${error.message}`) }
     finally { setSaving(false) }
   }
-  return <main className="admin-page admin-collections-page"><BuilderIntro eyebrow="COMMERCE / COLLECTIONS" title={<>CURATE THE<br /><em>DROP.</em></>} copy="Organize products into stories, control merchandising order and keep collection pages ready for mobile." action="New collection" onAction={() => { if (!canEdit) return; const id = `collection-${Date.now()}`; setDraftCollections(current => [...current, { id, name:'New collection', handle:id, status:'DRAFT', description:'', hero:'/assets/hero-tunnel.webp', products:[], count:0, updatedAt:'Not saved', sort:'Manual' }]); setSelectedId(id); markDirty([id]) }}/><div className="admin-collection-workspace"><aside className="admin-collection-list"><div className="admin-builder-panel-head"><span>{draftCollections.length} COLLECTIONS</span><button className="admin-text-button" disabled title="Collection sorting is not available yet."><ArrowDown size={13}/> Sort · Coming soon</button></div>{draftCollections.map(collection => <button key={collection.id} className={selected?.id === collection.id ? 'is-active' : ''} onClick={() => setSelectedId(collection.id)}><img src={collection.hero} alt=""/><span><strong>{collection.name}</strong><small>{collection.count} products · {collection.sort}</small></span><Status value={collection.status}/></button>)}</aside><section className="admin-collection-editor"><div className="admin-collection-editor__top"><div><p>COLLECTION / {selected?.handle}</p><h2>{selected?.name}</h2></div><div><button className="admin-button admin-button--outline" disabled={selected?.status !== 'PUBLISHED'} title={selected?.status === 'PUBLISHED' ? 'Open the live collection page.' : 'Publish this collection before previewing it.'} onClick={() => selected && window.open(`/collection/${selected.handle}`,'_blank','noopener,noreferrer')}><Eye size={14}/> Preview</button><button className="admin-button admin-button--dark" disabled={!canEdit || saving || !dirtyIds.length} onClick={save}><Save size={14}/> {saving ? 'Saving…' : `Save changes (${dirtyIds.length})`}</button></div></div><div className="admin-collection-form"><label className="admin-builder-field"><span>Collection name</span><input value={selected?.name || ''} onChange={event => updateSelected(collection => ({ ...collection, name: event.target.value }))}/></label><label className="admin-builder-field"><span>Handle</span><input value={selected?.handle || ''} onChange={event => updateSelected(collection => ({ ...collection, handle: event.target.value.toLowerCase().replace(/\s+/g, '-') }))}/></label><label className="admin-builder-field admin-builder-field--wide"><span>Description</span><textarea value={selected?.description || ''} onChange={event => updateSelected(collection => ({ ...collection, description: event.target.value }))}/></label><label className="admin-builder-field"><span>Status</span><select value={selected?.status || 'DRAFT'} onChange={event => updateSelected(collection => ({ ...collection, status: event.target.value }))}><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select></label><label className="admin-builder-field"><span>Sort products by</span><select value={selected?.sort || 'Manual'} onChange={event => updateSelected(collection => ({ ...collection, sort: event.target.value }))}><option>Manual</option><option>Featured first</option><option>Newest</option><option>Best selling</option><option>Low stock</option></select></label></div><div className="admin-collection-hero"><img src={selected?.hero} alt="Collection hero"/><div><span>COLLECTION HERO</span><strong>{selected?.count || 0} products</strong><label className="admin-text-button"><Image size={13}/> Image URL<input value={selected?.hero || ''} onChange={event => updateSelected(collection => ({...collection,hero:event.target.value}))}/></label></div></div><div className="admin-collection-products"><div className="admin-menu-items-head"><span>PRODUCT ASSIGNMENT</span><span>{selected?.count || 0} assigned · showing up to 100 results</span></div><label className="admin-search admin-search--large"><span><SlidersHorizontal size={15}/></span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search title, SKU or type to add or move"/></label><div className="admin-assignment-list">{available.map(product => { const checked = selected?.products?.includes(product.id); return <div key={product.id} className={`admin-assignment-row ${checked ? 'is-selected' : ''}`}><button type="button" disabled={!canEdit || saving} onClick={() => toggleProduct(product.id)} aria-label={checked ? `Remove ${product.name} from ${selected.name}` : `Add ${product.name} to ${selected.name}`}><span className="admin-assignment-check">{checked && <Check size={13}/>}</span><img src={product.image} alt=""/><span><strong>{product.name}</strong><small>{product.type} · {product.sku}</small></span><b>{checked ? 'Remove' : 'Add'}</b></button>{checked && <select aria-label={`Move ${product.name} to another collection`} value="" disabled={!canEdit || saving} onChange={event => moveProduct(product.id,event.target.value)}><option value="">Move to…</option>{draftCollections.filter(row => row.id !== selected.id).map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select>}</div> })}</div></div></section></div><SaveNotice notice={notice}/></main>
+  const uploadHero = async event => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !selected || !canEdit) return
+    setUploading(true); setNotice('')
+    try {
+      const result = await onUploadImage?.(file, selected.id)
+      if (!result?.image?.url) throw new Error('The upload did not return an image URL.')
+      updateSelected(collection => ({ ...collection, hero:result.image.url }))
+      setNotice('Collection image uploaded. Save changes to publish it.')
+    } catch (error) { setNotice(`Not saved: ${error.message}`) }
+    finally { setUploading(false) }
+  }
+  const previewRules = async () => {
+    if (!selected || !hasRuleConditions) { setNotice('Not saved: add at least one automatic condition first.'); return }
+    setRulesBusy('preview'); setNotice('')
+    try {
+      const result = await onPreviewAutomation?.(selected.id, effectiveAutomation, 40)
+      if (result?.error || !result?.data) throw new Error(result?.error || 'No rule preview was returned.')
+      setRulePreview(result.data)
+      setNotice(`${result.data.matchCount || 0} listings match these rules; nothing changed yet.`)
+    } catch (error) { setNotice(`Not saved: ${error.message}`) }
+    finally { setRulesBusy('') }
+  }
+  const applyRules = async () => {
+    if (!selected || !hasRuleConditions) { setNotice('Not saved: add at least one automatic condition first.'); return }
+    setRulesBusy('apply'); setNotice('')
+    try {
+      const collection = { ...selected, automation:effectiveAutomation }
+      const result = await onApplyAutomation?.(collection)
+      if (result?.error || !result?.data) throw new Error(result?.error || 'Automatic assignment did not return a result.')
+      setRulePreview(null)
+      setNotice(`Rules applied: ${result.data.addedCount || 0} added from ${result.data.matchCount || 0} matches. Existing assignments were preserved.`)
+    } catch (error) { setNotice(`Not saved: ${error.message}`) }
+    finally { setRulesBusy('') }
+  }
+  const createCollection = () => {
+    if (!canEdit) return
+    const id = `collection-${Date.now()}`
+    setDraftCollections(current => [...current, {
+      id, name:'New collection', handle:id, status:'DRAFT', description:'', hero:'', products:[], count:0, publishedCount:0, _localOnly:true,
+      updatedAt:'Not saved', sort:'Manual', automation:{ ...DEFAULT_COLLECTION_AUTOMATION }
+    }])
+    setSelectedId(id)
+    markDirty([id])
+  }
+  const deleteSelected = async () => {
+    if (!selected || !canEdit || deleting) return
+    const assigned = Number(selected.count || selected.products?.length || 0)
+    const message = `Delete collection “${selected.name || selected.handle}”? ${assigned ? `${assigned} listing${assigned === 1 ? '' : 's'} will be detached, but the listings themselves will stay in the catalogue.` : 'No listings will be affected.'} This cannot be undone.`
+    if (!window.confirm(message)) return
+    setDeleting(true)
+    setNotice('')
+    try {
+      const result = selected._localOnly ? { source:'local', error:null } : await onDelete?.(selected.id)
+      if (result?.error) throw new Error(result.error)
+      const remaining = draftCollections.filter(row => row.id !== selected.id)
+      setDraftCollections(remaining)
+      setDirtyIds(current => current.filter(id => id !== selected.id))
+      setSelectedId(remaining[0]?.id)
+      setNotice(selected._localOnly ? 'Unsaved collection removed.' : 'Collection deleted. Listings were kept safely.')
+    } catch (error) {
+      setNotice(`Not saved: ${error.message || 'Collection could not be deleted.'}`)
+    } finally { setDeleting(false) }
+  }
+
+  return <main className="admin-page admin-collections-page">
+    <BuilderIntro eyebrow="COMMERCE / COLLECTIONS" title={<>CURATE THE<br /><em>DROP.</em></>} copy="Build collection stories, automate repeatable routing and reach every listing through a paginated live catalogue." action="New collection" onAction={createCollection}/>
+    <div className="admin-collection-workspace">
+      <aside className="admin-collection-list">
+        <div className="admin-builder-panel-head"><span>{draftCollections.length} COLLECTIONS</span><button className="admin-text-button" disabled title="Collection sorting is not available yet."><ArrowDown size={13}/> Sort · Coming soon</button></div>
+        {draftCollections.map(collection => <button key={collection.id} className={selected?.id === collection.id ? 'is-active' : ''} onClick={() => setSelectedId(collection.id)}>
+          <span className={`admin-collection-list__image ${collection.hero ? '' : 'is-missing'}`}>{collection.hero ? <img src={collection.hero} alt=""/> : <><Image size={19}/><i>NO COVER</i></>}</span>
+          <span><strong>{collection.name}</strong><small>{collection.count ?? 0} assigned · {collection.publishedCount ?? collection.count ?? 0} live · {collection.sort}</small></span><Status value={collection.status}/>
+        </button>)}
+      </aside>
+      <section className="admin-collection-editor">
+        {selected ? <>
+          <div className="admin-collection-editor__top"><div><p>COLLECTION / {selected.handle}</p><h2>{selected.name}</h2></div><div>
+            <button className="admin-button admin-button--outline" disabled={selected.status !== 'PUBLISHED'} title={selected.status === 'PUBLISHED' ? 'Open the live collection page.' : 'Publish this collection before previewing it.'} onClick={() => window.open(`/collection/${selected.handle}`,'_blank','noopener,noreferrer')}><Eye size={14}/> Preview</button>
+            <button className="admin-button admin-button--danger" disabled={!canEdit || saving || deleting} onClick={deleteSelected} title="Delete this collection and detach its listings; listings are not deleted"><Trash2 size={14}/> {deleting ? 'Deleting…' : 'Delete collection'}</button>
+            <button className="admin-button admin-button--dark" disabled={!canEdit || saving || !dirtyIds.length} onClick={save}><Save size={14}/> {saving ? 'Saving…' : `Save changes (${dirtyIds.length})`}</button>
+          </div></div>
+
+          <section className="admin-collection-section admin-collection-section--details">
+            <div className="admin-collection-section__head"><div><span>COLLECTION DETAILS</span><h3>Set the storefront story.</h3></div><small>Name, cover, publishing and merchandising order.</small></div>
+            <div className="admin-collection-form">
+              <label className="admin-builder-field"><span>Collection name</span><input value={selected.name || ''} onChange={event => updateSelected(collection => ({ ...collection, name:event.target.value }))}/></label>
+              <label className="admin-builder-field"><span>Handle</span><input value={selected.handle || ''} onChange={event => updateSelected(collection => ({ ...collection, handle:event.target.value.toLowerCase().replace(/\s+/g, '-') }))}/></label>
+              <label className="admin-builder-field admin-builder-field--wide"><span>Description</span><textarea value={selected.description || ''} onChange={event => updateSelected(collection => ({ ...collection, description:event.target.value }))}/></label>
+              <label className="admin-builder-field"><span>Status</span><select value={selected.status || 'DRAFT'} onChange={event => updateSelected(collection => ({ ...collection, status:event.target.value }))}><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select></label>
+              <label className="admin-builder-field"><span>Sort products by</span><select value={selected.sort || 'Manual'} onChange={event => updateSelected(collection => ({ ...collection, sort:event.target.value }))}><option>Manual</option><option>Featured first</option><option>Newest</option><option>Best selling</option><option>Low stock</option></select></label>
+            </div>
+            <div className="admin-collection-hero">
+              <div className="admin-collection-hero__preview">{selected.hero ? <img src={selected.hero} alt={`${selected.name} collection cover`}/> : <div><Image size={25}/><span>No cover image</span></div>}</div>
+              <div className="admin-collection-hero__controls"><span>COLLECTION COVER</span><strong>{selected.count || 0} assigned · {selected.publishedCount ?? selected.count ?? 0} live</strong><p>JPG, PNG or WebP · up to 8 MB. Admin uploads are validated before storage.</p>
+                <input ref={fileInputRef} className="admin-collection-file" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadHero}/>
+                <div className="admin-collection-hero__actions"><button className="admin-button admin-button--outline" disabled={!canEdit || uploading} onClick={() => fileInputRef.current?.click()}>{uploading ? <LoaderCircle className="is-spinning" size={14}/> : <Upload size={14}/>} {uploading ? 'Uploading…' : selected.hero ? 'Replace from computer' : 'Upload from computer'}</button>{selected.hero && <button className="admin-text-button" onClick={() => updateSelected(collection => ({ ...collection, hero:'' }))}>Remove</button>}</div>
+                <label className="admin-builder-field admin-collection-hero__url"><span>Or use an image URL</span><input value={selected.hero || ''} onChange={event => updateSelected(collection => ({ ...collection, hero:event.target.value }))} placeholder="https://…"/></label>
+              </div>
+            </div>
+          </section>
+
+          <section className="admin-collection-section admin-collection-rules">
+            <div className="admin-collection-section__head"><div><span>AUTOMATIC RULES</span><h3>Route the catalogue as it grows.</h3></div><label className="admin-collection-rule-toggle"><input type="checkbox" checked={automation.enabled} onChange={event => updateAutomation({ enabled:event.target.checked })}/><i/><span><strong>{automation.enabled ? 'Future routing on' : 'Future routing off'}</strong><small>When on, matching new or edited listings join automatically.</small></span></label></div>
+            <div className="admin-collection-rule-grid">
+              <label className="admin-builder-field admin-collection-rule-keywords"><span>Include keywords</span><textarea value={includeText} onChange={event => updateKeywordText('include',event.target.value)} onBlur={() => commitKeywordText('include')} placeholder="blue jays, fitted cap, mlb"/><small>Comma or new line. Match against the selected fields.</small></label>
+              <label className="admin-builder-field admin-collection-rule-keywords"><span>Exclude keywords</span><textarea value={excludeText} onChange={event => updateKeywordText('exclude',event.target.value)} onBlur={() => commitKeywordText('exclude')} placeholder="kids, damaged, sample"/><small>Any excluded keyword blocks the match.</small></label>
+              <label className="admin-builder-field"><span>Keyword match</span><select value={automation.keywordMode} onChange={event => updateAutomation({ keywordMode:event.target.value })}><option value="ANY">Any include keyword</option><option value="ALL">All include keywords</option></select></label>
+              <label className="admin-builder-field"><span>Listing status</span><select value={automation.status} onChange={event => updateAutomation({ status:event.target.value })}><option value="ALL">Any status</option><option value="PUBLISHED">Published</option><option value="DRAFT">Draft</option><option value="ARCHIVED">Archived</option></select></label>
+              <label className="admin-builder-field"><span>Product group</span><select value={automation.productGroup || ''} onChange={event => updateAutomation({ productGroup:event.target.value })}><option value="">Any group</option>{productGroups.map(group => <option key={group}>{group}</option>)}</select></label>
+              <label className="admin-builder-field"><span>Product type</span><select value={automation.productType || ''} onChange={event => updateAutomation({ productType:event.target.value })}><option value="">Any type</option>{productTypes.map(type => <option key={type}>{type}</option>)}</select></label>
+              <label className="admin-builder-field"><span>League (exact)</span><input value={automation.league} onChange={event => updateAutomation({ league:event.target.value })} placeholder="MLB"/></label>
+              <label className="admin-builder-field"><span>Team (exact)</span><input value={automation.team} onChange={event => updateAutomation({ team:event.target.value })} placeholder="Toronto Blue Jays"/></label>
+              <label className="admin-builder-field"><span>Customizable</span><select value={automation.customizable} onChange={event => updateAutomation({ customizable:event.target.value })}><option value="ANY">Any</option><option value="YES">Customizable only</option><option value="NO">Non-custom only</option></select></label>
+            </div>
+            <fieldset className="admin-collection-search-fields"><legend>Search keyword in</legend>{[
+              ['title','Title'],['handle','Handle'],['sku','SKU'],['tags','Tags + taxonomy'],['description','Description']
+            ].map(([field,label]) => <label key={field}><input type="checkbox" checked={automation.searchFields.includes(field)} onChange={event => updateAutomation({ searchFields:event.target.checked ? [...automation.searchFields,field] : automation.searchFields.filter(item => item !== field) })}/><span>{label}</span></label>)}</fieldset>
+            <div className="admin-collection-rule-actions"><div><Sparkles size={15}/><span><strong>Additive by design</strong><small>Applying rules adds matches and never removes manual assignments.</small></span></div><button className="admin-button admin-button--outline" disabled={!canEdit || !hasRuleConditions || Boolean(rulesBusy)} onClick={previewRules}>{rulesBusy === 'preview' ? <LoaderCircle className="is-spinning" size={14}/> : <Eye size={14}/>} Preview matches</button><button className="admin-button admin-button--dark" disabled={!canEdit || !hasRuleConditions || Boolean(rulesBusy)} onClick={applyRules}>{rulesBusy === 'apply' ? <LoaderCircle className="is-spinning" size={14}/> : <Sparkles size={14}/>} Apply rules</button></div>
+            {rulePreview && <div className="admin-collection-rule-preview"><div className="admin-collection-rule-meter"><span><strong>{rulePreview.matchCount || 0}</strong><small>matches</small></span><span><strong>{rulePreview.newCount || 0}</strong><small>new</small></span><span><strong>{rulePreview.assignedCount || 0}</strong><small>already assigned</small></span></div><div className="admin-collection-rule-sample">{(rulePreview.sample || []).slice(0,8).map(product => <div key={product.id}><span>{product.image ? <img src={product.image} alt=""/> : <Image size={14}/>}</span><p><strong>{product.title}</strong><small>{product.productGroup || 'Unassigned group'} · {product.sku || product.id}</small></p><b>{product.assigned ? 'IN COLLECTION' : 'NEW MATCH'}</b></div>)}</div></div>}
+          </section>
+
+          <section className="admin-collection-section admin-collection-products">
+            <div className="admin-collection-section__head"><div><span>MANUAL PRODUCTS</span><h3>Every listing, page by page.</h3></div><small>{selected.count || 0} assigned · {catalogState.total.toLocaleString()} matching catalogue results</small></div>
+            <div className="admin-collection-catalog-toolbar">
+              <label className="admin-search admin-search--large"><Search size={15}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search title, handle, SKU, type or group"/></label>
+              <label className="admin-catalog-select"><span>Status</span><select value={catalogStatus} onChange={event => { setCatalogStatus(event.target.value); setCatalogPage(1) }}><option>ALL</option><option>PUBLISHED</option><option>DRAFT</option><option>ARCHIVED</option></select></label>
+              <label className="admin-catalog-select"><span>Group</span><select value={catalogGroup} onChange={event => { setCatalogGroup(event.target.value); setCatalogPage(1) }}><option>ALL</option>{productGroups.map(group => <option key={group}>{group}</option>)}</select></label>
+              <label className="admin-catalog-select"><span>Type</span><select value={catalogType} onChange={event => { setCatalogType(event.target.value); setCatalogPage(1) }}><option>ALL</option>{productTypes.map(type => <option key={type}>{type}</option>)}</select></label>
+            </div>
+            <div className="admin-collection-page-actions"><span>{catalogState.loading ? 'Loading live catalogue…' : `${rangeStart.toLocaleString()}–${rangeEnd.toLocaleString()} of ${catalogState.total.toLocaleString()}`}</span><div><button className="admin-text-button" disabled={!canEdit || !catalogState.rows.length || saving} onClick={() => updateCurrentPage('ADD_TO_COLLECTION')}><Check size={13}/> Add this page</button><button className="admin-text-button" disabled={!canEdit || !catalogState.rows.length || saving} onClick={() => updateCurrentPage('REMOVE_FROM_COLLECTION')}><X size={13}/> Remove this page</button></div></div>
+            {catalogState.error && <div className="admin-banner-notice" role="alert">Catalogue query failed: {catalogState.error}</div>}
+            <div className={`admin-assignment-list ${catalogState.loading ? 'is-loading' : ''}`}>
+              {catalogState.loading ? <div className="admin-collection-loading"><LoaderCircle className="is-spinning" size={20}/><span>Loading page {catalogPage}…</span></div> : catalogState.rows.length ? catalogState.rows.map(product => {
+                const checked = (selected.products || []).includes(product.id)
+                return <div key={product.id} className={`admin-assignment-row ${checked ? 'is-selected' : ''}`}><button type="button" disabled={!canEdit || saving} onClick={() => toggleProduct(product.id)} aria-label={checked ? `Remove ${product.name} from ${selected.name}` : `Add ${product.name} to ${selected.name}`}><span className="admin-assignment-check">{checked && <Check size={13}/>}</span>{product.image ? <img src={product.image} alt=""/> : <span className="admin-assignment-image"><Image size={14}/></span>}<span><strong>{product.name}</strong><small>{product.productGroup || product.type || 'Uncategorized'} · {product.sku || product.id} · {product.status}</small></span><b>{checked ? 'Remove' : 'Add'}</b></button>{checked && <select aria-label={`Move ${product.name} to another collection`} value="" disabled={!canEdit || saving} onChange={event => moveProduct(product.id,event.target.value)}><option value="">Move to…</option>{draftCollections.filter(row => row.id !== selected.id).map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select>}</div>
+              }) : <div className="admin-empty"><SlidersHorizontal size={22}/><strong>No listings found</strong><span>Clear a filter or search with a broader title, SKU, type or group.</span></div>}
+            </div>
+            <nav className="admin-collection-pagination" aria-label="Collection product catalogue pages"><button type="button" onClick={() => setCatalogPage(page => Math.max(1,page - 1))} disabled={catalogPage <= 1 || catalogState.loading}><ChevronLeft size={14}/> Previous</button><span>Page {catalogPage.toLocaleString()} of {totalPages.toLocaleString()}</span><button type="button" onClick={() => setCatalogPage(page => Math.min(totalPages,page + 1))} disabled={catalogPage >= totalPages || catalogState.loading}>Next <ChevronRight size={14}/></button></nav>
+          </section>
+        </> : <div className="admin-empty"><Image size={24}/><strong>No collection selected</strong><span>Create a collection to begin.</span></div>}
+      </section>
+    </div>
+    <SaveNotice notice={notice}/>
+  </main>
+}
+
+function fallbackRows(rows, from, pageSize) {
+  return rows.slice(from, from + pageSize)
 }
 
 export function ProductVariations(props) { return <VariantMatrix {...props}/> }

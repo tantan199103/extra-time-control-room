@@ -15,7 +15,7 @@ test('league taxonomy exposes stable league and team URLs', () => {
     '/assets/leagues/marks/nfl.webp',
     '/assets/leagues/marks/mlb.webp',
     '/assets/leagues/marks/nba.webp',
-    '/assets/leagues/marks/nhl.svg',
+    '/assets/leagues/marks/nhl.webp',
     '/assets/leagues/marks/mls.webp',
     '/assets/leagues/marks/ncaa.webp',
     '/assets/leagues/marks/epl.webp',
@@ -26,9 +26,11 @@ test('league taxonomy exposes stable league and team URLs', () => {
   assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/marks/teams/nfl/arizona-cardinals.webp')
   assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/marks/teams/mlb/new-york-yankees.webp')
   assert.equal(findTeam('mls', 'sporting-kc').media.src, '/assets/leagues/marks/teams/mls/sporting-kc.webp')
-  assert.equal(findTeam('nba', 'los-angeles-lakers').media.fallback, true)
-  assert.equal(findTeam('nhl', 'boston-bruins').media.fallback, true)
-  assert.match(findTeam('nhl', 'boston-bruins').media.alt, /NHL league mark/)
+  assert.equal(findTeam('nba', 'los-angeles-lakers').media.src, '/assets/leagues/marks/teams/nba/los-angeles-lakers.webp')
+  assert.equal(findTeam('nba', 'los-angeles-lakers').media.fallback, false)
+  assert.equal(findTeam('nhl', 'boston-bruins').media.src, '/assets/leagues/marks/teams/nhl/boston-bruins.webp')
+  assert.equal(findTeam('nhl', 'boston-bruins').media.fallback, false)
+  assert.equal(findTeam('nhl', 'boston-bruins').media.alt, 'Boston Bruins logo')
   const ncaa = findLeague('NCAA')
   const bama = findTeam('ncaa', 'alabama-crimson-tide')
   assert.equal(ncaa.key, 'ncaa')
@@ -81,12 +83,14 @@ test('teamMascot extracts concise mascots for mobile team badges', () => {
   assert.equal(teamMascot(''), '')
 })
 
-test('few-team leagues are balanced to two rows in navigation', async () => {
+test('league and team hubs use a bounded searchable grid', async () => {
   const source = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
-  const css = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
+  const css = await readFile(new URL('../src/taxonomy-hubs.css', import.meta.url), 'utf8')
 
-  assert.match(source, /taxonomy-team-nav__scroll \$\{teams\.length <= 20 \? 'is-two-rows' : ''\}/)
-  assert.match(css, /\.taxonomy-team-nav__scroll\.is-two-rows\s*\{\s*grid-template-rows:\s*repeat\(2,\s*38px\)\s*!important;/)
+  assert.match(source, /taxonomy-hub-teams__grid/)
+  assert.match(source, /showAllTeams/)
+  assert.match(source, /placeholder="Search teams"/)
+  assert.match(css, /\.taxonomy-hub-teams__grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/)
 
   const bundesliga = findLeague('bundesliga')
   const seriea = findLeague('seriea')

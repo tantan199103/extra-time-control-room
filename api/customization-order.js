@@ -92,7 +92,7 @@ export default async function handler(request, response) {
     }
     for (const field of logoFields) {
       if (!assetRefs[field.key]) throw Object.assign(new Error(`${field.label || 'Logo'} must use the securely uploaded logo asset.`), { status:422 })
-      if (!field.previewRegion) throw Object.assign(new Error(`${field.label || 'Logo'} has no designer-approved placement area.`), { status:422 })
+      if (!field.previewRegion && !field.studioReviewRequired) throw Object.assign(new Error(`${field.label || 'Logo'} has no designer-approved placement area.`), { status:422 })
     }
     if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
 

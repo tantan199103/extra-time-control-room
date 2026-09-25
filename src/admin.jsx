@@ -38,7 +38,7 @@ import {
 import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
-import { deleteAdminProduct, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured } from './lib/supabase'
+import { applyAdminCollectionAutomation, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
 import { getMetaPixelId, setMetaPixelId } from './lib/meta-pixel'
 import { resolveMenuImages } from './lib/storefront-model'
@@ -476,13 +476,36 @@ function AdminWorkspace() {
   const persistTheme = async theme => { setThemeDraft(theme); return saveAdminTheme(theme) }
   const persistMenus = async menus => { setMenuRows(menus); return saveAdminMenus(menus) }
   const persistCollections = async collections => {
-    if (collectionSource !== 'supabase' || !catalogLoad.complete) return { source:'error', error:'Wait for the live collections and full catalogue to load before saving.' }
+    if (collectionSource !== 'supabase') return { source:'error', error:'Wait for live collections to load before saving.' }
     const result = await saveAdminCollections(collections, collectionRows)
     if (result.source === 'supabase' && !result.error) {
       const byId = new Map(collections.map(row => [row.id,row]))
       setCollectionRows(current => [...current.map(row => byId.get(row.id) || row), ...collections.filter(row => !current.some(old => old.id === row.id))])
     }
     return result
+  }
+  const removeCollection = async collectionId => {
+    if (collectionSource !== 'supabase') return { source:'error', error:'Wait for live collections to load before deleting.' }
+    const result = await deleteAdminCollection(collectionId)
+    if (!result.error) {
+      setCollectionRows(current => current.filter(row => row.id !== collectionId))
+      // A menu can still contain a stale explicit /collection/:handle target.
+      // Refreshing the menu resolver on the next load prevents it from being
+      // silently redirected to an unrelated collection.
+      setLoadNotice('Collection deleted. Its listings were kept in the catalogue; refresh menus if one linked to it.')
+    }
+    return result
+  }
+  const applyCollectionAutomation = async collection => {
+    if (collectionSource !== 'supabase') return { source:'error', error:'Wait for live collections to load before applying automatic rules.' }
+    const saved = await saveAdminCollections([collection], collectionRows)
+    if (saved.error) return saved
+    const applied = await applyAdminCollectionAutomation(collection.id, collection.automation)
+    if (applied.error) return applied
+    const refreshed = await fetchAdminCollections()
+    if (refreshed.source !== 'supabase' || refreshed.error) return { source:'error', error:refreshed.error || 'Rules were applied, but collection membership could not be refreshed.' }
+    setCollectionRows(refreshed.data)
+    return { ...applied, collection:refreshed.data.find(row => row.id === collection.id) || collection }
   }
   const bulkCollectionAction = async (ids, action, collectionId) => {
     if (collectionSource !== 'supabase' || !catalogLoad.complete) return { error:'Wait for live collections and the full catalogue before changing membership.' }
@@ -505,7 +528,7 @@ function AdminWorkspace() {
   else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
   else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} onSave={persistTheme}/>
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} collections={collectionRows} onSave={persistMenus}/>
-  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections} canEdit={collectionSource === 'supabase' && catalogLoad.complete}/>
+  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections} onDelete={removeCollection} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
   const displaySource = catalogLoad.source === 'partial' ? 'partial' : catalogLoad.source === 'error' ? 'preview' : source
   return <AdminShell active={active} source={displaySource} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>

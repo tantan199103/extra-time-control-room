@@ -292,10 +292,15 @@ export function resolveMenuImages(menus = [], context = {}) {
     const path = menuPath(target)
     const query = menuQuery(target)
     const handle = path.startsWith('/collection/') ? decodeURIComponent(path.split('/')[2] || '') : query.get('collection') || String(target || '').replace(/^collection:/i, '')
-    if (path === '/shop' || path === '/collection' || String(type).toUpperCase() === 'COLLECTION') {
-      return collections.find(row => row.handle === handle || row.id === handle) || collections[0] || null
-    }
+    const explicit = path.startsWith('/collection/') || query.has('collection') || /^collection:/i.test(String(target || ''))
+    if (path === '/shop' || path === '/collection') return collections[0] || null
+    if (String(type).toUpperCase() === 'COLLECTION' || explicit) return collections.find(row => row.handle === handle || row.id === handle) || null
     return null
+  }
+  const explicitCollectionTarget = (target, type) => {
+    const path = menuPath(target)
+    const query = menuQuery(target)
+    return String(type).toUpperCase() === 'COLLECTION' || path.startsWith('/collection/') || query.has('collection') || /^collection:/i.test(String(target || ''))
   }
   const pageForTarget = target => {
     const path = menuPath(target)
@@ -314,13 +319,13 @@ export function resolveMenuImages(menus = [], context = {}) {
       const product = productForTarget(item?.target, type)
       const collection = collectionForTarget(item?.target, type)
       const page = pageForTarget(item?.target)
+      const isCollectionTarget = explicitCollectionTarget(item?.target, type)
       if (product) {
         image = rowImage(product)
         alt = fields.imageAlt || rowAlt(product) || item?.label || alt
         source = image ? 'PRODUCT' : 'MISSING'
       } else if (collection) {
         image = rowImage(collection)
-        if (!image && collection.products?.length) image = rowImage(products.find(row => row.id === collection.products[0]))
         alt = fields.imageAlt || rowAlt(collection) || item?.label || alt
         source = image ? 'COLLECTION' : 'MISSING'
       } else if (page) {
@@ -328,7 +333,9 @@ export function resolveMenuImages(menus = [], context = {}) {
         alt = fields.imageAlt || rowAlt(page) || item?.label || alt
         source = image ? 'PAGE' : 'MISSING'
       }
-      if (!image) {
+      // A missing collection cover is an actionable catalogue state. Do not
+      // disguise it with a product image or a generic hero from another page.
+      if (!image && !isCollectionTarget) {
         const path = menuPath(item?.target)
         image = pageFallbacks[path] || pageFallbacks['/'] || ''
         source = image ? 'FALLBACK' : 'MISSING'

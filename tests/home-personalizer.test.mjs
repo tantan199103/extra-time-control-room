@@ -24,6 +24,8 @@ test('homepage personalizer uses real catalogue league listings and AI name/numb
   assert.match(personalizer, /green-bay-packers/)
   assert.match(personalizer, /denver-broncos/)
   assert.match(personalizer, /los-angeles-dodgers/)
+  assert.match(personalizer, /teams\/nba\/los-angeles-lakers\.webp/)
+  assert.match(personalizer, /teams\/nba\/atlanta-hawks\.webp/)
 
   // AI name and number generation
   assert.match(personalizer, /api\/ai-preview/)

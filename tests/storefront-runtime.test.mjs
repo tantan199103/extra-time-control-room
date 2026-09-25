@@ -66,6 +66,15 @@ test('menu trees preserve nesting and resolve representative images from linked 
   assert.equal(resolved[0].items[0].children[0].representativeSource,'CUSTOM')
 })
 
+test('collection menu links keep missing covers explicit instead of borrowing another image', () => {
+  const resolved = resolveMenuImages([{ id:'main', items:[{ id:'collection', label:'NHL', target:'/collection/nhl', type:'COLLECTION', imageMode:'AUTO', children:[] }] }], {
+    collections:[{ id:'nhl', handle:'nhl', name:'NHL', hero:'', products:['other'] }],
+    products:[{ id:'other', image:'/other-collection-product.webp' }]
+  })
+  assert.equal(resolved[0].items[0].representativeImage,null)
+  assert.equal(resolved[0].items[0].representativeSource,'MISSING')
+})
+
 test('storefront products do not expose private bridge audit metadata', () => {
   const product = prepareStorefrontProduct({
     id: 'private-audit', handle: 'private-audit', title: 'Private audit', status: 'PUBLISHED', ai_metadata: { bridge: { source: { provider: 'chatgpt-web' } } },
@@ -120,9 +129,14 @@ test('storefront catalog pages use bounded card payloads and remote search', asy
   assert.match(adapter,/fetchStorefrontCatalogPage/)
   assert.match(adapter,/range\(from,from \+ safeSize - 1\)/)
   assert.match(adapter,/STOREFRONT_CARD_FIELDS/)
+  assert.match(adapter,/select\(STOREFRONT_CARD_FIELDS\)\.eq\('status','PUBLISHED'\)/)
+  assert.doesNotMatch(adapter,/count:\s*'planned'/)
+  assert.match(adapter,/sessionStorage/)
+  assert.match(adapter,/source:'cache'/)
   assert.match(adapter,/fetchStorefrontSearch/)
   assert.match(main,/catalogState\.scope !== 'page'/)
   assert.match(main,/fetchStorefrontSearch\(value,12\)/)
+  assert.match(main,/Refresh products/)
 })
 
 test('service worker excludes sensitive routes from runtime caching', async () => {

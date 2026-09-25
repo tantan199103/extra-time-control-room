@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
+import { ACCESSORY_FAMILY_OPTIONS, ACCESSORY_TYPE_OPTIONS, ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, accessoryTaxonomyForProduct, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from '../src/lib/catalog-pagination.js'
 import { findLeague, findTeam, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
 import { applyCollectionMembership, collectionMembershipDiff } from '../src/lib/collection-assignment.js'
@@ -11,7 +11,8 @@ test('category landing pages match the controlled catalogue taxonomy', () => {
   assert.equal(productMatchesCatalogCategory({ taxonomy:{ category:'Football Jerseys' }, productGroup:'Jerseys' }, football), true)
   assert.equal(productMatchesCatalogCategory({ taxonomy:{ category:'Basketball Jerseys' }, productGroup:'Jerseys' }, football), false)
   const custom = catalogCategoryByHandle('custom-jerseys')
-  assert.equal(productMatchesCatalogCategory({ customFields:[{ key:'name' }] }, custom), true)
+  assert.equal(productMatchesCatalogCategory({ productGroup:'Jerseys', customFields:[{ key:'name' }] }, custom), true)
+  assert.equal(productMatchesCatalogCategory({ productGroup:'Caps', customFields:[{ key:'name' }] }, custom), false)
   assert.equal(productMatchesCatalogCategory({ customFields:[] }, custom), false)
   assert.equal(new Set(CATALOG_CATEGORY_PAGES.map(item => item.handle)).size, CATALOG_CATEGORY_PAGES.length)
   assert.equal(catalogCategoryByHandle('caps').icon,'cap')
@@ -24,14 +25,33 @@ test('category landing pages match the controlled catalogue taxonomy', () => {
   assert.equal(catalogIconForProduct({productGroup:'Football Jersey',customFields:[{key:'name'}]}),'custom')
 })
 
+test('Accessories has family and type routes while legacy groups remain discoverable', () => {
+  const backpack = { title:'Dallas Cowboys backpack', productGroup:'Backpacks', taxonomy:{ category:'Accessories' } }
+  const scarf = { title:'Winter supporters scarf', productGroup:'Accessories', taxonomy:{ category:'Accessories' } }
+  const cap = { title:'Boston Celtics snapback cap', productGroup:'Apparel', taxonomy:{ category:'Accessories' } }
+  assert.deepEqual(accessoryTaxonomyForProduct(backpack), { isAccessory:true, family:'Bags', type:'Bags' })
+  assert.deepEqual(accessoryTaxonomyForProduct(scarf), { isAccessory:true, family:'Scarves & cold weather', type:'Scarves' })
+  assert.deepEqual(accessoryTaxonomyForProduct(cap), { isAccessory:true, family:'Headwear', type:'Caps' })
+  assert.equal(productMatchesCatalogCategory(backpack, catalogCategoryByHandle('bags')), true)
+  assert.equal(productMatchesCatalogCategory(backpack, catalogCategoryByHandle('headwear')), false)
+  assert.equal(productMatchesCatalogCategory(scarf, catalogCategoryByHandle('scarves-cold-weather')), true)
+  assert.equal(productMatchesCatalogCategory(cap, catalogCategoryByHandle('caps')), true)
+  assert.ok(ACCESSORY_FAMILY_OPTIONS.length >= 7)
+  assert.ok(ACCESSORY_TYPE_OPTIONS.some(option => option.value === 'Flags & banners'))
+  assert.equal(new Set(ALL_CATALOG_CATEGORY_PAGES.map(item => item.handle)).size, ALL_CATALOG_CATEGORY_PAGES.length)
+})
+
 test('merchandise icons appear in menu, landing pages and product cards without replacing labels', async () => {
   const source = await (await import('node:fs/promises')).readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
   const icon = await (await import('node:fs/promises')).readFile(new URL('../src/CategoryIcon.jsx',import.meta.url),'utf8')
   assert.match(source,/mega-menu__category-icon.*<CategoryIcon/)
   assert.match(source,/mobile-menu__category-icon.*<CategoryIcon/)
   assert.match(source,/home-category-index__icon.*<CategoryIcon/)
-  assert.match(source,/product-card__meta.*<CategoryIcon/)
+  assert.match(source,/product-card__meta.*<ProductTaxonomyMarks/)
+  assert.match(source,/function ProductTaxonomyMarks[\s\S]*?<CategoryIcon/)
   assert.match(source,/catalog-compact-bar__avatar--icon[\s\S]*?<CategoryIcon kind=\{category\?\.icon/)
+  assert.match(source,/category-intro__browse/)
+  assert.match(source,/Browse by department/)
   assert.match(icon,/aria-hidden/)
 })
 
@@ -51,7 +71,7 @@ test('NHL catalogue links resolve from league through team', () => {
   const team = findTeam('nhl','boston-bruins')
   assert.equal(leaguePath(league), '/league/nhl')
   assert.equal(teamPath(league.key,team), '/team/nhl/boston-bruins')
-  assert.equal(league.media.src, '/assets/leagues/marks/nhl.svg')
+  assert.equal(league.media.src, '/assets/leagues/marks/nhl.webp')
 })
 
 test('collection membership actions add, remove and move listings without changing product state', () => {

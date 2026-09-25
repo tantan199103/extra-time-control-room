@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="preconnect" href="https://ofetusgarxcwloxxkhnr.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="//ofetusgarxcwloxxkhnr.supabase.co" />
     <!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)
@@ -75,8 +77,10 @@
         ]
       }
     </script>
-    <!-- Google Customer Reviews -->
-    <script src="https://apis.google.com/js/platform.js?onload=renderOptIn" async defer></script>
+    <!-- Google Customer Reviews is loaded on demand on PDP/checkout only. The
+         URL remains documented here for the survey integration, but discovery
+         pages do not pay the third-party script cost. -->
+    <script type="application/json" id="google-customer-reviews-config">{"platformScript":"https://apis.google.com/js/platform.js?onload=renderOptIn"}</script>
     <script>
       window.renderOptIn = function() {
         if (typeof window.__triggerGoogleSurveyOptIn === 'function') {

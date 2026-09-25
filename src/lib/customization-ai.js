@@ -19,7 +19,7 @@ export function normalizePreviewRegion(region) {
 }
 
 export function productPreviewReadiness(fields = []) {
-  const supported = (Array.isArray(fields) ? fields : []).filter(field => !['photo', 'textarea'].includes(field?.type))
+  const supported = (Array.isArray(fields) ? fields : []).filter(field => !field?.studioReviewRequired && !['photo', 'textarea'].includes(field?.type))
   const explicitReady = supported.filter(field => normalizePreviewRegion(field?.previewRegion))
   const missing = supported.filter(field => !normalizePreviewRegion(field?.previewRegion))
   const hasExplicit = explicitReady.length > 0

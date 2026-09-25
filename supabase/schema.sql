@@ -312,6 +312,7 @@ create table if not exists public.pod_collections (
   hero_image text,
   sort_mode text not null default 'MANUAL',
   seo jsonb not null default '{}'::jsonb,
+  automation jsonb not null default '{"enabled":false,"keywordMode":"ANY","includeKeywords":[],"excludeKeywords":[],"searchFields":["title","sku","tags"],"status":"ALL","productGroup":"","productType":"","league":"","team":"","customizable":"ANY"}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

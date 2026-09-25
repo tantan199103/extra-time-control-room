@@ -81,10 +81,41 @@ export function productStructuredData(product, origin = 'https://www.jersevo.com
     itemListElement:productBreadcrumbs(product).map((item,index) => ({ '@type':'ListItem',position:index+1,name:item.label,item:new URL(item.href,origin).href })) }]
 }
 
+const relatedIndexCache = new WeakMap()
+
+function addRelatedIndex(map, key, item) {
+  if (!key) return
+  const bucket = map.get(key)
+  if (bucket) bucket.push(item)
+  else map.set(key, [item])
+}
+
+function relatedIndex(catalog) {
+  if (!Array.isArray(catalog)) return { league:new Map(), team:new Map(), group:new Map(), values:new Map() }
+  const cached = relatedIndexCache.get(catalog)
+  if (cached) return cached
+  const index = { league:new Map(), team:new Map(), group:new Map(), values:new Map() }
+  for (const item of catalog) {
+    if (item?.status !== 'PUBLISHED') continue
+    const values = productTaxonomyValues(item)
+    index.values.set(item.id, values)
+    addRelatedIndex(index.league, values.league, item)
+    addRelatedIndex(index.team, values.team, item)
+    addRelatedIndex(index.group, item.productGroup, item)
+  }
+  relatedIndexCache.set(catalog, index)
+  return index
+}
+
 export function relatedProducts(product, catalog, limit = 8) {
   const taxonomy = productTaxonomyValues(product)
-  return catalog.filter(item => item.id !== product.id && item.status === 'PUBLISHED').map(item => {
-    const candidate = productTaxonomyValues(item)
+  const index = relatedIndex(catalog)
+  const candidates = new Map()
+  for (const item of index.league.get(taxonomy.league) || []) candidates.set(item.id, item)
+  for (const item of index.team.get(taxonomy.team) || []) candidates.set(item.id, item)
+  for (const item of index.group.get(product.productGroup) || []) candidates.set(item.id, item)
+  return [...candidates.values()].filter(item => item.id !== product.id).map(item => {
+    const candidate = index.values.get(item.id) || productTaxonomyValues(item)
     const score = (taxonomy.league && taxonomy.league === candidate.league ? 2 : 0)
       + (taxonomy.team && taxonomy.team === candidate.team ? 4 : 0)
       + (product.productGroup && product.productGroup === item.productGroup ? 1 : 0)

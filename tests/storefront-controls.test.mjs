@@ -114,9 +114,11 @@ test('mobile purchase bar keeps product context above the fixed navigation', () 
   assert.match(css, /\.mobile-sticky-atc \{ bottom:calc\(76px \+ env\(safe-area-inset-bottom\)\)/)
 })
 
-test('league discovery is available from the header mega menu and footer index', () => {
-  assert.match(source, /label:'LEAGUES'/)
-  assert.match(source, /type:'TAXONOMY'/)
+test('sport and team discovery stay available across header, footer and mobile', async () => {
+  const discovery = await readFile(new URL('../src/lib/discovery-navigation.js', import.meta.url), 'utf8')
+  assert.match(discovery, /'Sports', 'Teams'/)
+  assert.match(source, /mobile-discovery-group/)
+  assert.match(source, /mega-menu--discovery/)
   assert.match(source, /className="footer__leagues"/)
   assert.match(source, /className="footer__league-grid"/)
   assert.match(source, /id:'leagues', label:'Leagues'/)

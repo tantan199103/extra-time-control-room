@@ -1,6 +1,8 @@
 // Scope store permissions separately from other apps sharing the Supabase project.
 export const isAdminUser = user => Boolean(user?.id && user?.app_metadata?.extra_time_role === 'admin')
 
+import { normalizeAccessoryTaxonomy } from './catalog-taxonomy.js'
+
 const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo', 'logo'])
 const LOGO_TREATMENTS = new Set(['EXACT', 'FABRIC', 'VINTAGE', 'MONOCHROME'])
 export const SEO_STATUSES = Object.freeze(['BLOCKED', 'READY', 'INDEXABLE'])
@@ -235,7 +237,7 @@ export function normalizeProduct(row, persisted = true) {
     contentBlocks: Array.isArray(row.content_blocks ?? row.contentBlocks) ? (row.content_blocks ?? row.contentBlocks) : [],
     tags: Array.isArray(row.tags) ? row.tags.map(cleanTag).filter(Boolean) : [],
     productGroup: row.product_group ?? row.productGroup ?? '',
-    taxonomy: row.taxonomy && typeof row.taxonomy === 'object' ? row.taxonomy : {},
+    taxonomy: normalizeAccessoryTaxonomy({ ...row, taxonomy:row.taxonomy && typeof row.taxonomy === 'object' ? row.taxonomy : {} }),
     customFields,
     personalization: customFields.map(field => field.label),
     seo: row.seo && typeof row.seo === 'object' ? row.seo : {},

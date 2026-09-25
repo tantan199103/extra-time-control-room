@@ -3,7 +3,8 @@ import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/storefront-model.js'
 import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
-import { CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
+import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
+import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
 import { cleanSeoText, seoDescription } from '../src/lib/seo-text.js'
 import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
@@ -33,7 +34,12 @@ const storefrontOrder = (a,b) => String(b.updatedAt || '').localeCompare(String(
 
 async function fetchRows(path, key) {
   const rows = []
-  const pageSize = 50
+  // Supabase/PostgREST allows a bounded page of up to 1,000 rows.  The
+  // previous 50-row page made a production build walk the catalogue through
+  // hundreds of network round-trips (and left Vercel in "Building" for many
+  // minutes).  Keep the request comfortably below the server limit while
+  // still making the SEO build resilient to large catalogues.
+  const pageSize = 500
   let cursor = ''
   for (;;) {
     const url = new URL(path)
@@ -205,7 +211,21 @@ async function writePage(path, html) {
   const target = join(DIST, path === '/' ? 'index.html' : path.replace(/^\//, '').replace(/\/$/, ''), 'index.html')
   await mkdir(dirname(target), { recursive:true })
   await writeFile(target, html)
-  if (!/<meta name="robots" content="noindex/i.test(html)) sitemapEntries.push({path})
+  if (/<meta name="robots" content="noindex/i.test(html)) return null
+  const entry = { path }
+  sitemapEntries.push(entry)
+  return entry
+}
+
+// A live catalogue can contain thousands of products.  Writing every PDP
+// serially turns a perfectly healthy build into a 10–15 minute deployment and
+// makes a fresh release look like the catalogue is unavailable.  Keep the
+// output deterministic per page, but let a bounded batch use the build
+// machine's filesystem concurrently.
+async function writePagesInBatches(items, writer, batchSize = 32) {
+  for (let offset = 0; offset < items.length; offset += batchSize) {
+    await Promise.all(items.slice(offset, offset + batchSize).map(writer))
+  }
 }
 
 async function writeCatalogPagination(basePath, rows, title, description, image) {
@@ -241,8 +261,15 @@ const collections = await loadCollections()
 const TAXONOMY_MIN_PRODUCTS = 6
 const navigationRows = new Map()
 for (const product of products) {
-  const row = { taxonomy:{league:product.taxonomy?.league || '',team:product.taxonomy?.team || '',category:product.taxonomy?.category || '',brand:product.taxonomy?.brand || ''},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [] }
-  navigationRows.set(JSON.stringify(row),row)
+  // Navigation only needs aggregate counts.  Keeping one row per source
+  // brand made this file grow to ~470 KB for the current catalogue.  Fold
+  // brands into an array on the aggregate row so the menu keeps its brand
+  // filter without repeating the same league/team/product tuple.
+  const row = { taxonomy:{league:product.taxonomy?.league || '',team:product.taxonomy?.team || '',category:product.taxonomy?.category || ''},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [], ...(product.taxonomy?.brand ? { brands:[product.taxonomy.brand] } : {}) }
+  const key = JSON.stringify({ ...row, brands:[] })
+  const previous = navigationRows.get(key)
+  const brands = [...new Set([...(previous?.brands || []), ...(row.brands || [])])]
+  navigationRows.set(key, { ...row, ...(brands.length ? { brands } : {}), count:(previous?.count || 0) + 1 })
 }
 await writeFile(join(DIST,'catalog-navigation.json'),JSON.stringify([...navigationRows.values()]))
 
@@ -256,7 +283,7 @@ const home = pageHtml(shell, {
 await writeFile(join(DIST, 'index.html'), home)
 sitemapEntries.push({path:'/'})
 
-for (const product of products) {
+await writePagesInBatches(products, async product => {
   const path = `/product/${slug(product.handle)}`
   const metadata = productSeoMetadata(product,PUBLIC_ORIGIN)
   const related = relatedProducts(product,products)
@@ -269,13 +296,14 @@ for (const product of products) {
     schema:productStructuredData(product,PUBLIC_ORIGIN),
     bootstrap:productBootstrap(product,related)
   })
-  await writePage(path, html)
-  const entry = sitemapEntries.at(-1)
-  entry.lastmod = product.updatedAt
-  entry.images = product.images
-}
+  const entry = await writePage(path, html)
+  if (entry) {
+    entry.lastmod = product.updatedAt
+    entry.images = product.images
+  }
+})
 
-for (const product of blockedProducts) {
+await writePagesInBatches(blockedProducts, async product => {
   const path = `/product/${slug(product.handle)}`
   await writePage(path, pageHtml(shell, {
     path,
@@ -286,18 +314,18 @@ for (const product of blockedProducts) {
     fallback:renderProductContent(product),
     bootstrap:productBootstrap(product)
   }))
-}
+})
 
 const itemList = products.slice(0,CATALOG_PAGE_SIZE).map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
 await writePage('/shop', pageHtml(shell, {
   path:'/shop',
   title:'Shop fan gear by sport, team and product | Jersevo',
   description:'Start with a sport, find your team or choose the product you want. Browse live jerseys, headwear and fan gear at Jersevo.',
-  image:absolute('/assets/jersey-black.webp'),
+  image:absolute(SHOP_COVER.src),
   fallback:`<main class="seo-fallback"><h1>Find your route to the gear</h1><p>Shop by sport, team or product type. The full published catalog follows.</p><nav aria-label="Shop by sport">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)}</a>`).join(' · ')}</nav><nav aria-label="Find a team"><a href="/teams">Browse teams</a> · <a href="/sports">Explore sports</a></nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav><h2>All products</h2><ul>${products.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${products.length > CATALOG_PAGE_SIZE ? '<a href="/shop/page/2">Next page</a>' : ''}</main>`,
   schema:[{ '@context':'https://schema.org', '@type':'ItemList', itemListElement:itemList },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`}])]
 }))
-await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute('/assets/jersey-black.webp'))
+await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute(SHOP_COVER.src))
 
 const leagueCountsForIndex = new Map()
 const teamCountsForIndex = new Map()
@@ -348,8 +376,8 @@ for (const collection of collections) {
   if (indexable) await writeCatalogPagination(path, collectionProducts, collection.title, collection.description, collection.image)
 }
 
-const categoryCounts = new Map(CATALOG_CATEGORY_PAGES.map(category => [category.handle, products.filter(product => productMatchesCatalogCategory(product, category)).length]))
-for (const category of CATALOG_CATEGORY_PAGES) {
+const categoryCounts = new Map(ALL_CATALOG_CATEGORY_PAGES.map(category => [category.handle, products.filter(product => productMatchesCatalogCategory(product, category)).length]))
+for (const category of ALL_CATALOG_CATEGORY_PAGES) {
   const path = `/category/${category.handle}`
   const count = categoryCounts.get(category.handle) || 0
   const indexable = count >= TAXONOMY_MIN_PRODUCTS
@@ -382,28 +410,39 @@ for (const league of LEAGUE_TAXONOMY) {
   const path = leaguePath(league)
   const leagueIndexable = (taxonomyCounts.get(`league:${league.key}`) || 0) >= TAXONOMY_MIN_PRODUCTS
   const leagueProducts = products.filter(product => String(product.taxonomy?.league || '').toLowerCase() === league.key)
+  const leagueGroups = [...new Map(leagueProducts.reduce((map, product) => {
+    const group = String(product.productGroup || '').trim()
+    if (group) map.set(group, (map.get(group) || 0) + 1)
+    return map
+  }, new Map())).entries()].sort((a,b) => b[1] - a[1]).slice(0,8)
+  const availableLeagueTeams = league.teams.filter(team => (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) > 0)
   await writePage(path, pageHtml(shell, {
     path,
     title:`${league.name} fan gear — Jersevo`,
     description:league.description,
-    image:absolute('/assets/editorial-player.webp'),
+    image:absolute(leagueCover(league.key)?.src || leagueProducts[0]?.image || league.media?.src || '/assets/editorial-player.webp'),
     noindex:!leagueIndexable,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} fan gear</h1><p>${escapeHtml(league.description)}</p><nav aria-label="${escapeHtml(league.name)} teams">${league.teams.slice(0, 12).map(team => `<a href="${teamPath(league.key, team)}">${escapeHtml(team.name)}</a>`).join(' · ')}</nav><ul>${leagueProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${leagueProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
-    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`}])]
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} fan gear</h1><p>${escapeHtml(league.description)}</p><section><h2>Find your ${escapeHtml(league.name)} team</h2><ul>${availableLeagueTeams.slice(0,16).map(team => `<li><a href="${teamPath(league.key,team)}">${escapeHtml(team.name)}</a> (${taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0})</li>`).join('')}</ul></section><section><h2>Shop ${escapeHtml(league.name)} by product</h2><ul>${leagueGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(league.name)} gear</h2><ul>${leagueProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${leagueProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</section></main>`,
+    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, numberOfItems:leagueProducts.length, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`}])]
   }))
-  if (leagueIndexable) await writeCatalogPagination(path, leagueProducts, `${league.name} fan gear`, league.description, absolute('/assets/editorial-player.webp'))
+  if (leagueIndexable) await writeCatalogPagination(path, leagueProducts, `${league.name} fan gear`, league.description, absolute(leagueCover(league.key)?.src || '/assets/editorial-player.webp'))
   for (const team of league.teams) {
     const teamPage = teamPath(league.key, team)
     const teamIndexable = (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) >= TAXONOMY_MIN_PRODUCTS
     const teamProducts = leagueProducts.filter(product => normalizeTeamSlug(league.key, product.taxonomy?.team || '') === team.slug)
+    const teamGroups = [...teamProducts.reduce((map, product) => {
+      const group = String(product.productGroup || '').trim()
+      if (group) map.set(group, (map.get(group) || 0) + 1)
+      return map
+    }, new Map()).entries()].sort((a,b) => b[1] - a[1]).slice(0,8)
     await writePage(teamPage, pageHtml(shell, {
       path:teamPage,
       title:`${team.name} fan gear — Jersevo`,
       description:`Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`,
-      image:absolute('/assets/editorial-player.webp'),
+      image:absolute(teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'),
       noindex:!teamIndexable,
-      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} fan gear</h1><p>Shop ${escapeHtml(team.name)} fan gear, including available jerseys, caps and apparel, with tracked US delivery.</p><p><a href="${path}">Browse all ${escapeHtml(league.name)} collections</a></p><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</main>`,
-      schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} fan gear`, description:`Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`, url:`${PUBLIC_ORIGIN}${teamPage}`, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`}])]
+      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} fan gear</h1><p>Browse ${escapeHtml(team.name)} fan gear by product type. Prices, available options and photos are shown on each current listing.</p><p><a href="${path}">Explore all ${escapeHtml(league.name)} teams</a></p><section><h2>Shop ${escapeHtml(team.name)} by product</h2><ul>${teamGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(team.name)} gear</h2><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</section></main>`,
+      schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} fan gear`, description:`Browse current ${team.name} fan gear by product type and review photos, prices and available options on each listing.`, url:`${PUBLIC_ORIGIN}${teamPage}`, numberOfItems:teamProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`}])]
     }))
     if (teamIndexable) await writeCatalogPagination(teamPage, teamProducts, `${team.name} fan gear`, `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`, absolute('/assets/editorial-player.webp'))
   }

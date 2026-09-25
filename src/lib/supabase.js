@@ -6,6 +6,9 @@ import { buildMenuTree, prepareStorefrontProduct, resolveMenuImages } from './st
 import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
 import { apiFetch } from './api-client'
 import { collectionMembershipDiff } from './collection-assignment'
+import { collectionAutomationHasConditions, normalizeCollectionAutomation } from './collection-rules'
+import { LEAGUE_TAXONOMY } from './league-taxonomy'
+import { accessoryGroupsForCategory, catalogCategoryByHandle } from './catalog-taxonomy'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -114,7 +117,7 @@ async function requestLogoPreview(path, { productId, fieldKey, assetRef, treatme
 export const createExactLogoPreview = input => requestLogoPreview('/api/logo-preview', input)
 export const createAiLogoPreview = input => requestLogoPreview('/api/ai-logo-preview', input)
 
-export async function fetchStorefrontProduct(handle) {
+export async function fetchStorefrontProduct(handle, { includeRelated = true } = {}) {
   if (!supabase) return { data:[],source:'unavailable',error:'Live catalogue is not configured.' }
   const fields = '*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))'
   const { data:row,error } = await supabase.from('pod_products').select(fields).eq('status','PUBLISHED').eq('handle',handle).maybeSingle()
@@ -123,14 +126,44 @@ export async function fetchStorefrontProduct(handle) {
   const product = prepareStorefrontProduct(row)
   let related = []
   const league = product.taxonomy?.league
-  if (league) {
+  if (league && includeRelated) {
     const result = await supabase.from('pod_products').select(fields).eq('status','PUBLISHED').eq('taxonomy->>league',league).neq('id',product.id).order('id').limit(12)
     if (!result.error) related = (result.data || []).map(item=>prepareStorefrontProduct(item))
   }
   return {data:[product,...related],source:'supabase',error:null}
 }
 
-const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,product_group,type,color,custom_fields,media,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode)'
+// Cards do not need long descriptions, full galleries or SEO JSON. Those are
+// hydrated by fetchStorefrontProduct when a shopper opens a product page.
+const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,inventory,sku,tags,taxonomy,product_group,type,color,custom_fields,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image)'
+const transientCatalogueError = (error, status) => String(error?.code || '') === '57014' || [0,408,429,500,502,503,504].includes(Number(status)) || /timeout|temporarily unavailable|fetch failed/i.test(String(error?.message || ''))
+const storefrontPageCache = new Map()
+const STOREFRONT_PAGE_CACHE_TTL = 10 * 60 * 1000
+const STOREFRONT_STALE_CACHE_TTL = 6 * 60 * 60 * 1000
+
+function storefrontSessionCacheKey(cacheKey) {
+  return `jersevo:catalog:v2:${encodeURIComponent(cacheKey)}`
+}
+
+function readStorefrontPageCache(cacheKey, { allowStale = false } = {}) {
+  const maxAge = allowStale ? STOREFRONT_STALE_CACHE_TTL : STOREFRONT_PAGE_CACHE_TTL
+  const memory = storefrontPageCache.get(cacheKey)
+  if (memory && Date.now() - memory.at < maxAge) return memory
+  try {
+    const saved = JSON.parse(globalThis.sessionStorage?.getItem(storefrontSessionCacheKey(cacheKey)) || 'null')
+    if (saved?.value && Date.now() - Number(saved.at || 0) < maxAge) {
+      storefrontPageCache.set(cacheKey,saved)
+      return saved
+    }
+  } catch {}
+  return null
+}
+
+function writeStorefrontPageCache(cacheKey, value) {
+  const entry = { at:Date.now(), value }
+  storefrontPageCache.set(cacheKey,entry)
+  try { globalThis.sessionStorage?.setItem(storefrontSessionCacheKey(cacheKey),JSON.stringify(entry)) } catch {}
+}
 
 function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {}) {
   const params = new URLSearchParams(search)
@@ -138,8 +171,10 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   if (parts[0] === 'league' && parts[1]) query = query.eq('taxonomy->>league',parts[1])
   if (parts[0] === 'team' && parts[1] && parts[2]) query = query.eq('taxonomy->>league',parts[1]).eq('taxonomy->>team',parts[2])
   if (parts[0] === 'category' && parts[1]) {
+    const routeCategory = catalogCategoryByHandle(parts[1])
+    const accessoryGroups = routeCategory?.accessoryFamily ? accessoryGroupsForCategory(routeCategory) : []
     const categoryMap = {
-      accessories:['Caps','Knit Hats'],
+      accessories:['Caps','Knit Hats','Accessories','Bags','Backpacks','Sports Bags','Scarves','Gloves','Flags','Banners','Pins','Patches','Key Chains','Keychains','Decals','Magnets','Stickers','Bottles','Mugs','Drinkware','Glassware','Coasters','Socks','Leg Sleeves','Gift Sets','Gift Bundles','Bundles'],
       caps:['Caps'],
       'knit-hats':['Knit Hats'],
       'football-jerseys':['Football Jersey'],
@@ -148,19 +183,41 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
       'hockey-jerseys':['Hockey Jersey'],
       'soccer-jerseys':['Soccer Jersey']
     }
-    const groups = categoryMap[parts[1]]
-    if (parts[1] === 'accessories') query = query.not('product_group','in','("Football Jersey","Baseball Jersey","Basketball Jersey","Hockey Jersey","Soccer Jersey")')
+    const groups = accessoryGroups.length ? accessoryGroups : categoryMap[parts[1]]
+    if (routeCategory?.accessoryFamily && groups?.length) {
+      const groupFilter = `product_group.in.(${groups.map(value => `"${String(value).replaceAll('"','\\"')}"`).join(',')})`
+      const taxonomyFilters = [`taxonomy->>accessoryCategory.eq.${routeCategory.accessoryFamily}`]
+      if (routeCategory.accessoryType) taxonomyFilters.push(`taxonomy->>accessoryType.eq.${routeCategory.accessoryType}`)
+      query = query.or([groupFilter,...taxonomyFilters].join(','))
+    } else if (parts[1] === 'accessories') {
+      const groupFilter = `product_group.in.(${categoryMap.accessories.map(value => `"${String(value).replaceAll('"','\\"')}"`).join(',')})`
+      query = query.or(`taxonomy->>category.eq.Accessories,${groupFilter}`)
+    }
     else if (groups?.length === 1) query = query.eq('product_group',groups[0])
     else if (groups?.length) query = query.in('product_group',groups)
-    if (parts[1] === 'custom-jerseys') query = query.not('custom_fields','eq','[]')
+    if (parts[1] === 'custom-jerseys') query = query.ilike('product_group','%jersey%').not('custom_fields','eq','[]')
   }
   const group = params.get('group')
+  const sport = params.get('sport')
+  const league = params.get('league')
+  const brand = params.get('brand')
   const team = params.get('team')
   const type = params.get('type')
   const color = params.get('color')
   const price = params.get('price')
   const custom = params.get('custom')
+  // `search` is intentionally a commerce query.  It covers the fields a
+  // shopper sees or uses to identify a listing, plus the controlled taxonomy
+  // fields used by team/league/product intent.  Keeping it on the page query
+  // means a direct Shop URL is shareable and does not depend on the overlay.
+  const searchTerm = String(params.get('search') || params.get('q') || '').trim().slice(0, 80)
   if (group && group !== 'ALL') query = query.eq('product_group',group)
+  if (league) query = query.eq('taxonomy->>league',league.toLowerCase())
+  else if (sport) {
+    const leagues = LEAGUE_TAXONOMY.filter(item => item.sport.toLowerCase() === sport.toLowerCase()).map(item => item.key)
+    if (leagues.length) query = query.in('taxonomy->>league',leagues)
+  }
+  if (brand) query = query.eq('taxonomy->>brand',brand)
   if (team && team !== 'ALL') query = query.eq('taxonomy->>team',team)
   if (type && type !== 'ALL') query = query.ilike('type',`%${type}%`)
   if (color && color !== 'ALL') query = query.ilike('color',color)
@@ -168,6 +225,14 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   if (price === 'UNDER_90') query = query.lt('price',90)
   if (price === '90_100') query = query.gte('price',90).lte('price',100)
   if (price === 'OVER_100') query = query.gt('price',100)
+  if (searchTerm.length >= 2) {
+    const safe = searchTerm.replace(/[(),"']/g, ' ').replace(/\s+/g, ' ').trim()
+    const fields = ['title','subtitle','handle','sku','product_group','type','color','taxonomy->>league','taxonomy->>team','taxonomy->>category','taxonomy->>accessoryCategory','taxonomy->>accessoryType']
+    for (const token of safe.split(' ').filter(Boolean).slice(0, 6)) {
+      const pattern = `*${token}*`
+      query = query.or(fields.map(field => `${field}.ilike.${pattern}`).join(','))
+    }
+  }
   return query
 }
 
@@ -175,18 +240,41 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
   if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
   const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
-  let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS,{count:'exact'}).eq('status','PUBLISHED')
-  query = applyStorefrontRouteFilters(query,{basePath,search})
+  const cacheKey = `${safePage}|${safeSize}|${basePath}|${search}`
+  const cached = readStorefrontPageCache(cacheKey)
+  if (cached) return cached.value
   const sort = new URLSearchParams(search).get('sort') || 'FEATURED'
-  if (sort === 'PRICE LOW') query = query.order('price',{ascending:true})
-  else if (sort === 'PRICE HIGH') query = query.order('price',{ascending:false})
-  else if (sort === 'NEWEST') query = query.order('updated_at',{ascending:false})
-  else query = query.order('updated_at',{ascending:false})
-  query = query.order('id',{ascending:true})
   const from = (safePage - 1) * safeSize
-  const { data,error,count } = await query.range(from,from + safeSize - 1)
-  if (error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:error.message }
-  return { data:(data || []).map(row => prepareStorefrontProduct(row)), total:Number(count || 0), page:safePage, pageSize:safeSize, source:'supabase', error:null }
+  const fetchPage = async () => {
+    // Counting the full catalogue is deliberately kept out of the card query.
+    // Even a planned count can badly underestimate JSON taxonomy filters (for
+    // example returning 1 for a team that has several pages), which used to
+    // stop infinite loading after the first batch. Exact totals come from the
+    // compact build-time navigation index instead.
+    let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED')
+    query = applyStorefrontRouteFilters(query,{basePath,search})
+    if (sort === 'PRICE LOW') query = query.order('price',{ascending:true})
+    else if (sort === 'PRICE HIGH') query = query.order('price',{ascending:false})
+    else query = query.order('updated_at',{ascending:false})
+    return query.order('id',{ascending:true}).range(from,from + safeSize - 1)
+  }
+  let lastResult
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try { lastResult = await fetchPage() }
+    catch (error) { lastResult = { error, status:0, data:null, count:null } }
+    if (!lastResult.error) break
+    if (!transientCatalogueError(lastResult.error,lastResult.status)) break
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 350 * (attempt + 1)))
+  }
+  const { data,error } = lastResult || {}
+  if (error) {
+    const stale = readStorefrontPageCache(cacheKey,{allowStale:true})
+    if (stale) return { ...stale.value, source:'cache', stale:true, error:error.message || 'The live catalogue could not be refreshed.' }
+    return { data:[],total:null,page:safePage,pageSize:safeSize,source:'unavailable',error:error.message || 'Published catalogue could not be loaded.' }
+  }
+  const value = { data:(data || []).map(row => prepareStorefrontProduct(row)), total:null, page:safePage, pageSize:safeSize, source:'supabase', error:null }
+  writeStorefrontPageCache(cacheKey,value)
+  return value
 }
 
 export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize = 36 } = {}) {
@@ -197,7 +285,23 @@ export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
   const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
   const from = (safePage - 1) * safeSize
-  const links = await supabase.from('pod_collection_products').select('product_id,sort_order',{count:'exact'}).eq('collection_id',collection.data.id).order('sort_order',{ascending:true}).range(from,from + safeSize - 1)
+  // Filter through the related product table before applying the range. This
+  // keeps `total` and page boundaries aligned with what the storefront can
+  // actually sell; a membership pointing at a draft/archived listing must not
+  // consume a public page slot.
+  let links = await supabase
+    .from('pod_collection_products')
+    .select('product_id,sort_order,pod_products!inner(id,status)',{count:'exact'})
+    .eq('collection_id',collection.data.id)
+    .eq('pod_products.status','PUBLISHED')
+    .order('sort_order',{ascending:true})
+    .range(from,from + safeSize - 1)
+  if (links.error) {
+    // Older projects may not have the relationship projection available. Keep
+    // the legacy query as a compatibility path, but still discard non-public
+    // rows after fetching the page.
+    links = await supabase.from('pod_collection_products').select('product_id,sort_order',{count:'exact'}).eq('collection_id',collection.data.id).order('sort_order',{ascending:true}).range(from,from + safeSize - 1)
+  }
   if (links.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:links.error.message }
   const ids = (links.data || []).map(row => row.product_id)
   if (!ids.length) return { data:[],total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null }
@@ -212,15 +316,27 @@ export async function fetchStorefrontSearch(term, limit = 12) {
   const value = String(term || '').trim().slice(0,80)
   if (value.length < 2) return { data:[],source:'supabase',error:null }
   const safeLimit = Math.min(24,Math.max(1,Number(limit) || 12))
-  const pattern = `*${value.replace(/[(),]/g,' ')}*`
-  const { data,error } = await supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED').or(`title.ilike.${pattern},handle.ilike.${pattern},sku.ilike.${pattern}`).order('updated_at',{ascending:false}).limit(safeLimit)
+  const safe = value.replace(/[(),"']/g,' ').replace(/\s+/g,' ').trim()
+  const fields = ['title','subtitle','handle','sku','product_group','type','color','taxonomy->>league','taxonomy->>team','taxonomy->>category','taxonomy->>accessoryCategory','taxonomy->>accessoryType']
+  let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED')
+  for (const token of safe.split(' ').filter(Boolean).slice(0, 6)) {
+    const pattern = `*${token}*`
+    query = query.or(fields.map(field => `${field}.ilike.${pattern}`).join(','))
+  }
+  const { data,error } = await query.order('updated_at',{ascending:false}).limit(safeLimit)
   if (error) return { data:[],source:'unavailable',error:error.message }
   return { data:(data || []).map(row => prepareStorefrontProduct(row)),source:'supabase',error:null }
 }
 
 export async function fetchStorefrontNavigationIndex() {
   try {
-    const response = await fetch('/catalog-navigation.json',{cache:'force-cache'})
+    // This compact index is rebuilt on each deploy. Revalidate the stable URL
+    // so a returning browser does not keep old team and facet counts forever.
+    // The index is a deploy-time artifact and is served with a short public
+    // TTL.  Let the browser/CDN reuse it instead of downloading hundreds of
+    // KB again on every hard refresh; a new deployment naturally changes the
+    // URL's representation and revalidates after the TTL.
+    const response = await fetch('/catalog-navigation.json',{cache:'default'})
     if (!response.ok) throw new Error(`Navigation index returned ${response.status}`)
     const rows = await response.json()
     return Array.isArray(rows) ? rows : []
@@ -268,19 +384,39 @@ export async function fetchStorefrontMenus(fallback = [], context = {}) {
 
 export async function fetchStorefrontCollections(fallback = [], requestedHandle = '') {
   if (!supabase) return previewResult(fallback)
-  const select = requestedHandle ? 'id,handle,name,description,hero_image,seo,updated_at,status,sort_mode,pod_collection_products(product_id,sort_order,featured)' : 'id,handle,name,description,hero_image,seo,updated_at,status,sort_mode'
+  // The directory only needs a count, not 29k membership rows. Ask PostgREST
+  // for a relation count there; the public RLS policy limits that count to
+  // published products. Hydrate full membership only for a requested page.
+  const select = requestedHandle
+    ? 'id,handle,name,description,hero_image,seo,updated_at,status,sort_mode,pod_collection_products(product_id,sort_order,featured,pod_products!inner(id,status))'
+    : 'id,handle,name,description,hero_image,seo,updated_at,status,sort_mode,pod_collection_products(count)'
   let query = supabase.from('pod_collections').select(select).eq('status','PUBLISHED').order('updated_at',{ascending:false})
   if (requestedHandle) query = query.eq('handle',requestedHandle).limit(1)
   const { data, error } = await query
   if (error) return previewResult(fallback, error.message)
-  const collections = (data || []).map(row => ({
-    ...row,
-    hero:row.hero_image,
-    sort:row.sort_mode,
-    products:(row.pod_collection_products || []).sort((a,b) => a.sort_order - b.sort_order).map(item => item.product_id),
-    productLinks:(row.pod_collection_products || []).map(item => ({ productId:item.product_id, sortOrder:item.sort_order, featured:Boolean(item.featured) }))
-  }))
-  return { data:collections.length ? collections : fallback, source:collections.length ? 'supabase' : 'preview', error:null }
+  const collections = (data || []).map(row => {
+    const membership = requestedHandle ? (row.pod_collection_products || []) : []
+    const links = membership
+      .filter(item => !item.pod_products || item.pod_products.status === 'PUBLISHED')
+      .sort((a,b) => a.sort_order - b.sort_order || String(a.product_id).localeCompare(String(b.product_id)))
+    const publicCount = requestedHandle
+      ? links.length
+      : Number(row.pod_collection_products?.[0]?.count || 0)
+    return {
+      ...row,
+      hero:row.hero_image,
+      sort:row.sort_mode,
+      products:links.map(item => item.product_id),
+      productLinks:links.map(item => ({ productId:item.product_id, sortOrder:item.sort_order, featured:Boolean(item.featured) })),
+      // `count` is deliberately the public count. Keep `publishedCount` as an
+      // explicit field so cards and metadata cannot accidentally use a raw
+      // membership count later.
+      count:publicCount,
+      publishedCount:publicCount
+    }
+  })
+  const visible = requestedHandle ? collections : collections.filter(row => Number(row.publishedCount || 0) > 0)
+  return { data:visible.length ? visible : (requestedHandle ? fallback : []), source:visible.length ? 'supabase' : requestedHandle ? 'preview' : 'supabase', error:null }
 }
 
 export async function fetchStorefrontTheme(fallback = null) {
@@ -719,6 +855,71 @@ export async function saveAdminMenus(menus) {
   return { data, source:'supabase', error:null }
 }
 
+const ADMIN_COLLECTION_CATALOG_FIELDS = [
+  'id', 'handle', 'title', 'subtitle', 'status', 'type', 'image', 'sku', 'tags',
+  'product_group', 'taxonomy', 'custom_fields', 'personalization', 'updated_at'
+].join(',')
+
+function safeCollectionSearch(value) {
+  return String(value || '')
+    .replace(/[^\p{L}\p{N}\s._\/-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 100)
+}
+
+export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, search = '', status = 'ALL', productGroup = 'ALL', productType = 'ALL' } = {}) {
+  if (!supabase) return { data:[], total:0, page:1, pageSize, source:'error', error:'Supabase is not configured.' }
+  const safePageSize = Math.max(20, Math.min(100, Number(pageSize) || 50))
+  const safePage = Math.max(1, Number(page) || 1)
+  const from = (safePage - 1) * safePageSize
+  const term = safeCollectionSearch(search)
+  try {
+    let request = supabase.from('pod_products').select(ADMIN_COLLECTION_CATALOG_FIELDS, { count:'exact' })
+    if (term) request = request.or(`title.ilike.*${term}*,handle.ilike.*${term}*,sku.ilike.*${term}*,type.ilike.*${term}*,product_group.ilike.*${term}*`)
+    if (String(status).toUpperCase() !== 'ALL') request = request.eq('status', String(status).toUpperCase())
+    if (productGroup && productGroup !== 'ALL') request = request.eq('product_group', productGroup)
+    if (productType && productType !== 'ALL') request = request.eq('type', productType)
+    const { data, count, error } = await request
+      .order('title', { ascending:true })
+      .order('id', { ascending:true })
+      .range(from, from + safePageSize - 1)
+    if (error) return { data:[], total:0, page:safePage, pageSize:safePageSize, source:'error', error:error.message }
+    return {
+      data:(data || []).map(row => normalizeProduct({ ...row, pod_product_variants:[], _catalogSummary:true })),
+      total:Number.isInteger(count) ? count : (data || []).length,
+      page:safePage, pageSize:safePageSize, source:'supabase', error:null
+    }
+  } catch (error) {
+    return { data:[], total:0, page:safePage, pageSize:safePageSize, source:'error', error:error instanceof Error ? error.message : 'Collection catalogue query failed.' }
+  }
+}
+
+export async function previewAdminCollectionAutomation(collectionId, rules, sampleLimit = 40) {
+  if (!supabase) return { data:null, source:'error', error:'Supabase is not configured.' }
+  const automation = normalizeCollectionAutomation(rules)
+  if (!collectionAutomationHasConditions(automation)) return { data:null, source:'error', error:'Add at least one automatic condition before previewing.' }
+  const { data, error } = await supabase.rpc('pod_preview_collection_automation', {
+    target_collection_id:collectionId,
+    requested_rules:automation,
+    requested_sample_limit:Math.max(1, Math.min(100, Number(sampleLimit) || 40))
+  })
+  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Collection automation migration is not installed.' : error.message }
+  return { data, source:'supabase', error:null }
+}
+
+export async function applyAdminCollectionAutomation(collectionId, rules) {
+  if (!supabase) return { data:null, source:'error', error:'Supabase is not configured.' }
+  const automation = normalizeCollectionAutomation(rules)
+  if (!collectionAutomationHasConditions(automation)) return { data:null, source:'error', error:'Add at least one automatic condition before applying.' }
+  const { data, error } = await supabase.rpc('pod_apply_collection_automation', {
+    target_collection_id:collectionId,
+    requested_rules:automation
+  })
+  if (error) return { data:null, source:'error', error:error.code === 'PGRST202' ? 'Collection automation migration is not installed.' : error.message }
+  return { data, source:'supabase', error:null }
+}
+
 export async function fetchAdminCollections() {
   if (!supabase) return previewResult(adminCollections)
   try {
@@ -739,10 +940,22 @@ export async function fetchAdminCollections() {
     if (links.length !== total) return { data:[], source:'error', error:`Collection membership loaded partially (${links.length}/${total}). Refresh Admin before editing.` }
     const byCollection = new Map()
     links.forEach(link => byCollection.set(link.collection_id,[...(byCollection.get(link.collection_id) || []),link]))
+    const productIds = new Set(links.map(link => link.product_id))
+    const productStatus = new Map()
+    // Avoid a very large `in (...)` URL when a catalogue has thousands of
+    // imported listings. Small range pages are predictable and stay below
+    // PostgREST/Undici header limits.
+    for (let from = 0; ; from += 1000) {
+      const statusPage = await supabase.from('pod_products').select('id,status').order('id').range(from,from + 999)
+      if (statusPage.error) break
+      ;(statusPage.data || []).forEach(row => { if (productIds.has(row.id)) productStatus.set(row.id,row.status) })
+      if (!statusPage.data || statusPage.data.length < 1000) break
+    }
     return {
       data: (data || []).map(collection => {
         const members = (byCollection.get(collection.id) || []).sort((a,b) => a.sort_order - b.sort_order || String(a.product_id).localeCompare(String(b.product_id)))
-        return { ...collection, hero:collection.hero_image, sort:collection.sort_mode, products:members.map(item => item.product_id), productLinks:members.map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count:members.length, updatedAt:collection.updated_at }
+        const publishedCount = members.filter(item => productStatus.get(item.product_id) === 'PUBLISHED').length
+        return { ...collection, hero:collection.hero_image, sort:collection.sort_mode, automation:normalizeCollectionAutomation(collection.automation), products:members.map(item => item.product_id), productLinks:members.map(item => ({productId:item.product_id,sortOrder:item.sort_order,featured:Boolean(item.featured)})), count:members.length, publishedCount, updatedAt:collection.updated_at }
       }),
       source: 'supabase', error: null
     }
@@ -757,10 +970,12 @@ export async function saveAdminCollections(collections, originalCollections = []
   let additions, removals
   try { ({additions,removals} = collectionMembershipDiff(collections,originalCollections)) }
   catch (error) { return { data:collections, source:'error', error:error.message } }
+  const invalidAutomation = collections.find(row => normalizeCollectionAutomation(row.automation).enabled && !collectionAutomationHasConditions(row.automation))
+  if (invalidAutomation) return { data:collections, source:'error', error:`${invalidAutomation.name}: add at least one condition before enabling automatic assignment.` }
   // Create/update metadata first, then attach destinations before detaching
   // sources. A failed move can leave a recoverable duplicate, never a lost link.
   for (const row of collections) {
-    const payload = {id:row.id,handle:row.handle,name:row.name,description:row.description || '',status:row.status || 'DRAFT',hero_image:row.hero || null,sort_mode:String(row.sort || 'MANUAL').toUpperCase().replace(/\s+/g,'_'),seo:row.seo || {},updated_at:new Date().toISOString()}
+    const payload = {id:row.id,handle:row.handle,name:row.name,description:row.description || '',status:row.status || 'DRAFT',hero_image:row.hero || null,sort_mode:String(row.sort || 'MANUAL').toUpperCase().replace(/\s+/g,'_'),seo:row.seo || {},automation:normalizeCollectionAutomation(row.automation),updated_at:new Date().toISOString()}
     const { error } = await supabase.from('pod_collections').upsert(payload,{onConflict:'id'})
     if (error) return { data:collections, source:'error', error:`${row.name}: ${error.message}` }
   }
@@ -779,6 +994,38 @@ export async function saveAdminCollections(collections, originalCollections = []
     if (error) return { data:collections, source:'error', error:`Collection audit failed: ${error.message}` }
   }
   return { data:collections, source:'supabase', error:null }
+}
+
+export async function deleteAdminCollection(collectionId) {
+  if (!collectionId) return { error:'Collection ID is required.', source:'error' }
+  if (!supabase) return { error:'Live Supabase is not configured. Nothing was deleted.', source:'error' }
+  try {
+    const { data, error } = await supabase.from('pod_collections').delete().eq('id',collectionId).select('id')
+    if (error) return { error:error.message, source:'supabase' }
+    if (!data?.length) return { error:'Collection was not deleted. Your admin session may not have collection-delete permission, or it no longer exists.', source:'supabase' }
+    return { data:data[0], error:null, source:'supabase' }
+  } catch (error) {
+    return { error:error instanceof Error ? error.message : 'Collection delete failed.', source:'supabase' }
+  }
+}
+
+export async function uploadCollectionImage(file, collectionId) {
+  if (!supabase) throw new Error('Supabase is not configured. The collection image was not uploaded.')
+  if (!file || !['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('Use a JPG, PNG or WebP collection image.')
+  if (!file.size || file.size > 8 * 1024 * 1024) throw new Error('Collection image must be smaller than 8 MB.')
+  const { data:{ session }, error:sessionError } = await supabase.auth.getSession()
+  if (sessionError || !session?.access_token) throw new Error('Your admin session expired. Sign in again before uploading an image.')
+  const extension = ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp' })[file.type]
+  const safeCollection = String(collectionId || 'collection').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0,72) || 'collection'
+  const safeName = String(file.name || 'cover').replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0,48) || 'cover'
+  const path = `_collections/${safeCollection}/${globalThis.crypto.randomUUID()}-${safeName}.${extension}`
+  const { error:uploadError } = await supabase.storage.from('product-media').upload(path, file, {
+    contentType:file.type, cacheControl:'31536000', upsert:false
+  })
+  if (uploadError) throw new Error(uploadError.message)
+  const { data } = supabase.storage.from('product-media').getPublicUrl(path)
+  if (!data?.publicUrl) throw new Error('The upload finished but did not return a usable image URL.')
+  return { image:{ url:data.publicUrl, path, byteSize:file.size } }
 }
 
 export async function fetchAdminPaymentSettings() {

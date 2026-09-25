@@ -17,8 +17,9 @@ const accessoryGroups = new Set([
   'accessories','balls','pucks','mugs','drinkware','glassware','bottle openers',
   'cutlery','knives','plates','coasters','towels','beach towels','blankets',
   'socks','gloves','shoes','backpacks','bags','sports bags','banners','flags',
-  'decals','magnets','helmets','supplies','wastebaskets','clocks','bedding',
-  'mats','carpets','bbq','cars & bikes','umbrellas','key chains'
+  'scarves','scarf','pins','patches','keychains','key chains','decals','magnets',
+  'stickers','bottles','gift sets','gift bundles','bundles','helmets','supplies',
+  'wastebaskets','clocks','bedding','mats','carpets','bbq','cars & bikes','umbrellas'
 ])
 
 export function classifyProductGroup(row = {}) {
@@ -40,7 +41,7 @@ export function classifyProductGroup(row = {}) {
 
   // Ambiguous importer groups, including team names, need an explicit item
   // noun. Key chains take priority over the word "cap" in miniature charms.
-  if (/key\s?(?:chain|ring)|mini cap|\b(?:pin|charm|magnet|sticker)\b|bottle opener/.test(title)) return 'Accessories'
+  if (/key\s?(?:chain|ring)|mini cap|\b(?:pin|patch|charm|magnet|sticker|scarf|glove|bottle|mug|bag|flag|banner|sock)\b|bottle opener|gift (?:set|bundle)/.test(title)) return 'Accessories'
   if (/\b(?:knit hat|beanie|skully)\b/.test(title)) return 'Knit Hats'
   if (/\b(?:cap|caps|snapback|visor)\b|\b(?:9fifty|9forty|59fifty|39thirty)\b/.test(title)) return 'Caps'
   if (/\b(?:jersey|trikot|kit|uniform)\b/.test(title)) return JERSEY_BY_LEAGUE[league] || 'Fan Apparel'

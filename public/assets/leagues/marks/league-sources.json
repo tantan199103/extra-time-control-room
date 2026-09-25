@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Local league marks for taxonomy navigation; runtime never fetches a remote logo.",
+  "rightsNotice": "League marks are trademarks. Provenance is recorded here and does not grant a commercial license or affiliation.",
+  "assets": {
+    "nhl": {
+      "path": "/assets/leagues/marks/nhl.webp",
+      "source": "ESPN public CDN",
+      "sourceUrl": "https://a.espncdn.com/i/espn/misc_logos/500/nhl.png",
+      "sourceMime": "image/png",
+      "format": "image/webp",
+      "width": 320,
+      "height": 320,
+      "rights": "NHL shield mark/trademark. Verify commercial and league permissions before use."
+    }
+  }
+}

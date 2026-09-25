@@ -5,6 +5,9 @@ Disallow: /api
 Disallow: /*?*color=
 Disallow: /*?*size=
 Disallow: /*?*team=
+Disallow: /*?*sport=
+Disallow: /*?*league=
+Disallow: /*?*brand=
 Disallow: /*?*price=
 Disallow: /*?*group=
 Disallow: /*?*type=
