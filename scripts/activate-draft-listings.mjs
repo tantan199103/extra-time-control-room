@@ -6,7 +6,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
-import { LEAGUE_TAXONOMY, normalizeCatalogTaxonomy, taxonomySlug } from '../src/lib/league-taxonomy.js'
+import { normalizeCatalogTaxonomy } from '../src/lib/league-taxonomy.js'
+import { classifyProductGroup } from '../src/lib/product-group-classifier.js'
 import { seoReviewGate } from '../src/lib/catalog-model.js'
 
 const url = process.env.SUPABASE_URL
@@ -19,33 +20,11 @@ if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY ar
 if (new URL(url).hostname !== 'ofetusgarxcwloxxkhnr.supabase.co') throw new Error('Activation is restricted to the active Jersevo project.')
 
 const client = createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
-const groups = ['Caps','Knit Hats','Football Jersey','Baseball Jersey','Basketball Jersey','Hockey Jersey','Soccer Jersey','Fan Apparel','Accessories','Collectibles']
-const leagueGroup = { nfl:'Football Jersey',mlb:'Baseball Jersey',nba:'Basketball Jersey',nhl:'Hockey Jersey',mls:'Soccer Jersey',epl:'Soccer Jersey',laliga:'Soccer Jersey',seriea:'Soccer Jersey',bundesliga:'Soccer Jersey' }
-const teamOnlyGroups = new Set([
-  'new era','nfl','mlb','nba','nhl',
-  ...LEAGUE_TAXONOMY.flatMap(league => league.teams.map(team => taxonomySlug(team.name)))
-])
-
 const words = value => String(value || '').replace(/[-_]+/g,' ').replace(/\b\w/g,character => character.toUpperCase()).trim()
 const trimTitle = value => {
   const text = String(value || '').replace(/\s+/g,' ').trim()
   if (text.length <= 60) return text
   return text.slice(0,61).replace(/\s+\S*$/,'').replace(/[|–—-]+$/,'').trim()
-}
-
-function groupFor(product, taxonomy) {
-  const raw = String(product.product_group || '').trim()
-  const lower = raw.toLowerCase()
-  const text = `${product.title || ''} ${product.type || ''}`.toLowerCase()
-  if (teamOnlyGroups.has(taxonomySlug(raw))) return 'Accessories'
-  if (/knit hat|beanie|skully/.test(text)) return 'Knit Hats'
-  if (/\bcap\b|\bcaps\b|snapback|fitted|9fifty|9forty|59fifty|39thirty|visor/.test(text)) return 'Caps'
-  if (leagueGroup[taxonomy.league] && /jersey|kit|uniform/.test(text)) return leagueGroup[taxonomy.league]
-  if (/hoodie|t-shirt|shirt|pullover|jacket|shorts|pants|apparel|sweat/.test(text)) return 'Fan Apparel'
-  if (/jersey|kit|uniform/.test(text)) return 'Fan Apparel'
-  if (/trading card|figure|coin|frame|memorabilia|collectible|photo card/.test(text) || /trading cards|figures|coins|frames/i.test(raw)) return 'Collectibles'
-  if (groups.includes(raw)) return raw
-  return raw ? 'Accessories' : 'Accessories'
 }
 
 function seoTitleFor(product, taxonomy, group) {
@@ -79,7 +58,7 @@ const writeFailures = []
 const candidates = []
 for (const product of drafts) {
   const taxonomy = normalizeCatalogTaxonomy(product)
-  const nextGroup = groupFor(product,taxonomy)
+  const nextGroup = classifyProductGroup(product)
   const rows = byProduct.get(product.id) || []
   const sellable = rows.filter(row => row.status !== 'ARCHIVED' && Number(row.price) > 0 && Number(row.inventory) > 0)
   const nextVariants = rows.map(row => sellable.some(item => item.id === row.id) ? {...row,status:'ACTIVE'} : row)
