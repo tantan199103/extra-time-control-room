@@ -48,6 +48,7 @@ import CategoryIcon from './CategoryIcon'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { routeIndexability } from './lib/route-indexability'
 import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeByHandle, teamProductTypePath } from './lib/team-product-pages'
+import { validateCatalogTaxonomy } from './lib/taxonomy-validator'
 import { resolveCollectionArtwork } from './lib/collection-artwork'
 import { listingMediaRole } from './lib/listing-media'
 import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollectionPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
@@ -783,12 +784,13 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
     { league:league?.key, team:team?.slug }
   ), [discoveryProducts,league?.key,team?.slug,customOnly])
   const facetGroups = hub.groups.slice(0,8)
-  const filtered = loading ? [] : catalog.items.filter(product => productMatchesTaxonomy(product, { league:league?.key, team:team?.slug }) && (!productType || productMatchesTeamProductType(product,productType)))
+  const filtered = loading ? [] : catalog.items.filter(product => validateCatalogTaxonomy(product).valid && productMatchesTaxonomy(product, { league:league?.key, team:team?.slug }) && (!productType || productMatchesTeamProductType(product,productType)))
   const serverPaginated = !loading && Boolean(pagination?.server)
   const totalPages = serverPaginated ? Math.max(1,Math.ceil(Number(pagination.total || 0) / CATALOG_PAGE_SIZE)) : pageCount(filtered.length)
   const currentPage = Math.max(1, Math.min(page, totalPages))
   const pagedProducts = serverPaginated ? filtered : filtered.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE)
-  const typeDirectoryCount = productType ? (teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug }).find(item => item.handle === productType.handle)?.count ?? filtered.length) : 0
+  const teamTypePages = team ? teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug }) : []
+  const typeDirectoryCount = productType ? (teamTypePages.find(item => item.handle === productType.handle)?.count ?? filtered.length) : 0
   const indexedCount = selectedGroup ? (resultHub.groups.find(group => group.name === selectedGroup)?.count ?? 0) : productType ? (pagination?.total ?? typeDirectoryCount) : resultHub.total
   const resultCount = discoveryProducts.length ? indexedCount : filtered.length
   const title = productType ? `${team.name} ${productType.label}` : team?.name || league?.name || 'League collections'
@@ -800,7 +802,6 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
     .sort((a,b) => teamSort === 'POPULAR' ? (hub.teams.get(b.slug) || 0) - (hub.teams.get(a.slug) || 0) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name))
   const visibleTeams = teamQuery.trim() || showAllTeams ? matchedTeams : matchedTeams.slice(0,12)
   const nearbyLeagues = LEAGUE_TAXONOMY.filter(item => item.key !== league?.key && discoveryProducts.some(row => row.taxonomy?.league === item.key)).slice(0,6)
-  const teamTypePages = team ? teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug }) : []
   const leagueHeroKey = ['nfl','nba','mlb','nhl','mls','ncaa'].includes(league?.key) ? league.key : ''
   const leagueCoverArt = leagueCover(leagueHeroKey)
   const heroImage = leagueHeroKey ? `/assets/shop/sport-${leagueHeroKey}-v2.webp` : '/assets/shop/shop-fan-gear-banner-v2.webp'
@@ -2396,7 +2397,7 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const canonical = pdpMetadata?.canonical || `${publicOrigin.replace(/\/$/, '')}${requestIndexability.canonicalPath}`
     const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
     const unresolvedRoute = (path.startsWith('/product/') && !product) || ((path.startsWith('/collection/') || path.startsWith('/collections/')) && !collection) || (path.startsWith('/category/') && !category) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team || (hasTeamProductTypeSegment && !productType)))
-    const indexableProducts = products.filter(item => String(item.seoStatus || item.seo?.status || '').toUpperCase() === 'INDEXABLE')
+    const indexableProducts = products.filter(item => String(item.seoStatus || item.seo?.status || '').toUpperCase() === 'INDEXABLE' && validateCatalogTaxonomy(item).valid)
     const catalogCount = Number.isFinite(Number(catalogTotal)) && catalogTotal != null
       ? Number(catalogTotal)
       : category ? indexableProducts.filter(item => productMatchesCatalogCategory(item,category)).length : collection ? indexableProducts.filter(item => (collection.products || []).includes(item.id)).length : productType && team ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league?.key, team:team.slug }) && productMatchesTeamProductType(item,productType)).length : team ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league?.key, team:team.slug })).length : league ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league.key })).length : indexableProducts.length
@@ -2407,7 +2408,8 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const pageValid = !catalogRoute || !query.has('page') && (!paginated || (catalogTotal == null ? products.length > 0 : page >= 2 && page <= pageCount(catalogCount)))
     const queryNoindex = requestIndexability.noindex
     const productIndexable = !product || pdpMetadata.indexable
-    const collectionIndexable = !collection || String(collection.seo?.status || '').toUpperCase() === 'INDEXABLE' && catalogCount >= 6
+    const collectionSeoStatus = String(collection?.seo?.status || '').toUpperCase()
+    const collectionIndexable = !collection || !['BLOCKED', 'NOINDEX'].includes(collectionSeoStatus) && catalogCount >= 6
     const knownPublicRoute = ['/', '/shop', '/custom', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
     const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !queryNoindex && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
     const routePage = routeMeta ? TRUST_PAGES[path.slice(1)] : null
