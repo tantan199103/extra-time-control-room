@@ -470,7 +470,7 @@ const ADMIN_PRODUCT_SUMMARY_FIELDS = [
   'id', 'handle', 'title', 'subtitle', 'description', 'price', 'compare_at',
   'status', 'badge', 'type', 'template_id', 'template_version', 'image',
   'color', 'artwork_lock', 'personalization', 'inventory', 'sku', 'tags',
-  'product_group', 'seo_status', 'seo_quality_score', 'seo_block_reasons',
+  'product_group', 'taxonomy', 'seo_status', 'seo_quality_score', 'seo_block_reasons',
   'seo_reviewed_at', 'seo_published_at', 'created_at', 'updated_at'
 ].join(',')
 
@@ -872,7 +872,7 @@ export async function saveAdminMenus(menus) {
 
 const ADMIN_COLLECTION_CATALOG_FIELDS = [
   'id', 'handle', 'title', 'subtitle', 'status', 'type', 'image', 'sku', 'tags',
-  'product_group', 'taxonomy', 'custom_fields', 'personalization', 'updated_at'
+  'product_group', 'taxonomy', 'custom_fields', 'personalization', 'seo_status', 'updated_at'
 ].join(',')
 
 function safeCollectionSearch(value) {
@@ -883,16 +883,23 @@ function safeCollectionSearch(value) {
     .slice(0, 100)
 }
 
-export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, search = '', status = 'ALL', productGroup = 'ALL', productType = 'ALL', category = 'ALL', accessoryFamily = 'ALL', accessoryType = 'ALL' } = {}) {
+export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, search = '', status = 'ALL', seoStatus = 'ALL', productGroup = 'ALL', productType = 'ALL', category = 'ALL', accessoryFamily = 'ALL', accessoryType = 'ALL', basePath = '', collectionId = '' } = {}) {
   if (!supabase) return { data:[], total:0, page:1, pageSize, source:'error', error:'Supabase is not configured.' }
   const safePageSize = Math.max(20, Math.min(100, Number(pageSize) || 50))
   const safePage = Math.max(1, Number(page) || 1)
   const from = (safePage - 1) * safePageSize
   const term = safeCollectionSearch(search)
   try {
-    let request = supabase.from('pod_products').select(ADMIN_COLLECTION_CATALOG_FIELDS, { count:'exact' })
+    const assignedCollectionId = String(collectionId || '').trim()
+    const projection = assignedCollectionId
+      ? `${ADMIN_COLLECTION_CATALOG_FIELDS},collection_membership:pod_collection_products!inner(collection_id)`
+      : ADMIN_COLLECTION_CATALOG_FIELDS
+    let request = supabase.from('pod_products').select(projection, { count:'exact' })
+    if (basePath) request = applyStorefrontRouteFilters(request, { basePath })
+    if (assignedCollectionId) request = request.eq('collection_membership.collection_id', assignedCollectionId)
     if (term) request = request.or(`title.ilike.*${term}*,handle.ilike.*${term}*,sku.ilike.*${term}*,type.ilike.*${term}*,product_group.ilike.*${term}*`)
     if (String(status).toUpperCase() !== 'ALL') request = request.eq('status', String(status).toUpperCase())
+    if (String(seoStatus).toUpperCase() !== 'ALL') request = request.eq('seo_status', String(seoStatus).toUpperCase())
     if (productGroup && productGroup !== 'ALL') request = request.eq('product_group', productGroup)
     if (productType && productType !== 'ALL') request = request.eq('type', productType)
     if (category && category !== 'ALL') request = request.eq('taxonomy->>category', category)

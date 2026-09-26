@@ -7,12 +7,12 @@ import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
 import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
 import { validateCatalogTaxonomy } from '../src/lib/taxonomy-validator.js'
-import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypePath } from '../src/lib/team-product-pages.js'
+import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeForProduct, teamProductTypePath } from '../src/lib/team-product-pages.js'
 import { resolveCollectionArtwork } from '../src/lib/collection-artwork.js'
 import { cleanSeoText, seoDescription } from '../src/lib/seo-text.js'
 import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
 import { TRUST_PAGES } from '../src/lib/trust-pages.js'
-import { productBootstrap, renderProductContent, renderSitemap } from './seo-render.mjs'
+import { productBootstrap, renderProductContent, renderSitemap, renderSitemapIndex } from './seo-render.mjs'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
@@ -267,6 +267,21 @@ const shell = await readFile(join(DIST, 'index.html'), 'utf8')
 const loadedProducts = await loadProducts()
 const taxonomyBlockedProducts = loadedProducts.filter(product => !validateCatalogTaxonomy(product).valid)
 const products = loadedProducts.filter(product => validateCatalogTaxonomy(product).valid)
+const teamProductsByKey = new Map()
+for (const product of products) {
+  const league = String(product.taxonomy?.league || '').toLowerCase()
+  const team = normalizeTeamSlug(league, product.taxonomy?.team || '')
+  if (!league || !team) continue
+  const key = `${league}/${team}`
+  const bucket = teamProductsByKey.get(key)
+  if (bucket) bucket.push(product)
+  else teamProductsByKey.set(key,[product])
+}
+const teamProductTypeRouteSet = new Set()
+for (const [key, rows] of teamProductsByKey) {
+  const [league,team] = key.split('/')
+  for (const type of teamProductTypeCounts(rows,{league,team})) teamProductTypeRouteSet.add(type.path)
+}
 featuredCustomProduct = products.find(product => product.customFields?.length && product.inventory > 0 && /jersey/i.test(product.title || ''))
   || products.find(product => product.customFields?.length && product.inventory > 0)
 const customProducts = products.filter(product => product.customFields?.length).slice(0, 12)
@@ -302,13 +317,16 @@ await writePagesInBatches(products, async product => {
   const path = `/product/${slug(product.handle)}`
   const metadata = productSeoMetadata(product,PUBLIC_ORIGIN)
   const related = relatedProducts(product,products)
+  const type = teamProductTypeForProduct(product)
+  const typePath = type ? teamProductTypePath(product.taxonomy?.league,product.taxonomy?.team,type) : ''
+  const breadcrumbOptions = { includeTeamProductType:Boolean(typePath && teamProductTypeRouteSet.has(typePath)) }
   const html = pageHtml(shell, {
     path,
     title:metadata.title,
     description:metadata.description,
     image:product.image,
-    fallback:renderProductContent(product,related),
-    schema:productStructuredData(product,PUBLIC_ORIGIN),
+    fallback:renderProductContent(product,related,breadcrumbOptions),
+    schema:productStructuredData(product,PUBLIC_ORIGIN,breadcrumbOptions),
     bootstrap:productBootstrap(product,related)
   })
   const entry = await writePage(path, html)
@@ -526,7 +544,70 @@ for (const path of ['/studio', '/account', '/account/membership', '/admin', '/ch
   }))
 }
 
-console.log(`[seo] Generated ${products.length} indexable product pages, ${blockedProducts.length} blocked product pages, ${collections.length} collection pages and ${staticPages.length} static pages.`)
-await writeFile(join(DIST,'sitemap.xml'),renderSitemap(sitemapEntries,PUBLIC_ORIGIN))
+const paginationEntries = sitemapEntries.filter(entry => /\/page\/\d+$/.test(entry.path))
+const baseEntries = sitemapEntries.filter(entry => !/\/page\/\d+$/.test(entry.path))
+const routeCounts = {
+  products:baseEntries.filter(entry => entry.path.startsWith('/product/')).length,
+  leagues:baseEntries.filter(entry => /^\/league\/[^/]+$/.test(entry.path)).length,
+  teams:baseEntries.filter(entry => /^\/team\/[^/]+\/[^/]+$/.test(entry.path)).length,
+  teamProductTypes:baseEntries.filter(entry => /^\/team\/[^/]+\/[^/]+\/[^/]+$/.test(entry.path)).length,
+  categories:baseEntries.filter(entry => /^\/category\/[^/]+$/.test(entry.path)).length,
+  editorialCollections:baseEntries.filter(entry => /^\/collection\/[^/]+$/.test(entry.path)).length,
+  pagination:paginationEntries.length,
+  otherPages:baseEntries.filter(entry => !/^\/(?:product|league|team|category|collection)\//.test(entry.path)).length
+}
+routeCounts.catalogLandingPages = routeCounts.leagues + routeCounts.teams + routeCounts.teamProductTypes + routeCounts.categories + routeCounts.editorialCollections
+
+console.log(`[seo] Indexable URLs: ${sitemapEntries.length.toLocaleString()} total (${routeCounts.pagination.toLocaleString()} pagination pages).`)
+console.log(`[seo] Products: ${routeCounts.products.toLocaleString()} indexable; ${blockedProducts.length.toLocaleString()} blocked/noindex.`)
+console.log(`[seo] Catalog landing pages: ${routeCounts.catalogLandingPages.toLocaleString()} — ${routeCounts.leagues} leagues, ${routeCounts.teams} teams, ${routeCounts.teamProductTypes} team product types, ${routeCounts.categories} categories, ${routeCounts.editorialCollections} editorial collections.`)
+console.log(`[seo] Editorial collection rows: ${collections.length.toLocaleString()} published in Supabase; ${routeCounts.editorialCollections.toLocaleString()} currently indexable.`)
+const sitemapGroups = {
+  pages:sitemapEntries.filter(entry => !/^\/(?:product|league|team|category|collection)\//.test(entry.path)),
+  leagues:sitemapEntries.filter(entry => entry.path.startsWith('/league/')),
+  teams:sitemapEntries.filter(entry => entry.path.startsWith('/team/')),
+  categories:sitemapEntries.filter(entry => /^\/(?:category|collection)\//.test(entry.path)),
+  products:sitemapEntries.filter(entry => entry.path.startsWith('/product/'))
+}
+const allGroupedEntries = Object.values(sitemapGroups).flat()
+const uniqueSitemapPaths = new Set(sitemapEntries.map(entry => entry.path))
+if (uniqueSitemapPaths.size !== sitemapEntries.length) throw new Error(`[seo] Duplicate canonical path detected (${sitemapEntries.length - uniqueSitemapPaths.size} duplicate entries).`)
+if (allGroupedEntries.length !== sitemapEntries.length || new Set(allGroupedEntries.map(entry => entry.path)).size !== sitemapEntries.length) {
+  throw new Error('[seo] Sitemap grouping must include every indexable URL exactly once.')
+}
+const sitemapFiles = []
+const latestLastmod = entries => entries.map(entry => entry.lastmod).filter(value => Number.isFinite(Date.parse(value))).sort().at(-1) || new Date().toISOString()
+for (const [name,entries] of Object.entries(sitemapGroups)) {
+  if (!entries.length) continue
+  const chunkSize = name === 'products' ? 10000 : 45000
+  for (let offset = 0; offset < entries.length; offset += chunkSize) {
+    const chunk = entries.slice(offset,offset + chunkSize)
+    const suffix = entries.length > chunkSize ? `-${Math.floor(offset / chunkSize) + 1}` : ''
+    const filename = `sitemap-${name}${suffix}.xml`
+    await writeFile(join(DIST,filename),renderSitemap(chunk,PUBLIC_ORIGIN))
+    sitemapFiles.push({ path:`/${filename}`, lastmod:latestLastmod(chunk), urls:chunk.length, group:name })
+  }
+}
+await writeFile(join(DIST,'sitemap.xml'),renderSitemapIndex(sitemapFiles,PUBLIC_ORIGIN))
 await writeFile(join(DIST,'404.html'),pageHtml(shell,{path:'/404',title:'Page not found | Jersevo',description:'This page is not available.',image:absolute('/assets/hero-tunnel.webp'),noindex:true,fallback:'<main class="seo-fallback"><h1>Page not found</h1><p>This URL is not available.</p><a href="/shop">Browse the shop</a></main>'}))
-await writeFile(join(DIST,'seo-build-manifest.json'),JSON.stringify({generatedAt:new Date().toISOString(),indexable:sitemapEntries.length,products:products.length,blocked:blockedProducts.length}))
+await writeFile(join(DIST,'seo-build-manifest.json'),JSON.stringify({
+  generatedAt:new Date().toISOString(),
+  indexable:sitemapEntries.length,
+  indexableUrls:sitemapEntries.length,
+  products:routeCounts.products,
+  blocked:blockedProducts.length,
+  productPages:{ indexable:routeCounts.products, blocked:blockedProducts.length },
+  catalogPages:{
+    totalLandingPages:routeCounts.catalogLandingPages,
+    leagues:routeCounts.leagues,
+    teams:routeCounts.teams,
+    teamProductTypes:routeCounts.teamProductTypes,
+    categories:routeCounts.categories,
+    editorialCollections:routeCounts.editorialCollections,
+    pagination:routeCounts.pagination
+  },
+  editorialCollectionRows:{ published:collections.length, indexable:routeCounts.editorialCollections },
+  otherPages:routeCounts.otherPages,
+  sitemaps:sitemapFiles.map(file => file.path),
+  sitemapFiles
+},null,2))

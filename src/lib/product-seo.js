@@ -28,7 +28,7 @@ export function productSeoMetadata(product, origin = 'https://www.jersevo.com') 
   }
 }
 
-export function productBreadcrumbs(product) {
+export function productBreadcrumbs(product, { includeTeamProductType = false } = {}) {
   const values = productTaxonomyValues(product)
   const league = findLeague(values.league)
   const team = league && findTeam(league.key,values.team)
@@ -38,7 +38,7 @@ export function productBreadcrumbs(product) {
     { label:'Home', href:'/' }, { label:'Shop', href:'/shop' },
     ...(league ? [{ label:league.name, href:leaguePath(league) }] : []),
     ...(team ? [{ label:team.name, href:teamPath(league.key,team) }] : []),
-    ...(typeHref ? [{ label:productType.label, href:typeHref }] : []),
+    ...(includeTeamProductType && typeHref ? [{ label:productType.label, href:typeHref }] : []),
     { label:product.title || product.name, href:productPath(product) }
   ]
 }
@@ -51,7 +51,7 @@ export function validGtin(value) {
   return (10 - sum % 10) % 10 === Number(digits.at(-1))
 }
 
-export function productStructuredData(product, origin = 'https://www.jersevo.com') {
+export function productStructuredData(product, origin = 'https://www.jersevo.com', options = {}) {
   const metadata = productSeoMetadata(product, origin)
   if (!metadata.taxonomy.valid) return []
   const name = cleanSeoText(product.title || product.name)
@@ -89,7 +89,7 @@ export function productStructuredData(product, origin = 'https://www.jersevo.com
     ...(products.length ? { offers:products.map(item => item.offers) } : {})
   }
   return [entity, { '@context':'https://schema.org', '@type':'BreadcrumbList',
-    itemListElement:productBreadcrumbs(product).map((item,index) => ({ '@type':'ListItem',position:index+1,name:item.label,item:new URL(item.href,origin).href })) }]
+    itemListElement:productBreadcrumbs(product,options).map((item,index) => ({ '@type':'ListItem',position:index+1,name:item.label,item:new URL(item.href,origin).href })) }]
 }
 
 const relatedIndexCache = new WeakMap()
@@ -107,7 +107,7 @@ function relatedIndex(catalog) {
   if (cached) return cached
   const index = { league:new Map(), team:new Map(), group:new Map(), values:new Map() }
   for (const item of catalog) {
-    if (item?.status !== 'PUBLISHED') continue
+    if (item?.status !== 'PUBLISHED' || !validateCatalogTaxonomy(item).valid) continue
     const values = productTaxonomyValues(item)
     index.values.set(item.id, values)
     addRelatedIndex(index.league, values.league, item)

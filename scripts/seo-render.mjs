@@ -15,9 +15,9 @@ export function productBootstrap(product, related = []) {
   return `<script type="application/json" id="jersevo-route-data">${safeJson({version:1,product:publicProductPayload(product),related:related.map(publicProductPayload)})}</script>`
 }
 
-export function renderProductContent(product, related = []) {
+export function renderProductContent(product, related = [], options = {}) {
   const e = escapeHtml
-  const breadcrumb = productBreadcrumbs(product).map((item,index,items) => index === items.length-1 ? `<span aria-current="page">${e(item.label)}</span>` : `<a href="${e(item.href)}">${e(item.label)}</a>`).join(' / ')
+  const breadcrumb = productBreadcrumbs(product,options).map((item,index,items) => index === items.length-1 ? `<span aria-current="page">${e(item.label)}</span>` : `<a href="${e(item.href)}">${e(item.label)}</a>`).join(' / ')
   const variants = (product.variants || []).filter(v => v.status === 'ACTIVE' && Number(v.price) > 0)
   const images = (product.media || []).filter(m => m.type === 'IMAGE' && m.url)
   if (!images.length && product.image) images.push({url:product.image,alt:product.alt})
@@ -52,4 +52,9 @@ export function renderProductContent(product, related = []) {
 export function renderSitemap(entries, origin) {
   const unique = [...new Map(entries.map(item=>[item.path,item])).values()]
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${unique.map(item=>`<url><loc>${escapeHtml(new URL(item.path,origin).href)}</loc>${item.lastmod && Number.isFinite(Date.parse(item.lastmod)) ? `<lastmod>${new Date(item.lastmod).toISOString()}</lastmod>`:''}${(item.images || []).filter(Boolean).slice(0,12).map(url=>`<image:image><image:loc>${escapeHtml(new URL(url,origin).href)}</image:loc></image:image>`).join('')}</url>`).join('\n')}</urlset>`
+}
+
+export function renderSitemapIndex(files, origin) {
+  const unique = [...new Map((files || []).filter(item => item?.path).map(item => [item.path,item])).values()]
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${unique.map(item=>`<sitemap><loc>${escapeHtml(new URL(item.path,origin).href)}</loc>${item.lastmod && Number.isFinite(Date.parse(item.lastmod)) ? `<lastmod>${new Date(item.lastmod).toISOString()}</lastmod>` : ''}</sitemap>`).join('\n')}</sitemapindex>`
 }

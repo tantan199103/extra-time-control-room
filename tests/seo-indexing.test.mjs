@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { productSeoMetadata, productStructuredData, relatedProducts, usd, safeJson } from '../src/lib/product-seo.js'
-import { renderProductContent, renderSitemap } from '../scripts/seo-render.mjs'
+import { renderProductContent, renderSitemap, renderSitemapIndex } from '../scripts/seo-render.mjs'
 
 const product = {
   id:'listing-1', handle:'test-jersey',title:'Test Home Jersey',status:'PUBLISHED',seoStatus:'INDEXABLE',
@@ -26,6 +26,13 @@ test('published PDP metadata and variant schema use the same canonical product U
   assert.equal(usd(59.99),'$59.99')
   assert.equal(usd(69.5),'$69.50')
   assert.equal(breadcrumbs.itemListElement.at(-1).item,meta.canonical)
+})
+
+test('PDP breadcrumb links to a team product page only after that landing is qualified', () => {
+  const withoutType = productStructuredData({ ...product, productGroup:'Football Jersey' })[1]
+  assert.equal(withoutType.itemListElement.some(item => item.item.endsWith('/team/nfl/green-bay-packers/jerseys')),false)
+  const withType = productStructuredData({ ...product, productGroup:'Football Jersey' },'https://www.jersevo.com',{includeTeamProductType:true})[1]
+  assert.equal(withType.itemListElement.some(item => item.item.endsWith('/team/nfl/green-bay-packers/jerseys')),true)
 })
 
 test('PDP keeps a complete merchant-written meta description beyond 160 characters', () => {
@@ -73,6 +80,9 @@ test('sitemap contains supplied canonical pages with useful lastmod and product 
   assert.equal((xml.match(/<url>/g)||[]).length,2)
   assert.match(xml,/<image:loc>https:\/\/www\.jersevo\.com\/jersey\.webp<\/image:loc>/)
   assert.match(xml,/<lastmod>2026-09-24T00:00:00\.000Z<\/lastmod>/)
+  const index = renderSitemapIndex([{path:'/sitemap-products-1.xml',lastmod:'2026-09-24T00:00:00Z'},{path:'/sitemap-pages.xml'}],'https://www.jersevo.com')
+  assert.match(index,/<sitemapindex/)
+  assert.match(index,/<loc>https:\/\/www\.jersevo\.com\/sitemap-products-1\.xml<\/loc>/)
 })
 
 test('server routing does not send arbitrary paths to the indexable homepage shell', async () => {

@@ -38,7 +38,7 @@ import {
 import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
-import { applyAdminCollectionAutomation, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
+import { applyAdminCollectionAutomation, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, fetchStorefrontNavigationIndex, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
 import { getMetaPixelId, setMetaPixelId } from './lib/meta-pixel'
 import { resolveMenuImages } from './lib/storefront-model'
@@ -310,6 +310,7 @@ function AdminWorkspace() {
   const [themeDraft, setThemeDraft] = useState(adminTheme)
   const [menuRows, setMenuRows] = useState(adminMenus)
   const [collectionRows, setCollectionRows] = useState(adminCollections)
+  const [catalogNavigationRows, setCatalogNavigationRows] = useState([])
   const [collectionSource, setCollectionSource] = useState('loading')
   const [source, setSource] = useState('loading')
   const [loading, setLoading] = useState(true)
@@ -360,6 +361,12 @@ function AdminWorkspace() {
     setSource('loading')
     setCatalogLoad({ source:'loading', loaded:0, total:null, complete:false })
     setCollectionSource('loading')
+    // Taxonomy landing pages are a small deploy-time index. Load them beside
+    // the database requests so the 300+ generated routes never block Admin's
+    // first paint or get mistaken for the 63 editorial collection records.
+    fetchStorefrontNavigationIndex().then(rows => {
+      if (sequence === loadSequence.current && Array.isArray(rows) && rows.length) setCatalogNavigationRows(rows)
+    }).catch(() => {})
     const mergeCatalogPage = (rows, progress = {}) => {
       if (sequence !== loadSequence.current || !Array.isArray(rows)) return
       setProductRows(current => {
@@ -528,7 +535,7 @@ function AdminWorkspace() {
   else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
   else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} onSave={persistTheme}/>
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} collections={collectionRows} onSave={persistMenus}/>
-  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} onSave={persistCollections} onDelete={removeCollection} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'}/>
+  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} navigationRows={catalogNavigationRows} catalogLoad={catalogLoad} onSave={persistCollections} onDelete={removeCollection} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
   const displaySource = catalogLoad.source === 'partial' ? 'partial' : catalogLoad.source === 'error' ? 'preview' : source
   return <AdminShell active={active} source={displaySource} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>
