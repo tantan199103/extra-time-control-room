@@ -1,10 +1,10 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/storefront-model.js'
 import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
-import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
+import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, normalizeAccessoryTaxonomy, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
 import { validateCatalogTaxonomy } from '../src/lib/taxonomy-validator.js'
 import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeForProduct, teamProductTypePath } from '../src/lib/team-product-pages.js'
@@ -87,7 +87,7 @@ async function loadProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (base && key) {
     try {
-      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=id.asc`
+      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=id.asc`
       const rows = await fetchRows(query, key)
       if (Array.isArray(rows)) return rows.map(normalizeProduct).sort(storefrontOrder)
     } catch (error) {
@@ -95,7 +95,7 @@ async function loadProducts() {
       // Older deployments may not have the gate column yet. In that case only
       // rows carrying the explicit structured status can be generated.
       try {
-        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&order=id.asc`
+        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&order=id.asc`
         const legacyRows = await fetchRows(legacyQuery, key)
         return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct).sort(storefrontOrder)
       } catch (legacyError) {
@@ -130,7 +130,7 @@ async function loadBlockedProducts() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!base || !key) return []
   try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=id.asc`
+    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=id.asc`
     const rows = await fetchRows(query, key)
     return (Array.isArray(rows) ? rows : []).map(normalizeProduct)
   } catch (error) {
@@ -295,7 +295,13 @@ for (const product of products) {
   // brand made this file grow to ~470 KB for the current catalogue.  Fold
   // brands into an array on the aggregate row so the menu keeps its brand
   // filter without repeating the same league/team/product tuple.
-  const row = { taxonomy:{league:product.taxonomy?.league || '',team:product.taxonomy?.team || '',category:product.taxonomy?.category || ''},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [], ...(product.taxonomy?.brand ? { brands:[product.taxonomy.brand] } : {}) }
+  // Keep the deploy-time navigation index compact, but preserve the
+  // deterministic accessory signals used by the Admin tree.  A compact row
+  // cannot infer "bags" or "scarves" from a title after aggregation, so
+  // dropping these fields makes the Admin under-count accessory pages even
+  // though the same products are correctly present in the public sitemap.
+  const taxonomy = normalizeAccessoryTaxonomy(product.taxonomy ? { ...product, taxonomy:product.taxonomy } : product)
+  const row = { taxonomy:{league:taxonomy.league || '',team:taxonomy.team || '',category:taxonomy.category || '',...(taxonomy.accessoryCategory ? { accessoryCategory:taxonomy.accessoryCategory } : {}),...(taxonomy.accessoryType ? { accessoryType:taxonomy.accessoryType } : {})},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [], ...(product.taxonomy?.brand ? { brands:[product.taxonomy.brand] } : {}) }
   const key = JSON.stringify({ ...row, brands:[] })
   const previous = navigationRows.get(key)
   const brands = [...new Set([...(previous?.brands || []), ...(row.brands || [])])]
@@ -577,6 +583,12 @@ if (allGroupedEntries.length !== sitemapEntries.length || new Set(allGroupedEntr
 }
 const sitemapFiles = []
 const latestLastmod = entries => entries.map(entry => entry.lastmod).filter(value => Number.isFinite(Date.parse(value))).sort().at(-1) || new Date().toISOString()
+// Vite empties dist for a normal build, but the generator is also run directly
+// during audits. Remove only files owned by this generator so a smaller or
+// differently chunked rerun cannot leave an obsolete sitemap discoverable.
+const generatedSitemapPattern = /^sitemap-(?:pages|leagues|teams|categories|products)(?:-\d+)?\.xml$/
+const staleSitemaps = (await readdir(DIST)).filter(filename => generatedSitemapPattern.test(filename))
+await Promise.all(staleSitemaps.map(filename => unlink(join(DIST,filename))))
 for (const [name,entries] of Object.entries(sitemapGroups)) {
   if (!entries.length) continue
   const chunkSize = name === 'products' ? 10000 : 45000

@@ -85,6 +85,18 @@ test('sitemap contains supplied canonical pages with useful lastmod and product 
   assert.match(index,/<loc>https:\/\/www\.jersevo\.com\/sitemap-products-1\.xml<\/loc>/)
 })
 
+test('SEO generation reads every taxonomy signal and removes obsolete sitemap shards', async () => {
+  const generator = await readFile(new URL('../scripts/generate-seo-pages.mjs',import.meta.url),'utf8')
+  const productQueries = [...generator.matchAll(/pod_products\?select=([^`]+)`/g)].map(match => match[1])
+  assert.ok(productQueries.length >= 3)
+  assert.ok(productQueries.every(query => /(?:^|,)taxonomy,tags(?:,|&)/.test(query)))
+  assert.match(generator,/normalizeAccessoryTaxonomy\(product\.taxonomy \? \{ \.\.\.product, taxonomy:product\.taxonomy \} : product\)/)
+  assert.match(generator,/accessoryCategory:taxonomy\.accessoryCategory/)
+  assert.match(generator,/accessoryType:taxonomy\.accessoryType/)
+  assert.match(generator,/generatedSitemapPattern/)
+  assert.match(generator,/unlink\(join\(DIST,filename\)\)/)
+})
+
 test('server routing does not send arbitrary paths to the indexable homepage shell', async () => {
   const config = JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'))
   assert.equal(config.rewrites.some(row=>row.source==='/(.*)' && row.destination==='/index.html'),false)
