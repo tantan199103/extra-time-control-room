@@ -46,6 +46,9 @@ import { discoveryIndex, discoveryMenu, matchesDiscoveryQuery, normalizeDiscover
 import { taxonomyHubCounts } from './lib/taxonomy-hub'
 import CategoryIcon from './CategoryIcon'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
+import { routeIndexability } from './lib/route-indexability'
+import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeByHandle, teamProductTypePath } from './lib/team-product-pages'
+import { resolveCollectionArtwork } from './lib/collection-artwork'
 import { listingMediaRole } from './lib/listing-media'
 import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollectionPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
 import { useDialogFocus } from './useDialogFocus'
@@ -64,6 +67,7 @@ import { renderGoogleRatingBadge } from './lib/google-reviews'
 import './styles.css'
 import './shop-visual.css'
 import './taxonomy-hubs.css'
+import './custom-hub.css'
 
 const AdminApp = lazy(() => import('./admin'))
 const AiStudio = lazy(() => import('./AiStudio'))
@@ -144,7 +148,7 @@ function customProductTarget(product) {
 function menuTarget(target, customProduct) {
   if (target === '/collection') return '/shop'
   if (/^\/collection\?type=jerseys$/i.test(String(target || ''))) return '/shop'
-  if (target === '/custom') return customProductTarget(customProduct)
+  if (target === '/custom') return '/custom'
   if (target === '/moments') return '/#story'
   if (target === '/players') return '/#players'
   return target || '/'
@@ -166,7 +170,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     return () => document.body.classList.remove('mobile-menu-open')
   }, [mobile])
   const index = useMemo(() => discoveryIndex(products), [products])
-  const links = useMemo(() => discoveryMenu(index,collections), [index,collections])
+  const links = useMemo(() => discoveryMenu(index,collections,products), [index,collections,products])
   const openLink = item => {
     const target = item.href || menuTarget(item.target,customProduct)
     if (String(item.type || '').toUpperCase() === 'EXTERNAL') window.open(target,'_blank','noopener,noreferrer')
@@ -756,7 +760,7 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
   )
 }
 
-function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQuickView, page = 1, pagination = null, loading = false }) {
+function TaxonomyLanding({ league, team, productType = null, products, discoveryProducts = [], onQuickView, page = 1, pagination = null, loading = false }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const [teamQuery,setTeamQuery] = useState('')
   const [showAllTeams,setShowAllTeams] = useState(false)
@@ -765,7 +769,7 @@ function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQui
   const selectedGroup = query.get('group') || ''
   const selectedSort = query.get('sort') || 'FEATURED'
   const customOnly = query.get('custom') === '1'
-  const path = team ? teamPath(league.key,team) : leaguePath(league)
+  const path = productType ? `${teamPath(league.key,team)}/${productType.handle}` : team ? teamPath(league.key,team) : leaguePath(league)
   const catalog = useAutoCatalog({ initialProducts:products, pagination, basePath:path, search:window.location.search.slice(1), enabled:Boolean(pagination?.server && !loading) })
   const changeFacet = (key,value) => {
     const url = new URL(window.location.href)
@@ -779,14 +783,15 @@ function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQui
     { league:league?.key, team:team?.slug }
   ), [discoveryProducts,league?.key,team?.slug,customOnly])
   const facetGroups = hub.groups.slice(0,8)
-  const filtered = loading ? [] : catalog.items.filter(product => productMatchesTaxonomy(product, { league:league?.key, team:team?.slug }))
+  const filtered = loading ? [] : catalog.items.filter(product => productMatchesTaxonomy(product, { league:league?.key, team:team?.slug }) && (!productType || productMatchesTeamProductType(product,productType)))
   const serverPaginated = !loading && Boolean(pagination?.server)
   const totalPages = serverPaginated ? Math.max(1,Math.ceil(Number(pagination.total || 0) / CATALOG_PAGE_SIZE)) : pageCount(filtered.length)
   const currentPage = Math.max(1, Math.min(page, totalPages))
   const pagedProducts = serverPaginated ? filtered : filtered.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE)
-  const indexedCount = selectedGroup ? (resultHub.groups.find(group => group.name === selectedGroup)?.count ?? 0) : resultHub.total
+  const typeDirectoryCount = productType ? (teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug }).find(item => item.handle === productType.handle)?.count ?? filtered.length) : 0
+  const indexedCount = selectedGroup ? (resultHub.groups.find(group => group.name === selectedGroup)?.count ?? 0) : productType ? (pagination?.total ?? typeDirectoryCount) : resultHub.total
   const resultCount = discoveryProducts.length ? indexedCount : filtered.length
-  const title = team?.name || league?.name || 'League collections'
+  const title = productType ? `${team.name} ${productType.label}` : team?.name || league?.name || 'League collections'
   const teams = league?.teams || []
   const media = team?.media || league?.media
   const availableTeams = loading ? [] : teams.filter(item => hub.teams.get(item.slug) > 0)
@@ -795,6 +800,7 @@ function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQui
     .sort((a,b) => teamSort === 'POPULAR' ? (hub.teams.get(b.slug) || 0) - (hub.teams.get(a.slug) || 0) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name))
   const visibleTeams = teamQuery.trim() || showAllTeams ? matchedTeams : matchedTeams.slice(0,12)
   const nearbyLeagues = LEAGUE_TAXONOMY.filter(item => item.key !== league?.key && discoveryProducts.some(row => row.taxonomy?.league === item.key)).slice(0,6)
+  const teamTypePages = team ? teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug }) : []
   const leagueHeroKey = ['nfl','nba','mlb','nhl','mls','ncaa'].includes(league?.key) ? league.key : ''
   const leagueCoverArt = leagueCover(leagueHeroKey)
   const heroImage = leagueHeroKey ? `/assets/shop/sport-${leagueHeroKey}-v2.webp` : '/assets/shop/shop-fan-gear-banner-v2.webp'
@@ -824,13 +830,14 @@ function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQui
               <span>/</span>
               <a href={leaguePath(league)} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>{league.name}</a>
               <span>/</span><strong>{team.name}</strong>
+              {productType && <><span>/</span><strong>{productType.label}</strong></>}
             </nav>
             <div className="taxonomy-hub-hero__layout">
               <div className="taxonomy-hub-hero__copy">
                 <span>{league.sport} / {league.name}</span>
-                <h1 id="taxonomy-products-title">{team.name} gear for game day.</h1>
+                <h1 id="taxonomy-products-title">{productType ? `${team.name} ${productType.label.toLowerCase()} for game day.` : `${team.name} gear for game day.`}</h1>
                 <strong className="taxonomy-hub-hero__slogan">Wear the team. Make it yours.</strong>
-                <p>Find current {team.name} jerseys, headwear and fan gear—then personalize eligible styles. Fan gear for every team.</p>
+                <p>{productType ? productType.description : `Find current ${team.name} jerseys, headwear and fan gear—then personalize eligible styles. Fan gear for every team.`}</p>
               </div>
               <div className="taxonomy-hub-hero__visual" aria-hidden="true">
                 <img className="taxonomy-hub-hero__action" src={heroImage} alt="" loading="eager" decoding="async" />
@@ -849,8 +856,8 @@ function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQui
         </div>
         <div className="taxonomy-control-strip__bottom">
           <nav className="taxonomy-hub-shop__types taxonomy-control-strip__types" aria-label="Product types">
-            <a href={path} className={!selectedGroup ? 'is-active' : ''} aria-current={!selectedGroup ? 'page' : undefined} onClick={event => { event.preventDefault(); changeFacet('group','') }}><CategoryIcon kind="all" size={15}/><span>All gear</span><small>{loading ? '…' : hub.total.toLocaleString('en-US')}</small></a>
-            {facetGroups.map(group => <a key={group.name} href={path + '?group=' + encodeURIComponent(group.name)} className={selectedGroup === group.name ? 'is-active' : ''} aria-current={selectedGroup === group.name ? 'page' : undefined} onClick={event => { event.preventDefault(); changeFacet('group',group.name) }}><CategoryIcon kind={catalogIconForProduct({productGroup:group.name})} size={15}/><span>{group.name}</span><small>{group.count.toLocaleString('en-US')}</small></a>)}
+            <a href={team && productType ? teamPath(league.key,team) : path} className={!selectedGroup && !productType ? 'is-active' : undefined} aria-current={!selectedGroup && !productType ? 'page' : undefined} onClick={event => { event.preventDefault(); productType ? navigate(teamPath(league.key,team)) : changeFacet('group','') }}><CategoryIcon kind="all" size={15}/><span>{productType ? 'All team gear' : 'All gear'}</span><small>{loading ? '…' : (productType ? hub.total : hub.total).toLocaleString('en-US')}</small></a>
+            {team && teamTypePages.length ? teamTypePages.map(type => <a key={type.handle} href={type.path} className={productType?.handle === type.handle ? 'is-active' : undefined} aria-current={productType?.handle === type.handle ? 'page' : undefined} onClick={event => { event.preventDefault(); navigate(type.path) }}><CategoryIcon kind={catalogIconForProduct({productGroup:type.groups[0]})} size={15}/><span>{type.label}</span><small>{type.count.toLocaleString('en-US')}</small></a>) : !productType && facetGroups.map(group => <a key={group.name} href={path + '?group=' + encodeURIComponent(group.name)} className={selectedGroup === group.name ? 'is-active' : ''} aria-current={selectedGroup === group.name ? 'page' : undefined} onClick={event => { event.preventDefault(); changeFacet('group',group.name) }}><CategoryIcon kind={catalogIconForProduct({productGroup:group.name})} size={15}/><span>{group.name}</span><small>{group.count.toLocaleString('en-US')}</small></a>)}
           </nav>
           <div className="taxonomy-control-strip__trust"><StorefrontTrust compact /></div>
         </div>
@@ -898,6 +905,56 @@ function TaxonomyLanding({ league, team, products, discoveryProducts = [], onQui
           ))}
         </div>
       </section>
+    </main>
+  )
+}
+
+function CustomHub({ products = [], onQuickView }) {
+  const [activeLeague, setActiveLeague] = useState('ALL')
+  const customProducts = useMemo(() => products
+    .filter(product => product?.customFields?.length && product.status !== 'ARCHIVED')
+    .filter(product => activeLeague === 'ALL' || String(product.taxonomy?.league || '').toLowerCase() === activeLeague)
+    .slice(0, 8), [products, activeLeague])
+  const availableLeagues = useMemo(() => [...new Set(products
+    .filter(product => product?.customFields?.length)
+    .map(product => String(product.taxonomy?.league || '').toLowerCase())
+    .filter(Boolean))].map(key => findLeague(key)).filter(Boolean), [products])
+  const featured = customProducts[0]
+  const go = href => navigate(href)
+  return (
+    <main className="custom-hub">
+      <section className="custom-hub__hero" aria-labelledby="custom-hub-title">
+        <div className="custom-hub__hero-copy">
+          <nav className="custom-hub__crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom</strong></nav>
+          <p className="custom-hub__eyebrow">CUSTOM LAB / REVIEWED PERSONALIZATION</p>
+          <h1 id="custom-hub-title">Put your<br /><em>moment</em> on it.</h1>
+          <p className="custom-hub__lede">Choose a designer-led jersey, add the details that make it yours, and see every important field before the studio sends it to production.</p>
+          <div className="custom-hub__actions"><button className="button button--acid" onClick={() => featured ? go(`/product/${featured.handle}?custom=1`) : go('/category/custom-jerseys')}>{featured ? 'CHOOSE A JERSEY' : 'BROWSE CUSTOM JERSEYS'} <ArrowRight size={16}/></button><button className="button-link" onClick={() => go('/shipping')}>HOW DELIVERY WORKS <ArrowRight size={16}/></button></div>
+          <p className="custom-hub__note"><Lock size={14}/> Artwork stays fixed. Only enabled fields can change.</p>
+        </div>
+        <div className="custom-hub__hero-art">
+          <img src={SHOP_COVER.src} alt="A football jersey ready for personal details" width="2048" height="683" loading="eager" fetchPriority="high" decoding="async" />
+          <div className="custom-hub__jersey-label" aria-hidden="true"><span>NAME</span><strong>YOUR</strong><span>NUMBER</span><strong>90+</strong><i>STUDIO REVIEW</i></div>
+          <span className="custom-hub__hero-stamp">EXTRA TIME / 90+</span>
+        </div>
+      </section>
+
+      <section className="custom-hub__steps" aria-labelledby="custom-steps-title">
+        <div className="custom-hub__section-intro"><p>THE HAND-OFF</p><h2 id="custom-steps-title">Three moves.<br /><em>One piece.</em></h2></div>
+        <div className="custom-hub__step-grid">
+          <article><span>01</span><Shirt size={22}/><h3>Choose the base</h3><p>Start with a published jersey and check the available size and color options.</p></article>
+          <article><span>02</span><Sparkles size={22}/><h3>Add your details</h3><p>Enter a name, number or approved reference only where that listing allows it.</p></article>
+          <article><span>03</span><ShieldCheck size={22}/><h3>Review before print</h3><p>The studio checks the request, then production begins with the locked artwork intact.</p></article>
+        </div>
+      </section>
+
+      <section className="custom-hub__catalog" aria-labelledby="custom-catalog-title">
+        <div className="custom-hub__catalog-head"><div><p>LIVE CUSTOM CATALOG</p><h2 id="custom-catalog-title">Make it yours,<br /><em>your way.</em></h2></div><a href="/category/custom-jerseys" onClick={event => { event.preventDefault(); go('/category/custom-jerseys') }}>VIEW ALL CUSTOM JERSEYS <ArrowRight size={15}/></a></div>
+        {availableLeagues.length > 0 && <div className="custom-hub__league-tabs" role="tablist" aria-label="Filter custom jerseys by league"><button type="button" className={activeLeague === 'ALL' ? 'is-active' : ''} onClick={() => setActiveLeague('ALL')}>All</button>{availableLeagues.slice(0, 6).map(league => <button type="button" role="tab" aria-selected={activeLeague === league.key} className={activeLeague === league.key ? 'is-active' : ''} key={league.key} onClick={() => setActiveLeague(league.key)}>{league.name}</button>)}</div>}
+        {customProducts.length ? <div className="custom-hub__product-grid">{customProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView} className="custom-hub__product-card" />)}</div> : <div className="custom-hub__empty"><Sparkles size={20}/><p>Custom pieces are being prepared. Browse the full jersey catalog and look for the <strong>Customizable</strong> badge.</p><button className="button button--dark" onClick={() => go('/category/custom-jerseys')}>BROWSE JERSEYS</button></div>}
+      </section>
+
+      <section className="custom-hub__trust"><StorefrontTrust compact /></section>
     </main>
   )
 }
@@ -1195,7 +1252,7 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
   const compactGroups = [
     { label:'SHOP', links:[
       { label:'Shop all gear', target:'/shop' },
-      { label:'Custom jerseys', target:customProductTarget(customProduct) },
+      { label:'Custom jerseys', target:'/custom' },
       { label:'90+ Club', target:'/membership' }
     ] },
     { label:'STUDIO', links:[
@@ -1244,7 +1301,7 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
   const defaults = [
     { id: 'home', label: 'Home', target: '/', icon: House, active: path === '/' },
     { id: 'shop', label: 'Shop', target: '/shop', icon: Grid2X2, active: (path === '/shop' || path.startsWith('/product/')) && !isCustom },
-    { id: 'custom', label: 'Custom', target: customProductTarget(customProduct), icon: Sparkles, active: isCustom },
+    { id: 'custom', label: 'Custom', target: '/custom', icon: Sparkles, active: isCustom },
     { id: 'leagues', label: 'Leagues', target: '#leagues', icon: Trophy, active: Boolean(routeLeague) || leagueOpen },
   ]
   const configured = menuAtLocation(menus,'FIXED_FOOTER_MOBILE')?.items || []
@@ -1343,28 +1400,30 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
   return <main className="home-page">{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><span className="home-category-index__icon"><CategoryIcon kind={category.icon} size={22}/></span><span className="home-category-index__label">{category.label}</span><ArrowRight size={16}/></a>)}</div></nav></main>
 }
 
-function CollectionCover({ item, count }) {
+function CollectionCover({ item, count, products = [] }) {
   const name = item?.name || item?.title || item?.handle || 'Collection'
   const candidate = [item?.hero, item?.hero_image].map(value => String(value || '').trim()).find(Boolean) || ''
   const [failed, setFailed] = useState(false)
   useEffect(() => setFailed(false), [candidate])
-  const cover = candidate && !failed ? candidate : ''
+  const artwork = resolveCollectionArtwork(item, products, { ignoreExplicit:failed })
+  const cover = artwork.src
   const countLabel = count ? `${count} ${count === 1 ? 'listing' : 'listings'}` : 'Coming soon'
   return <span className={`discovery-landing__collection-media${cover ? '' : ' is-pending'}`} data-cover-state={cover ? 'ready' : 'pending'}>
-    {cover ? <img src={cover} alt={`${name} collection`} loading="lazy" decoding="async" onError={() => setFailed(true)}/> : <span className="discovery-landing__collection-placeholder" role="img" aria-label={`${name} cover pending`}><CategoryIcon kind="all" size={44}/><strong>Cover pending</strong><small>Add a collection image in Admin</small></span>}
-    <i className={cover ? '' : 'is-pending'}>{cover ? countLabel : `Cover pending${count ? ` · ${countLabel}` : ''}`}</i>
+    {cover ? <img src={cover} alt={artwork.alt || `${name} collection`} loading="lazy" decoding="async" onError={() => setFailed(true)}/> : <span className="discovery-landing__collection-placeholder" role="img" aria-label={`${name} collection icon`}><CategoryIcon kind={artwork.icon || 'all'} size={44}/><strong>{artwork.source === 'CATEGORY_ICON' ? 'Collection mark' : 'Collection artwork'}</strong><small>Logo or category icon</small></span>}
+    <i className={cover ? '' : 'is-pending'}>{cover ? countLabel : `${countLabel} · icon`}</i>
   </span>
 }
 
-function CollectionAvatar({ collection }) {
+function CollectionAvatar({ collection, products = [] }) {
   const candidate = String(collection?.hero || collection?.hero_image || '').trim()
   const [failed, setFailed] = useState(false)
   useEffect(() => setFailed(false), [candidate])
-  if (candidate && !failed) return <div className="catalog-compact-bar__avatar"><img src={candidate} alt={`${collection?.name || 'Collection'} cover`} loading="eager" decoding="async" onError={() => setFailed(true)}/></div>
-  return <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon" title="Collection cover pending"><CategoryIcon kind="all" size={19}/></div>
+  const artwork = resolveCollectionArtwork(collection, products, { ignoreExplicit:failed })
+  if (artwork.src) return <div className="catalog-compact-bar__avatar"><img src={artwork.src} alt={artwork.alt || `${collection?.name || 'Collection'} mark`} loading="eager" decoding="async" onError={() => setFailed(true)}/></div>
+  return <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon" title={artwork.alt || 'Collection mark'}><CategoryIcon kind={artwork.icon || 'all'} size={19}/></div>
 }
 
-function DiscoveryLanding({ kind, discovery, collections = [], onSearch }) {
+function DiscoveryLanding({ kind, discovery, collections = [], products = [], onSearch }) {
   const leagues = discovery?.leagues || []
   const teams = discovery?.teams || []
   const groups = [...new Set(leagues.map(league => league.sport))]
@@ -1391,7 +1450,7 @@ function DiscoveryLanding({ kind, discovery, collections = [], onSearch }) {
     {kind === 'collections' && <div className="discovery-landing__collections">{curated.length ? curated.map(item => {
       const count = Number(item.publishedCount ?? item.count ?? item.products?.length ?? 0)
       return <a key={item.handle} className="discovery-landing__collection-card" href={'/collection/' + item.handle} onClick={event => { event.preventDefault(); navigate('/collection/' + item.handle) }}>
-        <CollectionCover item={item} count={count}/>
+        <CollectionCover item={item} count={count} products={products}/>
         <span className="discovery-landing__collection-copy"><strong>{item.name || item.handle}</strong>{item.description && <small>{item.description}</small>}</span><ArrowRight size={17}/>
       </a>
     }) : <div><p>No editorial collections are published yet. Browse the live catalog by sport, team or product type.</p><a href="/shop" onClick={event => { event.preventDefault(); navigate('/shop') }}>Browse all gear <ArrowRight size={15}/></a></div>}</div>}
@@ -1435,7 +1494,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
   useDialogFocus(filterOpen, filterRef, () => setFilterOpen(false))
   const routeProducts = category
     ? catalogProducts.filter(product => productMatchesCatalogCategory(product, category))
-    : collection ? sortCollectionProducts(catalogProducts,collection) : catalogProducts
+    : collection ? (pagination?.server ? catalogProducts : sortCollectionProducts(catalogProducts,collection)) : catalogProducts
   const baseProducts = searchQuery.trim().length >= 2
     ? routeProducts.filter(product => matchesDiscoveryQuery(product, searchQuery))
     : routeProducts
@@ -1507,7 +1566,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
     if (inStock && !(product.variants || []).some(variant => Number(variant.inventory || 0) > 0)) return false
     return true
   })
-  shown = sort === 'FEATURED' && collection ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
+  shown = sort === 'FEATURED' && collection && !pagination?.server ? sortCollectionProducts(shown,collection) : [...shown].sort((a,b) => sort === 'PRICE LOW' ? a.price-b.price : sort === 'PRICE HIGH' ? b.price-a.price : sort === 'NEWEST' ? String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) : 0)
   const serverPaginated = Boolean(autoCatalog.hasMore || autoCatalog.loadedPage > 1 || pagination?.server)
   const totalPages = serverPaginated ? Math.max(1,Math.ceil(Number(pagination?.total || 0) / pageSize)) : Math.max(1, Math.ceil(shown.length / pageSize))
   const currentPage = Math.max(1, Math.min(page, totalPages))
@@ -1592,7 +1651,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
       {isRootShop && <ShopDiscoveryHub discovery={discovery} onSearch={onSearch} searchValue={searchQuery} total={activeCount ? resultCount : (pagination?.total ?? discovery?.total ?? catalogProducts.length)} controls={filterBar} activeFilters={activeFilterMarkup} />}
       {!isRootShop && <section className="catalog-compact-bar" id="all-products" aria-label={category?.label || collection?.name || 'Shop catalog'}>
         <div className="catalog-compact-bar__main">
-          {collection ? <CollectionAvatar collection={collection}/> : <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon"><CategoryIcon kind={category?.icon || 'all'} size={19} /></div>}
+          {collection ? <CollectionAvatar collection={collection} products={catalogProducts}/> : <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon"><CategoryIcon kind={category?.icon || 'all'} size={19} /></div>}
           <div className="catalog-compact-bar__title-group">
             <nav className="catalog-compact-bar__crumb" aria-label="Breadcrumb">
               <button type="button" onClick={() => navigate('/shop')}>SHOP</button>
@@ -2301,7 +2360,7 @@ function setLink(rel, href, extra = {}) {
   return node
 }
 
-function useRouteMetadata({ path, page = 1, paginated = false, search = '', product, collection, category, league, team, products = [], catalogTotal = null, collectionCount = 0, loading = false, unavailable = false }) {
+function useRouteMetadata({ path, page = 1, paginated = false, search = '', product, collection, category, league, team, productType = null, hasTeamProductTypeSegment = false, products = [], catalogTotal = null, collectionCount = 0, loading = false, unavailable = false }) {
   useEffect(() => {
     // Preserve authoritative initial HTML while the browser refreshes data.
     if (loading || unavailable) return
@@ -2310,7 +2369,7 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const pdpMetadata = product ? productSeoMetadata(product,publicOrigin) : null
     const productTitle = pdpMetadata?.title
     const collectionTitle = collection?.seo?.title || collection?.name
-    const taxonomyTitle = team?.name || league?.name
+    const taxonomyTitle = productType && team ? `${team.name} ${productType.label}` : team?.name || league?.name
     const withBrand = value => /(?:extra time|jersevo)/i.test(value || '') ? value : `${value} — ${storefrontBrand}`
     const routeMeta = {
       '/about':['About the studio — Extra Time','Meet Extra Time, an independent fan-apparel studio making small-batch football jerseys and considered personalization.'],
@@ -2323,28 +2382,34 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
       '/journal':['The Journal — Extra Time',TRUST_PAGES.journal.intro],
       '/sports':['Shop sports and leagues | Jersevo','Explore football, baseball, basketball, hockey, soccer and college fan gear by league and team.'],
       '/teams':['Find your team | Jersevo','Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.'],
-      '/collections':['Shop collections | Jersevo','Explore currently published Jersevo collections and shop fan gear by sport, team and product type.']
+      '/collections':['Shop collections | Jersevo','Explore currently published Jersevo collections and shop fan gear by sport, team and product type.'],
+      '/custom':['Custom jerseys and personalized fan gear | Jersevo','Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.']
     }[path]
     const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : category ? withBrand(category.label) : taxonomyTitle ? withBrand(`${taxonomyTitle} fan gear`) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop fan gear by sport, team and product | Jersevo' : path === '/sports' ? 'Shop sports and leagues | Jersevo' : path === '/teams' ? 'Find your team | Jersevo' : path === '/collections' ? 'Shop collections | Jersevo' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
-    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : category ? category.description : (team ? `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/shop' ? 'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.' : path === '/sports' ? 'Browse football, baseball, basketball, hockey, soccer and college fan gear by league and team at Jersevo.' : path === '/teams' ? 'Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.' : path === '/collections' ? 'Explore currently published Jersevo collections and shop fan gear by sport, team and product type.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : category ? category.description : (productType && team ? `Shop ${team.name} ${productType.label.toLowerCase()} with current photos, available options and tracked US delivery.` : team ? `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/shop' ? 'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.' : path === '/sports' ? 'Browse football, baseball, basketball, hockey, soccer and college fan gear by league and team at Jersevo.' : path === '/teams' ? 'Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.' : path === '/collections' ? 'Explore currently published Jersevo collections and shop fan gear by sport, team and product type.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
     const description = pdpMetadata?.description || seoDescription(rawDescription, '', 160)
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
-    const catalogRoute = path === '/shop' || path.startsWith('/category/') || path.startsWith('/collection/') || path.startsWith('/league/') || path.startsWith('/team/')
+    const catalogRoute = path === '/shop' || path.startsWith('/category/') || path.startsWith('/collection/') || path.startsWith('/collections/') || path.startsWith('/league/') || path.startsWith('/team/')
     const query = new URLSearchParams(search)
-    const requestedPage = Number.parseInt(query.get('page') || '1', 10)
-    const canonical = pdpMetadata?.canonical || `${publicOrigin.replace(/\/$/, '')}${catalogRoute ? catalogPagePath(canonicalPath,page) : canonicalPath}`
-    const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/custom' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
-    const unresolvedRoute = (path.startsWith('/product/') && !product) || (path.startsWith('/collection/') && !collection) || (path.startsWith('/category/') && !category) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team))
+    const requestPath = catalogRoute ? catalogPagePath(canonicalPath,page) : canonicalPath
+    const requestIndexability = routeIndexability({ pathname:requestPath, search })
+    const canonical = pdpMetadata?.canonical || `${publicOrigin.replace(/\/$/, '')}${requestIndexability.canonicalPath}`
+    const privateRoute = path.startsWith('/admin') || path === '/account' || path.startsWith('/account/') || path === '/studio' || path === '/checkout' || path === '/track-order' || path.startsWith('/order/')
+    const unresolvedRoute = (path.startsWith('/product/') && !product) || ((path.startsWith('/collection/') || path.startsWith('/collections/')) && !collection) || (path.startsWith('/category/') && !category) || (path.startsWith('/league/') && !league) || (path.startsWith('/team/') && (!league || !team || (hasTeamProductTypeSegment && !productType)))
     const indexableProducts = products.filter(item => String(item.seoStatus || item.seo?.status || '').toUpperCase() === 'INDEXABLE')
     const catalogCount = Number.isFinite(Number(catalogTotal)) && catalogTotal != null
       ? Number(catalogTotal)
-      : category ? indexableProducts.filter(item => productMatchesCatalogCategory(item,category)).length : collection ? indexableProducts.filter(item => (collection.products || []).includes(item.id)).length : team ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league?.key, team:team.slug })).length : league ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league.key })).length : indexableProducts.length
-    const pageValid = !catalogRoute || !query.has('page') && (!paginated || page >= 2 && page <= pageCount(catalogCount))
-    const faceted = catalogRoute && query.size > 0
+      : category ? indexableProducts.filter(item => productMatchesCatalogCategory(item,category)).length : collection ? indexableProducts.filter(item => (collection.products || []).includes(item.id)).length : productType && team ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league?.key, team:team.slug }) && productMatchesTeamProductType(item,productType)).length : team ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league?.key, team:team.slug })).length : league ? indexableProducts.filter(item => productMatchesTaxonomy(item,{ league:league.key })).length : indexableProducts.length
+    // Card requests intentionally avoid a fragile server-side count. When a
+    // route is hydrated from a page-sized response, do not turn an otherwise
+    // valid static landing into noindex merely because the upper bound is not
+    // known yet; the static generator and canonical path remain authoritative.
+    const pageValid = !catalogRoute || !query.has('page') && (!paginated || (catalogTotal == null ? products.length > 0 : page >= 2 && page <= pageCount(catalogCount)))
+    const queryNoindex = requestIndexability.noindex
     const productIndexable = !product || pdpMetadata.indexable
     const collectionIndexable = !collection || String(collection.seo?.status || '').toUpperCase() === 'INDEXABLE' && catalogCount >= 6
-    const knownPublicRoute = ['/', '/shop', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
-    const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !faceted && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
+    const knownPublicRoute = ['/', '/shop', '/custom', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
+    const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !queryNoindex && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
     const routePage = routeMeta ? TRUST_PAGES[path.slice(1)] : null
     const pageTitle = catalogRoute && page > 1 ? `${title} · Page ${page}` : title
     // Keep social previews aligned with the campaign art visible in the
@@ -2359,7 +2424,8 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const absoluteImage = new URL(image,publicOrigin).toString()
     document.documentElement.lang='en-US'
     document.title=pageTitle
-    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : 'noindex,nofollow'); setMeta('googlebot',indexable ? 'index,follow' : 'noindex,nofollow'); setMeta('og:site_name',storefrontBrand,true); setMeta('og:locale','en_US',true); setMeta('og:title',pageTitle,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${pageTitle} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',pageTitle); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
+    const blockedRobots = queryNoindex ? 'noindex,follow' : 'noindex,nofollow'
+    setMeta('description',description); setMeta('robots',indexable ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' : blockedRobots); setMeta('googlebot',indexable ? 'index,follow' : blockedRobots); setMeta('og:site_name',storefrontBrand,true); setMeta('og:locale','en_US',true); setMeta('og:title',pageTitle,true); setMeta('og:description',description,true); setMeta('og:url',canonical,true); setMeta('og:image',absoluteImage,true); setMeta('og:image:alt',product?.alt || `${pageTitle} image`,true); setMeta('og:type',product ? 'product' : 'website',true); setMeta('twitter:card','summary_large_image'); setMeta('twitter:title',pageTitle); setMeta('twitter:description',description); setMeta('twitter:image',absoluteImage)
     setLink('canonical',canonical); setLink('alternate',canonical,{hreflang:'en-US'}); setLink('alternate',canonical,{hreflang:'x-default'})
     let schema=document.getElementById('route-structured-data')
     if(indexable && (product || collection || category || league || routeMeta)){ if(!schema){schema=document.createElement('script');schema.id='route-structured-data';schema.type='application/ld+json';document.head.appendChild(schema)}
@@ -2391,14 +2457,18 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
         ]
         schema.textContent=JSON.stringify([routePageSchema,{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:routeBreadcrumb}])
       } else {
-        const canonicalTaxonomy = `${publicOrigin}${team ? teamPath(league.key,team) : leaguePath(league)}`
+        const canonicalTaxonomyPath = productType && team ? teamProductTypePath(league.key,team,productType) : team ? teamPath(league.key,team) : leaguePath(league)
+        const canonicalTaxonomy = `${publicOrigin}${canonicalTaxonomyPath}`
         breadcrumb.push({'@type':'ListItem',position:2,name:'Leagues',item:`${publicOrigin}/shop`})
-        if(team) breadcrumb.push({'@type':'ListItem',position:3,name:league.name,item:`${publicOrigin}${leaguePath(league)}`},{'@type':'ListItem',position:4,name:team.name,item:canonicalTaxonomy})
+        if(team) {
+          breadcrumb.push({'@type':'ListItem',position:3,name:league.name,item:`${publicOrigin}${leaguePath(league)}`},{'@type':'ListItem',position:4,name:team.name,item:`${publicOrigin}${teamPath(league.key,team)}`})
+          if (productType) breadcrumb.push({'@type':'ListItem',position:5,name:productType.label,item:canonicalTaxonomy})
+        }
         else breadcrumb.push({'@type':'ListItem',position:3,name:league.name,item:canonicalTaxonomy})
-        schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:taxonomyTitle,description,url:canonicalTaxonomy,inLanguage:'en-US',about:{'@type':'SportsOrganization',name:taxonomyTitle}},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
+        schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:taxonomyTitle,description,url:canonicalTaxonomy,inLanguage:'en-US',numberOfItems:catalogCount,about:{'@type':'SportsOrganization',name:team?.name || taxonomyTitle}},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
       }
     } else schema?.remove()
-  }, [path,page,paginated,search,product?.id,product?.updatedAt,collection?.id,category?.handle,league?.key,team?.slug,products,catalogTotal,collectionCount,loading,unavailable])
+  }, [path,page,paginated,search,product?.id,product?.updatedAt,collection?.id,category?.handle,league?.key,team?.slug,productType?.handle,hasTeamProductTypeSegment,products,catalogTotal,collectionCount,loading,unavailable])
 }
 
 function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, controls = null, activeFilters = null }) {
@@ -2473,6 +2543,7 @@ function App() {
   const rawPath = route.split(/[?#]/)[0]
   const { basePath:path, page:catalogPage, paginated } = parseCatalogPagePath(rawPath)
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
+  const customRoute = path === '/custom'
   const catalogRequestKey = `${path}:${catalogPage}:${search}`
   const [products,setProducts] = useState(() => productBootstrap ? [productBootstrap.product,...(productBootstrap.related || [])] : (import.meta.env.DEV ? initialCatalog : []))
   const [menus,setMenus] = useState([])
@@ -2501,12 +2572,23 @@ function App() {
   const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct
   const productSlug = path.startsWith('/product/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : ''
   const routeProduct = productSlug ? findStorefrontProduct(products,productSlug) : null
-  const collectionHandle = path.startsWith('/collection/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : new URLSearchParams(search).get('collection')
+  const collectionHandle = path.startsWith('/collection/') || path.startsWith('/collections/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : new URLSearchParams(search).get('collection')
   const routeCollection = collectionHandle ? collections.find(collection => collection.handle === collectionHandle || collection.id === collectionHandle) : null
   const routeCategory = /^\/category\/[a-z0-9-]+$/.test(path) ? catalogCategoryByHandle(decodeURIComponent(path.split('/')[2] || '')) : null
   const routeLeague = path.startsWith('/league/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
   const routeTeam = path.startsWith('/team/') ? findTeam(routeLeague?.key, decodeURIComponent(path.split('/')[3] || '')) : null
-  useRouteMetadata({ path, page:catalogPage, paginated, search, product:routeProduct, collection:routeCollection, category:routeCategory, league:routeLeague, team:routeTeam, products, catalogTotal:catalogMeta.total, collectionCount:collections.length, loading:catalogState.loading, unavailable:catalogState.source === 'unavailable' })
+  const routeProductType = path.startsWith('/team/') ? teamProductTypeByHandle(decodeURIComponent(path.split('/')[4] || '')) : null
+  const hasTeamProductTypeSegment = path.startsWith('/team/') && Boolean(path.split('/')[4])
+  useRouteMetadata({ path, page:catalogPage, paginated, search, product:routeProduct, collection:routeCollection, category:routeCategory, league:routeLeague, team:routeTeam, productType:routeProductType, hasTeamProductTypeSegment, products, catalogTotal:catalogMeta.total, collectionCount:collections.length, loading:catalogState.loading, unavailable:catalogState.source === 'unavailable' })
+  useEffect(() => {
+    // Vercel performs the same redirect before serving production HTML. Keep
+    // client-side navigation and local development on the identical URL shape.
+    const decision = routeIndexability({ pathname:rawPath, search })
+    if (!decision.redirectPath) return
+    const nextRoute = `${decision.redirectPath}${window.location.hash || ''}`
+    window.history.replaceState({}, '', nextRoute)
+    setRoute(nextRoute)
+  }, [rawPath,search])
   useEffect(() => {
     initMetaPixel()
   }, [])
@@ -2558,7 +2640,7 @@ function App() {
       ? Promise.resolve({ data:[], source:'navigation', error:null, total:null })
       : productSlug
       ? fetchStorefrontProduct(productSlug)
-      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:CATALOG_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:homeRoute ? 12 : CATALOG_PAGE_SIZE, basePath:path, search, includeCount:!homeRoute })
+      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:CATALOG_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:homeRoute ? 12 : CATALOG_PAGE_SIZE, basePath:customRoute ? '/category/custom-jerseys' : path, search, includeCount:!homeRoute })
     Promise.all([
       fetchStorefrontMenus([]),
       fetchStorefrontCollections([],collectionHandle || ''),
@@ -2572,6 +2654,19 @@ function App() {
       if (catalogLive) for (const row of featuredRows) if (!catalogRows.some(item => item.id === row.id)) catalogRows.push(row)
       if (catalogLive) {
         setProducts(catalogRows)
+        if (catalogResult.collection) {
+          setCollections(current => {
+            const incoming = catalogResult.collection
+            const match = current.find(row => row.handle === incoming.handle || row.id === incoming.id)
+            if (!match) return [...current, incoming]
+            // Keep a full membership map returned by the chrome query when it
+            // is available; the page result is still enough to render when
+            // that secondary request is unavailable or times out.
+            return current.map(row => row === match
+              ? { ...incoming, ...row, productLinks:row.productLinks?.length ? row.productLinks : incoming.productLinks, products:row.products?.length ? row.products : incoming.products, pageScoped:row.productLinks?.length ? false : incoming.pageScoped }
+              : row)
+          })
+        }
       } else if (!productSlug) setProducts([])
       setCatalogMeta({ total:catalogResult.total ?? null, page:catalogResult.page || catalogPage, pageSize:catalogResult.pageSize || CATALOG_PAGE_SIZE, server:Boolean(catalogUsable && !productSlug) })
       applyChrome()
@@ -2654,15 +2749,6 @@ function App() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
-  useEffect(() => {
-    if (path !== '/custom') return
-    const id = new URLSearchParams(window.location.search).get('product') || featuredCustomProduct?.handle
-    const product = findStorefrontProduct(products,id) || customProduct
-    if(!product)return
-    const next = `/product/${product.handle || product.id}?custom=1`
-    window.history.replaceState({}, '', next)
-    setRoute(next)
-  }, [path,products])
   useEffect(() => {
     document.body.classList.toggle('no-scroll', searchOpen || cartOpen || installOpen || sizeGuideOpen || Boolean(quickViewProduct))
     return () => document.body.classList.remove('no-scroll')
@@ -2791,23 +2877,19 @@ function App() {
   }).filter(item => item.qty > 0))
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
   let page
-  const catalogRoute = path === '/' || path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/category/') || path.startsWith('/league/') || path.startsWith('/team/')
+  const catalogRoute = path === '/' || path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/') || path.startsWith('/category/') || path.startsWith('/league/') || path.startsWith('/team/')
   const taxonomyRoute = path.startsWith('/league/') || path.startsWith('/team/')
   const taxonomyLoading = catalogState.loading || catalogState.routeKey !== catalogRequestKey
   if (!taxonomyRoute && !path.startsWith('/admin') && catalogState.loading && path !== '/' && path !== '/shop' && (!products.length || catalogRoute && catalogState.scope !== 'page')) page = <div className="route-loading"><span>90+</span><p>Loading published catalogue…</p></div>
   else if (path === '/') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
-  else if (path === '/sports' || path === '/teams' || path === '/collections') page = <DiscoveryLanding kind={path.slice(1)} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} collections={collections} onSearch={() => setSearchOpen(true)}/>
-  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey}/>
+  else if (path === '/sports' || path === '/teams' || path === '/collections') page = <DiscoveryLanding kind={path.slice(1)} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} collections={collections} products={products} onSearch={() => setSearchOpen(true)}/>
+  else if (path === '/custom') page = <CustomHub products={products} onQuickView={setQuickViewProduct}/>
+  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey}/>
   else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey}/> : <NotFound/>
   else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct}/> : <NotFound/>
-  else if (path.startsWith('/team/')) page = routeLeague && routeTeam ? <TaxonomyLanding key={`${routeTeam.slug}:${catalogPage}:${search}`} league={routeLeague} team={routeTeam} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct}/> : <NotFound/>
-  else if (path === '/custom') {
-    const customProductId = new URLSearchParams(window.location.search).get('product') || featuredCustomProduct?.handle
-    const requested = findStorefrontProduct(products,customProductId) || customProduct
-    page = requested ? <ProductPage key={requested.id} product={requested} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized account={account}/> : <NotFound/>
-  }
+  else if (path.startsWith('/team/')) page = routeLeague && routeTeam && (!hasTeamProductTypeSegment || routeProductType) ? <TaxonomyLanding key={`${routeTeam.slug}:${routeProductType?.handle || 'all'}:${catalogPage}:${search}`} league={routeLeague} team={routeTeam} productType={routeProductType} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
   else if (path === '/membership' || path === '/account/membership') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the club…</p></div>}><MembershipPage account={account} onAccountChange={setAccount}/></Suspense>
   else if (path === '/checkout') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening secure checkout…</p></div>}><CheckoutPage cart={cart} account={account} onNavigate={navigate} onClearCart={clearCart} onPaymentConfirmed={completeCheckout} initialRoute={route}/></Suspense>

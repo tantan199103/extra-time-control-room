@@ -9,6 +9,7 @@ import { collectionMembershipDiff } from './collection-assignment'
 import { collectionAutomationHasConditions, normalizeCollectionAutomation } from './collection-rules'
 import { LEAGUE_TAXONOMY } from './league-taxonomy'
 import { accessoryGroupsForCategory, catalogCategoryByHandle } from './catalog-taxonomy'
+import { teamProductTypeByHandle } from './team-product-pages'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -135,7 +136,7 @@ export async function fetchStorefrontProduct(handle, { includeRelated = true } =
 
 // Cards do not need long descriptions, full galleries or SEO JSON. Those are
 // hydrated by fetchStorefrontProduct when a shopper opens a product page.
-const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,inventory,sku,tags,taxonomy,product_group,type,color,custom_fields,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image)'
+const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,inventory,sku,tags,taxonomy,product_group,type,color,custom_fields,status,seo_status,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image)'
 const transientCatalogueError = (error, status) => String(error?.code || '') === '57014' || [0,408,429,500,502,503,504].includes(Number(status)) || /timeout|temporarily unavailable|fetch failed/i.test(String(error?.message || ''))
 const storefrontPageCache = new Map()
 const STOREFRONT_PAGE_CACHE_TTL = 10 * 60 * 1000
@@ -169,7 +170,11 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   const params = new URLSearchParams(search)
   const parts = String(basePath || '').split('/').filter(Boolean)
   if (parts[0] === 'league' && parts[1]) query = query.eq('taxonomy->>league',parts[1])
-  if (parts[0] === 'team' && parts[1] && parts[2]) query = query.eq('taxonomy->>league',parts[1]).eq('taxonomy->>team',parts[2])
+  if (parts[0] === 'team' && parts[1] && parts[2]) {
+    query = query.eq('taxonomy->>league',parts[1]).eq('taxonomy->>team',parts[2])
+    const teamType = teamProductTypeByHandle(parts[3])
+    if (teamType) query = query.in('product_group',teamType.groups)
+  }
   if (parts[0] === 'category' && parts[1]) {
     const routeCategory = catalogCategoryByHandle(parts[1])
     const accessoryGroups = routeCategory?.accessoryFamily ? accessoryGroupsForCategory(routeCategory) : []
@@ -279,7 +284,7 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
 
 export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize = 36 } = {}) {
   if (!supabase) return { data:[],total:0,page,pageSize,source:'unavailable',error:'Live catalogue is not configured.' }
-  const collection = await supabase.from('pod_collections').select('id').eq('status','PUBLISHED').eq('handle',handle).maybeSingle()
+  const collection = await supabase.from('pod_collections').select('id,handle,name,description,hero_image,seo,updated_at,status,sort_mode').eq('status','PUBLISHED').eq('handle',handle).maybeSingle()
   if (collection.error) return { data:[],total:0,page,pageSize,source:'unavailable',error:collection.error.message }
   if (!collection.data) return { data:[],total:0,page,pageSize,source:'supabase',error:null }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
@@ -304,11 +309,21 @@ export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize
   }
   if (links.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:links.error.message }
   const ids = (links.data || []).map(row => row.product_id)
-  if (!ids.length) return { data:[],total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null }
+  const collectionMeta = {
+    ...collection.data,
+    hero:collection.data.hero_image || '',
+    sort:collection.data.sort_mode || 'MANUAL',
+    products:ids,
+    productLinks:(links.data || []).map(item => ({ productId:item.product_id, sortOrder:item.sort_order, featured:Boolean(item.featured) })),
+    pageScoped:true,
+    count:Number(links.count || 0),
+    publishedCount:Number(links.count || 0)
+  }
+  if (!ids.length) return { data:[],total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null,collection:collectionMeta }
   const products = await supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED').in('id',ids)
-  if (products.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:products.error.message }
+  if (products.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:products.error.message,collection:collectionMeta }
   const byId = new Map((products.data || []).map(row => [row.id,row]))
-  return { data:ids.map(id => byId.get(id)).filter(Boolean).map(row => prepareStorefrontProduct(row)),total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null }
+  return { data:ids.map(id => byId.get(id)).filter(Boolean).map(row => prepareStorefrontProduct(row)),total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null,collection:collectionMeta }
 }
 
 export async function fetchStorefrontSearch(term, limit = 12) {

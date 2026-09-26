@@ -1,5 +1,7 @@
 import { cleanSeoText, seoDescription } from './seo-text.js'
 import { findLeague, findTeam, leaguePath, teamPath, productTaxonomyValues } from './league-taxonomy.js'
+import { validateCatalogTaxonomy } from './taxonomy-validator.js'
+import { teamProductTypeForProduct, teamProductTypePath } from './team-product-pages.js'
 
 export const usd = value => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(Number(value) || 0)
 export const safeJson = value => JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
@@ -12,12 +14,17 @@ const words = (value, length) => value.length <= length ? value : value.slice(0,
 export function productSeoMetadata(product, origin = 'https://www.jersevo.com') {
   const name = cleanSeoText(product.title || product.name)
   const title = cleanSeoText(product.seo?.title || name).replace(/\s*(?:\||—|–|-)\s*(?:Extra Time|Jersevo)\s*$/i,'')
+  const taxonomy = validateCatalogTaxonomy(product)
   return {
     title:`${words(title,60)} | Jersevo`,
     description:cleanSeoText(product.seo?.description) || seoDescription('', product.description || product.subtitle || name,160),
     canonical:new URL(productPath(product),origin).href,
     image:absolute(product.image || product.media?.find(item => item.type === 'IMAGE')?.url || '/assets/hero-tunnel.webp',origin),
-    indexable:product.status === 'PUBLISHED' && String(product.seoStatus || product.seo_status || product.seo?.status).toUpperCase() === 'INDEXABLE'
+    // A stale cross-league/team row must never become an organic landing page
+    // merely because an old SEO flag still says INDEXABLE. Keep the decision
+    // pure so the runtime, static generator and audits share one contract.
+    indexable:product.status === 'PUBLISHED' && String(product.seoStatus || product.seo_status || product.seo?.status).toUpperCase() === 'INDEXABLE' && taxonomy.valid,
+    taxonomy
   }
 }
 
@@ -25,10 +32,13 @@ export function productBreadcrumbs(product) {
   const values = productTaxonomyValues(product)
   const league = findLeague(values.league)
   const team = league && findTeam(league.key,values.team)
+  const productType = team ? teamProductTypeForProduct(product) : null
+  const typeHref = productType && league && team ? teamProductTypePath(league.key,team,productType) : ''
   return [
     { label:'Home', href:'/' }, { label:'Shop', href:'/shop' },
     ...(league ? [{ label:league.name, href:leaguePath(league) }] : []),
     ...(team ? [{ label:team.name, href:teamPath(league.key,team) }] : []),
+    ...(typeHref ? [{ label:productType.label, href:typeHref }] : []),
     { label:product.title || product.name, href:productPath(product) }
   ]
 }
@@ -43,6 +53,7 @@ export function validGtin(value) {
 
 export function productStructuredData(product, origin = 'https://www.jersevo.com') {
   const metadata = productSeoMetadata(product, origin)
+  if (!metadata.taxonomy.valid) return []
   const name = cleanSeoText(product.title || product.name)
   const images = [...new Set([metadata.image,...(product.media || []).filter(item => item.type === 'IMAGE').map(item => absolute(item.url,origin))].filter(Boolean))]
   const variants = (product.variants || []).filter(variant => variant.id && variant.status === 'ACTIVE' && Number.isFinite(Number(variant.price)) && Number(variant.price) > 0)

@@ -1,3 +1,4 @@
+import { validateCatalogTaxonomy } from './taxonomy-validator.js'
 const DEFAULT_ORIGIN = 'https://www.jersevo.com'
 // Extra Time is the customer-facing product brand; Jersevo remains the legal
 // organization name used in checkout and policy markup.
@@ -189,6 +190,8 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
   const customizable = array(product?.custom_fields || product?.customFields).length > 0 || /personalized|custom/i.test(`${product?.type || ''} ${title}`)
   const warnings = []
   const blockReasons = []
+  const taxonomy = validateCatalogTaxonomy(product)
+  if (!taxonomy.valid) blockReasons.push(...taxonomy.blockers)
 
   if (!variantId) blockReasons.push('MISSING_ID')
   if (!title) blockReasons.push('MISSING_TITLE')
@@ -265,6 +268,11 @@ export function buildGoogleMerchantCatalogue(products = [], config = {}) {
       continue
     }
     candidateProducts += 1
+    const taxonomy = validateCatalogTaxonomy(product)
+    if (!taxonomy.valid) {
+      rejected.push({ productId:product?.id || product?.handle || '', variantId:'', reasons:taxonomy.blockers })
+      continue
+    }
     const variants = array(product?.pod_product_variants || product?.variants).filter(variant => String(variant?.status || '').toUpperCase() === 'ACTIVE')
     if (!variants.length) {
       rejected.push({ productId:product?.id || product?.handle || '', variantId:'', reasons:['NO_ACTIVE_VARIANTS'] })

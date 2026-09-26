@@ -9,8 +9,12 @@ import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { validateCatalogTaxonomy } from '../src/lib/taxonomy-validator.js'
 
-const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ofetusgarxcwloxxkhnr.supabase.co'
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TARGET_SERVICE_KEY || ''
+const url = [process.env.SUPABASE_URL, process.env.VITE_SUPABASE_URL, 'https://ofetusgarxcwloxxkhnr.supabase.co']
+  .find(value => /^https?:\/\//.test(String(value || ''))) || 'https://ofetusgarxcwloxxkhnr.supabase.co'
+const key = [process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.TARGET_SERVICE_KEY]
+  .find(value => /^(?:sb_secret_|eyJ)/.test(String(value || ''))) || ''
+const anonKey = [process.env.VITE_SUPABASE_ANON_KEY, process.env.SUPABASE_ANON_KEY]
+  .find(value => /^(?:sb_publishable_|eyJ)/.test(String(value || ''))) || ''
 const WRITE = process.argv.includes('--write')
 const ALL = process.argv.includes('--all')
 const reportPath = resolve(process.env.TAXONOMY_AUDIT_REPORT || 'artifacts/catalog-taxonomy-audit.json')
@@ -18,7 +22,7 @@ const reportPath = resolve(process.env.TAXONOMY_AUDIT_REPORT || 'artifacts/catal
 if (!/^https?:\/\//.test(url)) throw new Error('SUPABASE_URL must be an HTTP(S) URL.')
 if (WRITE && !/^sb_secret_|^eyJ/.test(key)) throw new Error('Write mode requires SUPABASE_SERVICE_ROLE_KEY (server-only).')
 
-const client = createClient(url, key || process.env.VITE_SUPABASE_ANON_KEY || '', { auth: { persistSession: false, autoRefreshToken: false } })
+const client = createClient(url, key || anonKey, { auth: { persistSession: false, autoRefreshToken: false } })
 
 async function allRows(table, columns, pageSize = 500) {
   const rows = []
@@ -104,4 +108,3 @@ const report = {
 await mkdir(resolve(reportPath, '..'), { recursive: true })
 await writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8')
 console.log(JSON.stringify(report, null, 2))
-

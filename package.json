@@ -36,6 +36,7 @@
     "@fontsource/barlow-condensed": "^5.2.6",
     "@fontsource/manrope": "^5.2.6",
     "@supabase/supabase-js": "^2.116.0",
+    "@vercel/functions": "^3.9.9",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

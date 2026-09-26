@@ -1,5 +1,6 @@
 import { ACCESSORY_CATEGORY_PAGES, ACCESSORY_FAMILY_OPTIONS, ALL_CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from './catalog-taxonomy.js'
 import { LEAGUE_TAXONOMY, leaguePath, normalizeTeamSlug, teamPath } from './league-taxonomy.js'
+import { resolveCollectionArtwork } from './collection-artwork.js'
 
 export const PRIMARY_DISCOVERY_LABELS = Object.freeze(['Shop', 'Sports', 'Teams', 'Custom', 'Collections', 'New & trending'])
 
@@ -70,7 +71,7 @@ export function discoveryIndex(rows = []) {
   return { total, leagues, teams, categories, brands, productGroups, leagueCounts, teamCounts }
 }
 
-export function discoveryMenu(index, collections = []) {
+export function discoveryMenu(index, collections = [], products = []) {
   const categories = index?.categories || []
   const leagues = index?.leagues || []
   const teams = index?.teams || []
@@ -102,11 +103,11 @@ export function discoveryMenu(index, collections = []) {
       { label:'Browse by league', links:leagues.map(league => ({ label:`${league.name} teams`, href:leaguePath(league), image:league.media?.src || '' })) }
     ] },
     { id:'custom', label:'Custom', href:'/category/custom-jerseys', sections:[
-      { label:'Create yours', links:[{ label:'Custom jerseys', href:'/category/custom-jerseys' },{ label:'Personalized gear', href:'/shop?custom=1' }] },
+      { label:'Create yours', links:[{ label:'Custom jerseys', href:'/custom' },{ label:'Personalized gear', href:'/category/custom-jerseys' }] },
       { label:'By sport', links:leagues.slice(0,6).map(league => ({ label:league.name, href:`${leaguePath(league)}?custom=1` })) }
     ] },
     { id:'collections', label:'Collections', href:'/collections', sections:[
-      { label:'Current collections', links:(collections || []).filter(row => row?.handle).slice(0,8).map(row => { const image = String(row.hero || row.hero_image || '').trim(); return { label:row.name || row.title || row.handle, href:`/collection/${encodeURIComponent(row.handle)}`, image, coverPending:!image } }) },
+      { label:'Current collections', links:(collections || []).filter(row => row?.handle).slice(0,8).map(row => { const artwork = resolveCollectionArtwork(row,products); return { label:row.name || row.title || row.handle, href:`/collection/${encodeURIComponent(row.handle)}`, image:artwork.src, icon:artwork.icon, artworkSource:artwork.source, coverPending:!artwork.src } }) },
       { label:'Explore', links:[{ label:'Browse all gear', href:'/shop' },{ label:'Personalized gear', href:'/shop?custom=1' }] }
     ] },
     { id:'new', label:'New & trending', href:'/shop?sort=NEWEST', sections:[

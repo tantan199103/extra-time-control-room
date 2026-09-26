@@ -56,6 +56,14 @@ test('blocked product is not indexable and no fabricated review or return promis
   assert.equal(safeJson({text:'</script>'}).includes('</script>'),false)
 })
 
+test('taxonomy-invalid published products cannot become indexable PDPs or schema', () => {
+  const stale = { ...product, title:'Green Bay Packers NHL Jersey', productGroup:'Hockey Jersey' }
+  const metadata = productSeoMetadata(stale)
+  assert.equal(metadata.indexable,false)
+  assert.ok(metadata.taxonomy.blockers.includes('TAXONOMY_LEAGUE_TEXT_MISMATCH'))
+  assert.deepEqual(productStructuredData(stale),[])
+})
+
 test('sitemap contains supplied canonical pages with useful lastmod and product images', () => {
   const xml = renderSitemap([
     {path:'/product/test-jersey'},

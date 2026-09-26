@@ -1,6 +1,7 @@
 import { normalizeProduct } from './catalog-model.js'
 
 import { normalizeCatalogTaxonomy } from './league-taxonomy.js'
+import { resolveCollectionArtwork } from './collection-artwork.js'
 
 const FALLBACK_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -291,16 +292,17 @@ export function resolveMenuImages(menus = [], context = {}) {
   const collectionForTarget = (target, type) => {
     const path = menuPath(target)
     const query = menuQuery(target)
-    const handle = path.startsWith('/collection/') ? decodeURIComponent(path.split('/')[2] || '') : query.get('collection') || String(target || '').replace(/^collection:/i, '')
-    const explicit = path.startsWith('/collection/') || query.has('collection') || /^collection:/i.test(String(target || ''))
+    const collectionPath = path.startsWith('/collection/') || path.startsWith('/collections/')
+    const handle = collectionPath ? decodeURIComponent(path.split('/')[2] || '') : query.get('collection') || String(target || '').replace(/^collection:/i, '')
+    const explicit = collectionPath || query.has('collection') || /^collection:/i.test(String(target || ''))
     if (path === '/shop' || path === '/collection') return collections[0] || null
-    if (String(type).toUpperCase() === 'COLLECTION' || explicit) return collections.find(row => row.handle === handle || row.id === handle) || null
+    if (String(type).toUpperCase() === 'COLLECTION' || explicit) return collections.find(row => row.handle === handle || row.id === handle) || (handle ? { handle, name:handle } : null)
     return null
   }
   const explicitCollectionTarget = (target, type) => {
     const path = menuPath(target)
     const query = menuQuery(target)
-    return String(type).toUpperCase() === 'COLLECTION' || path.startsWith('/collection/') || query.has('collection') || /^collection:/i.test(String(target || ''))
+    return String(type).toUpperCase() === 'COLLECTION' || path.startsWith('/collection/') || path.startsWith('/collections/') || query.has('collection') || /^collection:/i.test(String(target || ''))
   }
   const pageForTarget = target => {
     const path = menuPath(target)
@@ -311,6 +313,7 @@ export function resolveMenuImages(menus = [], context = {}) {
     let image = ''
     let alt = fields.imageAlt || item?.label || 'Navigation image'
     let source = fields.imageMode
+    let representativeIcon = ''
     if (fields.imageMode === 'CUSTOM') {
       image = fields.imageUrl
       source = image ? 'CUSTOM' : 'MISSING'
@@ -325,9 +328,11 @@ export function resolveMenuImages(menus = [], context = {}) {
         alt = fields.imageAlt || rowAlt(product) || item?.label || alt
         source = image ? 'PRODUCT' : 'MISSING'
       } else if (collection) {
-        image = rowImage(collection)
-        alt = fields.imageAlt || rowAlt(collection) || item?.label || alt
-        source = image ? 'COLLECTION' : 'MISSING'
+        const artwork = resolveCollectionArtwork(collection, products)
+        image = artwork.src
+        representativeIcon = artwork.icon || ''
+        alt = fields.imageAlt || artwork.alt || rowAlt(collection) || item?.label || alt
+        source = artwork.source || (image ? 'COLLECTION' : 'MISSING')
       } else if (page) {
         image = rowImage(page)
         alt = fields.imageAlt || rowAlt(page) || item?.label || alt
@@ -349,6 +354,7 @@ export function resolveMenuImages(menus = [], context = {}) {
       representativeImage: image || null,
       representativeAlt: alt,
       representativeSource: source,
+      representativeIcon,
       children: (item?.children || []).map(resolveItem)
     }
   }
@@ -367,7 +373,7 @@ export function menuTargetProblem(target, type = 'PAGE') {
   if (String(type).toUpperCase() === 'EXTERNAL') {
     return /^https:\/\//i.test(value) ? '' : 'External links must use HTTPS.'
   }
-  if (value === '#bag' || value.startsWith('/#') || value.startsWith('/product/') || value.startsWith('/collection/') || value.startsWith('/league/') || value.startsWith('/team/')) return ''
+  if (value === '#bag' || value.startsWith('/#') || value.startsWith('/product/') || value.startsWith('/collection/') || value.startsWith('/collections/') || value.startsWith('/league/') || value.startsWith('/team/')) return ''
   const path = value.split(/[?#]/)[0]
   return STOREFRONT_STATIC_ROUTES.has(path) ? '' : 'This route is not published by the storefront.'
 }

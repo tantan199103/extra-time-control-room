@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { availableOptionValue, buildFallbackCatalog, buildMenuTree, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveMenuImages, resolveVariant, sortCollectionProducts } from '../src/lib/storefront-model.js'
+import { resolveCollectionArtwork } from '../src/lib/collection-artwork.js'
 import { normalizeCatalogTaxonomy } from '../src/lib/league-taxonomy.js'
 import { products as fallback } from '../src/data.js'
 
@@ -71,8 +72,30 @@ test('collection menu links keep missing covers explicit instead of borrowing an
     collections:[{ id:'nhl', handle:'nhl', name:'NHL', hero:'', products:['other'] }],
     products:[{ id:'other', image:'/other-collection-product.webp' }]
   })
-  assert.equal(resolved[0].items[0].representativeImage,null)
-  assert.equal(resolved[0].items[0].representativeSource,'MISSING')
+  assert.equal(resolved[0].items[0].representativeImage,'/assets/leagues/marks/nhl.webp')
+  assert.equal(resolved[0].items[0].representativeSource,'LEAGUE_LOGO')
+  assert.notEqual(resolved[0].items[0].representativeImage,'/other-collection-product.webp')
+})
+
+test('collection artwork prefers a checked-in team or league logo and uses category icons without unrelated media', () => {
+  const league = resolveCollectionArtwork({ handle:'nfl', name:'NFL' })
+  assert.equal(league.src,'/assets/leagues/marks/nfl.webp')
+  assert.equal(league.source,'LEAGUE_LOGO')
+
+  const team = resolveCollectionArtwork({ handle:'dallas-cowboys', name:'Dallas Cowboys' })
+  assert.equal(team.src,'/assets/leagues/marks/teams/nfl/dallas-cowboys.webp')
+  assert.equal(team.source,'TEAM_LOGO')
+
+  const accessories = resolveCollectionArtwork({ handle:'accessories', name:'Accessories' }, [{ id:'unrelated', image:'/unrelated.webp' }])
+  assert.equal(accessories.src,'')
+  assert.equal(accessories.icon,'accessories')
+  assert.equal(accessories.source,'CATEGORY_ICON')
+})
+
+test('production config serves dynamic collection handles and redirects the plural alias', async () => {
+  const config = JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'))
+  assert.ok(config.rewrites.some(rule => rule.source === '/collection/:path*' && rule.destination === '/index.html'))
+  assert.ok(config.redirects.some(rule => rule.source === '/collections/:handle' && rule.destination === '/collection/:handle'))
 })
 
 test('storefront products do not expose private bridge audit metadata', () => {

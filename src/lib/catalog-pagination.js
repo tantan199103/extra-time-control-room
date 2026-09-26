@@ -2,7 +2,7 @@ export const CATALOG_PAGE_SIZE = 36
 
 export function parseCatalogPagePath(pathname = '') {
   const path = String(pathname || '').replace(/\/+$/, '') || '/'
-  const match = path.match(/^(\/shop|\/category\/[^/]+|\/league\/[^/]+|\/team\/[^/]+\/[^/]+|\/collection\/[^/]+)\/page\/(\d+)$/)
+  const match = path.match(/^(\/shop|\/category\/[^/]+|\/league\/[^/]+|\/team\/[^/]+\/[^/]+(?:\/[^/]+)?|\/(?:collection|collections)\/[^/]+)\/page\/(\d+)$/)
   if (!match) return { basePath:path, page:1, paginated:false }
   return {
     basePath:match[1] || '/',

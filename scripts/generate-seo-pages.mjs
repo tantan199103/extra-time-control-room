@@ -6,6 +6,9 @@ import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src
 import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
 import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
+import { validateCatalogTaxonomy } from '../src/lib/taxonomy-validator.js'
+import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypePath } from '../src/lib/team-product-pages.js'
+import { resolveCollectionArtwork } from '../src/lib/collection-artwork.js'
 import { cleanSeoText, seoDescription } from '../src/lib/seo-text.js'
 import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
 import { TRUST_PAGES } from '../src/lib/trust-pages.js'
@@ -143,14 +146,18 @@ async function loadCollections() {
   try {
     const query = `${base.replace(/\/$/, '')}/rest/v1/pod_collections?select=id,handle,name,description,hero_image,seo,updated_at,pod_collection_products(product_id,sort_order)&status=eq.PUBLISHED&order=id.asc`
     const rows = await fetchRows(query, key)
-    return (Array.isArray(rows) ? rows : []).map(row => ({
-      handle:text(row.handle || row.id),
-      title:text(row.seo?.title || row.name, 'Extra Time collection'),
-      description:text(row.seo?.description || row.description, 'Explore the latest Extra Time football jersey collection.'),
-      image:absolute(row.hero_image || '/assets/hero-tunnel.webp'),
-      productIds:(row.pod_collection_products || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0)).map(link => link.product_id),
-      updatedAt:row.updated_at || ''
-    })).filter(row => row.handle && String((rows.find(item => item.handle === row.handle)?.seo || {}).status || '').toUpperCase() === 'INDEXABLE')
+    return (Array.isArray(rows) ? rows : []).map(row => {
+      const artwork = resolveCollectionArtwork({ ...row, hero:row.hero_image })
+      return {
+        handle:text(row.handle || row.id),
+        title:text(row.seo?.title || row.name, 'Extra Time collection'),
+        description:text(row.seo?.description || row.description, 'Explore the latest Extra Time football jersey collection.'),
+        image:absolute(artwork.src || row.hero_image || '/assets/hero-tunnel.webp'),
+        productIds:(row.pod_collection_products || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0)).map(link => link.product_id),
+        updatedAt:row.updated_at || '',
+        seoStatus:String(row.seo?.status || '').toUpperCase()
+      }
+    }).filter(row => row.handle)
   } catch (error) {
     console.warn(`[seo] Live collections unavailable; product pages will still be generated. ${error.message}`)
     return []
@@ -253,12 +260,20 @@ async function writeCatalogPagination(basePath, rows, title, description, image)
 }
 
 const shell = await readFile(join(DIST, 'index.html'), 'utf8')
-const products = await loadProducts()
+// Keep taxonomy-invalid rows reachable for a deterministic noindex PDP, but
+// never let them contribute to navigation counts, collection pages, schema or
+// the sitemap. This prevents stale imported metadata from becoming an
+// accidental organic landing page.
+const loadedProducts = await loadProducts()
+const taxonomyBlockedProducts = loadedProducts.filter(product => !validateCatalogTaxonomy(product).valid)
+const products = loadedProducts.filter(product => validateCatalogTaxonomy(product).valid)
 featuredCustomProduct = products.find(product => product.customFields?.length && product.inventory > 0 && /jersey/i.test(product.title || ''))
   || products.find(product => product.customFields?.length && product.inventory > 0)
-const blockedProducts = await loadBlockedProducts()
+const customProducts = products.filter(product => product.customFields?.length).slice(0, 12)
+const blockedProducts = [...(await loadBlockedProducts()), ...taxonomyBlockedProducts]
 const collections = await loadCollections()
 const TAXONOMY_MIN_PRODUCTS = 6
+const rowCollectionIsIndexable = collection => !['BLOCKED', 'NOINDEX'].includes(String(collection?.seoStatus || '').toUpperCase())
 const navigationRows = new Map()
 for (const product of products) {
   // Navigation only needs aggregate counts.  Keeping one row per source
@@ -327,6 +342,20 @@ await writePage('/shop', pageHtml(shell, {
 }))
 await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute(SHOP_COVER.src))
 
+const customFallbackProducts = customProducts.map(product => `<li><a href="/product/${slug(product.handle)}?custom=1">${escapeHtml(product.title)}</a><span>Personalizable listing</span></li>`).join('')
+await writePage('/custom', pageHtml(shell, {
+  path:'/custom',
+  title:'Custom jerseys and personalized fan gear | Jersevo',
+  description:'Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.',
+  image:absolute(SHOP_COVER.src),
+  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/shop">Shop</a> / <strong>Custom</strong></nav><h1>Put your moment on it.</h1><p>Choose a designer-led jersey, add your name or number, and review every enabled field before the studio sends it to production. Artwork stays fixed.</p><h2>How custom ordering works</h2><ol><li>Choose a published jersey and check its options.</li><li>Add the name, number or approved reference fields shown on that listing.</li><li>Review the request before it enters production.</li></ol><h2>Live custom jerseys</h2><ul>${customFallbackProducts || '<li><a href="/category/custom-jerseys">Browse custom jerseys</a></li>'}</ul><p><a href="/category/custom-jerseys">View all custom jerseys</a> · <a href="/shipping">Read delivery details</a></p></main>`,
+  schema:[
+    { '@context':'https://schema.org', '@type':'CollectionPage', name:'Custom jerseys and personalized fan gear', description:'Choose a designer-led jersey and add approved personal details.', url:`${PUBLIC_ORIGIN}/custom`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/`, name:'Jersevo' } },
+    { '@context':'https://schema.org', '@type':'HowTo', name:'How to order a personalized jersey', step:[{ '@type':'HowToStep', name:'Choose a jersey' },{ '@type':'HowToStep', name:'Add your details' },{ '@type':'HowToStep', name:'Review before print' }] },
+    breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:'Custom',url:`${PUBLIC_ORIGIN}/custom`}])
+  ]
+}))
+
 const leagueCountsForIndex = new Map()
 const teamCountsForIndex = new Map()
 for (const product of products) {
@@ -363,7 +392,7 @@ for (const collection of collections) {
   const path = `/collection/${slug(collection.handle)}`
   const byId = new Map(products.map(product => [product.id,product]))
   const collectionProducts = collection.productIds.map(id => byId.get(id)).filter(Boolean)
-  const indexable = collectionProducts.length >= TAXONOMY_MIN_PRODUCTS
+    const indexable = collectionProducts.length >= TAXONOMY_MIN_PRODUCTS && rowCollectionIsIndexable(collection)
   await writePage(path, pageHtml(shell, {
     path,
     title:`${collection.title} — Extra Time`,
@@ -430,6 +459,7 @@ for (const league of LEAGUE_TAXONOMY) {
     const teamPage = teamPath(league.key, team)
     const teamIndexable = (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) >= TAXONOMY_MIN_PRODUCTS
     const teamProducts = leagueProducts.filter(product => normalizeTeamSlug(league.key, product.taxonomy?.team || '') === team.slug)
+    const teamTypePages = teamProductTypeCounts(teamProducts, { league:league.key, team:team.slug })
     const teamGroups = [...teamProducts.reduce((map, product) => {
       const group = String(product.productGroup || '').trim()
       if (group) map.set(group, (map.get(group) || 0) + 1)
@@ -441,10 +471,26 @@ for (const league of LEAGUE_TAXONOMY) {
       description:`Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`,
       image:absolute(teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'),
       noindex:!teamIndexable,
-      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} fan gear</h1><p>Browse ${escapeHtml(team.name)} fan gear by product type. Prices, available options and photos are shown on each current listing.</p><p><a href="${path}">Explore all ${escapeHtml(league.name)} teams</a></p><section><h2>Shop ${escapeHtml(team.name)} by product</h2><ul>${teamGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(team.name)} gear</h2><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</section></main>`,
+      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} fan gear</h1><p>Browse ${escapeHtml(team.name)} fan gear by product type. Prices, available options and photos are shown on each current listing.</p><p><a href="${leaguePath(league)}">Back to ${escapeHtml(league.name)}</a></p><section><h2>Shop ${escapeHtml(team.name)} by product</h2><ul>${teamTypePages.map(type => `<li><a href="${type.path}">${escapeHtml(type.label)}</a> (${type.count})</li>`).join('')}${teamTypePages.length ? '' : teamGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(team.name)} gear</h2><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</section></main>`,
       schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} fan gear`, description:`Browse current ${team.name} fan gear by product type and review photos, prices and available options on each listing.`, url:`${PUBLIC_ORIGIN}${teamPage}`, numberOfItems:teamProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`}])]
     }))
     if (teamIndexable) await writeCatalogPagination(teamPage, teamProducts, `${team.name} fan gear`, `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`, absolute('/assets/editorial-player.webp'))
+    for (const type of teamTypePages) {
+      const typePath = teamProductTypePath(league.key, team, type)
+      const typeProducts = teamProducts.filter(product => productMatchesTeamProductType(product, type))
+      const typeTitle = `${team.name} ${type.label}`
+      const typeDescription = `${type.description} Shop current ${team.name} ${type.label.toLowerCase()} with available options, photos and tracked US delivery.`
+      const siblingLinks = teamTypePages.map(sibling => `<li><a href="${sibling.path}">${escapeHtml(sibling.label)}</a> (${sibling.count})</li>`).join('')
+      await writePage(typePath, pageHtml(shell, {
+        path:typePath,
+        title:`${typeTitle} — Jersevo`,
+        description:typeDescription,
+        image:absolute(typeProducts[0]?.image || teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'),
+        fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/shop">Shop</a> / <a href="${leaguePath(league)}">${escapeHtml(league.name)}</a> / <a href="${teamPage}">${escapeHtml(team.name)}</a> / <strong>${escapeHtml(type.label)}</strong></nav><h1>${escapeHtml(typeTitle)}</h1><p>${escapeHtml(typeDescription)}</p><nav aria-label="${escapeHtml(team.name)} product types"><ul>${siblingLinks}</ul></nav><ul>${typeProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${typeProducts.length > CATALOG_PAGE_SIZE ? `<a href="${typePath}/page/2">Next page</a>` : ''}</main>`,
+        schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:typeTitle, description:typeDescription, url:`${PUBLIC_ORIGIN}${typePath}`, numberOfItems:typeProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${teamPage}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${leaguePath(league)}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`},{name:type.label,url:`${PUBLIC_ORIGIN}${typePath}`}])]
+      }))
+      await writeCatalogPagination(typePath, typeProducts, typeTitle, typeDescription, absolute(typeProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'))
+    }
   }
 }
 
@@ -473,7 +519,7 @@ for (const [path, title, description, pageImage = '/assets/hero-tunnel.webp'] of
   }))
 }
 
-for (const path of ['/custom', '/studio', '/account', '/account/membership', '/admin', '/checkout', '/track-order']) {
+for (const path of ['/studio', '/account', '/account/membership', '/admin', '/checkout', '/track-order']) {
   await writePage(path, pageHtml(shell, {
     path, title:'Extra Time', description:'Extra Time account and studio tools.', image:absolute('/assets/hero-tunnel.webp'), noindex:true,
     fallback:'<main class="seo-fallback"><h1>Extra Time</h1></main>', schema:{ '@context':'https://schema.org', '@type':'WebPage', name:'Extra Time', url:`${PUBLIC_ORIGIN}${path}` }

@@ -80,6 +80,13 @@ test('draft, archived and non-indexable products never enter the feed', () => {
   assert.equal(result.report.reasonCounts.SEO_NOT_INDEXABLE, 1)
 })
 
+test('taxonomy-invalid products are excluded from the Merchant feed with stable reasons', () => {
+  const result = buildGoogleMerchantCatalogue([{ ...product, id:'stale-taxonomy', title:'Green Bay Packers NHL Jersey', product_group:'Hockey Jersey' }])
+  assert.equal(result.items.length,0)
+  assert.equal(result.report.reasonCounts.TAXONOMY_LEAGUE_TEXT_MISMATCH,1)
+  assert.equal(result.report.reasonCounts.TAXONOMY_PRODUCT_GROUP_MISMATCH,1)
+})
+
 test('readiness reports missing active variants instead of silently creating a product', () => {
   const result = googleMerchantReadiness({ ...product, variants: [] })
   assert.equal(result.ready, false)
