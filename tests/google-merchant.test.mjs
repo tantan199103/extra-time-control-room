@@ -37,13 +37,14 @@ test('normalizes one Merchant Center row per active variant', () => {
   assert.equal(result.items.length, 2)
   assert.deepEqual(result.items.map(item => item.id), ['variant-green-s', 'variant-green-m'])
   assert.equal(result.items[0].item_group_id, result.items[1].item_group_id)
-  assert.equal(result.items[0].availability, 'in stock')
-  assert.equal(result.items[1].availability, 'out of stock')
+  assert.equal(result.items[0].availability, 'in_stock')
+  assert.equal(result.items[1].availability, 'out_of_stock')
   assert.equal(result.items[0].price, '69.99 USD')
   assert.equal(result.items[0].sale_price, '59.99 USD')
   assert.equal(result.items[0].size, 'S')
   assert.equal(result.items[0].color, 'Green / gold')
   assert.equal(result.items[0].is_bundle, 'yes')
+  assert.equal(result.items[0].google_product_category, '212')
   assert.ok(result.items.every(item => item.title.length <= 70))
   assert.match(result.items[0].link, /variant=variant-green-s/)
   assert.deepEqual(result.items[0].additional_image_link, ['https://cdn.example.test/green-back.webp'])
@@ -121,4 +122,43 @@ test('source metadata and unverified affiliation claims block a row', () => {
   assert.equal(result.eligible, false)
   assert.ok(result.blockReasons.includes('SOURCE_METADATA_PRESENT'))
   assert.ok(result.blockReasons.includes('UNVERIFIED_AFFILIATION_CLAIM'))
+})
+
+test('one-size headwear does not get blocked for a missing apparel size', () => {
+  const cap = {
+    id: 'listing-cap',
+    handle: 'green-bay-game-day-cap',
+    title: 'Green Bay Game Day Cap',
+    description: 'A one-size game day cap with a clean embroidered fan detail.',
+    status: 'PUBLISHED',
+    seo_status: 'INDEXABLE',
+    product_group: 'Caps',
+    taxonomy: { league: 'nfl', team: 'green-bay-packers', category: 'Accessories' },
+    image: 'https://cdn.example.test/cap-front.webp',
+    variants: [{ id: 'cap-one-size', status: 'ACTIVE', inventory: 1000, price: 24.99, values: {} }]
+  }
+  const result = buildGoogleMerchantCatalogue([cap])
+  assert.equal(result.items.length, 1)
+  assert.equal(result.items[0].google_product_category, '173')
+  assert.equal('size' in result.items[0], false)
+  assert.equal(result.items[0].availability, 'in_stock')
+})
+
+test('clothing without a size remains blocked, while title-only custom copy is not a bundle claim', () => {
+  const shirt = {
+    id: 'listing-shirt',
+    handle: 'plain-fan-shirt',
+    title: 'Custom Fan Shirt',
+    description: 'A fan shirt with a clean graphic and everyday fit for game day.',
+    status: 'PUBLISHED',
+    seo_status: 'INDEXABLE',
+    product_group: 'Fan Apparel',
+    taxonomy: { category: 'Fan Apparel' },
+    image: 'https://cdn.example.test/shirt.webp',
+    variants: [{ id: 'shirt-one', status: 'ACTIVE', inventory: 5, price: 29.99, values: {} }]
+  }
+  const result = normalizeGoogleMerchantItem(shirt, shirt.variants[0])
+  assert.equal(result.eligible, false)
+  assert.ok(result.blockReasons.includes('MISSING_SIZE'))
+  assert.equal(result.item.is_bundle, 'no')
 })

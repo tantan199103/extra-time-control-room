@@ -1,69 +1,71 @@
-import { buildGoogleMerchantCatalogue, renderGoogleMerchantTsv, renderGoogleMerchantXml } from '../src/lib/google-merchant.js'
-import { handleApiError, sendJson, serverSupabase } from './_security.js'
+import { handleApiError, sendJson } from './_security.js'
 
-const PRODUCT_SELECT = [
-  'id', 'handle', 'title', 'subtitle', 'description', 'price', 'compare_at', 'status', 'image',
-  'media', 'seo', 'seo_status', 'taxonomy', 'tags', 'product_group', 'sku', 'color', 'inventory',
-  'custom_fields', 'pod_product_variants(id,sku,option_values,price,compare_at,inventory,status,image,weight_grams,barcode)'
-].join(',')
+// The full catalogue is generated during the deploy build and served by the
+// CDN. Keeping the expensive Supabase read out of this request prevents the
+// old 1,000-row PostgREST cap and keeps Google/Facebook fetches deterministic.
+const STATIC_FEED_PATH = '/feeds/google-merchant.xml.gz'
+const STATIC_TSV_PATH = '/feeds/google-merchant.tsv.gz'
+const STATIC_REPORT_PATH = '/feeds/google-merchant-report.json'
 
-async function loadProducts(client) {
-  const gated = await client
-    .from('pod_products')
-    .select(PRODUCT_SELECT)
-    .eq('status', 'PUBLISHED')
-    .eq('seo_status', 'INDEXABLE')
-    .order('updated_at', { ascending: false })
-    .limit(5000)
+function queryFormat(request) {
+  const fromQuery = request?.query?.format
+  if (fromQuery) return String(fromQuery).toLowerCase()
+  try { return new URL(request?.url || 'http://localhost').searchParams.get('format')?.toLowerCase() || 'xml' }
+  catch { return 'xml' }
+}
 
-  if (!gated.error) return gated.data || []
+function isFacebookRequest(request) {
+  return String(request?.url || '').toLowerCase().includes('facebook')
+}
 
-  // Keep the feed usable while an older Supabase project is applying the SEO
-  // gate migration. Never fall back to every published row: only rows carrying
-  // the explicit structured INDEXABLE status may enter the legacy path.
-  const legacySelect = PRODUCT_SELECT.replace(',seo_status', '')
-  const legacy = await client
-    .from('pod_products')
-    .select(legacySelect)
-    .eq('status', 'PUBLISHED')
-    .order('updated_at', { ascending: false })
-    .limit(5000)
-  if (legacy.error) throw legacy.error
-  return (legacy.data || []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE')
+function siteOrigin(request) {
+  const host = request?.headers?.['x-forwarded-host'] || request?.headers?.host
+  const protocol = request?.headers?.['x-forwarded-proto'] || 'https'
+  const trustedHost = /(?:^|\.)jersevo\.com(?::\d+)?$/i.test(String(host || ''))
+    || /(?:^|\.)vercel\.app(?::\d+)?$/i.test(String(host || ''))
+  if (trustedHost) return `${protocol}://${host}`
+  const configured = process.env.SITE_URL || process.env.VITE_SITE_URL
+  if (configured) return new URL(configured).origin
+  return 'https://www.jersevo.com'
+}
+
+function redirectStatic(response, path) {
+  response.setHeader('Location', path)
+  response.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600')
+  response.setHeader('X-Robots-Tag', 'noindex, nofollow')
+  return response.status(307).end()
+}
+
+async function readStaticReport(request) {
+  const url = `${siteOrigin(request)}${STATIC_REPORT_PATH}`
+  const result = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(8000) })
+  if (!result.ok) throw Object.assign(new Error('The static Merchant feed has not been generated for this deployment.'), { status: 503 })
+  const payload = await result.json()
+  if (!payload?.completeness?.complete) throw Object.assign(new Error('The Merchant feed completeness guard has not passed.'), { status: 503 })
+  return payload
 }
 
 export default async function handler(request, response) {
-  if (request.method !== 'GET') return sendJson(response, 405, { error: 'GET Google Merchant feeds only.' })
+  if (request.method !== 'GET') return sendJson(response, 405, { error: 'GET Merchant feeds only.' })
   try {
-    const client = serverSupabase()
-    const products = await loadProducts(client)
-    const catalogue = buildGoogleMerchantCatalogue(products, {
-      origin: process.env.SITE_URL || 'https://www.jersevo.com',
-      brand: process.env.GMC_BRAND || 'Extra Time'
-    })
-    const format = String(request.query?.format || new URL(request.url || 'http://localhost', 'http://localhost').searchParams.get('format') || 'xml').toLowerCase()
-
-    const isFacebook = String(request.url || '').toLowerCase().includes('facebook')
-
+    const format = queryFormat(request)
+    const facebook = isFacebookRequest(request)
     if (format === 'json') {
-      // Diagnostics intentionally contain IDs and counts only. Product copy,
-      // image URLs and customer data are not returned by the public report.
+      const report = await readStaticReport(request)
       return sendJson(response, 200, {
-        ...catalogue.report,
-        feedUrl: `${new URL(process.env.SITE_URL || 'https://www.jersevo.com').origin}/api/${isFacebook ? 'facebook-catalog-feed' : 'google-merchant-feed'}`,
+        ...report,
+        feedUrl: `${siteOrigin(request)}/api/${facebook ? 'facebook-catalog-feed' : 'google-merchant-feed'}`,
         formats: ['xml', 'tsv']
       })
     }
-
-    const body = format === 'tsv' ? renderGoogleMerchantTsv(catalogue) : renderGoogleMerchantXml(catalogue, {
-      origin: process.env.SITE_URL || 'https://www.jersevo.com'
-    })
-    response.setHeader('Content-Type', format === 'tsv' ? 'text/tab-separated-values; charset=utf-8' : 'application/rss+xml; charset=utf-8')
-    response.setHeader('Content-Disposition', `inline; filename="jersevo-${isFacebook ? 'facebook-catalog' : 'google-merchant'}.${format === 'tsv' ? 'tsv' : 'xml'}"`)
-    response.setHeader('X-Robots-Tag', 'noindex, nofollow')
-    response.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600')
-    return response.status(200).send(body)
+    return redirectStatic(response, format === 'tsv' ? STATIC_TSV_PATH : STATIC_FEED_PATH)
   } catch (error) {
-    return handleApiError(response, error, 'Google Merchant feed is unavailable.')
+    return handleApiError(response, error, 'Merchant feed is unavailable.')
   }
 }
+
+export const MERCHANT_FEED_PATHS = Object.freeze({
+  xml: STATIC_FEED_PATH,
+  tsv: STATIC_TSV_PATH,
+  report: STATIC_REPORT_PATH
+})

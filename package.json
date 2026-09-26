@@ -10,6 +10,7 @@
     "postbuild": "node scripts/postbuild.mjs",
     "audit:hosting": "node scripts/audit-hosting.mjs",
     "audit:gmc": "node scripts/audit-gmc-feed.mjs",
+    "generate:merchant-feed": "node scripts/generate-merchant-feed.mjs",
     "audit:taxonomy": "node scripts/audit-catalog-taxonomy.mjs",
     "audit:team-assets": "node scripts/audit-team-assets.mjs --write",
     "fetch:team-logos": "node scripts/fetch-team-logos.mjs",

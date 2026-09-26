@@ -41,3 +41,8 @@ if (String(process.env.FANGEAR_IMPORT_ON_BUILD || '').toLowerCase() === 'true') 
 // Generate static pages last so they reflect any explicitly requested
 // optimizer/import/publish changes made during this build.
 await import('./generate-seo-pages.mjs')
+
+// Merchant Center consumes a static snapshot.  The generator has its own
+// exact-count/keyset completeness guard and is intentionally last so a
+// partially generated SEO build can never leave a fresh-looking feed behind.
+await runScript('generate-merchant-feed.mjs')

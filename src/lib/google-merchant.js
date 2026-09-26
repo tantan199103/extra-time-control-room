@@ -3,8 +3,45 @@ const DEFAULT_ORIGIN = 'https://www.jersevo.com'
 // Extra Time is the customer-facing product brand; Jersevo remains the legal
 // organization name used in checkout and policy markup.
 const DEFAULT_BRAND = 'Extra Time'
-const DEFAULT_GOOGLE_CATEGORY = 'Apparel & Accessories > Clothing > Shirts & Tops'
-const DEFAULT_PRODUCT_TYPE = 'Apparel & Accessories > Fan Apparel > Sports Jerseys'
+// Google accepts either a numeric taxonomy id or its full path.  Numeric ids
+// are less fragile when Google changes the display label, and also avoid
+// accidentally emitting a path which is not in the official taxonomy.
+const GOOGLE_CATEGORY_IDS = Object.freeze({
+  apparel: '212',
+  hats: '173',
+  headwear: '2020',
+  bags: '6551',
+  scarves: '177',
+  gloves: '170',
+  flags: '701',
+  pins: '4179',
+  keychains: '175',
+  bottles: '3809',
+  drinkware: '674',
+  socks: '209',
+  collectibles: '3865',
+  default: '166'
+})
+
+const DEFAULT_GOOGLE_CATEGORY = GOOGLE_CATEGORY_IDS.apparel
+const DEFAULT_PRODUCT_TYPE = 'Apparel & Accessories > Clothing > Shirts & Tops'
+
+const GOOGLE_PRODUCT_TYPES = Object.freeze({
+  [GOOGLE_CATEGORY_IDS.apparel]: DEFAULT_PRODUCT_TYPE,
+  [GOOGLE_CATEGORY_IDS.hats]: 'Apparel & Accessories > Clothing Accessories > Hats',
+  [GOOGLE_CATEGORY_IDS.headwear]: 'Apparel & Accessories > Clothing Accessories > Headwear',
+  [GOOGLE_CATEGORY_IDS.bags]: 'Apparel & Accessories > Handbags, Wallets & Cases',
+  [GOOGLE_CATEGORY_IDS.scarves]: 'Apparel & Accessories > Clothing Accessories > Scarves & Shawls',
+  [GOOGLE_CATEGORY_IDS.gloves]: 'Apparel & Accessories > Clothing Accessories > Gloves & Mittens',
+  [GOOGLE_CATEGORY_IDS.flags]: 'Home & Garden > Decor > Flags & Windsocks',
+  [GOOGLE_CATEGORY_IDS.pins]: 'Apparel & Accessories > Clothing Accessories > Pinback Buttons',
+  [GOOGLE_CATEGORY_IDS.keychains]: 'Apparel & Accessories > Handbag & Wallet Accessories > Keychains',
+  [GOOGLE_CATEGORY_IDS.bottles]: 'Home & Garden > Kitchen & Dining > Food & Beverage Carriers > Water Bottles',
+  [GOOGLE_CATEGORY_IDS.drinkware]: 'Home & Garden > Kitchen & Dining > Tableware > Drinkware',
+  [GOOGLE_CATEGORY_IDS.socks]: 'Apparel & Accessories > Clothing > Underwear & Socks > Socks',
+  [GOOGLE_CATEGORY_IDS.collectibles]: 'Arts & Entertainment > Hobbies & Creative Arts > Collectibles > Sports Collectibles',
+  [GOOGLE_CATEGORY_IDS.default]: 'Apparel & Accessories'
+})
 
 const COLOR_NAMES = [
   'black', 'white', 'navy blue', 'navy', 'royal blue', 'blue', 'sky blue',
@@ -114,20 +151,61 @@ function merchantId(value, fallback) {
   return clean.replace(/^-+|-+$/g, '').slice(0, 50)
 }
 
-function productType(product, overrides) {
+function normalizedGroup(product) {
+  const taxonomy = object(product?.taxonomy)
+  return plainText(
+    product?.product_group || product?.productGroup || taxonomy.productGroup || taxonomy.product_group || taxonomy.category,
+    120
+  ).toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function inferredGoogleCategory(product, overrides) {
+  const explicit = plainText(
+    overrides.google_product_category || overrides.googleProductCategory || product?.taxonomy?.googleProductCategory,
+    750
+  )
+  if (explicit) return explicit
+
+  const group = normalizedGroup(product)
+  const text = plainText([
+    product?.title, product?.subtitle, product?.handle,
+    product?.taxonomy?.accessoryType, product?.taxonomy?.accessoryCategory,
+    ...(array(product?.tags))
+  ].filter(Boolean).join(' '), 700).toLowerCase()
+  const haystack = `${group} ${text}`
+
+  if (/\b(?:caps?|snapbacks?|fitted hats?|visors?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.hats
+  if (/\b(?:knit hats?|beanies?|skullies?|headwear)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.headwear
+  if (/\b(?:bags?|backpacks?|totes?|crossbody|duffel)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.bags
+  if (/\b(?:scarves?|shawls?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.scarves
+  if (/\b(?:gloves?|mittens?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.gloves
+  if (/\b(?:flags?|banners?|pennants?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.flags
+  if (/\b(?:pins?|patches?|badges?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.pins
+  if (/\b(?:key[ -]?chains?|key[ -]?rings?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.keychains
+  if (/\b(?:bottles?|flasks?|thermos(?:es)?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.bottles
+  if (/\b(?:mugs?|drinkware|tumblers?|glassware|coasters?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.drinkware
+  if (/\b(?:socks?|leg sleeves?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.socks
+  if (/\b(?:collectibles?|memorabilia|trading cards?|autographs?)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.collectibles
+  if (/\b(?:accessories|fan gear)\b/.test(haystack)) return GOOGLE_CATEGORY_IDS.default
+  return DEFAULT_GOOGLE_CATEGORY
+}
+
+function productType(product, overrides, googleCategory) {
   if (plainText(overrides.product_type || overrides.productType, 750)) return plainText(overrides.product_type || overrides.productType, 750)
   const taxonomy = object(product?.taxonomy)
   const league = plainText(taxonomy.league, 80).toUpperCase()
   const team = plainText(taxonomy.team, 120).replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())
   const group = plainText(product?.product_group || product?.productGroup || taxonomy.productGroup, 120)
-  return unique([DEFAULT_PRODUCT_TYPE, league, team, group]).join(' > ').slice(0, 750)
+  const base = GOOGLE_PRODUCT_TYPES[googleCategory] || DEFAULT_PRODUCT_TYPE
+  return unique([base, league, team, group]).join(' > ').slice(0, 750)
 }
 
-function merchantTitle(product, size, color) {
+function merchantTitle(product, size, color, customizable = false) {
   // Google recommends keeping titles under 70 characters even though the
   // transport format accepts a longer value. Truncate only after adding the
   // distinguishing variant values so the offer remains unambiguous.
-  const title = plainText(product?.title || product?.name, 70)
+  let title = plainText(product?.title || product?.name, 70)
+  if (customizable && !/\b(?:custom|personalized|personalised)\b/i.test(title)) title = `Custom ${title}`
   const suffixes = []
   if (color && color !== 'Multicolor' && !new RegExp(`\\b${color.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(title)) suffixes.push(color)
   if (size && !new RegExp(`(?:^|[\\s/-])${size.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|[\\s/-])`, 'i').test(title)) suffixes.push(size)
@@ -144,17 +222,55 @@ function mediaUrls(product, primary, origin) {
     .slice(0, 10)
 }
 
-function customLabels(product, availability) {
+function customLabels(product, availability, customizable = false) {
   const taxonomy = object(product?.taxonomy)
   const custom = object(product?.seo?.gmc?.custom_labels || product?.gmc?.custom_labels)
   const labels = [
     custom[0] || custom.custom_label_0 || taxonomy.league,
     custom[1] || custom.custom_label_1 || taxonomy.team,
     custom[2] || custom.custom_label_2 || product?.product_group || product?.productGroup || taxonomy.productGroup,
-    custom[3] || custom.custom_label_3 || (array(product?.custom_fields || product?.customFields).length ? 'customizable' : 'standard'),
-    custom[4] || custom.custom_label_4 || (availability === 'in stock' ? 'in-stock' : 'out-of-stock')
+    custom[3] || custom.custom_label_3 || (customizable ? 'customizable' : 'standard'),
+    custom[4] || custom.custom_label_4 || (availability === 'in_stock' ? 'in-stock' : 'out-of-stock')
   ]
   return Object.fromEntries(labels.map((value, index) => [`custom_label_${index}`, plainText(value, 100)]).filter(([, value]) => value))
+}
+
+function booleanOverride(value) {
+  if (value === true || value === false) return value
+  const normalized = String(value ?? '').trim().toLowerCase()
+  if (['true', 'yes', '1'].includes(normalized)) return true
+  if (['false', 'no', '0'].includes(normalized)) return false
+  return null
+}
+
+function hasCustomization(product, overrides) {
+  const fields = array(product?.custom_fields || product?.customFields)
+  const explicit = booleanOverride(
+    overrides.customizable ?? overrides.customized ?? product?.customizable ?? product?.personalized ?? product?.personalization
+  )
+  if (explicit != null) return explicit
+  if (fields.length) return true
+  // A type is an editorial signal; a word in a title alone is not enough to
+  // claim that the order will actually be customized.
+  return /\b(?:custom|personalized|personalised)\b/i.test(String(product?.type || ''))
+}
+
+function productRequiresSize(product, googleCategory, variant, size, overrides) {
+  const explicit = booleanOverride(overrides.size_required ?? overrides.sizeRequired)
+  if (explicit != null) return explicit
+  if (size) return true
+
+  const variants = array(product?.pod_product_variants || product?.variants)
+    .filter(row => String(row?.status || '').toUpperCase() === 'ACTIVE')
+  const group = normalizedGroup(product)
+  const apparelLike = googleCategory === GOOGLE_CATEGORY_IDS.apparel
+    || googleCategory === '1604'
+    || googleCategory === '187'
+    || /\b(?:jerseys?|fan apparel|apparel|clothing|hood(?:ies)?|shirts?|tops?|sweatshirts?|socks?|shoes?)\b/i.test(group)
+  const hasSizeVariant = [variant, ...variants].some(row => Boolean(optionValue(row, ['size'])))
+  // Google requires size for clothing/shoes and for every item group that
+  // genuinely varies by size. Hats and general accessories can be one-size.
+  return apparelLike || hasSizeVariant
 }
 
 export function normalizeGoogleMerchantItem(product, variant, config = {}) {
@@ -164,6 +280,9 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
   const color = inferredColor(product, variant, overrides)
   const gender = inferredGender(product, overrides)
   const ageGroup = inferredAgeGroup(product, overrides)
+  const googleCategory = inferredGoogleCategory(product, overrides)
+  const customizable = hasCustomization(product, overrides)
+  const requiresSize = productRequiresSize(product, googleCategory, variant, size, overrides)
   const handle = plainText(product?.handle || product?.id, 300)
   const canonicalLink = handle ? `${origin}/product/${encodeURIComponent(handle)}` : ''
   const variantId = merchantId(overrides.id || variant?.id || variant?.sku, `${product?.id || handle}-${size || 'default'}`)
@@ -172,9 +291,9 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
   const sellingPrice = positiveMoney(variant?.price ?? product?.price)
   const compareAt = positiveMoney(variant?.compare_at ?? variant?.compareAt ?? product?.compare_at ?? product?.compareAt)
   const isSale = sellingPrice && compareAt && compareAt > sellingPrice
-  const availability = Number(variant?.inventory ?? product?.inventory ?? 0) > 0 ? 'in stock' : 'out of stock'
+  const availability = Number(variant?.inventory ?? product?.inventory ?? 0) > 0 ? 'in_stock' : 'out_of_stock'
   const description = plainText(product?.description || product?.seo?.description || product?.subtitle || product?.story, 5000)
-  const title = merchantTitle(product, size, color.value)
+  const title = merchantTitle(product, size, color.value, customizable)
   const brand = plainText(overrides.brand || product?.brand || config.brand || DEFAULT_BRAND, 70)
   const rawGtin = overrides.gtin || variant?.gtin || variant?.barcode || product?.gtin
   const gtin = normalizedGtin(rawGtin)
@@ -187,7 +306,6 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
     ? 'no'
     : (gtin || confirmedMpn || explicitIdentifier === 'yes' || explicitIdentifier === 'true' ? 'yes' : 'no')
   const mpn = identifierExists === 'yes' ? confirmedMpn : ''
-  const customizable = array(product?.custom_fields || product?.customFields).length > 0 || /personalized|custom/i.test(`${product?.type || ''} ${title}`)
   const warnings = []
   const blockReasons = []
   const taxonomy = validateCatalogTaxonomy(product)
@@ -199,7 +317,7 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
   if (!canonicalLink || !link) blockReasons.push('MISSING_LINK')
   if (!primaryImage) blockReasons.push('MISSING_IMAGE')
   if (!sellingPrice) blockReasons.push('INVALID_PRICE')
-  if (!size) blockReasons.push('MISSING_SIZE')
+  if (requiresSize && !size) blockReasons.push('MISSING_SIZE')
   if (!color.value) blockReasons.push('MISSING_COLOR')
   if (!['male', 'female', 'unisex'].includes(gender.value)) blockReasons.push('INVALID_GENDER')
   if (!['newborn', 'infant', 'toddler', 'kids', 'adult'].includes(ageGroup.value)) blockReasons.push('INVALID_AGE_GROUP')
@@ -231,17 +349,24 @@ export function normalizeGoogleMerchantItem(product, variant, config = {}) {
     ...(mpn ? { mpn } : {}),
     identifier_exists: identifierExists,
     condition: 'new',
-    google_product_category: plainText(overrides.google_product_category || overrides.googleProductCategory || config.googleProductCategory || DEFAULT_GOOGLE_CATEGORY, 750),
-    product_type: productType(product, overrides),
+    google_product_category: plainText(
+      overrides.google_product_category
+      || overrides.googleProductCategory
+      || (config.googleProductCategory && config.googleProductCategory !== DEFAULT_GOOGLE_CATEGORY ? config.googleProductCategory : googleCategory),
+      750
+    ),
+    product_type: productType(product, overrides, googleCategory),
     item_group_id: merchantId(overrides.item_group_id || overrides.itemGroupId || product?.id || handle, handle),
     color: color.value,
-    size,
     gender: gender.value,
     age_group: ageGroup.value,
-    size_system: plainText(overrides.size_system || overrides.sizeSystem || 'US', 10),
-    is_bundle: customizable ? 'yes' : 'no',
+    ...(size ? { size_system: plainText(overrides.size_system || overrides.sizeSystem || 'US', 10), size } : {}),
+    // Google documents `is_bundle=yes` for a confirmed personalization or
+    // customization.  Do not infer it merely from a marketing word in a
+    // title; require custom fields/metadata or an explicit override.
+    is_bundle: booleanOverride(overrides.is_bundle ?? overrides.isBundle) === true || customizable ? 'yes' : 'no',
     ...(positiveMoney(variant?.weight_grams ?? variant?.weightGrams) ? { shipping_weight:`${Number(variant.weight_grams ?? variant.weightGrams)} g` } : {}),
-    ...customLabels(product, availability)
+    ...customLabels(product, availability, customizable)
   }
 
   return {
@@ -382,3 +507,5 @@ export const GOOGLE_MERCHANT_DEFAULTS = Object.freeze({
   googleProductCategory:DEFAULT_GOOGLE_CATEGORY,
   productType:DEFAULT_PRODUCT_TYPE
 })
+
+export const GOOGLE_MERCHANT_CATEGORY_IDS = GOOGLE_CATEGORY_IDS

@@ -73,6 +73,19 @@
       ]
     },
     {
+      "source": "/feeds/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=900, stale-while-revalidate=3600" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/feeds/(.*)\\.gz",
+      "headers": [
+        { "key": "Content-Type", "value": "application/gzip" }
+      ]
+    },
+    {
       "source": "/sw.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
