@@ -68,11 +68,15 @@ export function mergeThemeBlocks(persisted = [], defaults = themeBlocks) {
   return merged
 }
 
-const normalizeThemePages = (pages = []) => (Array.isArray(pages) ? pages : []).map(page => ({
-  ...page,
-  representativeImage: page.representative_image || page.representativeImage || '',
-  representativeAlt: page.representative_alt || page.representativeAlt || ''
-}))
+const normalizeThemePages = (pages = []) => (Array.isArray(pages) ? pages : []).map(page => {
+  const fallback = adminTheme.pages?.find(item => item.id === page?.id || item.path === page?.path) || {}
+  return {
+    ...fallback,
+    ...page,
+    representativeImage: page.representative_image || page.representativeImage || fallback.representativeImage || '',
+    representativeAlt: page.representative_alt || page.representativeAlt || fallback.representativeAlt || ''
+  }
+})
 
 export function getCustomerSessionId() {
   const key = 'extra-time-customer-session'
@@ -453,6 +457,7 @@ export async function fetchStorefrontTheme(fallback = null) {
       tokens: { ...(adminTheme.tokens || {}), ...(fallback?.tokens || {}), ...(data.tokens || {}) },
       blocks: mergeThemeBlocks(persistedBlocks),
       content: { ...(fallback?.content || {}), ...(definition.content || {}), ...(data.content || {}) },
+      pageSettings: { ...(fallback?.pageSettings || {}), ...(definition.pageSettings || {}), ...(data.pageSettings || {}) },
       pages: normalizeThemePages(pageRows)
     },
     source: 'supabase',
@@ -814,6 +819,7 @@ export async function fetchAdminTheme() {
         tokens: { ...adminTheme.tokens, ...(theme.tokens || {}) },
         blocks:mergeThemeBlocks(definition.blocks || theme.blocks || []),
         content:definition.content || theme.content || {},
+        pageSettings:definition.pageSettings || theme.pageSettings || {},
         pages: pagesError || !pages?.length ? normalizeThemePages(definition.pages || adminTheme.pages) : normalizeThemePages(pages.map(page => ({ ...page, sections: Array.isArray(page.layout) ? page.layout.length : Number(page.sections || 0), updatedAt: page.updated_at, layout:page.layout })))
       },
       source: 'supabase', error: pagesError?.message || null
@@ -826,7 +832,7 @@ export async function fetchAdminTheme() {
 
 export async function saveAdminTheme(theme) {
   if (!supabase) return previewResult(theme)
-  const payload = { ...theme, status:theme.status || 'DRAFT', version:theme.version || 'v1.0', tokens:theme.tokens || {}, blocks:theme.blocks || [], content:theme.content || {}, pages:theme.pages || [] }
+  const payload = { ...theme, status:theme.status || 'DRAFT', version:theme.version || 'v1.0', tokens:theme.tokens || {}, blocks:theme.blocks || [], content:theme.content || {}, pageSettings:theme.pageSettings || {}, pages:theme.pages || [] }
   const { data, error } = await supabase.rpc('pod_save_theme', { theme_payload:payload })
   if (error) return { data:theme, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
   return { data, source: 'supabase', error: null }

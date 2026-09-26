@@ -20,6 +20,11 @@ const assetRoot = path.join(rootDir, 'public', 'assets', 'leagues', 'marks', 'te
 const manifestPath = path.join(rootDir, 'public', 'assets', 'leagues', 'marks', 'team-sources.json')
 
 const FEEDS = Object.freeze({
+  mlb: Object.freeze({
+    sport: 'baseball',
+    league: 'mlb',
+    apiUrl: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams'
+  }),
   nba: Object.freeze({
     sport: 'basketball',
     league: 'nba',

@@ -56,6 +56,7 @@ export const LEAGUE_TAXONOMY = [
       ['pittsburgh-pirates', 'Pittsburgh Pirates'], ['san-diego-padres', 'San Diego Padres'],
       ['san-francisco-giants', 'San Francisco Giants'], ['seattle-mariners', 'Seattle Mariners'],
       ['st-louis-cardinals', 'St. Louis Cardinals'], ['tampa-bay-rays', 'Tampa Bay Rays'],
+      ['athletics', 'Athletics'],
       ['texas-rangers', 'Texas Rangers'], ['toronto-blue-jays', 'Toronto Blue Jays'],
       ['washington-nationals', 'Washington Nationals']
     ].map(([slug, name]) => ({ slug, name, media: teamMedia('mlb', slug, name) }))
@@ -251,6 +252,21 @@ export const TAXONOMY_TEAM_BY_SLUG = new Map(LEAGUE_TAXONOMY.flatMap(league => l
 // those aliases at the taxonomy boundary so imported products, menu links and
 // SEO pages all resolve to one canonical URL.
 export const TEAM_SLUG_ALIASES = Object.freeze({
+  mlb: Object.freeze({
+    // The franchise is currently branded simply as Athletics. Keep historical
+    // Oakland/Sacramento source slugs on the same canonical team page.
+    'oakland-athletics': 'athletics',
+    'sacramento-athletics': 'athletics',
+    'oakland-as': 'athletics',
+    'a-s': 'athletics'
+  }),
+  nba: Object.freeze({
+    'los-angeles-clippers': 'la-clippers',
+    'new-jersey-nets': 'brooklyn-nets',
+    'vancouver-grizzlies': 'memphis-grizzlies',
+    'seattle-supersonics': 'oklahoma-city-thunder',
+    'seattle-sonics': 'oklahoma-city-thunder'
+  }),
   mls: Object.freeze({
     'atlanta-united-fc': 'atlanta-united',
     'chicago-fire-fc': 'chicago-fire',

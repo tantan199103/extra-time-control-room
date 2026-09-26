@@ -36,7 +36,7 @@ import {
   Monitor,
   X
 } from 'lucide-react'
-import { adminProductOptions, themeBlocks } from './admin-builder-data'
+import { adminProductOptions, adminTheme, themeBlocks } from './admin-builder-data'
 import { menuImageProblem, menuTargetProblem, normalizeMenuLocation } from './lib/storefront-model'
 import { addToCollection, applyCollectionMembership, changeCollectionMembership } from './lib/collection-assignment'
 import { DEFAULT_COLLECTION_AUTOMATION, collectionAutomationHasConditions, normalizeCollectionAutomation, parseCollectionKeywords } from './lib/collection-rules'
@@ -44,6 +44,7 @@ import { ACCESSORY_FAMILY_OPTIONS, ACCESSORY_TYPE_OPTIONS, CATALOG_CATEGORY_OPTI
 import { buildCollectionTree, collectionDescendantIds } from './lib/collection-tree'
 import { buildCatalogPageTree, catalogPageTreeStats, flattenCatalogPageTree, productMatchesCatalogPage } from './lib/catalog-page-tree'
 import CategoryIcon from './CategoryIcon'
+import { mergePageLayoutWithDefaults } from './lib/theme-runtime'
 import './admin-builder.css'
 
 const navigate = path => {
@@ -67,24 +68,58 @@ function SaveNotice({ notice }) {
   return <div className="admin-toast" role={notice.startsWith("Not saved:") ? "alert" : "status"}>{notice.startsWith("Not saved:") ? <X size={15}/> : <Check size={15}/>}<span>{notice}</span></div>
 }
 
-export function AdminThemeStudio({ theme, onSave }) {
+const themePageDefaults = page => adminTheme.pages?.find(item => item.id === page?.id)?.layout || []
+const themePageLayouts = (pages = [], blocks = themeBlocks) => Object.fromEntries((pages || []).map(page => [page.id, mergePageLayoutWithDefaults(page, blocks, themePageDefaults(page))]))
+
+export function AdminThemeStudio({ theme, onSave, source = 'preview', sourceError = '' }) {
   const [selectedPageId, setSelectedPageId] = useState(theme.pages[0]?.id)
   const [selectedBlockId, setSelectedBlockId] = useState('hero')
   const [device, setDevice] = useState('desktop')
   const [blocks, setBlocks] = useState(theme.blocks?.length ? theme.blocks : themeBlocks)
   const [tokens, setTokens] = useState(theme.tokens)
   const [pages, setPages] = useState(theme.pages)
-  const [content, setContent] = useState({ eyebrow: 'CUSTOM JERSEYS', headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.', supporting: 'Made for fans. Personalized with the details that make it yours.', button: 'START CUSTOMIZING', ...(theme.content || {}) })
+  const [pageLayouts, setPageLayouts] = useState(() => themePageLayouts(theme.pages, theme.blocks?.length ? theme.blocks : themeBlocks))
+  const [content, setContent] = useState(() => {
+    const legacy = theme.content || {}
+    const pageContent = legacy.pages && typeof legacy.pages === 'object' ? legacy.pages : {}
+    const homeLegacy = Object.fromEntries(['eyebrow', 'headline', 'supporting', 'button'].filter(key => legacy[key] != null).map(key => [key, legacy[key]]))
+    const pagesWithDefaults = Object.fromEntries((theme.pages || []).map(page => [page.id, { ...(pageContent[page.id] || {}), ...(page.id === 'home' ? homeLegacy : {}) }]))
+    return { eyebrow: 'CUSTOM JERSEYS', headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.', supporting: 'Made for fans. Personalized with the details that make it yours.', button: 'START CUSTOMIZING', ...legacy, pages: pagesWithDefaults }
+  })
   const [notice, setNotice] = useState('')
+  // AdminWorkspace starts with a local fallback so the shell can paint
+  // immediately, then replaces it with the live Supabase theme. Rehydrate
+  // the editor only when that source snapshot changes; ordinary keystrokes do
+  // not change these props and therefore keep unsaved edits intact.
+  useEffect(() => {
+    const nextBlocks = theme.blocks?.length ? theme.blocks : themeBlocks
+    setBlocks(nextBlocks)
+    setTokens(theme.tokens || adminTheme.tokens)
+    setPages(theme.pages || adminTheme.pages)
+    setPageLayouts(themePageLayouts(theme.pages || adminTheme.pages, nextBlocks))
+    setContent(() => {
+      const legacy = theme.content || {}
+      const pageContent = legacy.pages && typeof legacy.pages === 'object' ? legacy.pages : {}
+      const homeLegacy = Object.fromEntries(['eyebrow', 'headline', 'supporting', 'button'].filter(key => legacy[key] != null).map(key => [key, legacy[key]]))
+      const pagesWithDefaults = Object.fromEntries((theme.pages || adminTheme.pages || []).map(page => [page.id, { ...(pageContent[page.id] || {}), ...(page.id === 'home' ? homeLegacy : {}) }]))
+      return { eyebrow: 'CUSTOM JERSEYS', headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.', supporting: 'Made for fans. Personalized with the details that make it yours.', button: 'START CUSTOMIZING', ...legacy, pages: pagesWithDefaults }
+    })
+    setSelectedPageId(current => (theme.pages || adminTheme.pages || []).some(page => page.id === current) ? current : (theme.pages || adminTheme.pages || [])[0]?.id)
+  }, [theme.id, theme.version, theme.updatedAt, theme.status])
   const selectedPage = pages.find(page => page.id === selectedPageId) || pages[0]
-  const selectedBlock = blocks.find(block => block.id === selectedBlockId) || blocks[0]
-  const enabledPreviewBlocks = blocks.filter(block => block.enabled !== false && !['announcement', 'header', 'footer', 'hero'].includes(block.id))
+  const activeBlocks = selectedPage ? (pageLayouts[selectedPage.id] || blocks) : blocks
+  const selectedBlock = activeBlocks.find(block => block.id === selectedBlockId) || activeBlocks[0]
+  const activePageContent = selectedPage ? (content.pages?.[selectedPage.id] || {}) : content
+  useEffect(() => {
+    if (activeBlocks.length && !activeBlocks.some(block => block.id === selectedBlockId)) setSelectedBlockId(activeBlocks[0].id)
+  }, [selectedPageId, activeBlocks.length])
+  const enabledPreviewBlocks = activeBlocks.filter(block => block.enabled !== false && !['announcement', 'header', 'footer', 'hero'].includes(block.id))
   const previewBlockLabels = {
     'home-trust': 'Trust strip / order assurances',
     leagues: 'League discovery / crawlable routes',
     rail: 'Starting lineup / product rail',
     'home-path': 'Make it yours / four steps',
-    'custom-options': 'Controlled customization / 30% personal layer',
+    'custom-options': 'Controlled customization / approved fields',
     quality: 'Detail proof / materials and fit',
     drop: 'Featured drop / editorial commerce',
     players: 'Shop by intent',
@@ -93,32 +128,71 @@ export function AdminThemeStudio({ theme, onSave }) {
     newsletter: 'Newsletter capture',
     story: 'Story explorer',
     vault: 'Vault teaser',
-    manifesto: 'Brand manifesto'
+    manifesto: 'Brand manifesto',
+    'category-index': 'Category index',
+    'product-gallery': 'Product gallery',
+    'product-buybox': 'Product purchase panel',
+    'product-highlights': 'Delivery and savings highlights',
+    'product-story': 'Product story',
+    'product-proof': 'Product proof',
+    'related-products': 'Related products',
+    'collection-hero': 'Collection header',
+    filters: 'Catalog filters',
+    'product-grid': 'Product grid',
+    'collection-trust': 'Collection trust strip',
+    'custom-hero': 'Custom Lab hero',
+    'custom-steps': 'Custom Lab steps',
+    'custom-catalog': 'Custom catalog',
+    'custom-trust': 'Custom trust strip',
+    'vault-hero': 'Vault hero',
+    'vault-grid': 'Vault archive'
   }
   const updateToken = (key, value) => setTokens(current => ({ ...current, [key]: value }))
-  const updateContent = (key, value) => setContent(current => ({ ...current, [key]: value }))
+  const updateContent = (key, value) => setContent(current => {
+    const id = selectedPage?.id || 'home'
+    const nextPage = { ...(current.pages?.[id] || {}), [key]: value }
+    return { ...current, ...(id === 'home' ? { [key]: value } : {}), pages: { ...(current.pages || {}), [id]: nextPage } }
+  })
+  const updateBlockContent = (key, value) => setContent(current => {
+    const id = selectedPage?.id || 'home'
+    const page = current.pages?.[id] || {}
+    const block = page.blocks?.[selectedBlockId] || {}
+    return { ...current, pages: { ...(current.pages || {}), [id]: { ...page, blocks: { ...(page.blocks || {}), [selectedBlockId]: { ...block, [key]: value } } } } }
+  })
   const updatePage = (key, value) => setPages(current => current.map(page => page.id === selectedPage?.id ? { ...page, [key]: value } : page))
+  const addPage = () => {
+    const id = `page-${Date.now()}`
+    const page = { id, name: 'New page', path: '/new-page', status: 'DRAFT', sections: 0, updatedAt: 'Not saved', layout: [], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Page preview' }
+    const layout = mergePageLayoutWithDefaults(page, blocks, [])
+    setPages(current => [...current, page])
+    setPageLayouts(current => ({ ...current, [id]: layout }))
+    setContent(current => ({ ...current, pages: { ...(current.pages || {}), [id]: {} } }))
+    setSelectedPageId(id)
+    setSelectedBlockId(layout[0]?.id || 'hero')
+  }
   const moveBlock = (index, direction) => {
     const target = index + direction
-    if (target < 0 || target >= blocks.length) return
-    setBlocks(current => { const next = [...current]; [next[index], next[target]] = [next[target], next[index]]; return next })
+    if (target < 0 || target >= activeBlocks.length || !selectedPage) return
+    setPageLayouts(current => { const next = [...activeBlocks]; [next[index], next[target]] = [next[target], next[index]]; return { ...current, [selectedPage.id]: next.map((block, blockIndex) => ({ ...block, order: blockIndex })) } })
   }
   const save = async (status = 'DRAFT') => {
-    const result = await onSave?.({ ...theme, status, tokens, blocks, pages:pages.map(page => ({ ...page, status:status === 'PUBLISHED' ? 'PUBLISHED' : page.status === 'PUBLISHED' ? 'DRAFT' : page.status })), content, updatedAt: 'Just now' })
+    const persistedPages = pages.map(page => ({ ...page, layout: (pageLayouts[page.id] || []).map((block, index) => ({ ...block, order: index })), sections: (pageLayouts[page.id] || []).filter(block => block.enabled !== false).length, status:status === 'PUBLISHED' ? 'PUBLISHED' : page.status === 'PUBLISHED' ? 'DRAFT' : page.status }))
+    const persistedContent = { ...content, pages: { ...(content.pages || {}) } }
+    const result = await onSave?.({ ...theme, status, tokens, blocks, pages: persistedPages, content: persistedContent, pageSettings: Object.fromEntries(persistedPages.map(page => [page.id, page.settings || {}])), updatedAt: 'Just now' })
     setNotice(result?.source === 'supabase' ? (status === 'PUBLISHED' ? 'Theme published to storefront.' : 'Draft saved. The live storefront is unchanged.') : result?.error ? `Not saved: ${result.error}` : 'Changes kept in this preview only; not published.')
     window.setTimeout(() => setNotice(''), 2200)
   }
   return <main className="admin-page admin-builder-page">
     <BuilderIntro eyebrow="STOREFRONT / THEME STUDIO" title={<>DIRECT THE<br /><em>POINT OF VIEW.</em></>} copy="Edit copy, layout and visual tokens from one controlled system. No broken CSS, no mystery spacing." action="View live storefront" onAction={() => window.open('/', '_blank')}/>
     <section className="admin-theme-toolbar">
-      <div className="admin-theme-toolbar__identity"><span className="admin-theme-mark"><LayoutTemplate size={16}/></span><div><strong>{theme.name}</strong><small>Version {theme.version} · {theme.status}</small></div></div>
+      <div className="admin-theme-toolbar__identity"><span className="admin-theme-mark"><LayoutTemplate size={16}/></span><div><strong>{theme.name}</strong><small>Version {theme.version} · {theme.status}</small><span className={`admin-source admin-theme-source ${source === 'supabase' ? 'is-live' : ''}`} title={sourceError || undefined}><i/>{source === 'supabase' ? 'LIVE SUPABASE CONFIG' : source === 'loading' ? 'CONNECTING TO SUPABASE' : 'LOCAL FALLBACK CONFIG'}</span></div></div>
       <div className="admin-theme-toolbar__devices"><button className={device === 'desktop' ? 'is-active' : ''} onClick={() => setDevice('desktop')}><Monitor size={14}/> Desktop</button><button className={device === 'mobile' ? 'is-active' : ''} onClick={() => setDevice('mobile')}><Smartphone size={14}/> Mobile</button></div>
       <div className="admin-theme-toolbar__actions"><button className="admin-icon-button" aria-label="Undo — not available yet" disabled title="Undo is not available yet."><Undo2 size={15}/></button><button className="admin-icon-button" aria-label="Redo — not available yet" disabled title="Redo is not available yet."><Redo2 size={15}/></button><button className="admin-button admin-button--outline" onClick={() => navigate('/admin/theme/menus')}><MenuIcon size={14}/> Menus</button><button className="admin-button admin-button--outline" onClick={() => save('DRAFT')}><Save size={14}/> Save draft</button><button className="admin-button admin-button--dark" onClick={() => save('PUBLISHED')}><PackageCheck size={14}/> Publish</button></div>
     </section>
     <section className="admin-theme-workspace">
-      <aside className="admin-theme-pages"><div className="admin-builder-panel-head"><span>PAGES</span><button className="admin-text-button" onClick={() => { const page = { id: `page-${Date.now()}`, name: 'New page', path: '/new-page', status: 'DRAFT', sections: 0, updatedAt: 'Not saved', layout: [], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Page preview' }; setPages(current => [...current, page]); setSelectedPageId(page.id) }}><Plus size={13}/> Add page</button></div><div className="admin-theme-page-list">{pages.map(page => <button key={page.id} className={selectedPageId === page.id ? 'is-active' : ''} onClick={() => setSelectedPageId(page.id)}><span><strong>{page.name}</strong><small>{page.path}</small></span><Status value={page.status}/></button>)}</div>{selectedPage && <div className="admin-theme-page-media"><small>REPRESENTATIVE IMAGE</small>{(selectedPage.representativeImage || selectedPage.representative_image) && <img src={selectedPage.representativeImage || selectedPage.representative_image} alt={selectedPage.representativeAlt || selectedPage.representative_alt || ''}/>}<label className="admin-builder-field"><span>Image URL</span><input value={selectedPage.representativeImage || selectedPage.representative_image || ''} onChange={event => updatePage('representativeImage', event.target.value)} placeholder="/assets/… or https://…"/></label><label className="admin-builder-field"><span>Alt text</span><input value={selectedPage.representativeAlt || selectedPage.representative_alt || ''} onChange={event => updatePage('representativeAlt', event.target.value)} placeholder="Accessible page description"/></label><span>Menu items in Auto mode use this image.</span></div>}<div className="admin-theme-global-link"><SlidersHorizontal size={14}/><div><strong>Global styles</strong><small>Tokens used across every page</small></div><ArrowRight size={14}/></div></aside>
-      <div className={`admin-theme-canvas admin-theme-canvas--${device}`}><div className="admin-canvas-bar"><span>LIVE CANVAS / {selectedPage?.name.toUpperCase()}</span><span><i/> Draft preview</span></div><div className="admin-storefront-preview"><div className="admin-preview-announcement">THE 90+ DROP IS LIVE <span>FREE SHIPPING OVER $100</span></div><div className="admin-preview-nav"><strong>90<sup>+</sup> EXTRA TIME</strong><span>SHOP　 MOMENTS　 PLAYERS　 CUSTOM LAB</span><b>BAG (0)</b></div>{selectedPage?.id === 'product' ? <div className="admin-preview-product"><div className="admin-preview-product__image"><img src="/assets/jersey-black.webp" alt="Product preview"/></div><div className="admin-preview-product__copy"><small>PERSONALIZED / VENOM</small><h3>AFTER 90</h3><strong>$89</strong><p>The minutes nobody forgets.</p><button disabled title="Visual preview only; shopping is available on the live storefront.">ADD TO BAG</button></div></div> : <div className="admin-preview-home"><div className="admin-preview-hero"><span>{content.eyebrow}</span><h3>{content.headline.toUpperCase()}</h3><p>{content.supporting}</p><button disabled title="Visual preview only; use View live storefront to browse.">{content.button.toUpperCase()} <ArrowRight size={13}/></button><img src="/assets/hero-tunnel.webp" alt="Theme hero preview"/></div><div className="admin-preview-home__sections"><div className="admin-preview-home__section-head"><span>HOMEPAGE SEQUENCE</span><strong>{enabledPreviewBlocks.length} storefront sections</strong></div>{enabledPreviewBlocks.map((block, index) => <div key={block.id} className="admin-preview-home__section"><b>{String(index + 1).padStart(2, '0')}</b><span><strong>{previewBlockLabels[block.id] || block.type}</strong><small>{block.note}</small></span><i>{block.id === selectedBlockId ? 'EDITING' : 'READY'}</i></div>)}</div></div>}<div className="admin-preview-footer"><span>EXTRA TIME STUDIO</span><span>MADE FOR THE GAME / AFTER THE GAME</span></div></div></div>
-      <aside className="admin-theme-inspector"><div className="admin-builder-panel-head"><span>INSPECTOR</span><span className="admin-inspector-mode"><Type size={13}/> {selectedBlock?.type}</span></div><div className="admin-inspector-tabs"><button className="is-active" disabled title="Content panel is already open.">Content</button><button disabled title="Design panel is not available yet.">Design · Soon</button><button disabled title="Responsive panel is not available yet.">Responsive · Soon</button></div><section className="admin-inspector-section"><div className="admin-inspector-section__head"><div><small>SELECTED SECTION</small><strong>{selectedBlock?.type}</strong></div><MoreHorizontal size={16}/></div><label className="admin-builder-field"><span>Eyebrow</span><input value={content.eyebrow} onChange={event => updateContent('eyebrow', event.target.value)}/></label><label className="admin-builder-field"><span>Headline</span><textarea value={content.headline} onChange={event => updateContent('headline', event.target.value)}/></label><label className="admin-builder-field"><span>Supporting copy</span><textarea value={content.supporting} onChange={event => updateContent('supporting', event.target.value)} /></label><label className="admin-builder-field"><span>Primary button</span><input value={content.button} onChange={event => updateContent('button', event.target.value)}/></label></section><section className="admin-inspector-section"><div className="admin-inspector-section__head"><div><small>GLOBAL TOKENS</small><strong>Visual language</strong></div><SlidersHorizontal size={15}/></div><label className="admin-builder-color"><span>Ink</span><input type="color" value={tokens.ink} onChange={event => updateToken('ink', event.target.value)}/><code>{tokens.ink}</code></label><label className="admin-builder-color"><span>Acid accent</span><input type="color" value={tokens.acid} onChange={event => updateToken('acid', event.target.value)}/><code>{tokens.acid}</code></label><label className="admin-builder-field"><span>Max content width</span><input value={tokens.maxWidth} onChange={event => updateToken('maxWidth', event.target.value)}/></label></section><section className="admin-inspector-section admin-inspector-section--quiet"><div className="admin-inspector-section__head"><div><small>SECTION ORDER</small><strong>{blocks.length} blocks on this page</strong></div><Layers3 size={15}/></div><div className="admin-block-list">{blocks.map((block, index) => <div key={block.id} className={selectedBlockId === block.id ? 'is-selected' : ''}><button className="admin-block-select" onClick={() => setSelectedBlockId(block.id)}><GripVertical size={13}/><span><strong>{block.type}</strong><small>{block.note}</small></span></button><button className="admin-block-icon" onClick={() => moveBlock(index, -1)} aria-label="Move section up"><ChevronUp size={13}/></button><button className="admin-block-icon" onClick={() => moveBlock(index, 1)} aria-label="Move section down"><ChevronDown size={13}/></button><button className="admin-block-icon" onClick={() => setBlocks(current => current.map(item => item.id === block.id ? { ...item, enabled: !item.enabled } : item))} aria-label="Toggle section">{block.enabled ? <Eye size={13}/> : <Eye size={13} opacity={.35}/>}</button></div>)}</div></section></aside>
+      <aside className="admin-theme-pages"><div className="admin-builder-panel-head"><span>PAGES</span><button className="admin-text-button" onClick={addPage}><Plus size={13}/> Add page</button></div><div className="admin-theme-page-list">{pages.map(page => <button key={page.id} className={selectedPageId === page.id ? 'is-active' : ''} onClick={() => setSelectedPageId(page.id)}><span><strong>{page.name}</strong><small>{page.path}</small></span><Status value={page.status}/></button>)}</div>{selectedPage && <div className="admin-theme-page-media"><small>REPRESENTATIVE IMAGE</small>{(selectedPage.representativeImage || selectedPage.representative_image) && <img src={selectedPage.representativeImage || selectedPage.representative_image} alt={selectedPage.representativeAlt || selectedPage.representative_alt || ''}/>}<label className="admin-builder-field"><span>Image URL</span><input value={selectedPage.representativeImage || selectedPage.representative_image || ''} onChange={event => updatePage('representativeImage', event.target.value)} placeholder="/assets/… or https://…"/></label><label className="admin-builder-field"><span>Alt text</span><input value={selectedPage.representativeAlt || selectedPage.representative_alt || ''} onChange={event => updatePage('representativeAlt', event.target.value)} placeholder="Accessible page description"/></label><span>Menu items in Auto mode use this image.</span></div>}<div className="admin-theme-global-link"><SlidersHorizontal size={14}/><div><strong>Global styles</strong><small>Tokens used across every page</small></div><ArrowRight size={14}/></div></aside>
+       <div className={`admin-theme-canvas admin-theme-canvas--${device}`}><div className="admin-canvas-bar"><span>LIVE CANVAS / {selectedPage?.name.toUpperCase()}</span><span><i/> Admin-configured preview</span></div><div className="admin-storefront-preview"><div className="admin-preview-announcement">THE 90+ DROP IS LIVE <span>FREE SHIPPING OVER $100</span></div><div className="admin-preview-nav"><strong>90<sup>+</sup> EXTRA TIME</strong><span>SHOP　 SPORTS　 TEAMS　 CUSTOM　 COLLECTIONS</span><b>BAG (0)</b></div>{selectedPage?.id === 'product' ? <div className="admin-preview-product"><div className="admin-preview-product__image"><img src="/assets/jersey-black.webp" alt="Product preview"/></div><div className="admin-preview-product__copy"><small>{activePageContent.eyebrow || 'PRODUCT DETAIL'}</small><h3>AFTER 90</h3><strong>$89</strong><p>{activePageContent.supporting || 'The minutes nobody forgets.'}</p><button disabled title="Visual preview only; shopping is available on the live storefront.">{activePageContent.button || 'ADD TO BAG'}</button></div></div> : <div className="admin-preview-home"><div className="admin-preview-hero"><span>{activePageContent.eyebrow || content.eyebrow}</span><h3>{String(activePageContent.headline || content.headline).toUpperCase()}</h3><p>{activePageContent.supporting || content.supporting}</p><button disabled title="Visual preview only; use View live storefront to browse.">{String(activePageContent.button || content.button).toUpperCase()} <ArrowRight size={13}/></button><img src="/assets/hero-tunnel.webp" alt="Theme hero preview"/></div><div className="admin-preview-home__sections"><div className="admin-preview-home__section-head"><span>{selectedPage?.name.toUpperCase()} SEQUENCE</span><strong>{enabledPreviewBlocks.length} storefront sections</strong></div>{enabledPreviewBlocks.map((block, index) => <div key={block.id} className="admin-preview-home__section"><b>{String(index + 1).padStart(2, '0')}</b><span><strong>{previewBlockLabels[block.id] || block.type}</strong><small>{block.note}</small></span><i>{block.id === selectedBlockId ? 'EDITING' : 'READY'}</i></div>)}</div></div>}<div className="admin-preview-footer"><span>EXTRA TIME STUDIO</span><span>ADMIN → STOREFRONT</span></div></div></div>
+       <aside className="admin-theme-inspector"><div className="admin-builder-panel-head"><span>INSPECTOR</span><span className="admin-inspector-mode"><Type size={13}/> {selectedBlock?.type || 'Page settings'}</span></div><div className="admin-inspector-tabs"><button className="is-active" disabled title="Content panel is already open.">Content</button><button disabled title="Design panel is not available yet.">Design · Soon</button><button disabled title="Responsive panel is not available yet.">Responsive · Soon</button></div><section className="admin-inspector-section"><div className="admin-inspector-section__head"><div><small>PAGE COPY / {selectedPage?.name || 'PAGE'}</small><strong>{selectedBlock?.type || 'Page content'}</strong></div><MoreHorizontal size={16}/></div><label className="admin-builder-field"><span>Eyebrow</span><input value={activePageContent.eyebrow || ''} onChange={event => updateContent('eyebrow', event.target.value)}/></label><label className="admin-builder-field"><span>Headline</span><textarea value={activePageContent.headline || ''} onChange={event => updateContent('headline', event.target.value)}/></label><label className="admin-builder-field"><span>Supporting copy</span><textarea value={activePageContent.supporting || ''} onChange={event => updateContent('supporting', event.target.value)} /></label><label className="admin-builder-field"><span>Primary button</span><input value={activePageContent.button || ''} onChange={event => updateContent('button', event.target.value)}/></label>{selectedBlock?.id === 'rail' && <><label className="admin-builder-field"><span>Rail title</span><input value={activePageContent.blocks?.rail?.title || ''} onChange={event => updateBlockContent('title', event.target.value)}/></label><label className="admin-builder-field"><span>Rail subtitle</span><input value={activePageContent.blocks?.rail?.subtitle || ''} onChange={event => updateBlockContent('subtitle', event.target.value)}/></label><label className="admin-builder-field"><span>Featured collection ID or handle</span><input value={activePageContent.blocks?.rail?.featuredCollectionId || activePageContent.featuredCollectionId || ''} onChange={event => updateBlockContent('featuredCollectionId', event.target.value)}/></label></>}</section><section className="admin-inspector-section"><div className="admin-inspector-section__head"><div><small>PAGE SEO</small><strong>Search and sharing</strong></div><Sparkles size={15}/></div><label className="admin-builder-field"><span>SEO title</span><input value={selectedPage?.seo?.title || ''} onChange={event => updatePage('seo', { ...(selectedPage?.seo || {}), title: event.target.value })}/></label><label className="admin-builder-field"><span>SEO description</span><textarea value={selectedPage?.seo?.description || ''} onChange={event => updatePage('seo', { ...(selectedPage?.seo || {}), description: event.target.value })}/></label></section><section className="admin-inspector-section"><div className="admin-inspector-section__head"><div><small>GLOBAL TOKENS</small><strong>Visual language</strong></div><SlidersHorizontal size={15}/></div><label className="admin-builder-color"><span>Ink</span><input type="color" value={tokens.ink} onChange={event => updateToken('ink', event.target.value)}/><code>{tokens.ink}</code></label><label className="admin-builder-color"><span>Acid accent</span><input type="color" value={tokens.acid} onChange={event => updateToken('acid', event.target.value)}/><code>{tokens.acid}</code></label><label className="admin-builder-field"><span>Max content width</span><input value={tokens.maxWidth} onChange={event => updateToken('maxWidth', event.target.value)}/></label></section><section className="admin-inspector-section admin-inspector-section--quiet"><div className="admin-inspector-section__head"><div><small>SECTION ORDER / VISIBILITY</small><strong>{activeBlocks.length} blocks on this page</strong></div><Layers3 size={15}/></div><div className="admin-block-list">{activeBlocks.map((block, index) => <div key={block.id} className={selectedBlockId === block.id ? 'is-selected' : ''}><button className="admin-block-select" onClick={() => setSelectedBlockId(block.id)}><GripVertical size={13}/><span><strong>{block.type}</strong><small>{block.note}</small></span></button><button className="admin-block-icon" onClick={() => moveBlock(index, -1)} aria-label="Move section up"><ChevronUp size={13}/></button><button className="admin-block-icon" onClick={() => moveBlock(index, 1)} aria-label="Move section down"><ChevronDown size={13}/></button><button className="admin-block-icon" onClick={() => setPageLayouts(current => ({ ...current, [selectedPage.id]: activeBlocks.map(item => item.id === block.id ? { ...item, enabled: item.enabled === false } : item) }))} aria-label="Toggle section">{block.enabled !== false ? <Eye size={13}/> : <Eye size={13} opacity={.35}/>}</button></div>)}</div></section></aside>
     </section>
     <SaveNotice notice={notice}/>
   </main>

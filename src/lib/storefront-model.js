@@ -373,9 +373,9 @@ export function menuTargetProblem(target, type = 'PAGE') {
   if (String(type).toUpperCase() === 'EXTERNAL') {
     return /^https:\/\//i.test(value) ? '' : 'External links must use HTTPS.'
   }
-  if (value === '#bag' || value.startsWith('/#') || value.startsWith('/product/') || value.startsWith('/collection/') || value.startsWith('/collections/') || value.startsWith('/league/') || value.startsWith('/team/')) return ''
+  if (value === '#bag' || value.startsWith('/#') || value.startsWith('/product/') || value.startsWith('/collection/') || value.startsWith('/collections/') || value.startsWith('/category/') || value.startsWith('/league/') || value.startsWith('/team/')) return ''
   const path = value.split(/[?#]/)[0]
-  return STOREFRONT_STATIC_ROUTES.has(path) ? '' : 'This route is not published by the storefront.'
+  return STOREFRONT_STATIC_ROUTES.has(path) || ['/sports','/teams','/collections'].includes(path) ? '' : 'This route is not published by the storefront.'
 }
 
 export function storefrontOptionValues(product, optionName) {

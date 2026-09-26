@@ -11,6 +11,7 @@
 .admin-preview-home__section span strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 10px var(--body); }
 .admin-preview-home__section span small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--admin-muted); font-size:8px; }
 .admin-preview-home__section > i { color:var(--admin-muted); font:600 7px var(--body); letter-spacing:.08em; font-style:normal; }
+.admin-theme-source { margin-top:5px; font-size:7px; }
 @media (max-width:560px) {
   .admin-preview-home__section { padding-left:14px; padding-right:14px; }
   .admin-preview-home__section-head { padding-left:14px; padding-right:14px; }

@@ -22,7 +22,16 @@ const LEAGUE_ALIASES = Object.freeze({
   seriea: ['serie a', 'serie-a'],
   bundesliga: ['bundesliga'],
   ligue1: ['ligue 1', 'ligue-1'],
-  soccer: ['soccer', 'football association']
+  soccer: ['soccer', 'football association'],
+  // Wrestling and motorsport are deliberately split into leaf entities where
+  // the source gives us enough evidence. Their umbrella keys are retained for
+  // generic listings that cannot be assigned to a single promotion/series.
+  wwe: ['wwe', 'world wrestling entertainment'],
+  aew: ['aew', 'all elite wrestling'],
+  wrestling: ['wrestling', 'professional wrestling'],
+  nascar: ['nascar', 'national association for stock car auto racing'],
+  formula1: ['formula 1', 'formula one', 'formel 1', 'f1'],
+  motorsports: ['motorsport', 'motorsports', 'motor racing', 'racing']
 })
 
 const SPORT_ALIASES = Object.freeze({
@@ -31,13 +40,17 @@ const SPORT_ALIASES = Object.freeze({
   basketball: ['basketball'],
   hockey: ['hockey', 'ice hockey'],
   soccer: ['soccer', 'football association'],
-  college: ['college', 'ncaa']
+  college: ['college', 'ncaa'],
+  wrestling: ['wrestling', 'professional wrestling'],
+  motorsports: ['motorsport', 'motorsports', 'motor racing', 'racing']
 })
 
 const LEAGUE_SPORT = Object.freeze({
   nfl: 'football', mlb: 'baseball', nba: 'basketball', nhl: 'hockey', mls: 'soccer',
   epl: 'soccer', laliga: 'soccer', seriea: 'soccer', bundesliga: 'soccer', ligue1: 'soccer',
-  soccer: 'soccer', ncaa: 'college'
+  soccer: 'soccer', ncaa: 'college',
+  wwe: 'wrestling', aew: 'wrestling', wrestling: 'wrestling',
+  nascar: 'motorsports', formula1: 'motorsports', motorsports: 'motorsports'
 })
 
 const GROUP_SPORT = Object.freeze({
@@ -53,7 +66,7 @@ const NEUTRAL_GROUPS = new Set([
   'accessories', 'apparel', 'hoodies', 'shirts', 't-shirts', 'tshirt', 'jerseys', 'jersey'
 ])
 
-const LEAGUE_KEYS = new Set(LEAGUE_TAXONOMY.map(item => item.key))
+const LEAGUE_KEYS = new Set([...LEAGUE_TAXONOMY.map(item => item.key), ...Object.keys(LEAGUE_SPORT)])
 const LEAGUE_TERM_TO_KEY = new Map()
 for (const [key, aliases] of Object.entries(LEAGUE_ALIASES)) {
   for (const alias of aliases) LEAGUE_TERM_TO_KEY.set(taxonomySlug(alias).replace(/-/g, ' '), key)
@@ -130,6 +143,12 @@ function compatibleLeagueText(declared, detected) {
   // "Soccer" is the umbrella landing taxonomy for its controlled leagues.
   if (declared === 'soccer' && ['mls', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'soccer'].includes(detected)) return true
   if (detected === 'soccer' && ['mls', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'soccer'].includes(declared)) return true
+  const wrestlingLeaves = ['wwe', 'aew']
+  if ((declared === 'wrestling' && (wrestlingLeaves.includes(detected) || detected === 'wrestling'))
+    || (detected === 'wrestling' && (wrestlingLeaves.includes(declared) || declared === 'wrestling'))) return true
+  const motorsportLeaves = ['nascar', 'formula1']
+  if ((declared === 'motorsports' && (motorsportLeaves.includes(detected) || detected === 'motorsports'))
+    || (detected === 'motorsports' && (motorsportLeaves.includes(declared) || declared === 'motorsports'))) return true
   return false
 }
 
@@ -158,7 +177,10 @@ export function validateCatalogTaxonomy(product = {}) {
 
   const league = declaredLeague || ''
   const team = declaredTeam || ''
-  const controlledLeague = league ? findLeague(league) : null
+  // `LEAGUE_TAXONOMY` contains the curated team directories. Promotion and
+  // racing entities are controlled as well, but intentionally have no team
+  // directory yet; they must still be valid for PDP/feed classification.
+  const controlledLeague = league ? (findLeague(league) || LEAGUE_SPORT[league]) : null
   if (league && !controlledLeague) blockers.push('TAXONOMY_UNKNOWN_LEAGUE')
 
   if (source.team && league) {

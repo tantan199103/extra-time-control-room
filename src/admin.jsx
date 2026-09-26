@@ -308,6 +308,8 @@ function AdminWorkspace() {
   const [path, setPath] = useState(window.location.pathname)
   const [productRows, setProductRows] = useState([])
   const [themeDraft, setThemeDraft] = useState(adminTheme)
+  const [themeSource, setThemeSource] = useState('loading')
+  const [themeError, setThemeError] = useState('')
   const [menuRows, setMenuRows] = useState(adminMenus)
   const [collectionRows, setCollectionRows] = useState(adminCollections)
   const [catalogNavigationRows, setCatalogNavigationRows] = useState([])
@@ -359,6 +361,8 @@ function AdminWorkspace() {
     const sequence = ++loadSequence.current
     setLoading(true); setLoadNotice('')
     setSource('loading')
+    setThemeSource('loading')
+    setThemeError('')
     setCatalogLoad({ source:'loading', loaded:0, total:null, complete:false })
     setCollectionSource('loading')
     // Taxonomy landing pages are a small deploy-time index. Load them beside
@@ -402,6 +406,8 @@ function AdminWorkspace() {
         setCatalogLoad({ source:'error', loaded:0, total:null, complete:false })
       }
       if (themeResult.data) setThemeDraft(themeResult.data)
+      setThemeSource(themeResult.source || 'preview')
+      setThemeError(themeResult.error || '')
       const collections = collectionResult.source === 'supabase' ? collectionResult.data || [] : adminCollections
       setCollectionRows(collections)
       setCollectionSource(collectionResult.source)
@@ -422,6 +428,8 @@ function AdminWorkspace() {
       setProductRows([])
       setCatalogLoad({ source:'error', loaded:0, total:null, complete:false })
       setThemeDraft(adminTheme)
+      setThemeSource('preview')
+      setThemeError(error instanceof Error ? error.message : 'Theme unavailable.')
       setMenuRows(adminMenus)
       setCollectionRows(adminCollections)
       setCollectionSource('error')
@@ -533,7 +541,7 @@ function AdminWorkspace() {
   else if (isEditor) page = <ListingWorkspace key={path} products={productRows} onSaved={saveProduct} onDuplicate={saveProduct} onDelete={deleteProduct}/>
   else if (path.startsWith('/admin/membership')) page = <AdminMembership/>
   else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
-  else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} onSave={persistTheme}/>
+  else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} source={themeSource} sourceError={themeError} onSave={persistTheme}/>
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} collections={collectionRows} onSave={persistMenus}/>
   else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} navigationRows={catalogNavigationRows} catalogLoad={catalogLoad} onSave={persistCollections} onDelete={removeCollection} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'}/>
   else if (path === '/admin/settings') page = <AdminSettings/>

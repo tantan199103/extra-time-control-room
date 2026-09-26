@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-25T12:17:54.836Z",
+  "generatedAt": "2026-09-26T06:07:05.140Z",
   "purpose": "Local team marks for navigation and taxonomy pages; runtime does not fetch remote logos.",
   "provider": "ESPN public teams feed and ESPN CDN",
   "rightsNotice": "Team and league marks are trademarks. This manifest records provenance, not a commercial license or affiliation.",
@@ -903,6 +903,21 @@
       "width": 320,
       "height": 320,
       "bytes": 14084,
+      "rights": "Team mark/trademark. Verify commercial and league permissions before use."
+    },
+    "mlb/athletics": {
+      "team": "Athletics",
+      "league": "mlb",
+      "path": "/assets/leagues/marks/teams/mlb/athletics.webp",
+      "source": "ESPN public teams feed / ESPN CDN",
+      "sourceApi": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams",
+      "sourceUrl": "https://a.espncdn.com/i/teamlogos/mlb/500/ath.png",
+      "sourceMime": "image/png",
+      "retrievedAt": "2026-09-26T06:07:05.140Z",
+      "format": "image/webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 16014,
       "rights": "Team mark/trademark. Verify commercial and league permissions before use."
     }
   },

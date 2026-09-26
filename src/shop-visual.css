@@ -141,6 +141,14 @@
   justify-items: end;
   gap: 6px;
 }
+.shop-visual--unified .shop-cover__managed-copy {
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  text-align: right;
+  text-shadow: 0 1px 8px rgba(0,0,0,.55);
+  font: 600 11px/1.35 var(--body);
+}
 .shop-visual--unified .shop-cover__tools .shop-visual__hero-search {
   width: 100%;
   min-height: 43px;

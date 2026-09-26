@@ -62,7 +62,8 @@ import { apiFetch } from './lib/api-client'
 import { availableFinderSizes, canonicalSize, findAudienceOption, recommendCatalogSize, sizeFinderAudiences, sizeProfile, sortSizes } from './lib/size-guide'
 import { buildDeliveryEstimate } from './lib/product-commerce'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quantityDiscountForQty, quantityDiscountLabel } from './lib/quantity-pricing'
-import { adminTheme } from './admin-builder-data'
+import { adminMenus, adminTheme, themeBlocks } from './admin-builder-data'
+import { pageIdForPath, resolveBlockContent, resolvePageBlocks, resolvePageContent, resolveThemePage } from './lib/theme-runtime'
 import { initMetaPixel, trackPageView, trackViewContent, trackAddToCart, trackCustomizeProduct, trackInitiateCheckout, trackSearch } from './lib/meta-pixel'
 import { renderGoogleRatingBadge } from './lib/google-reviews'
 import './styles.css'
@@ -95,6 +96,7 @@ function readFeaturedCustomProduct() {
   } catch { return null }
 }
 const featuredCustomProduct = readFeaturedCustomProduct()
+const DEFAULT_HOME_LAYOUT = adminTheme.pages?.find(page => page.id === 'home')?.layout || themeBlocks
 const BUSINESS_DETAILS = Object.freeze({
   legalName:'Jersevo',
   brand:'Extra Time',
@@ -147,12 +149,32 @@ function customProductTarget(product) {
 }
 
 function menuTarget(target, customProduct) {
-  if (target === '/collection') return '/shop'
-  if (/^\/collection\?type=jerseys$/i.test(String(target || ''))) return '/shop'
+  const value = String(target || '')
+  if (value === '/collection') return '/shop'
+  // Keep the old Admin link readable while moving it to the canonical
+  // taxonomy route. Unlike the previous implementation this does not drop a
+  // query string from every collection link.
+  if (/^\/collection\?type=jerseys$/i.test(value)) return '/category/football-jerseys'
   if (target === '/custom') return '/custom'
   if (target === '/moments') return '/#story'
   if (target === '/players') return '/#players'
-  return target || '/'
+  return value || '/'
+}
+
+function configuredNavigationMenu(menus = [], customProduct) {
+  const menu = menuAtLocation(menus, 'HEADER')
+  const visible = items => (items || []).filter(item => item?.visible !== false)
+  if (!menu || !visible(menu.items).length) return null
+  const toLink = item => ({
+    ...item,
+    href: menuTarget(item.target, customProduct),
+    target: item.target,
+    type: String(item.type || item.link_type || 'PAGE').toUpperCase(),
+    image: item.representativeImage || item.imageUrl || undefined,
+    sections: visible(item.children).length ? [{ label: 'Explore', links: visible(item.children).map(toLink) }] : [],
+    searchTeams: /^(teams|sports)$/i.test(String(item.label || ''))
+  })
+  return visible(menu.items).map(toLink)
 }
 
 function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, menus = [], collections = [], customProduct, account, products = [] }) {
@@ -171,7 +193,12 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
     return () => document.body.classList.remove('mobile-menu-open')
   }, [mobile])
   const index = useMemo(() => discoveryIndex(products), [products])
-  const links = useMemo(() => discoveryMenu(index,collections,products), [index,collections,products])
+  const discoveryLinks = useMemo(() => discoveryMenu(index,collections,products), [index,collections,products])
+  // A published Header menu is the source of truth. Discovery navigation is
+  // still generated when an installation has no Header menu yet, which keeps
+  // a fresh project usable before the first Admin publish.
+  const configuredLinks = useMemo(() => configuredNavigationMenu(menus, customProduct), [menus, customProduct])
+  const links = configuredLinks || discoveryLinks
   const openLink = item => {
     const target = item.href || menuTarget(item.target,customProduct)
     if (String(item.type || '').toUpperCase() === 'EXTERNAL') window.open(target,'_blank','noopener,noreferrer')
@@ -187,9 +214,9 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
       <header className="site-header" onMouseLeave={() => setMega(null)} onKeyDown={event => { if (event.key === 'Escape') setMega(null) }}>
         <Mark />
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {links.map(item => <div className="desktop-nav__item" key={item.id || item.label} onMouseEnter={() => setMega(item)}>
-            <a href={item.href} onFocus={() => setMega(item)} onClick={event => { event.preventDefault(); openLink(item) }}>{item.label}</a>
-            <button type="button" aria-label={`Open ${item.label} menu`} aria-expanded={mega?.id === item.id} onFocus={() => setMega(item)} onClick={() => setMega(mega?.id === item.id ? null : item)}><ChevronDown size={13}/></button>
+          {links.map(item => <div className="desktop-nav__item" key={item.id || item.label} onMouseEnter={() => item.sections?.length && setMega(item)}>
+            <a href={item.href} onFocus={() => item.sections?.length && setMega(item)} onClick={event => { event.preventDefault(); openLink(item) }}>{item.label}</a>
+            {item.sections?.length ? <button type="button" aria-label={`Open ${item.label} menu`} aria-expanded={mega?.id === item.id} onFocus={() => setMega(item)} onClick={() => setMega(mega?.id === item.id ? null : item)}><ChevronDown size={13}/></button> : null}
           </div>)}
         </nav>
         <div className="header-actions">
@@ -204,7 +231,7 @@ function Header({ bagCount, openCart, openSearch, openInstall, appInstalled, men
       <div ref={mobileRef} className={`mobile-menu ${mobile ? 'is-open' : ''}`} aria-hidden={!mobile} inert={!mobile} role="dialog" aria-modal="true" aria-label="Navigation menu" tabIndex={-1}>
         <div className="mobile-menu__top"><Mark inverted /><IconButton label="Close menu" onClick={() => setMobile(false)}><X /></IconButton></div>
         <nav>
-          {links.map(item => <div key={item.id} className="mobile-discovery-group"><button type="button" aria-expanded={mobileSection === item.id} onClick={() => setMobileSection(current => current === item.id ? '' : item.id)}><strong>{item.label}</strong><ChevronDown size={16}/></button>{mobileSection === item.id && <div className="mobile-discovery-group__links"><a href={item.href} onClick={event => { event.preventDefault(); openLink(item) }}>Explore {item.label}</a>{item.searchTeams && <button type="button" onClick={() => { setMobile(false); openSearch() }}>Search teams and products</button>}{item.sections.flatMap(section => section.links).slice(0,14).map(link => <a key={`${link.href}-${link.label}`} href={link.href} onClick={event => { event.preventDefault(); openLink(link) }}>{link.icon && <span className="mobile-menu__category-icon"><CategoryIcon kind={link.icon} size={15}/></span>}{link.coverPending && <span className="mobile-menu__collection-placeholder" aria-hidden="true"><CategoryIcon kind="all" size={14}/></span>}{link.label}</a>)}</div>}</div>)}
+          {links.map(item => <div key={item.id} className="mobile-discovery-group"><button type="button" aria-expanded={item.sections?.length ? mobileSection === item.id : undefined} onClick={() => item.sections?.length ? setMobileSection(current => current === item.id ? '' : item.id) : openLink(item)}><strong>{item.label}</strong>{item.sections?.length ? <ChevronDown size={16}/> : <ArrowRight size={15}/>}</button>{mobileSection === item.id && <div className="mobile-discovery-group__links"><a href={item.href} onClick={event => { event.preventDefault(); openLink(item) }}>Explore {item.label}</a>{item.searchTeams && <button type="button" onClick={() => { setMobile(false); openSearch() }}>Search teams and products</button>}{(item.sections || []).flatMap(section => section.links).slice(0,14).map(link => <a key={`${link.href}-${link.label}`} href={link.href} onClick={event => { event.preventDefault(); openLink(link) }}>{link.icon && <span className="mobile-menu__category-icon"><CategoryIcon kind={link.icon} size={15}/></span>}{link.coverPending && <span className="mobile-menu__collection-placeholder" aria-hidden="true"><CategoryIcon kind="all" size={14}/></span>}{link.label}</a>)}</div>}</div>)}
         </nav>
         <div className="mobile-menu__foot"><button onClick={() => { setMobile(false); openSearch() }}>Search teams and gear</button><span>USD / EN</span></div>
       </div>
@@ -525,7 +552,9 @@ function ProductRail({ onQuickView, title = 'BEST SELLERS. YOUR WAY.', subtitle 
     { id: 'NEW', label: 'NEW ARRIVAL' }
   ]
   const displayItems = useMemo(() => {
-    let pool = products.length ? products : items
+    // `items` is the page's explicit merchandising selection. The complete
+    // catalogue is only a fallback when no selection was configured.
+    let pool = items.length ? items : products
     if (activeTab === 'TREND') {
       const trending = pool.filter(p => p.customFields?.length || (p.reviews && p.reviews >= 35) || /touchline|hot|drop|popular/i.test(`${p.badge || ''} ${p.name || ''} ${p.tags?.join(' ') || ''}`))
       pool = trending.length ? trending : pool
@@ -700,8 +729,8 @@ function useMobileCols() {
   return [cols, setCols]
 }
 
-function StorefrontTrust({ compact = false, variant = 'default' }) {
-  const items = variant === 'home' ? [
+function StorefrontTrust({ compact = false, variant = 'default', content = {} }) {
+  const baseItems = variant === 'home' ? [
     ['Made Just for You', 'Crafted on demand', Sparkles],
     ['Personalized Your Way', 'Name, number & approved details', Tag],
     ['Secure from Cart to Checkout', 'Protected payment flow', ShieldCheck],
@@ -712,6 +741,9 @@ function StorefrontTrust({ compact = false, variant = 'default' }) {
     ['RETURNS', '30-day standard return window', ShieldCheck],
     ['CHECKOUT', 'Secure checkout in USD', Lock]
   ]
+  const labels = Array.isArray(content.labels) ? content.labels : []
+  const copies = Array.isArray(content.copies) ? content.copies : []
+  const items = baseItems.map((item, index) => [labels[index] || item[0], copies[index] || item[1], item[2]])
   if (variant === 'home') {
     return (
       <section className="storefront-trust storefront-trust--home" aria-label="Storefront trust pillars">
@@ -910,7 +942,7 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
   )
 }
 
-function CustomHub({ products = [], onQuickView }) {
+function CustomHub({ products = [], onQuickView, pageConfig = null }) {
   const [activeLeague, setActiveLeague] = useState('ALL')
   const customProducts = useMemo(() => products
     .filter(product => product?.customFields?.length && product.status !== 'ARCHIVED')
@@ -922,15 +954,19 @@ function CustomHub({ products = [], onQuickView }) {
     .filter(Boolean))].map(key => findLeague(key)).filter(Boolean), [products])
   const featured = customProducts[0]
   const go = href => navigate(href)
+  const copy = pageConfig?.content || {}
+  const blocks = new Set((pageConfig?.blocks || []).filter(block => block.enabled !== false).map(block => block.id))
+  const hasBlockConfig = Boolean(pageConfig?.blocks?.length)
+  const show = id => !hasBlockConfig || blocks.has(id)
   return (
     <main className="custom-hub">
-      <section className="custom-hub__hero" aria-labelledby="custom-hub-title">
+      {show('custom-hero') && <section className="custom-hub__hero" aria-labelledby="custom-hub-title">
         <div className="custom-hub__hero-copy">
           <nav className="custom-hub__crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom</strong></nav>
-          <p className="custom-hub__eyebrow">CUSTOM LAB / REVIEWED PERSONALIZATION</p>
-          <h1 id="custom-hub-title">Put your<br /><em>moment</em> on it.</h1>
-          <p className="custom-hub__lede">Choose a designer-led jersey, add the details that make it yours, and see every important field before the studio sends it to production.</p>
-          <div className="custom-hub__actions"><button className="button button--acid" onClick={() => featured ? go(`/product/${featured.handle}?custom=1`) : go('/category/custom-jerseys')}>{featured ? 'CHOOSE A JERSEY' : 'BROWSE CUSTOM JERSEYS'} <ArrowRight size={16}/></button><button className="button-link" onClick={() => go('/shipping')}>HOW DELIVERY WORKS <ArrowRight size={16}/></button></div>
+          <p className="custom-hub__eyebrow">{copy.eyebrow || 'CUSTOM LAB / REVIEWED PERSONALIZATION'}</p>
+          <h1 id="custom-hub-title">{String(copy.headline || 'PUT YOUR\nMOMENT ON IT.').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{index === 1 ? <em>{line.toLowerCase()}</em> : line.toLowerCase()}</React.Fragment>)}</h1>
+          <p className="custom-hub__lede">{copy.supporting || 'Choose a designer-led jersey, add the details that make it yours, and see every important field before the studio sends it to production.'}</p>
+          <div className="custom-hub__actions"><button className="button button--acid" onClick={() => featured ? go(`/product/${featured.handle}?custom=1`) : go('/category/custom-jerseys')}>{copy.button || (featured ? 'CHOOSE A JERSEY' : 'BROWSE CUSTOM JERSEYS')} <ArrowRight size={16}/></button><button className="button-link" onClick={() => go('/shipping')}>HOW DELIVERY WORKS <ArrowRight size={16}/></button></div>
           <p className="custom-hub__note"><Lock size={14}/> Artwork stays fixed. Only enabled fields can change.</p>
         </div>
         <div className="custom-hub__hero-art">
@@ -938,24 +974,24 @@ function CustomHub({ products = [], onQuickView }) {
           <div className="custom-hub__jersey-label" aria-hidden="true"><span>NAME</span><strong>YOUR</strong><span>NUMBER</span><strong>90+</strong><i>STUDIO REVIEW</i></div>
           <span className="custom-hub__hero-stamp">EXTRA TIME / 90+</span>
         </div>
-      </section>
+      </section>}
 
-      <section className="custom-hub__steps" aria-labelledby="custom-steps-title">
+      {show('custom-steps') && <section className="custom-hub__steps" aria-labelledby="custom-steps-title">
         <div className="custom-hub__section-intro"><p>THE HAND-OFF</p><h2 id="custom-steps-title">Three moves.<br /><em>One piece.</em></h2></div>
         <div className="custom-hub__step-grid">
           <article><span>01</span><Shirt size={22}/><h3>Choose the base</h3><p>Start with a published jersey and check the available size and color options.</p></article>
           <article><span>02</span><Sparkles size={22}/><h3>Add your details</h3><p>Enter a name, number or approved reference only where that listing allows it.</p></article>
           <article><span>03</span><ShieldCheck size={22}/><h3>Review before print</h3><p>The studio checks the request, then production begins with the locked artwork intact.</p></article>
         </div>
-      </section>
+      </section>}
 
-      <section className="custom-hub__catalog" aria-labelledby="custom-catalog-title">
+      {show('custom-catalog') && <section className="custom-hub__catalog" aria-labelledby="custom-catalog-title">
         <div className="custom-hub__catalog-head"><div><p>LIVE CUSTOM CATALOG</p><h2 id="custom-catalog-title">Make it yours,<br /><em>your way.</em></h2></div><a href="/category/custom-jerseys" onClick={event => { event.preventDefault(); go('/category/custom-jerseys') }}>VIEW ALL CUSTOM JERSEYS <ArrowRight size={15}/></a></div>
         {availableLeagues.length > 0 && <div className="custom-hub__league-tabs" role="tablist" aria-label="Filter custom jerseys by league"><button type="button" className={activeLeague === 'ALL' ? 'is-active' : ''} onClick={() => setActiveLeague('ALL')}>All</button>{availableLeagues.slice(0, 6).map(league => <button type="button" role="tab" aria-selected={activeLeague === league.key} className={activeLeague === league.key ? 'is-active' : ''} key={league.key} onClick={() => setActiveLeague(league.key)}>{league.name}</button>)}</div>}
         {customProducts.length ? <div className="custom-hub__product-grid">{customProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView} className="custom-hub__product-card" />)}</div> : <div className="custom-hub__empty"><Sparkles size={20}/><p>Custom pieces are being prepared. Browse the full jersey catalog and look for the <strong>Customizable</strong> badge.</p><button className="button button--dark" onClick={() => go('/category/custom-jerseys')}>BROWSE JERSEYS</button></div>}
-      </section>
+      </section>}
 
-      <section className="custom-hub__trust"><StorefrontTrust compact /></section>
+      {show('custom-trust') && <section className="custom-hub__trust"><StorefrontTrust compact /></section>}
     </main>
   )
 }
@@ -1247,7 +1283,7 @@ function Newsletter() {
 
 function Footer({ openSizeGuide, menus = [], customProduct }) {
   const configured = (menuAtLocation(menus,'FOOTER')?.items || [])
-    .filter(item => item.visible !== false && !(item.type === 'TAXONOMY' || /league/i.test(item.label || '')))
+    .filter(item => item.visible !== false && !(String(item.type || '').toUpperCase() === 'TAXONOMY' || /league/i.test(item.label || '')))
     .slice(0, 4)
   const configuredTargets = new Set(configured.map(item => menuTarget(item.target,customProduct)))
   const compactGroups = [
@@ -1276,7 +1312,7 @@ function Footer({ openSizeGuide, menus = [], customProduct }) {
   }))
   const openFooterLink = item => {
     if (item.action === 'size') return openSizeGuide()
-    if (item.type === 'EXTERNAL') return window.open(item.target,'_blank','noopener,noreferrer')
+    if (String(item.type || '').toUpperCase() === 'EXTERNAL') return window.open(item.target,'_blank','noopener,noreferrer')
     return navigate(item.target)
   }
   return (
@@ -1367,14 +1403,28 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
 function Home({ onQuickView, products, navigationProducts = [], theme, collections = [], onAdd }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
   const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct || featured
-  const primaryCollection = collections[0]
+  const homePage = resolveThemePage(theme, 'home')
+  const homeContent = resolvePageContent(theme, 'home', {
+    eyebrow: 'CUSTOM JERSEYS',
+    headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.',
+    supporting: 'Made for fans. Personalized with the details that make it yours.',
+    button: 'START CUSTOMIZING'
+  })
+  const homeBlocks = resolvePageBlocks(theme, 'home', DEFAULT_HOME_LAYOUT)
+  const blockById = new Map(homeBlocks.map(block => [block.id, block]))
+  const blockCopy = id => resolveBlockContent(theme, 'home', id, blockById.get(id)?.settings || {})
+  const featuredCollectionId = homeContent.featuredCollectionId || homePage?.featuredCollectionId || blockCopy('rail').featuredCollectionId
+  const primaryCollection = collections.find(collection => collection.id === featuredCollectionId || collection.handle === featuredCollectionId) || collections[0]
   const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,10) : products.slice(0,10)
-  const renderBlock = id => ({
-    hero:<Hero key="hero" content={theme?.content} customProduct={customProduct}/>,
-    'home-trust':<StorefrontTrust key="home-trust" variant="home" />,
+  const multiline = value => String(value || '').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{line}</React.Fragment>)
+  const categoryRows = navigationProducts.length ? navigationProducts : products
+  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
+  const renderBlock = block => ({
+    hero:<Hero key="hero" content={{ ...homeContent, ...blockCopy('hero') }} customProduct={customProduct}/>,
+    'home-trust':<StorefrontTrust key="home-trust" variant="home" content={blockCopy('home-trust')} />,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
-    rail:<ProductRail key="rail" title={<>BEST SELLERS.<br /><em>YOUR WAY.</em></>} subtitle="Fan favorites, ready to personalize." onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
+    rail:<ProductRail key="rail" title={multiline(blockCopy('rail').title || 'BEST SELLERS.\nYOUR WAY.')} subtitle={blockCopy('rail').subtitle || 'Fan favorites, ready to personalize.'} onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues" products={navigationProducts.length ? navigationProducts : products}/>,
@@ -1383,22 +1433,21 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
     quality:<QualityProof key="quality" product={featured}/>,
     community:<CommunityProof key="community"/>,
     faq:<HomeFaq key="faq"/>,
+    'category-index':<nav key="category-index" className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><span className="home-category-index__icon"><CategoryIcon kind={category.icon} size={22}/></span><span className="home-category-index__label">{category.label}</span><ArrowRight size={16}/></a>)}</div></nav>,
     vault:<VaultTeaser key="vault"/>,
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
-  }[id] || null)
-  const configured = theme?.blocks?.length ? theme.blocks.filter(block => block.enabled !== false).map(block => block.id).filter(id => !['announcement','header','footer','quality','drop','home-path'].includes(id)) : ['hero','home-trust','leagues','rail','custom-options','players','community','faq','newsletter']
-  const rawBlocks = configured.includes('leagues') ? configured : configured.flatMap(id => id === 'players' ? [id,'leagues'] : [id])
+  }[block.id] || null)
+  const configured = homeBlocks.filter(block => block.enabled !== false).filter(block => !['announcement','header','footer'].includes(block.id))
+  const rawBlocks = configured.some(block => block.id === 'leagues') ? configured : configured.flatMap(block => block.id === 'players' ? [block, { id: 'leagues', enabled: true }] : [block])
   // Keep the public homepage focused on discovery, personalization and trust.
   // The richer editorial modules remain available in the codebase/admin, but
   // they no longer delay the primary shopping path with duplicate imagery.
-  const homeBlocks = rawBlocks.filter(id => !['quality','drop','home-path','players','community'].includes(id))
-  if (!homeBlocks.includes('hero')) {
-    homeBlocks.unshift('hero')
+  const visibleBlocks = rawBlocks
+  if (!visibleBlocks.some(block => block.id === 'hero')) {
+    visibleBlocks.unshift({ id: 'hero', enabled: true })
   }
-  const categoryRows = navigationProducts.length ? navigationProducts : products
-  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
-  return <main className="home-page">{homeBlocks.map(renderBlock)}<nav className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><span className="home-category-index__icon"><CategoryIcon kind={category.icon} size={22}/></span><span className="home-category-index__label">{category.label}</span><ArrowRight size={16}/></a>)}</div></nav></main>
+  return <main className="home-page">{visibleBlocks.map(renderBlock)}</main>
 }
 
 function CollectionCover({ item, count, products = [] }) {
@@ -1458,7 +1507,7 @@ function DiscoveryLanding({ kind, discovery, collections = [], products = [], on
   </main>
 }
 
-function Shop({ onQuickView, products, collection = null, category = null, page = 1, pagination = null, discovery = null, onSearch, loading = false }) {
+function Shop({ onQuickView, products, collection = null, category = null, page = 1, pagination = null, discovery = null, onSearch, loading = false, pageConfig = null }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const params = new URLSearchParams(window.location.search)
   const pageSize = CATALOG_PAGE_SIZE
@@ -1592,6 +1641,11 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
   const clear = () => { setColor('ALL'); setSizeFilter('ALL'); setTeamFilter('ALL'); setPriceFilter('ALL'); setGroup('ALL'); setTypeFilter('ALL'); setCustomOnly(false); setInStock(false); const url = new URL(window.location.href); ['sport','league','brand','search','q'].forEach(key => url.searchParams.delete(key)); navigate(url.pathname + url.search) }
   const activeCount = Number(color !== 'ALL') + Number(sizeFilter !== 'ALL') + Number(teamFilter !== 'ALL') + Number(priceFilter !== 'ALL') + Number(group !== 'ALL') + Number(typeFilter !== 'ALL') + Number(customOnly) + Number(inStock) + Number(Boolean(sportFilter)) + Number(Boolean(leagueFilter)) + Number(Boolean(brandFilter)) + Number(searchQuery.trim().length >= 2)
   const isRootShop = !category && !collection && page === 1
+  const pageCopy = pageConfig?.content || {}
+  const configuredCollectionBlocks = pageConfig?.blocks || []
+  const hasCollectionBlockConfig = Boolean(configuredCollectionBlocks.length)
+  const enabledCollectionBlocks = new Set(configuredCollectionBlocks.filter(block => block.enabled !== false).map(block => block.id))
+  const showCollectionBlock = id => !hasCollectionBlockConfig || enabledCollectionBlocks.has(id)
   const filterBar = (
     <div className="filter-bar">
       <div className="desktop-filters">
@@ -1649,8 +1703,8 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
   return (
     <main className="shop-page">
       <div className={`shop-catalog-shell${isRootShop ? ' shop-catalog-shell--root' : ''}`}>
-      {isRootShop && <ShopDiscoveryHub discovery={discovery} onSearch={onSearch} searchValue={searchQuery} total={activeCount ? resultCount : (pagination?.total ?? discovery?.total ?? catalogProducts.length)} controls={filterBar} activeFilters={activeFilterMarkup} />}
-      {!isRootShop && <section className="catalog-compact-bar" id="all-products" aria-label={category?.label || collection?.name || 'Shop catalog'}>
+      {isRootShop && <ShopDiscoveryHub pageContent={pageCopy} discovery={discovery} onSearch={onSearch} searchValue={searchQuery} total={activeCount ? resultCount : (pagination?.total ?? discovery?.total ?? catalogProducts.length)} controls={filterBar} activeFilters={activeFilterMarkup} showBlock={showCollectionBlock} />}
+      {!isRootShop && showCollectionBlock('collection-hero') && <section className="catalog-compact-bar" id="all-products" aria-label={category?.label || collection?.name || 'Shop catalog'}>
         <div className="catalog-compact-bar__main">
           {collection ? <CollectionAvatar collection={collection} products={catalogProducts}/> : <div className="catalog-compact-bar__avatar catalog-compact-bar__avatar--icon"><CategoryIcon kind={category?.icon || 'all'} size={19} /></div>}
           <div className="catalog-compact-bar__title-group">
@@ -1670,12 +1724,12 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
           <span className="catalog-compact-bar__badge">{loading && !products.length ? 'Loading products…' : `${resultCount} ${resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}`}</span>
         </div>
       </section>}
-      {!isRootShop && category && <section className={`category-intro section${accessoryBrowseLinks.length ? ' category-intro--accessories' : ''}`}><p>{category.description}</p>{accessoryBrowseLinks.length ? <div className="category-intro__browse"><span>{accessoryBrowseLabel}</span><nav aria-label={accessoryBrowseLabel}>{accessoryBrowseLinks.map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav></div> : <nav aria-label="Related product categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav>}</section>}
-      {!isRootShop && <div className="shop-catalog-shell__trust"><StorefrontTrust compact /></div>}
+       {!isRootShop && category && <section className={`category-intro section${accessoryBrowseLinks.length ? ' category-intro--accessories' : ''}`}><p>{category.description || pageCopy.supporting}</p>{accessoryBrowseLinks.length ? <div className="category-intro__browse"><span>{accessoryBrowseLabel}</span><nav aria-label={accessoryBrowseLabel}>{accessoryBrowseLinks.map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav></div> : <nav aria-label="Related product categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav>}</section>}
+      {!isRootShop && showCollectionBlock('collection-trust') && <div className="shop-catalog-shell__trust"><StorefrontTrust compact /></div>}
       <div className={`shop-layout${isRootShop ? ' shop-layout--root' : ''}`}>
       {!isRootShop && <aside className="shop-sidebar" aria-label="Filter products"><h2>Filter gear</h2><p>Choose a sport, then narrow to a league and team.</p><label>Sport<select value={sportFilter} onChange={event => setDiscoveryFacet('sport',event.target.value)}><option value="">All sports</option>{sports.map(sport => <option key={sport} value={sport}>{sport}</option>)}</select></label><label>League<select value={leagueFilter} onChange={event => setDiscoveryFacet('league',event.target.value)}><option value="">All leagues</option>{availableLeagues.map(item => <option key={item.key} value={item.key}>{item.name}</option>)}</select></label><label>Team<select value={teamFilter === 'ALL' ? '' : teamFilter} disabled={!teamOptions.length} onChange={event => setTeamFilter(event.target.value || 'ALL')}><option value="">{teamOptions.length ? 'All teams' : 'Choose a sport first'}</option>{teamOptions.map(item => <option key={item.slug} value={item.slug}>{item.label}</option>)}</select></label><label>Product type<select value={group} onChange={event => setGroup(event.target.value)}>{groups.map(item => <option key={item} value={item}>{item === 'ALL' ? 'All product types' : item}</option>)}</select></label><label>Brand<select value={brandFilter} onChange={event => setDiscoveryFacet('brand',event.target.value)}><option value="">All brands</option>{brands.map(brand => <option key={brand}>{brand}</option>)}</select></label><label>Price<select value={priceFilter} onChange={event => setPriceFilter(event.target.value)}>{PRICE_OPTIONS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label><button type="button" className={customOnly ? 'is-active' : ''} onClick={() => setCustomOnly(value => !value)}>Customizable {customOnly ? '✓' : ''}</button><button type="button" className="shop-sidebar__clear" onClick={clear}>Clear filters</button></aside>}
       <div className="shop-layout__results">
-      {!isRootShop && <>
+      {!isRootShop && showCollectionBlock('filters') && <>
       <div className="filter-bar">
         <div className="desktop-filters">
           <span>FILTER</span>
@@ -1723,7 +1777,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
         <button onClick={clear}>CLEAR ALL</button>
       </div>}
       </>}
-      <section className="shop-grid section">{loading && !shown.length ? <div className="shop-grid-loading" role="status">Loading current gear…</div> : <>{shown.length ? <div className={`product-grid is-col-${mobileCols}`}>{pagedProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : !autoCatalog.hasMore && <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}<AutoCatalogSentinel catalog={autoCatalog} label={category?.label || collection?.name || 'gear'}/></>}</section>
+      {showCollectionBlock('product-grid') && <section className="shop-grid section">{loading && !shown.length ? <div className="shop-grid-loading" role="status">Loading current gear…</div> : <>{shown.length ? <div className={`product-grid is-col-${mobileCols}`}>{pagedProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView}/>)}</div> : !autoCatalog.hasMore && <div className="catalog-empty"><span>90+</span><h2>No listing matches these filters.</h2><button onClick={clear}>Clear filters</button></div>}<AutoCatalogSentinel catalog={autoCatalog} label={category?.label || collection?.name || 'gear'}/></>}</section>}
       </div></div>
       </div>
       {filterOpen && <div className="filter-sheet__backdrop" onClick={() => setFilterOpen(false)} aria-hidden="true"/>}
@@ -1930,7 +1984,7 @@ function ProductStorySignals({ product }) {
   return <section className="pdp-story-signals"><details><summary><ShieldCheck size={16}/><span><small>PRODUCT PROOF</small><strong>Value in the details</strong></span><Plus/></summary><div className="pdp-story-signals__groups">{valueProps.length > 0 && <div><span>VALUE / WHAT YOU RECEIVE</span>{valueProps.map((item, index) => <article key={`value-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}{differentiators.length > 0 && <div><span>DIFFERENCE / WHAT MAKES IT DISTINCT</span>{differentiators.map((item, index) => <article key={`difference-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}</div></details></section>
 }
 
-function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account }) {
+function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account, pageConfig = null }) {
   const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
   const savedAi = readSession('extra-time-ai-preview')
   const initialPreview = savedAi?.productId === product.id && (!savedAi.expiresAt || savedAi.expiresAt > Date.now()) ? savedAi : null
@@ -1986,6 +2040,17 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const [logoConsent,setLogoConsent] = useState(Boolean(savedDraft?.logoConsent))
   const previewReadiness = productPreviewReadiness(customFields)
   const hasStructuredPreview = previewReadiness.enabled
+  const pageCopy = pageConfig?.content || {}
+  const configuredProductBlocks = pageConfig?.blocks || []
+  const productEditorialBlocks = (configuredProductBlocks.length ? configuredProductBlocks : [
+    { id: 'product-highlights' }, { id: 'product-story' }, { id: 'product-proof' }, { id: 'related-products' }
+  ]).filter(block => block.enabled !== false && ['product-highlights', 'product-story', 'product-proof', 'related-products'].includes(block.id))
+  const renderProductEditorialBlock = block => ({
+    'product-highlights': <React.Fragment key={block.id}><ProductPurchaseHighlights product={product} personalized={personalized}/></React.Fragment>,
+    'product-story': <ProductContentBlocks key={block.id} product={product}/>,
+    'product-proof': <ProductStorySignals key={block.id} product={product}/>,
+    'related-products': <ProductRail key={block.id} title="MORE FROM THIS COLLECTION" subtitle="Explore related teams and styles." items={relatedProducts(product,products,8)} onQuickView={onQuickView}/>
+  }[block.id] || null)
   const hasUploadedLogo = customFields.some(field => field.type === 'logo' && customValues[field.key])
   const completeSelection = options.every(option => selections[option.name])
   const selectedVariant = completeSelection ? (product.variants || []).find(variant => options.every(option => variant.values?.[option.name] === selections[option.name])) : options.length ? null : product.variants?.[0]
@@ -2232,7 +2297,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       </div>
       <aside className="pdp__info">
-        {product.badge && <p className="product-badge static">{product.badge}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}        <div className="pdp__price">
+        {product.badge && <p className="product-badge static">{product.badge}</p>}{pageCopy.eyebrow && !product.badge && <p className="product-badge static">{pageCopy.eyebrow}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story || pageCopy.supporting}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}        <div className="pdp__price">
           <strong>{money(currentPrice)}</strong>
           {currentCompare > currentPrice && (
             <>
@@ -2297,8 +2362,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <div className="pdp__essentials"><details><summary><Globe2 size={16}/><span>Shipping & returns</span><Plus size={16}/></summary><div><p><strong>Shipping</strong>US orders over $100 receive free standard shipping. The final destination quote appears before payment.</p><p><strong>Returns</strong>Standard pieces can be returned within 30 days. Personalized pieces follow the approved custom request.</p></div></details><details><summary><CircleHelp size={16}/><span>Product, fit & care</span><Plus size={16}/></summary><div><p><strong>Product</strong>{product.description || (headwear ? 'Review product photos and listed details.' : 'A performance jersey made for match-day stories and personal details.')}</p><p><strong>Fit & care</strong>{headwear ? 'Choose a listed fit or size option and follow the care label supplied with the product.' : 'Confirm the suggested size against garment measurements. Wash inside out on a cool cycle and hang dry.'}</p></div></details></div>
       </aside>
     </div>
-    <ProductPurchaseHighlights product={product} personalized={personalized}/><ProductContentBlocks product={product}/><ProductStorySignals product={product}/>
-    <ProductRail title="MORE FROM THIS COLLECTION" subtitle="Explore related teams and styles." items={relatedProducts(product,products,8)} onQuickView={onQuickView}/>
+    {productEditorialBlocks.map(renderProductEditorialBlock)}
     {!headwear && <SizeFinder open={finder} onClose={() => setFinder(false)} product={product} sizeOptionName={sizeName || 'Size'} selections={selections} onRecommend={({size,audienceOptionName,audienceValue}) => { setSelections(current => ({...current,...(audienceOptionName ? {[audienceOptionName]:audienceValue} : {}),...(sizeName ? {[sizeName]:size} : {})})); setAdded(false); setCustomError('') }}/>}
     <div className="mobile-sticky-atc"><div className="mobile-sticky-atc__product"><img src={displayVariant?.image || product.image} alt=""/><span><strong>{money(currentPrice)}</strong><small>{selectedVariant ? `${selectionSummary} · ${personalized ? 'Personalized' : 'Standard'}` : 'Choose options'}</small></span></div><button onClick={add} disabled={submitting || soldOut}>{submitting ? 'SAVING…' : added ? 'ADDED' : selectedVariant ? (personalized ? 'ADD CUSTOM' : 'BUY NOW') : 'CHOOSE OPTIONS'}</button></div>
   </main>
@@ -2361,12 +2425,17 @@ function setLink(rel, href, extra = {}) {
   return node
 }
 
-function useRouteMetadata({ path, page = 1, paginated = false, search = '', product, collection, category, league, team, productType = null, hasTeamProductTypeSegment = false, products = [], catalogTotal = null, collectionCount = 0, loading = false, unavailable = false }) {
+function useRouteMetadata({ path, page = 1, paginated = false, search = '', product, collection, category, league, team, productType = null, hasTeamProductTypeSegment = false, products = [], catalogTotal = null, collectionCount = 0, loading = false, unavailable = false, theme = null }) {
   useEffect(() => {
     // Preserve authoritative initial HTML while the browser refreshes data.
     if (loading || unavailable) return
     const publicOrigin = import.meta.env.VITE_SITE_URL || 'https://www.jersevo.com'
     const storefrontBrand = 'Jersevo'
+    const editablePage = resolveThemePage(theme, pageIdForPath(path))
+    const editableSeo = editablePage?.seo && typeof editablePage.seo === 'object' ? editablePage.seo : {}
+    const editableTitle = String(editableSeo.title || '').trim()
+    const editableDescription = String(editableSeo.description || '').trim()
+    const editableImage = String(editableSeo.image || editablePage?.representativeImage || editablePage?.representative_image || '').trim()
     const pdpMetadata = product ? productSeoMetadata(product,publicOrigin) : null
     const productTitle = pdpMetadata?.title
     const collectionTitle = collection?.seo?.title || collection?.name
@@ -2387,8 +2456,8 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
       '/custom':['Custom jerseys and personalized fan gear | Jersevo','Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.']
     }[path]
     const taxonomySeoTitle = productType ? taxonomyTitle : taxonomyTitle ? `${taxonomyTitle} fan gear` : ''
-    const title = product ? withBrand(productTitle) : collection ? withBrand(collectionTitle) : category ? withBrand(category.label) : taxonomySeoTitle ? withBrand(taxonomySeoTitle) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop fan gear by sport, team and product | Jersevo' : path === '/sports' ? 'Shop sports and leagues | Jersevo' : path === '/teams' ? 'Find your team | Jersevo' : path === '/collections' ? 'Shop collections | Jersevo' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
-    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : category ? category.description : (productType && team ? `Shop ${team.name} ${productType.label.toLowerCase()} with current photos, available options and tracked US delivery.` : team ? `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/shop' ? 'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.' : path === '/sports' ? 'Browse football, baseball, basketball, hockey, soccer and college fan gear by league and team at Jersevo.' : path === '/teams' ? 'Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.' : path === '/collections' ? 'Explore currently published Jersevo collections and shop fan gear by sport, team and product type.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.'))
+    const title = product ? withBrand(productTitle) : editableTitle ? withBrand(editableTitle) : collection ? withBrand(collectionTitle) : category ? withBrand(category.label) : taxonomySeoTitle ? withBrand(taxonomySeoTitle) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop fan gear by sport, team and product | Jersevo' : path === '/sports' ? 'Shop sports and leagues | Jersevo' : path === '/teams' ? 'Find your team | Jersevo' : path === '/collections' ? 'Shop collections | Jersevo' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
+    const rawDescription = product ? seoDescription(product?.seo?.description, product?.description || product?.story, 160) : editableDescription || (collection ? seoDescription(collection?.seo?.description, collection?.description, 160) : category ? category.description : (productType && team ? `Shop ${team.name} ${productType.label.toLowerCase()} with current photos, available options and tracked US delivery.` : team ? `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.` : league ? league.description : routeMeta?.[1] || (path === '/' ? 'Design custom jerseys and personalized fan gear with your name, number and approved listing options at Jersevo.' : path === '/shop' ? 'Shop Jersevo fan gear by league, team and product type, including caps, apparel and personalized jerseys available in the US.' : path === '/sports' ? 'Browse football, baseball, basketball, hockey, soccer and college fan gear by league and team at Jersevo.' : path === '/teams' ? 'Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.' : path === '/collections' ? 'Explore currently published Jersevo collections and shop fan gear by sport, team and product type.' : path === '/membership' ? 'Join 90+ Club for eligible member pricing, standard shipping benefits and early access to selected Extra Time drops.' : 'Original football memories, designer-led jerseys and considered personalization.')))
     const description = pdpMetadata?.description || seoDescription(rawDescription, '', 160)
     const canonicalPath = path === '/moments' || path === '/players' ? '/' : path === '/' ? '/' : path
     const catalogRoute = path === '/shop' || path.startsWith('/category/') || path.startsWith('/collection/') || path.startsWith('/collections/') || path.startsWith('/league/') || path.startsWith('/team/')
@@ -2412,7 +2481,8 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const collectionSeoStatus = String(collection?.seo?.status || '').toUpperCase()
     const collectionIndexable = !collection || !['BLOCKED', 'NOINDEX'].includes(collectionSeoStatus) && catalogCount >= 6
     const knownPublicRoute = ['/', '/shop', '/custom', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
-    const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !queryNoindex && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
+    const editableNoindex = String(editableSeo.robots || '').toLowerCase().includes('noindex') || editableSeo.indexable === false
+    const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !queryNoindex && !editableNoindex && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
     const routePage = routeMeta ? TRUST_PAGES[path.slice(1)] : null
     const pageTitle = catalogRoute && page > 1 ? `${title} · Page ${page}` : title
     // Keep social previews aligned with the campaign art visible in the
@@ -2423,7 +2493,7 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
       : path.startsWith('/league/') && !team
         ? leagueCover(league?.key)?.src
         : null
-    const image = product?.image || collection?.hero || routeCover || routePage?.image || `${publicOrigin}/assets/hero-tunnel.webp`
+    const image = product?.image || editableImage || collection?.hero || routeCover || routePage?.image || `${publicOrigin}/assets/hero-tunnel.webp`
     const absoluteImage = new URL(image,publicOrigin).toString()
     document.documentElement.lang='en-US'
     document.title=pageTitle
@@ -2471,10 +2541,10 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
         schema.textContent=JSON.stringify([{'@context':'https://schema.org','@type':'CollectionPage',name:taxonomyTitle,description,url:canonicalTaxonomy,inLanguage:'en-US',numberOfItems:catalogCount,about:{'@type':'SportsOrganization',name:team?.name || taxonomyTitle}},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:breadcrumb}])
       }
     } else schema?.remove()
-  }, [path,page,paginated,search,product?.id,product?.updatedAt,collection?.id,category?.handle,league?.key,team?.slug,productType?.handle,hasTeamProductTypeSegment,products,catalogTotal,collectionCount,loading,unavailable])
+  }, [path,page,paginated,search,product?.id,product?.updatedAt,collection?.id,category?.handle,league?.key,team?.slug,productType?.handle,hasTeamProductTypeSegment,products,catalogTotal,collectionCount,loading,unavailable,theme?.updatedAt,theme?.version,theme?.status])
 }
 
-function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, controls = null, activeFilters = null }) {
+function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, controls = null, activeFilters = null, pageContent = {}, showBlock = () => true }) {
   // The compact navigation index arrives independently from the first
   // catalogue page.  Render the same six/eight/six directory slots before it
   // arrives so the shop does not jump vertically on mobile.  Once the index is
@@ -2503,11 +2573,12 @@ function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, contro
     navigate(`/shop?search=${encodeURIComponent(value)}`)
   }
   return <section id="all-products" className="shop-visual shop-visual--unified" aria-labelledby="shop-discovery-title">
-    <div className="shop-cover">
+    {showBlock('collection-hero') && <div className="shop-cover">
       <img className="shop-cover__image" src={SHOP_COVER.src} alt={SHOP_COVER.alt} width="2048" height="749" loading="eager" decoding="async" />
       <div className="shop-cover__shade" aria-hidden="true" />
       <h1 id="shop-discovery-title" className="sr-only">Find your team. Find your gear.</h1>
-      <div className="shop-cover__tools">
+       <div className="shop-cover__tools">
+         {pageContent.supporting && <p className="shop-cover__managed-copy">{pageContent.supporting}</p>}
         <form className="shop-visual__hero-search" onSubmit={submitSearch} role="search">
           <Search size={18}/><input value={searchInput} onChange={event => setSearchInput(event.target.value)} placeholder="Search teams, players, jerseys…" aria-label="Search teams, players, jerseys" autoComplete="off" />
           {searchInput.trim() ? <button type="submit" aria-label="Search catalog"><ArrowRight size={17}/></button> : <button type="button" onClick={onSearch} aria-label="Open full search"><ArrowRight size={17}/></button>}
@@ -2518,8 +2589,8 @@ function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, contro
         <span className="shop-cover__leagues-label">JUMP TO LEAGUE</span>
         {sportCards.map(league => <a key={league.key} href={leaguePath(league)} aria-label={`Shop ${league.name} gear`} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>{league.media?.src && <img src={league.media.src} alt="" decoding="async"/>}<span>{league.name}</span><ArrowRight size={13}/></a>)}
       </nav>
-    </div>
-    <div className="shop-visual__unified-links" aria-label="Shop shortcuts">
+    </div>}
+    {showBlock('collection-hero') && <div className="shop-visual__unified-links" aria-label="Shop shortcuts">
       <div className="shop-visual__link-row">
         <span className="shop-visual__row-label">PRODUCTS</span>
         <nav className="shop-visual__product-grid" aria-label="Shop by product">
@@ -2532,12 +2603,12 @@ function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, contro
           {teamCards.map(team => <a key={team.href} href={team.href} onClick={event => { event.preventDefault(); navigate(team.href) }}>{team.media?.src && !team.media.fallback ? <img src={team.media.src} alt="" loading="lazy" decoding="async"/> : <span className="shop-visual__team-monogram" aria-hidden="true">{team.name.split(/\s+/).map(word => word[0]).join('').slice(0,3).toUpperCase()}</span>}<span><strong>{team.name}</strong><small>{team.leagueName}</small></span></a>)}
         </nav>
       </div>
-    </div>
-    <div className="shop-visual__unified-controls">
+    </div>}
+    {showBlock('filters') && <div className="shop-visual__unified-controls">
       <div className="shop-visual__trust"><span><Truck size={16}/> Free US shipping over $100</span><span><ShieldCheck size={16}/> Secure checkout</span><span><PackageCheck size={16}/> Reviewed customization</span></div>
       {controls}
-    </div>
-    {activeFilters}
+    </div>}
+    {showBlock('filters') && activeFilters}
   </section>
 }
 
@@ -2594,7 +2665,7 @@ function App() {
     if (path === '/shop') return navigationProducts.reduce((sum,item) => sum + weight(item),0)
     return null
   }, [catalogMeta.total,routeCollection?.publishedCount,routeCollection?.count,routeCategory?.handle,routeLeague?.key,routeTeam?.slug,routeProductType?.handle,navigationProducts,path])
-  useRouteMetadata({ path, page:catalogPage, paginated, search, product:routeProduct, collection:routeCollection, category:routeCategory, league:routeLeague, team:routeTeam, productType:routeProductType, hasTeamProductTypeSegment, products, catalogTotal:metadataCatalogTotal, collectionCount:collections.length, loading:catalogState.loading, unavailable:catalogState.source === 'unavailable' })
+  useRouteMetadata({ path, page:catalogPage, paginated, search, product:routeProduct, collection:routeCollection, category:routeCategory, league:routeLeague, team:routeTeam, productType:routeProductType, hasTeamProductTypeSegment, products, catalogTotal:metadataCatalogTotal, collectionCount:collections.length, loading:catalogState.loading, unavailable:catalogState.source === 'unavailable', theme })
   useEffect(() => {
     // Vercel performs the same redirect before serving production HTML. Keep
     // client-side navigation and local development on the identical URL shape.
@@ -2644,8 +2715,8 @@ function App() {
       if (!active || !chromeResults) return
       const [menuResult,collectionResult,themeResult] = chromeResults
       const nextCollections = collectionResult.data || []
-      const nextTheme = themeResult.data || null
-      setMenus(resolveMenuImages(menuResult.data || [], { products:catalogRows, collections:nextCollections, pages:nextTheme?.pages || [] }))
+      const nextTheme = themeResult.data || adminTheme
+      setMenus(resolveMenuImages(menuResult.data?.length ? menuResult.data : adminMenus, { products:catalogRows, collections:nextCollections, pages:nextTheme?.pages || [] }))
       setCollections(nextCollections)
       setTheme(nextTheme)
     }
@@ -2657,9 +2728,9 @@ function App() {
       ? fetchStorefrontProduct(productSlug)
       : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:CATALOG_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:homeRoute ? 12 : CATALOG_PAGE_SIZE, basePath:customRoute ? '/category/custom-jerseys' : path, search, includeCount:!homeRoute })
     Promise.all([
-      fetchStorefrontMenus([]),
+      fetchStorefrontMenus(adminMenus),
       fetchStorefrontCollections([],collectionHandle || ''),
-      fetchStorefrontTheme(null)
+      fetchStorefrontTheme(adminTheme)
     ]).then(results => { chromeResults = results; applyChrome() }).catch(() => {})
     catalogRequest.then(catalogResult => {
       if(!active)return
@@ -2891,6 +2962,10 @@ function App() {
     return {...item,qty:desired}
   }).filter(item => item.qty > 0))
   const bagCount = cart.reduce((sum, item) => sum + item.qty, 0)
+  const pageConfig = pageId => ({
+    content: resolvePageContent(theme, pageId, {}),
+    blocks: resolvePageBlocks(theme, pageId, [])
+  })
   let page
   const catalogRoute = path === '/' || path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/') || path.startsWith('/category/') || path.startsWith('/league/') || path.startsWith('/team/')
   const taxonomyRoute = path.startsWith('/league/') || path.startsWith('/team/')
@@ -2900,9 +2975,9 @@ function App() {
   else if (path === '/moments') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/sports' || path === '/teams' || path === '/collections') page = <DiscoveryLanding kind={path.slice(1)} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} collections={collections} products={products} onSearch={() => setSearchOpen(true)}/>
-  else if (path === '/custom') page = <CustomHub products={products} onQuickView={setQuickViewProduct}/>
-  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey}/>
-  else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey}/> : <NotFound/>
+  else if (path === '/custom') page = <CustomHub products={products} onQuickView={setQuickViewProduct} pageConfig={pageConfig('custom')}/>
+  else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')}/>
+  else if (path.startsWith('/category/')) page = routeCategory ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')}/> : <NotFound/>
   else if (path.startsWith('/league/')) page = routeLeague ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path.startsWith('/team/')) page = routeLeague && routeTeam && (!hasTeamProductTypeSegment || routeProductType) ? <TaxonomyLanding key={`${routeTeam.slug}:${routeProductType?.handle || 'all'}:${catalogPage}:${search}`} league={routeLeague} team={routeTeam} productType={routeProductType} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct}/> : <NotFound/>
   else if (path === '/studio') page = <Suspense fallback={<div className="admin-loading"><span>90<sup>+</sup></span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
@@ -2913,7 +2988,7 @@ function App() {
   else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
   else if (path === '/about') page = <AboutPage/>
   else if (['/privacy','/terms','/accessibility','/shipping','/returns','/warranty','/journal'].includes(path)) page=<PolicyPage type={path.slice(1)}/>
-  else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
+  else if (path.startsWith('/product/')) page = routeProduct ? <ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account} pageConfig={pageConfig('product')}/> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
   else page = <NotFound/>
   return (
     <>

@@ -13,26 +13,45 @@ export const adminTheme = {
     radius: '0px'
   },
   pages: [
-    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 12, updatedAt: 'Today, 10:12', layout: 'Editorial commerce', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Jersevo custom jersey storefront hero' },
-    { id: 'collection', name: 'Collection', path: '/collection', status: 'PUBLISHED', sections: 5, updatedAt: 'Yesterday, 18:42', layout: 'Product grid', representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'The 90+ drop' },
-    { id: 'product', name: 'Product detail', path: '/product/:handle', status: 'PUBLISHED', sections: 9, updatedAt: 'Yesterday, 16:20', layout: 'Gallery + story', representativeImage: '/assets/jersey-black.webp', representativeAlt: 'Product detail preview' },
-    { id: 'custom', name: 'Custom Lab', path: '/custom', status: 'PUBLISHED', sections: 6, updatedAt: 'Sep 12, 2026', layout: 'Form first', representativeImage: '/assets/jersey-white.webp', representativeAlt: 'Custom jersey preview' },
-    { id: 'vault', name: 'The Vault', path: '/vault', status: 'DRAFT', sections: 4, updatedAt: 'Sep 08, 2026', layout: 'Archive index', representativeImage: '/assets/jersey-oxblood.webp', representativeAlt: 'The archive' }
-  ]
+    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 7, updatedAt: 'Today, 10:12', layout: [{ id: 'hero', type: 'Custom jersey hero', enabled: true }, { id: 'home-trust', type: 'Home trust strip', enabled: true }, { id: 'leagues', type: 'League discovery', enabled: true }, { id: 'rail', type: 'Starting lineup', enabled: true }, { id: 'custom-options', type: 'Customization options', enabled: true }, { id: 'faq', type: 'Homepage FAQ', enabled: true }, { id: 'category-index', type: 'Category index', enabled: true }], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Jersevo custom jersey storefront hero' },
+    { id: 'collection', name: 'Collection', path: '/collection', status: 'PUBLISHED', sections: 4, updatedAt: 'Yesterday, 18:42', layout: [{ id: 'collection-hero', enabled: true }, { id: 'filters', enabled: true }, { id: 'product-grid', enabled: true }, { id: 'collection-trust', enabled: true }], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'The 90+ drop' },
+    { id: 'product', name: 'Product detail', path: '/product/:handle', status: 'PUBLISHED', sections: 6, updatedAt: 'Yesterday, 16:20', layout: [{ id: 'product-gallery', enabled: true }, { id: 'product-buybox', enabled: true }, { id: 'product-highlights', enabled: true }, { id: 'product-story', enabled: true }, { id: 'product-proof', enabled: true }, { id: 'related-products', enabled: true }], representativeImage: '/assets/jersey-black.webp', representativeAlt: 'Product detail preview' },
+    { id: 'custom', name: 'Custom Lab', path: '/custom', status: 'PUBLISHED', sections: 4, updatedAt: 'Sep 12, 2026', layout: [{ id: 'custom-hero', enabled: true }, { id: 'custom-steps', enabled: true }, { id: 'custom-catalog', enabled: true }, { id: 'custom-trust', enabled: true }], representativeImage: '/assets/jersey-white.webp', representativeAlt: 'Custom jersey preview' },
+    { id: 'vault', name: 'The Vault', path: '/vault', status: 'DRAFT', sections: 2, updatedAt: 'Sep 08, 2026', layout: [{ id: 'vault-hero', enabled: true }, { id: 'vault-grid', enabled: true }], representativeImage: '/assets/jersey-oxblood.webp', representativeAlt: 'The archive' }
+  ],
+  content: {
+    eyebrow: 'CUSTOM JERSEYS',
+    headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.',
+    supporting: 'Made for fans. Personalized with the details that make it yours.',
+    button: 'START CUSTOMIZING',
+    pages: {
+      home: { eyebrow: 'CUSTOM JERSEYS', headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.', supporting: 'Made for fans. Personalized with the details that make it yours.', button: 'START CUSTOMIZING' },
+      collection: { eyebrow: 'SHOP THE CATALOG', headline: 'FIND YOUR\nNEXT PIECE.', supporting: 'Browse published jerseys, fan gear and accessories by sport, team or collection.', button: 'SHOP ALL GEAR' },
+      product: { eyebrow: 'PRODUCT DETAIL', headline: 'BUILT FOR\nYOUR MOMENT.', supporting: 'Choose a variation, add only the personal details this design supports, then review before checkout.', button: 'ADD TO BAG' },
+      custom: { eyebrow: 'CUSTOM LAB / REVIEWED PERSONALIZATION', headline: 'PUT YOUR\nMOMENT ON IT.', supporting: 'Choose a designer-led base, add approved details and review every field before production.', button: 'CHOOSE A JERSEY' },
+      vault: { eyebrow: 'THE VAULT', headline: 'EVERY DROP\nLEAVES A MARK.', supporting: 'Archive stories from previous Extra Time releases.', button: 'ENTER THE VAULT' }
+    },
+    blocks: {
+      rail: { title: 'BEST SELLERS.\nYOUR WAY.', subtitle: 'Fan favorites, ready to personalize.' },
+      'home-trust': { labels: ['Made Just for You', 'Personalized Your Way', 'Secure from Cart to Checkout', 'Tracked to Your Door'] }
+    }
+  }
 }
 
 export const adminMenus = [
   {
     id: 'main', name: 'Main navigation', location: 'Header / desktop + mobile', status: 'PUBLISHED', updatedAt: 'Today, 09:50',
     items: [
-      { id: 'shop', label: 'Shop', target: '/collection', type: 'Collection', visible: true, children: [
-        { id: 'all-products', label: 'All products', target: '/collection', type: 'Page', visible: true },
-        { id: 'jerseys', label: 'Jerseys', target: '/collection?type=jerseys', type: 'Collection', visible: true },
-        { id: 'custom-lab', label: 'Custom Lab', target: '/custom', type: 'Page', visible: true }
+      { id: 'shop', label: 'Shop', target: '/shop', type: 'Page', visible: true, children: [
+        { id: 'all-products', label: 'All gear', target: '/shop', type: 'Page', visible: true },
+        { id: 'jerseys', label: 'Jerseys', target: '/category/football-jerseys', type: 'Page', visible: true },
+        { id: 'accessories', label: 'Accessories', target: '/category/accessories', type: 'Page', visible: true }
       ]},
-      { id: 'moments', label: 'Moments', target: '/moments', type: 'Page', visible: true, children: [] },
-      { id: 'players', label: 'Players', target: '/players', type: 'Page', visible: true, children: [] },
-      { id: 'vault', label: 'The Vault', target: '/vault', type: 'Page', visible: true, children: [] }
+      { id: 'sports', label: 'Sports', target: '/sports', type: 'Page', visible: true, children: [] },
+      { id: 'teams', label: 'Teams', target: '/teams', type: 'Page', visible: true, children: [] },
+      { id: 'custom', label: 'Custom', target: '/category/custom-jerseys', type: 'Page', visible: true, children: [] },
+      { id: 'collections', label: 'Collections', target: '/collections', type: 'Page', visible: true, children: [] },
+      { id: 'new', label: 'New & trending', target: '/shop?sort=NEWEST', type: 'Page', visible: true, children: [] }
     ]
   },
   {
@@ -40,7 +59,7 @@ export const adminMenus = [
     items: [
       { id: 'shipping', label: 'Shipping', target: '/shipping', type: 'Page', visible: true, children: [] },
       { id: 'returns', label: 'Returns', target: '/returns', type: 'Page', visible: true, children: [] },
-      { id: 'journal', label: 'Journal', target: '/journal', type: 'External', visible: true, children: [] }
+      { id: 'journal', label: 'Journal', target: '/journal', type: 'Page', visible: true, children: [] }
     ]
   },
   {
@@ -92,7 +111,7 @@ export const themeBlocks = [
   { id: 'leagues', type: 'League discovery', note: 'Choose a league and shop the route', enabled: true },
   { id: 'rail', type: 'Starting lineup', note: 'Fan favorites near the top of home', enabled: true },
   { id: 'home-path', type: 'Make it yours', note: 'Pick, personalize, preview and order', enabled: true },
-  { id: 'custom-options', type: 'Customization options', note: 'Show the controlled 30% personal layer', enabled: true },
+  { id: 'custom-options', type: 'Customization options', note: 'Show the listing-approved personal fields', enabled: true },
   { id: 'quality', type: 'Detail proof', note: 'Surface, print, trim and fit guidance', enabled: true },
   { id: 'drop', type: 'Drop feature', note: 'Featured current listing', enabled: true },
   { id: 'players', type: 'Shop by intent', note: 'For you, two, family and squad', enabled: true },

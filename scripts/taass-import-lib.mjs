@@ -21,8 +21,14 @@ const LEAGUE_RULES = [
   [/(?:^|\b)nhl\b|ice hockey|eishockey/i, { league: 'nhl', sport: 'hockey' }],
   [/(?:^|\b)ncaa\b|college sports/i, { league: 'ncaa', sport: 'college' }],
   [/(?:^|\b)mls\b/i, { league: 'mls', sport: 'soccer' }],
-  [/wwe|wrestling/i, { league: 'wwe', sport: 'wrestling' }],
-  [/nascar|racing|motorsport/i, { league: 'nascar', sport: 'racing' }],
+  // Check named wrestling promotions and racing series before the umbrella
+  // rules. Otherwise AEW/F1 rows silently inherit WWE/NASCAR taxonomy.
+  [/\baew\b|all elite wrestling/i, { league: 'aew', sport: 'wrestling' }],
+  [/\bwwe\b|world wrestling entertainment/i, { league: 'wwe', sport: 'wrestling' }],
+  [/\bformula\s*(?:one|1)\b|\bformel\s*1\b|\bf1\b/i, { league: 'formula1', sport: 'motorsports' }],
+  [/\bnascar\b|national association for stock car auto racing/i, { league: 'nascar', sport: 'motorsports' }],
+  [/wrestling/i, { league: 'wrestling', sport: 'wrestling' }],
+  [/racing|motorsport/i, { league: 'motorsports', sport: 'motorsports' }],
   [/soccer|football|fussball|fußball/i, { league: 'soccer', sport: 'soccer' }]
 ]
 
@@ -67,7 +73,7 @@ const TITLE_BRAND_ALIASES = Object.freeze({
   'lobster & lemonade': ['L&L'],
   'mitchell & ness': ['Mitchell and Ness']
 })
-const LEAGUE_NAMES = new Set(['nfl', 'nba', 'mlb', 'nhl', 'mls', 'ncaa', 'wwe'])
+const LEAGUE_NAMES = new Set(['nfl', 'nba', 'mlb', 'nhl', 'mls', 'ncaa', 'wwe', 'aew', 'wrestling', 'nascar', 'formula1', 'motorsports'])
 const escapeRegExp = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 // Remove only the product's verified manufacturer brand, not arbitrary team,

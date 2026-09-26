@@ -46,6 +46,45 @@ test('taxonomy validator checks team ownership and jersey sport', () => {
   assert.equal(soccer.normalized.league, 'epl')
 })
 
+test('taxonomy validator separates wrestling promotions and racing series', () => {
+  const wwe = validateCatalogTaxonomy({
+    title: 'WWE Legends trading card box',
+    taxonomy: { league: 'wwe', sport: 'wrestling' },
+    productGroup: 'Collectibles'
+  })
+  assert.equal(wwe.valid, true)
+
+  const aew = validateCatalogTaxonomy({
+    title: 'AEW All Elite Wrestling hobby box',
+    taxonomy: { league: 'aew', sport: 'wrestling' },
+    productGroup: 'Collectibles'
+  })
+  assert.equal(aew.valid, true)
+
+  const f1 = validateCatalogTaxonomy({
+    title: 'Formula 1 Chrome Racing hobby box',
+    taxonomy: { league: 'formula1', sport: 'motorsports' },
+    productGroup: 'Collectibles'
+  })
+  assert.equal(f1.valid, true)
+
+  const mislabelledAew = validateCatalogTaxonomy({
+    title: 'AEW All Elite Wrestling hobby box',
+    taxonomy: { league: 'wwe', sport: 'wrestling' },
+    productGroup: 'Collectibles'
+  })
+  assert.equal(mislabelledAew.valid, false)
+  assert.ok(mislabelledAew.blockers.includes('TAXONOMY_LEAGUE_TEXT_MISMATCH'))
+
+  const mislabelledF1 = validateCatalogTaxonomy({
+    title: 'Formula 1 Chrome Racing hobby box',
+    taxonomy: { league: 'nascar', sport: 'motorsports' },
+    productGroup: 'Collectibles'
+  })
+  assert.equal(mislabelledF1.valid, false)
+  assert.ok(mislabelledF1.blockers.includes('TAXONOMY_LEAGUE_TEXT_MISMATCH'))
+})
+
 test('taxonomy blockers are shared by the SEO gate', () => {
   const product = {
     status: 'PUBLISHED', title: 'Dallas Cowboys NHL Cap', image: '/cap.webp',
