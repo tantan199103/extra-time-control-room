@@ -26,6 +26,8 @@ test('catalog page tree separates generated league, team, type and category rout
 
   const stats = catalogPageTreeStats(tree)
   assert.ok(stats.total > stats.teams)
+  assert.equal(stats.groups,2)
+  assert.equal(stats.indexable + stats.noindex, stats.total)
   assert.equal(stats.leagues,2)
   assert.ok(stats.productTypes >= 2)
   assert.ok(stats.categories >= 20)

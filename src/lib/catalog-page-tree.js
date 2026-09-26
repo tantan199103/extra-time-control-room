@@ -155,12 +155,18 @@ export function flattenCatalogPageTree(nodes = [], output = []) {
 }
 
 export function catalogPageTreeStats(nodes = []) {
-  const pages = flattenCatalogPageTree(nodes, []).filter(node => node.path)
+  const allNodes = flattenCatalogPageTree(nodes, [])
+  // The two top-level nodes are navigation groups, not public URLs. Keep
+  // them in the tree for a clear Admin hierarchy, but exclude them from
+  // route totals so the Admin numbers match the sitemap/SEO manifest.
+  const groups = allNodes.filter(node => node.pageKind === 'Page group')
+  const pages = allNodes.filter(node => node.path && node.pageKind !== 'Page group')
   const countKind = kind => pages.filter(node => node.pageKind === kind).length
   return {
     total:pages.length,
-    indexable:pages.filter(node => node.status === 'INDEXABLE' || node.status === 'SYSTEM').length,
+    indexable:pages.filter(node => node.status === 'INDEXABLE').length,
     noindex:pages.filter(node => node.status === 'NOINDEX').length,
+    groups:groups.length,
     leagues:countKind('League page'),
     teams:countKind('Team page'),
     productTypes:countKind('Team product type'),
