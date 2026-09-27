@@ -51,9 +51,9 @@ import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeBy
 import { validateCatalogTaxonomy } from './lib/taxonomy-validator'
 import { resolveCollectionArtwork } from './lib/collection-artwork'
 import { listingMediaRole } from './lib/listing-media'
-import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollectionPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, requestCartValidation, requestMemberQuote, supabase, uploadCustomerReference } from './lib/supabase'
+import { createAiLogoPreview, createCustomizationOrder, createExactLogoPreview, customerAuthSnapshot, fetchStorefrontCatalogPage, fetchStorefrontCollectionPage, fetchStorefrontCollections, fetchStorefrontMenus, fetchStorefrontNavigationIndex, fetchStorefrontSearch, fetchStorefrontTheme, getCustomerSessionId, getSupabase, requestCartValidation, requestMemberQuote, uploadCustomerReference } from './lib/storefront-api'
 import { useDialogFocus } from './useDialogFocus'
-import { fetchStorefrontProduct } from './lib/supabase'
+import { fetchStorefrontProduct } from './lib/storefront-api'
 import { productPreviewReadiness } from './lib/customization-ai'
 import { seoDescription } from './lib/seo-text'
 import { productSeoMetadata, productStructuredData, relatedProducts, usd } from './lib/product-seo'
@@ -2791,12 +2791,23 @@ function App() {
   }, [theme])
   useEffect(() => { try { window.localStorage.setItem('extra-time-cart-v2',JSON.stringify(cart)) } catch {} }, [cart])
   useEffect(() => {
-    if (!supabase || path.startsWith('/admin')) return
-    let active=true
-    const refresh=()=>customerAuthSnapshot().then(snapshot=>{if(active)setAccount(snapshot)}).catch(error=>active&&setAccount({user:null,membership:null,requests:[],error:error instanceof Error?error.message:'Account unavailable.'}))
-    refresh()
-    const {data:{subscription}}=supabase.auth.onAuthStateChange(()=>{window.setTimeout(refresh,0)})
-    return()=>{active=false;subscription.unsubscribe()}
+    if (path.startsWith('/admin')) return
+    let active = true
+    let subscription = null
+    const refresh = () => customerAuthSnapshot()
+      .then(snapshot => { if (active) setAccount(snapshot) })
+      .catch(error => active && setAccount({ user:null, membership:null, requests:[], error:error instanceof Error ? error.message : 'Account unavailable.' }))
+
+    getSupabase().then(client => {
+      if (!active || !client) return
+      refresh()
+      subscription = client.auth.onAuthStateChange(() => { window.setTimeout(refresh, 0) })?.data?.subscription || null
+    }).catch(() => {})
+
+    return () => {
+      active = false
+      subscription?.unsubscribe()
+    }
   }, [path.startsWith('/admin')])
   useEffect(()=>{
     let active=true
@@ -2806,7 +2817,7 @@ function App() {
     return()=>{active=false}
   },[cart,account.user?.id,account.membership?.updated_at])
   useEffect(()=>{
-    if(!supabase || !cart.length || catalogState.loading || path.startsWith('/admin'))return
+    if(!cart.length || catalogState.loading || path.startsWith('/admin'))return
     let active=true
     requestCartValidation(cart).then(result=>{
       if(!active)return
