@@ -214,6 +214,18 @@
   height: 25px;
   object-fit: contain;
 }
+.shop-visual--unified .shop-cover__league-monogram {
+  display: inline-grid;
+  width: 24px;
+  height: 25px;
+  place-items: center;
+  flex: none;
+  border: 1px solid rgba(255,255,255,.34);
+  border-radius: 50%;
+  color: #fff;
+  font: 700 8px/1 var(--body);
+  letter-spacing: .04em;
+}
 .shop-visual--unified .shop-cover__leagues > a svg { flex: none; }
 
 @media (max-width: 1000px) {

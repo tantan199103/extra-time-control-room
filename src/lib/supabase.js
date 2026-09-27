@@ -7,7 +7,7 @@ import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSett
 import { apiFetch } from './api-client'
 import { collectionMembershipDiff } from './collection-assignment'
 import { collectionAutomationHasConditions, normalizeCollectionAutomation } from './collection-rules'
-import { LEAGUE_TAXONOMY } from './league-taxonomy'
+import { ALL_LEAGUE_TAXONOMY } from './league-taxonomy'
 import { accessoryGroupsForCategory, catalogCategoryByHandle } from './catalog-taxonomy'
 import { teamProductTypeByHandle } from './team-product-pages'
 
@@ -223,7 +223,7 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   if (group && group !== 'ALL') query = query.eq('product_group',group)
   if (league) query = query.eq('taxonomy->>league',league.toLowerCase())
   else if (sport) {
-    const leagues = LEAGUE_TAXONOMY.filter(item => item.sport.toLowerCase() === sport.toLowerCase()).map(item => item.key)
+    const leagues = ALL_LEAGUE_TAXONOMY.filter(item => item.sport.toLowerCase() === sport.toLowerCase()).map(item => item.key)
     if (leagues.length) query = query.in('taxonomy->>league',leagues)
   }
   if (brand) query = query.eq('taxonomy->>brand',brand)

@@ -4,7 +4,7 @@ import {
   CATALOG_CATEGORY_PAGES,
   productMatchesCatalogCategory
 } from './catalog-taxonomy.js'
-import { LEAGUE_TAXONOMY, leaguePath, normalizeTeamSlug, teamPath, taxonomySlug } from './league-taxonomy.js'
+import { ALL_LEAGUE_TAXONOMY, leaguePath, normalizeTeamSlug, teamPath, taxonomySlug } from './league-taxonomy.js'
 import { TEAM_PRODUCT_PAGE_MIN_PRODUCTS, teamProductTypeCounts, teamProductTypeForProduct } from './team-product-pages.js'
 
 const routeStatus = count => count >= TEAM_PRODUCT_PAGE_MIN_PRODUCTS ? 'INDEXABLE' : 'NOINDEX'
@@ -67,7 +67,7 @@ function categoryNode(rows, category, children = []) {
  */
 export function buildCatalogPageTree(rows = []) {
   const source = Array.isArray(rows) ? rows.filter(Boolean) : []
-  const leagueNodes = LEAGUE_TAXONOMY.map(league => {
+  const leagueNodes = ALL_LEAGUE_TAXONOMY.map(league => {
     const leagueRows = source.filter(row => rowLeague(row) === league.key)
     const teamNodes = league.teams.map(team => {
       const teamRows = leagueRows.filter(row => rowTeam(row) === team.slug)

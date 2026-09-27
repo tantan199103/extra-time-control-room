@@ -12,6 +12,8 @@
     "audit:gmc": "node scripts/audit-gmc-feed.mjs",
     "generate:merchant-feed": "node scripts/generate-merchant-feed.mjs",
     "audit:taxonomy": "node scripts/audit-catalog-taxonomy.mjs",
+    "migrate:taxonomy": "node scripts/migrate-supplemental-taxonomy.mjs",
+    "release:taxonomy": "node scripts/release-repaired-taxonomy.mjs",
     "audit:team-assets": "node scripts/audit-team-assets.mjs --write",
     "fetch:team-logos": "node scripts/fetch-team-logos.mjs",
     "import:fangear": "node scripts/import-fangear-catalog.mjs",

@@ -245,7 +245,72 @@ export const LEAGUE_TAXONOMY = [
   }
 ]
 
-export const TAXONOMY_LEAGUE_BY_KEY = new Map(LEAGUE_TAXONOMY.map(league => [league.key, league]))
+/**
+ * Promotion/series entities that are present in the imported catalogue but
+ * do not have a curated team directory yet. Keep them separate from the
+ * team-led navigation contract above: adding a leaf with an empty `teams`
+ * array must not make the team-logo audit or the curated taxonomy tests treat
+ * it as a missing asset. Runtime discovery and SEO use ALL_LEAGUE_TAXONOMY so
+ * these entities still get a canonical landing route when products exist.
+ */
+export const SUPPLEMENTAL_LEAGUE_TAXONOMY = Object.freeze([
+  {
+    key: 'wwe',
+    name: 'WWE',
+    sport: 'Wrestling',
+    description: 'WWE wrestling apparel, collectibles and fan gear for every era.',
+    media: null,
+    teams: []
+  },
+  {
+    key: 'aew',
+    name: 'AEW',
+    sport: 'Wrestling',
+    description: 'AEW wrestling apparel, collectibles and fan gear for All Elite Wrestling fans.',
+    media: null,
+    teams: []
+  },
+  {
+    key: 'nascar',
+    name: 'NASCAR',
+    sport: 'Motorsports',
+    description: 'NASCAR racing apparel, caps, collectibles and fan gear.',
+    media: null,
+    teams: []
+  },
+  {
+    key: 'formula1',
+    name: 'Formula 1',
+    sport: 'Motorsports',
+    description: 'Formula 1 racing collectibles, apparel and fan gear.',
+    media: null,
+    teams: []
+  },
+  {
+    key: 'wrestling',
+    name: 'Wrestling',
+    sport: 'Wrestling',
+    description: 'Wrestling apparel, collectibles and fan gear across promotions.',
+    media: null,
+    teams: []
+  },
+  {
+    key: 'motorsports',
+    name: 'Motorsports',
+    sport: 'Motorsports',
+    description: 'Motorsports apparel, collectibles and fan gear across racing series.',
+    media: null,
+    teams: []
+  }
+])
+
+/** All controlled league entities, including leaf promotions/series. */
+export const ALL_LEAGUE_TAXONOMY = Object.freeze([
+  ...LEAGUE_TAXONOMY,
+  ...SUPPLEMENTAL_LEAGUE_TAXONOMY
+])
+
+export const TAXONOMY_LEAGUE_BY_KEY = new Map(ALL_LEAGUE_TAXONOMY.map(league => [league.key, league]))
 export const TAXONOMY_TEAM_BY_SLUG = new Map(LEAGUE_TAXONOMY.flatMap(league => league.teams.map(team => [`${league.key}/${team.slug}`, { ...team, leagueKey: league.key, leagueName: league.name }])))
 
 // Source catalogues frequently append the legal/team suffix to a slug. Keep
@@ -392,7 +457,7 @@ export function findLeague(value) {
       teams: soccerLeagues.flatMap(l => l.teams)
     }
   }
-  return LEAGUE_TAXONOMY.find(league => league.key === slug || taxonomySlug(league.name) === slug) || null
+  return ALL_LEAGUE_TAXONOMY.find(league => league.key === slug || taxonomySlug(league.name) === slug) || null
 }
 
 export function findTeam(leagueKey, value) {

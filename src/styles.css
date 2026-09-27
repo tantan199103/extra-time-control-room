@@ -385,6 +385,7 @@ a { color: inherit; }
 .league-discovery__grid a { min-height:190px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; background:var(--chalk); }
 .league-discovery__media { height:58px; display:flex; align-items:flex-start; justify-content:flex-end; }
 .league-discovery__media img { width:auto; height:56px; max-width:110px; object-fit:contain; filter:grayscale(1) contrast(1.15); opacity:.82; transition:filter .2s ease, opacity .2s ease, transform .2s ease; }
+.league-discovery__monogram { display:grid; width:56px; height:56px; place-items:center; border:1px solid rgba(0,0,0,.24); border-radius:50%; color:var(--ink); font:700 16px/1 var(--headline); letter-spacing:.04em; }
 .league-discovery__grid a:hover .league-discovery__media img { filter:none; opacity:1; transform:translateY(-2px); }
 .league-discovery__grid a:hover { background:var(--ink); color:var(--chalk); }
 .league-discovery__grid a > span { font:700 clamp(45px,6vw,86px)/.8 var(--headline); letter-spacing:-.04em; }

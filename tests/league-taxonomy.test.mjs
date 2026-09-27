@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, teamMascot, teamPath } from '../src/lib/league-taxonomy.js'
+import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, teamMascot, teamPath } from '../src/lib/league-taxonomy.js'
 
 test('league taxonomy exposes stable league and team URLs', () => {
   const nfl = findLeague('NFL')
@@ -57,6 +57,17 @@ test('league taxonomy exposes stable league and team URLs', () => {
   assert.equal(findTeam('laliga', 'real-madrid').media.src, '/assets/leagues/marks/teams/laliga/real-madrid.webp')
   assert.equal(findTeam('seriea', 'inter-milan').media.src, '/assets/leagues/marks/teams/seriea/inter-milan.webp')
   assert.equal(findTeam('bundesliga', 'bayern-munich').media.src, '/assets/leagues/marks/teams/bundesliga/bayern-munich.webp')
+})
+
+test('supplemental promotion and racing entities resolve without inventing team assets', () => {
+  for (const [key, name, sport] of [['wwe', 'WWE', 'Wrestling'], ['aew', 'AEW', 'Wrestling'], ['nascar', 'NASCAR', 'Motorsports'], ['formula1', 'Formula 1', 'Motorsports']]) {
+    const league = findLeague(key)
+    assert.equal(league.name, name)
+    assert.equal(league.sport, sport)
+    assert.equal(leaguePath(league), `/league/${key}`)
+    assert.deepEqual(league.teams, [])
+  }
+  assert.ok(ALL_LEAGUE_TAXONOMY.length > LEAGUE_TAXONOMY.length)
 })
 
 test('taxonomy matching accepts nested catalog fields and stays selective', () => {

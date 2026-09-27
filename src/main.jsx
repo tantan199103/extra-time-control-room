@@ -39,7 +39,7 @@ import {
 } from 'lucide-react'
 import { products as fallbackProducts, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isHeadwearProduct, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
-import { LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
+import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { SHOP_COVER, leagueCover } from './lib/league-covers'
 import { ACCESSORY_CATEGORY_PAGES, ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
 import { discoveryIndex, discoveryMenu, matchesDiscoveryQuery, normalizeDiscoveryQuery, productSearchText } from './lib/discovery-navigation'
@@ -833,7 +833,7 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
     .filter(item => normalizeDiscoveryQuery(item.name).includes(normalizeDiscoveryQuery(teamQuery)))
     .sort((a,b) => teamSort === 'POPULAR' ? (hub.teams.get(b.slug) || 0) - (hub.teams.get(a.slug) || 0) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name))
   const visibleTeams = teamQuery.trim() || showAllTeams ? matchedTeams : matchedTeams.slice(0,12)
-  const nearbyLeagues = LEAGUE_TAXONOMY.filter(item => item.key !== league?.key && discoveryProducts.some(row => row.taxonomy?.league === item.key)).slice(0,6)
+  const nearbyLeagues = ALL_LEAGUE_TAXONOMY.filter(item => item.key !== league?.key && discoveryProducts.some(row => row.taxonomy?.league === item.key)).slice(0,6)
   const leagueHeroKey = ['nfl','nba','mlb','nhl','mls','ncaa'].includes(league?.key) ? league.key : ''
   const leagueCoverArt = leagueCover(leagueHeroKey)
   const heroImage = leagueHeroKey ? `/assets/shop/sport-${leagueHeroKey}-v2.webp` : '/assets/shop/shop-fan-gear-banner-v2.webp'
@@ -1082,7 +1082,7 @@ function PlayerDiscovery({ customProduct }) {
 
 function LeagueDiscovery({ products = [] }) {
   const leagueMeta = { nfl: 'FOOTBALL', mlb: 'BASEBALL', nba: 'BASKETBALL', nhl:'HOCKEY', mls: 'SOCCER', ncaa: 'COLLEGE', epl: 'SOCCER', laliga: 'SOCCER', seriea: 'SOCCER', bundesliga: 'SOCCER', soccer: 'SOCCER' }
-  const leagues = LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
+  const leagues = ALL_LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
   return (
     <section className="league-discovery section" id="leagues">
       <div className="section-title-row">
@@ -1101,7 +1101,9 @@ function LeagueDiscovery({ products = [] }) {
             onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}
           >
             <div className="league-discovery__media">
-              {league.media && <img src={league.media.src} alt={`${league.name} league mark`} loading="lazy" decoding="async" />}
+              {league.media?.src
+                ? <img src={league.media.src} alt={`${league.name} league mark`} loading="lazy" decoding="async" />
+                : <span className="league-discovery__monogram" aria-hidden="true">{league.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase()}</span>}
             </div>
             <div className="league-discovery__info">
               <span className="league-discovery__name">{league.name}</span>
@@ -1332,7 +1334,7 @@ function FixedFooterMenu({ path, bagCount, openCart, menus = [], customProduct, 
   const [leagueOpen, setLeagueOpen] = useState(false)
   const isCustom = path === '/custom' || path === '/studio' || (path.startsWith('/product/') && new URLSearchParams(window.location.search).get('custom') === '1')
   const routeLeague = path.startsWith('/league/') || path.startsWith('/team/') ? findLeague(decodeURIComponent(path.split('/')[2] || '')) : null
-  const visibleLeagues = LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
+  const visibleLeagues = ALL_LEAGUE_TAXONOMY.filter(league => products.some(product => productMatchesTaxonomy(product,{ league:league.key })))
   useEffect(() => { setLeagueOpen(false) }, [path])
   useEffect(() => { if (hidden) setLeagueOpen(false) }, [hidden])
   const defaults = [
@@ -1577,7 +1579,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
         map.get(slug).count += 1
       }
     })
-    LEAGUE_TAXONOMY.forEach(league => {
+    ALL_LEAGUE_TAXONOMY.forEach(league => {
       league.teams.forEach(team => {
         const count = baseProducts.filter(p => productMatchesTaxonomy(p, { team: team.slug })).length
         if (count > 0 && !map.has(team.slug)) {
@@ -2557,7 +2559,10 @@ function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, contro
   const categories = discovery?.categories?.length ? discovery.categories : ALL_CATALOG_CATEGORY_PAGES
   const teams = discovery?.teams?.length ? discovery.teams : fallbackTeams
   const sportOrder = ['nfl','nba','mlb','nhl','mls','ncaa']
-  const sportCards = sportOrder.map(key => leagues.find(item => item.key === key)).filter(Boolean)
+  const sportCards = [
+    ...sportOrder.map(key => leagues.find(item => item.key === key)).filter(Boolean),
+    ...leagues.filter(item => !sportOrder.includes(item.key))
+  ]
   const productOrder = ['caps','football-jerseys','baseball-jerseys','knit-hats','fan-apparel','custom-jerseys','accessories','collectibles']
   const productCards = productOrder.map(handle => categories.find(item => item.handle === handle)).filter(Boolean)
   const teamOrder = ['nfl/dallas-cowboys','nba/los-angeles-lakers','mlb/new-york-yankees','nhl/boston-bruins','nhl/chicago-blackhawks','mlb/los-angeles-dodgers','mlb/boston-red-sox','nhl/new-york-rangers']
@@ -2587,7 +2592,7 @@ function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, contro
       </div>
       <nav className="shop-cover__leagues shop-visual__sport-grid" aria-label="Jump to a league">
         <span className="shop-cover__leagues-label">JUMP TO LEAGUE</span>
-        {sportCards.map(league => <a key={league.key} href={leaguePath(league)} aria-label={`Shop ${league.name} gear`} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>{league.media?.src && <img src={league.media.src} alt="" decoding="async"/>}<span>{league.name}</span><ArrowRight size={13}/></a>)}
+        {sportCards.map(league => <a key={league.key} href={leaguePath(league)} aria-label={`Shop ${league.name} gear`} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>{league.media?.src ? <img src={league.media.src} alt="" decoding="async"/> : <b className="shop-cover__league-monogram" aria-hidden="true">{league.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase()}</b>}<span>{league.name}</span><ArrowRight size={13}/></a>)}
       </nav>
     </div>}
     {showBlock('collection-hero') && <div className="shop-visual__unified-links" aria-label="Shop shortcuts">

@@ -1,5 +1,5 @@
 import { catalogCategoryByHandle, catalogIconForProduct } from './catalog-taxonomy.js'
-import { LEAGUE_TAXONOMY, normalizeTeamSlug, taxonomySlug } from './league-taxonomy.js'
+import { ALL_LEAGUE_TAXONOMY, normalizeTeamSlug, taxonomySlug } from './league-taxonomy.js'
 
 const IMAGE_FIELDS = ['hero', 'hero_image', 'representativeImage', 'representative_image', 'cover', 'cover_image', 'image']
 
@@ -29,8 +29,8 @@ function teamForValue(value, leagueHint = '') {
   const raw = slugValue(value)
   if (!raw) return null
   const leagues = leagueHint
-    ? LEAGUE_TAXONOMY.filter(league => slugValue(league.key) === slugValue(leagueHint) || slugValue(league.name) === raw)
-    : LEAGUE_TAXONOMY
+    ? ALL_LEAGUE_TAXONOMY.filter(league => slugValue(league.key) === slugValue(leagueHint) || slugValue(league.name) === raw)
+    : ALL_LEAGUE_TAXONOMY
   for (const league of leagues) {
     const normalized = normalizeTeamSlug(league.key, raw)
     const team = league.teams.find(item => item.slug === normalized || slugValue(item.name) === raw || item.slug === raw)
@@ -42,7 +42,7 @@ function teamForValue(value, leagueHint = '') {
 function leagueForValue(value) {
   const raw = slugValue(value)
   if (!raw) return null
-  return LEAGUE_TAXONOMY.find(league => slugValue(league.key) === raw || slugValue(league.name) === raw) || null
+  return ALL_LEAGUE_TAXONOMY.find(league => slugValue(league.key) === raw || slugValue(league.name) === raw) || null
 }
 
 function categoryForValue(value) {

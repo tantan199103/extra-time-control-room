@@ -1,5 +1,5 @@
 import { ACCESSORY_CATEGORY_PAGES, ACCESSORY_FAMILY_OPTIONS, ALL_CATALOG_CATEGORY_PAGES, productMatchesCatalogCategory } from './catalog-taxonomy.js'
-import { LEAGUE_TAXONOMY, leaguePath, normalizeTeamSlug, teamPath } from './league-taxonomy.js'
+import { ALL_LEAGUE_TAXONOMY, leaguePath, normalizeTeamSlug, teamPath } from './league-taxonomy.js'
 import { resolveCollectionArtwork } from './collection-artwork.js'
 
 export const PRIMARY_DISCOVERY_LABELS = Object.freeze(['Shop', 'Sports', 'Teams', 'Custom', 'Collections', 'New & trending'])
@@ -58,7 +58,7 @@ export function discoveryIndex(rows = []) {
     const team = normalizeTeamSlug(league, taxonomy.team || '')
     if (team) teamCounts.set(`${league}/${team}`, (teamCounts.get(`${league}/${team}`) || 0) + weight)
   }
-  const leagues = LEAGUE_TAXONOMY.filter(league => leagueCounts.get(league.key) > 0)
+  const leagues = ALL_LEAGUE_TAXONOMY.filter(league => leagueCounts.get(league.key) > 0)
   const teams = leagues.flatMap(league => league.teams
     .filter(team => teamCounts.get(`${league.key}/${team.slug}`) > 0)
     .map(team => ({ ...team, leagueKey:league.key, leagueName:league.name, count:teamCounts.get(`${league.key}/${team.slug}`), href:teamPath(league.key,team) })))

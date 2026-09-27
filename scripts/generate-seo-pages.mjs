@@ -2,7 +2,7 @@ import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/storefront-model.js'
-import { LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
+import { ALL_LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
 import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, normalizeAccessoryTaxonomy, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount } from '../src/lib/catalog-pagination.js'
@@ -314,7 +314,7 @@ const home = pageHtml(shell, {
   title:'Custom Jerseys & Personalized Fan Gear | Jersevo',
   description:'Design custom jerseys and personalized fan gear with your name, number and approved listing options. Browse football, baseball, basketball and soccer-inspired styles at Jersevo.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct ? `/product/${slug(featuredCustomProduct.handle)}?custom=1` : '/shop'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
+  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct ? `/product/${slug(featuredCustomProduct.handle)}?custom=1` : '/shop'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${ALL_LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
 sitemapEntries.push({path:'/'})
@@ -361,7 +361,7 @@ await writePage('/shop', pageHtml(shell, {
   title:'Shop fan gear by sport, team and product | Jersevo',
   description:'Start with a sport, find your team or choose the product you want. Browse live jerseys, headwear and fan gear at Jersevo.',
   image:absolute(SHOP_COVER.src),
-  fallback:`<main class="seo-fallback"><h1>Find your route to the gear</h1><p>Shop by sport, team or product type. The full published catalog follows.</p><nav aria-label="Shop by sport">${LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)}</a>`).join(' · ')}</nav><nav aria-label="Find a team"><a href="/teams">Browse teams</a> · <a href="/sports">Explore sports</a></nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav><h2>All products</h2><ul>${products.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${products.length > CATALOG_PAGE_SIZE ? '<a href="/shop/page/2">Next page</a>' : ''}</main>`,
+  fallback:`<main class="seo-fallback"><h1>Find your route to the gear</h1><p>Shop by sport, team or product type. The full published catalog follows.</p><nav aria-label="Shop by sport">${ALL_LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)}</a>`).join(' · ')}</nav><nav aria-label="Find a team"><a href="/teams">Browse teams</a> · <a href="/sports">Explore sports</a></nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav><h2>All products</h2><ul>${products.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${products.length > CATALOG_PAGE_SIZE ? '<a href="/shop/page/2">Next page</a>' : ''}</main>`,
   schema:[{ '@context':'https://schema.org', '@type':'ItemList', itemListElement:itemList },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`}])]
 }))
 await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute(SHOP_COVER.src))
@@ -389,7 +389,7 @@ for (const product of products) {
   const team = normalizeTeamSlug(league,product.taxonomy?.team || '')
   if (team) teamCountsForIndex.set(`${league}/${team}`,(teamCountsForIndex.get(`${league}/${team}`) || 0) + 1)
 }
-const availableLeagues = LEAGUE_TAXONOMY.filter(league => leagueCountsForIndex.get(league.key) > 0)
+const availableLeagues = ALL_LEAGUE_TAXONOMY.filter(league => leagueCountsForIndex.get(league.key) > 0)
 await writePage('/sports', pageHtml(shell, {
   path:'/sports', title:'Shop sports and leagues | Jersevo',
   description:'Explore football, baseball, basketball, hockey, soccer and college fan gear by league and team.',
@@ -459,7 +459,7 @@ for (const product of products) {
   const team = normalizeTeamSlug(league, product.taxonomy?.team || '')
   if (team) taxonomyCounts.set(`team:${league}/${team}`, (taxonomyCounts.get(`team:${league}/${team}`) || 0) + 1)
 }
-for (const league of LEAGUE_TAXONOMY) {
+for (const league of ALL_LEAGUE_TAXONOMY) {
   const path = leaguePath(league)
   const leagueIndexable = (taxonomyCounts.get(`league:${league.key}`) || 0) >= TAXONOMY_MIN_PRODUCTS
   const leagueProducts = products.filter(product => String(product.taxonomy?.league || '').toLowerCase() === league.key)
