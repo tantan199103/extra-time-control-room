@@ -2035,8 +2035,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/etape.webp": {
-      "bytes": 2332,
-      "sha256": "e50ba6a1a4bea1de97c131e74478def1f28816d95844758912316ef07c144a90"
+      "bytes": 1728,
+      "sha256": "00addccd3192db44bb1edda4a188e57c85b4be5756050bcfca88febf7c95161d"
     },
     "/designer/owayo/cycling-c3/designs/etape/snap-lines.json": {
       "bytes": 1427,
@@ -2083,8 +2083,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/velocity.webp": {
-      "bytes": 2204,
-      "sha256": "2966e998ddb3700aed3491fede78e971d87fa2362b1468f8fbeb03398461ce8b"
+      "bytes": 1640,
+      "sha256": "78488640ae7dbe4273c067d7e284d8a95beab26b442569499038061dc89aa37b"
     },
     "/designer/owayo/cycling-c3/designs/velocity/snap-lines.json": {
       "bytes": 1427,
@@ -2275,8 +2275,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/gruppetto.webp": {
-      "bytes": 3004,
-      "sha256": "6b45b54b0cff0a201be375c2ecf8612d64e25862aeb66b65034c82ff67427330"
+      "bytes": 2406,
+      "sha256": "630aea5b5e7b0ada3d8f1188a9ab87798a4aaead147e8cceb614bf6803309249"
     },
     "/designer/owayo/cycling-c3/designs/gruppetto/snap-lines.json": {
       "bytes": 1427,
@@ -2611,8 +2611,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/aero.webp": {
-      "bytes": 2326,
-      "sha256": "b85794b6e3c49f55039ed22565f01f03b6e419b85f5bf573d1ef6a2cbcf9fc10"
+      "bytes": 1746,
+      "sha256": "efe702b3fc21839f67ae8812b3bbed65f9713ab85038ce159f425eb4282772d6"
     },
     "/designer/owayo/cycling-c3/designs/aero/snap-lines.json": {
       "bytes": 1427,
@@ -2803,8 +2803,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/leader.webp": {
-      "bytes": 3984,
-      "sha256": "470630cb89b98787c965aa38a9d962bc048d5a3f5f257fe15b703e6c993c6c3f"
+      "bytes": 3520,
+      "sha256": "56eb4e8ef1a9aa21cd7020f8e90b33d4d436c6ce0fcff06c097eba87b7548d20"
     },
     "/designer/owayo/cycling-c3/designs/leader/snap-lines.json": {
       "bytes": 1427,
@@ -2995,8 +2995,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/montagne.webp": {
-      "bytes": 4432,
-      "sha256": "45a8819fa9380cdf3a7153420164a79484e22ad1576a8a18364e767c1db2730f"
+      "bytes": 3890,
+      "sha256": "a75827855d659b21d0dab359775af5d2cf758a5b20c5b2ea0b45e8ebb93cf6cc"
     },
     "/designer/owayo/cycling-c3/designs/montagne/snap-lines.json": {
       "bytes": 1427,
@@ -3139,8 +3139,8 @@
       "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
     },
     "/designer/owayo/cycling-c3/previews/trouble.webp": {
-      "bytes": 5740,
-      "sha256": "bea0b5f1fa5ab8288ca5af2471820d886476170cd68e02ff73876ceacd2064f1"
+      "bytes": 5140,
+      "sha256": "edc61215c03c384acfbf165e4499dd4e186cf3e1ed9cac525b4ea8b82b6e9e1f"
     },
     "/designer/owayo/cycling-c3/designs/trouble/snap-lines.json": {
       "bytes": 1427,
