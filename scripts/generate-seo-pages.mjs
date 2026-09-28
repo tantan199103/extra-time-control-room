@@ -12,6 +12,7 @@ import { resolveCollectionArtwork } from '../src/lib/collection-artwork.js'
 import { cleanSeoText, seoDescription } from '../src/lib/seo-text.js'
 import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
 import { TRUST_PAGES } from '../src/lib/trust-pages.js'
+import { catalogPageOverrideFor, normalizeCatalogPageOverrides } from '../src/lib/catalog-page-overrides.js'
 import { productBootstrap, renderProductContent, renderSitemap, renderSitemapIndex } from './seo-render.mjs'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
@@ -164,6 +165,22 @@ async function loadCollections() {
   }
 }
 
+async function loadCatalogPageOverrides() {
+  const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  if (!base || !key) return {}
+  try {
+    const url = `${base.replace(/\/$/, '')}/rest/v1/pod_themes?select=definition&status=eq.PUBLISHED&order=updated_at.desc&limit=1`
+    const response = await fetch(url, { headers:{ apikey:key, Authorization:`Bearer ${key}`, Accept:'application/json' }, signal:AbortSignal.timeout(30000) })
+    if (!response.ok) throw new Error(`theme query returned ${response.status}`)
+    const rows = await response.json()
+    return normalizeCatalogPageOverrides(rows?.[0]?.definition?.content?.catalogPages)
+  } catch (error) {
+    console.warn(`[seo] Catalog page overrides unavailable; generated defaults will be used. ${error.message}`)
+    return {}
+  }
+}
+
 
 function breadcrumbSchema(items) {
   return {
@@ -287,6 +304,8 @@ featuredCustomProduct = products.find(product => product.customFields?.length &&
 const customProducts = products.filter(product => product.customFields?.length).slice(0, 12)
 const blockedProducts = [...(await loadBlockedProducts()), ...taxonomyBlockedProducts]
 const collections = await loadCollections()
+const catalogPageOverrides = await loadCatalogPageOverrides()
+const pageOverride = path => catalogPageOverrideFor(catalogPageOverrides, path)
 const TAXONOMY_MIN_PRODUCTS = 6
 const rowCollectionIsIndexable = collection => !['BLOCKED', 'NOINDEX'].includes(String(collection?.seoStatus || '').toUpperCase())
 const navigationRows = new Map()
@@ -389,7 +408,7 @@ for (const product of products) {
   const team = normalizeTeamSlug(league,product.taxonomy?.team || '')
   if (team) teamCountsForIndex.set(`${league}/${team}`,(teamCountsForIndex.get(`${league}/${team}`) || 0) + 1)
 }
-const availableLeagues = ALL_LEAGUE_TAXONOMY.filter(league => leagueCountsForIndex.get(league.key) > 0)
+const availableLeagues = ALL_LEAGUE_TAXONOMY.filter(league => leagueCountsForIndex.get(league.key) > 0 && !pageOverride(leaguePath(league))?.hidden)
 await writePage('/sports', pageHtml(shell, {
   path:'/sports', title:'Shop sports and leagues | Jersevo',
   description:'Explore football, baseball, basketball, hockey, soccer and college fan gear by league and team.',
@@ -432,19 +451,24 @@ for (const collection of collections) {
 const categoryCounts = new Map(ALL_CATALOG_CATEGORY_PAGES.map(category => [category.handle, products.filter(product => productMatchesCatalogCategory(product, category)).length]))
 for (const category of ALL_CATALOG_CATEGORY_PAGES) {
   const path = `/category/${category.handle}`
+  const override = pageOverride(path)
+  if (override?.hidden) continue
   const count = categoryCounts.get(category.handle) || 0
   const indexable = count >= TAXONOMY_MIN_PRODUCTS
   const categoryProducts = products.filter(product => productMatchesCatalogCategory(product, category))
+  const categoryTitle = override?.title || category.label
+  const categoryDescription = override?.description || category.description
+  const categoryImage = absolute(override?.hero || '/assets/jersey-black.webp')
   await writePage(path, pageHtml(shell, {
     path,
-    title:`${category.label} — Jersevo`,
-    description:category.description,
-    image:absolute('/assets/jersey-black.webp'),
+    title:override?.seoTitle || `${categoryTitle} — Jersevo`,
+    description:override?.seoDescription || categoryDescription,
+    image:categoryImage,
     noindex:!indexable,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(category.label)}</h1><p>${escapeHtml(category.description)}</p><ul>${categoryProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${categoryProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
-    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:category.label, description:category.description, url:`${PUBLIC_ORIGIN}${path}`, numberOfItems:count, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:category.label,url:`${PUBLIC_ORIGIN}${path}`}])]
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(categoryTitle)}</h1><p>${escapeHtml(categoryDescription)}</p><ul>${categoryProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${categoryProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
+    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:categoryTitle, description:categoryDescription, url:`${PUBLIC_ORIGIN}${path}`, image:categoryImage, numberOfItems:count, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:categoryTitle,url:`${PUBLIC_ORIGIN}${path}`}])]
   }))
-  if (indexable) await writeCatalogPagination(path, categoryProducts, category.label, category.description, absolute('/assets/jersey-black.webp'))
+  if (indexable) await writeCatalogPagination(path, categoryProducts, categoryTitle, categoryDescription, categoryImage)
 }
 
 // Taxonomy pages are generated from the same source used by the runtime mega
@@ -461,29 +485,40 @@ for (const product of products) {
 }
 for (const league of ALL_LEAGUE_TAXONOMY) {
   const path = leaguePath(league)
+  const override = pageOverride(path)
+  if (override?.hidden) continue
   const leagueIndexable = (taxonomyCounts.get(`league:${league.key}`) || 0) >= TAXONOMY_MIN_PRODUCTS
   const leagueProducts = products.filter(product => String(product.taxonomy?.league || '').toLowerCase() === league.key)
+  const leagueTitle = override?.title || `${league.name} fan gear`
+  const leagueDescription = override?.description || league.description
+  const leagueImage = absolute(override?.hero || leagueCover(league.key)?.src || leagueProducts[0]?.image || league.media?.src || '/assets/editorial-player.webp')
   const leagueGroups = [...new Map(leagueProducts.reduce((map, product) => {
     const group = String(product.productGroup || '').trim()
     if (group) map.set(group, (map.get(group) || 0) + 1)
     return map
   }, new Map())).entries()].sort((a,b) => b[1] - a[1]).slice(0,8)
-  const availableLeagueTeams = league.teams.filter(team => (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) > 0)
+  const availableLeagueTeams = league.teams.filter(team => (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) > 0 && !pageOverride(teamPath(league.key, team))?.hidden)
   await writePage(path, pageHtml(shell, {
     path,
-    title:`${league.name} fan gear — Jersevo`,
-    description:league.description,
-    image:absolute(leagueCover(league.key)?.src || leagueProducts[0]?.image || league.media?.src || '/assets/editorial-player.webp'),
+    title:override?.seoTitle || `${leagueTitle} — Jersevo`,
+    description:override?.seoDescription || leagueDescription,
+    image:leagueImage,
     noindex:!leagueIndexable,
-    fallback:`<main class="seo-fallback"><h1>${escapeHtml(league.name)} fan gear</h1><p>${escapeHtml(league.description)}</p><section><h2>Find your ${escapeHtml(league.name)} team</h2><ul>${availableLeagueTeams.slice(0,16).map(team => `<li><a href="${teamPath(league.key,team)}">${escapeHtml(team.name)}</a> (${taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0})</li>`).join('')}</ul></section><section><h2>Shop ${escapeHtml(league.name)} by product</h2><ul>${leagueGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(league.name)} gear</h2><ul>${leagueProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${leagueProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</section></main>`,
-    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${league.name} fan gear`, description:league.description, url:`${PUBLIC_ORIGIN}${path}`, numberOfItems:leagueProducts.length, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`}])]
+    fallback:`<main class="seo-fallback"><h1>${escapeHtml(leagueTitle)}</h1><p>${escapeHtml(leagueDescription)}</p><section><h2>Find your ${escapeHtml(league.name)} team</h2><ul>${availableLeagueTeams.slice(0,16).map(team => `<li><a href="${teamPath(league.key,team)}">${escapeHtml(team.name)}</a> (${taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0})</li>`).join('')}</ul></section><section><h2>Shop ${escapeHtml(league.name)} by product</h2><ul>${leagueGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(league.name)} gear</h2><ul>${leagueProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${leagueProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</section></main>`,
+    schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:leagueTitle, description:leagueDescription, url:`${PUBLIC_ORIGIN}${path}`, image:leagueImage, numberOfItems:leagueProducts.length, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:leagueTitle,url:`${PUBLIC_ORIGIN}${path}`}])]
   }))
-  if (leagueIndexable) await writeCatalogPagination(path, leagueProducts, `${league.name} fan gear`, league.description, absolute(leagueCover(league.key)?.src || '/assets/editorial-player.webp'))
+  if (leagueIndexable) await writeCatalogPagination(path, leagueProducts, leagueTitle, leagueDescription, leagueImage)
   for (const team of league.teams) {
     const teamPage = teamPath(league.key, team)
+    const teamOverride = pageOverride(teamPage)
+    if (teamOverride?.hidden) continue
     const teamIndexable = (taxonomyCounts.get(`team:${league.key}/${team.slug}`) || 0) >= TAXONOMY_MIN_PRODUCTS
     const teamProducts = leagueProducts.filter(product => normalizeTeamSlug(league.key, product.taxonomy?.team || '') === team.slug)
     const teamTypePages = teamProductTypeCounts(teamProducts, { league:league.key, team:team.slug })
+      .filter(type => !pageOverride(type.path)?.hidden)
+    const teamTitle = teamOverride?.title || `${team.name} fan gear`
+    const teamDescription = teamOverride?.description || `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`
+    const teamImage = absolute(teamOverride?.hero || teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp')
     const teamGroups = [...teamProducts.reduce((map, product) => {
       const group = String(product.productGroup || '').trim()
       if (group) map.set(group, (map.get(group) || 0) + 1)
@@ -491,29 +526,32 @@ for (const league of ALL_LEAGUE_TAXONOMY) {
     }, new Map()).entries()].sort((a,b) => b[1] - a[1]).slice(0,8)
     await writePage(teamPage, pageHtml(shell, {
       path:teamPage,
-      title:`${team.name} fan gear — Jersevo`,
-      description:`Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`,
-      image:absolute(teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'),
+      title:teamOverride?.seoTitle || `${teamTitle} — Jersevo`,
+      description:teamOverride?.seoDescription || teamDescription,
+      image:teamImage,
       noindex:!teamIndexable,
-      fallback:`<main class="seo-fallback"><h1>${escapeHtml(team.name)} fan gear</h1><p>Browse ${escapeHtml(team.name)} fan gear by product type. Prices, available options and photos are shown on each current listing.</p><p><a href="${leaguePath(league)}">Back to ${escapeHtml(league.name)}</a></p><section><h2>Shop ${escapeHtml(team.name)} by product</h2><ul>${teamTypePages.map(type => `<li><a href="${type.path}">${escapeHtml(type.label)}</a> (${type.count})</li>`).join('')}${teamTypePages.length ? '' : teamGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(team.name)} gear</h2><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</section></main>`,
-      schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:`${team.name} fan gear`, description:`Browse current ${team.name} fan gear by product type and review photos, prices and available options on each listing.`, url:`${PUBLIC_ORIGIN}${teamPage}`, numberOfItems:teamProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`}])]
+      fallback:`<main class="seo-fallback"><h1>${escapeHtml(teamTitle)}</h1><p>${escapeHtml(teamDescription)}</p><p><a href="${leaguePath(league)}">Back to ${escapeHtml(league.name)}</a></p><section><h2>Shop ${escapeHtml(team.name)} by product</h2><ul>${teamTypePages.map(type => `<li><a href="${type.path}">${escapeHtml(type.label)}</a> (${type.count})</li>`).join('')}${teamTypePages.length ? '' : teamGroups.map(([group,count]) => `<li>${escapeHtml(group)} (${count})</li>`).join('')}</ul></section><section><h2>Current ${escapeHtml(team.name)} gear</h2><ul>${teamProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${teamProducts.length > CATALOG_PAGE_SIZE ? `<a href="${teamPage}/page/2">Next page</a>` : ''}</section></main>`,
+      schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:teamTitle, description:teamDescription, url:`${PUBLIC_ORIGIN}${teamPage}`, image:teamImage, numberOfItems:teamProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${path}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${path}`},{name:teamTitle,url:`${PUBLIC_ORIGIN}${teamPage}`}])]
     }))
-    if (teamIndexable) await writeCatalogPagination(teamPage, teamProducts, `${team.name} fan gear`, `Shop ${team.name} fan gear, including available jerseys, caps and apparel, with tracked US delivery.`, absolute('/assets/editorial-player.webp'))
+    if (teamIndexable) await writeCatalogPagination(teamPage, teamProducts, teamTitle, teamDescription, teamImage)
     for (const type of teamTypePages) {
       const typePath = teamProductTypePath(league.key, team, type)
+      const typeOverride = pageOverride(typePath)
+      if (typeOverride?.hidden) continue
       const typeProducts = teamProducts.filter(product => productMatchesTeamProductType(product, type))
-      const typeTitle = `${team.name} ${type.label}`
-      const typeDescription = `${type.description} Shop current ${team.name} ${type.label.toLowerCase()} with available options, photos and tracked US delivery.`
+      const typeTitle = typeOverride?.title || `${team.name} ${type.label}`
+      const typeDescription = typeOverride?.description || `${type.description} Shop current ${team.name} ${type.label.toLowerCase()} with available options, photos and tracked US delivery.`
+      const typeImage = absolute(typeOverride?.hero || typeProducts[0]?.image || teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp')
       const siblingLinks = teamTypePages.map(sibling => `<li><a href="${sibling.path}">${escapeHtml(sibling.label)}</a> (${sibling.count})</li>`).join('')
       await writePage(typePath, pageHtml(shell, {
         path:typePath,
-        title:`${typeTitle} — Jersevo`,
-        description:typeDescription,
-        image:absolute(typeProducts[0]?.image || teamProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'),
+        title:typeOverride?.seoTitle || `${typeTitle} — Jersevo`,
+        description:typeOverride?.seoDescription || typeDescription,
+        image:typeImage,
         fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/shop">Shop</a> / <a href="${leaguePath(league)}">${escapeHtml(league.name)}</a> / <a href="${teamPage}">${escapeHtml(team.name)}</a> / <strong>${escapeHtml(type.label)}</strong></nav><h1>${escapeHtml(typeTitle)}</h1><p>${escapeHtml(typeDescription)}</p><nav aria-label="${escapeHtml(team.name)} product types"><ul>${siblingLinks}</ul></nav><ul>${typeProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${typeProducts.length > CATALOG_PAGE_SIZE ? `<a href="${typePath}/page/2">Next page</a>` : ''}</main>`,
-        schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:typeTitle, description:typeDescription, url:`${PUBLIC_ORIGIN}${typePath}`, numberOfItems:typeProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${teamPage}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${leaguePath(league)}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`},{name:type.label,url:`${PUBLIC_ORIGIN}${typePath}`}])]
+        schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:typeTitle, description:typeDescription, url:`${PUBLIC_ORIGIN}${typePath}`, image:typeImage, numberOfItems:typeProducts.length, isPartOf:{ '@type':'CollectionPage', url:`${PUBLIC_ORIGIN}${teamPage}` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:league.name,url:`${PUBLIC_ORIGIN}${leaguePath(league)}`},{name:team.name,url:`${PUBLIC_ORIGIN}${teamPage}`},{name:typeTitle,url:`${PUBLIC_ORIGIN}${typePath}`}])]
       }))
-      await writeCatalogPagination(typePath, typeProducts, typeTitle, typeDescription, absolute(typeProducts[0]?.image || team.media?.src || '/assets/editorial-player.webp'))
+      await writeCatalogPagination(typePath, typeProducts, typeTitle, typeDescription, typeImage)
     }
   }
 }

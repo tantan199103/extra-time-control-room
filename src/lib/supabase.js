@@ -10,6 +10,7 @@ import { collectionAutomationHasConditions, normalizeCollectionAutomation } from
 import { ALL_LEAGUE_TAXONOMY } from './league-taxonomy'
 import { accessoryGroupsForCategory, catalogCategoryByHandle } from './catalog-taxonomy'
 import { teamProductTypeByHandle } from './team-product-pages'
+import { catalogPageRouteCanDeleteProducts } from './catalog-page-overrides'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -648,8 +649,9 @@ export async function deleteAdminProduct(productId) {
       supabase.from('pod_product_variants').delete().eq('product_id', productId)
     ])
     await supabase.from('pod_product_options').delete().eq('product_id', productId)
-    const { error } = await supabase.from('pod_products').delete().eq('id', productId)
+    const { data, error } = await supabase.from('pod_products').delete().eq('id', productId).select('id')
     if (error) return { error: error.message, source: 'supabase' }
+    if (!data?.length) return { error:'The listing was not deleted. Your admin session may have expired or the listing no longer exists.', source:'supabase' }
     return { error: null, source: 'supabase' }
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Delete failed.', source: 'supabase' }
@@ -874,6 +876,69 @@ export async function saveAdminMenus(menus) {
   const { data, error } = await supabase.rpc('pod_save_menus', { menu_payload:payload })
   if (error) return { data:menus, source:'error', error:error.code === 'PGRST202' ? 'Storefront runtime migration is not installed. Nothing was saved.' : error.message }
   return { data, source:'supabase', error:null }
+}
+
+function catalogDeletePath(path) {
+  const route = String(path || '').trim().split(/[?#]/)[0].replace(/\/+$/, '')
+  if (!catalogPageRouteCanDeleteProducts(route)) throw new Error('Only a league, team, team-product or category catalog page can delete matching listings.')
+  return route
+}
+
+export async function inspectAdminCatalogPageDeletion(path) {
+  if (!supabase) return { data:null, source:'error', error:'Supabase is not configured.' }
+  let route
+  try { route = catalogDeletePath(path) }
+  catch (error) { return { data:null, source:'error', error:error.message } }
+  try {
+    let request = supabase.from('pod_products').select('id', { count:'exact', head:true })
+    request = applyStorefrontRouteFilters(request, { basePath:route })
+    const { count, error } = await request
+    if (error) return { data:null, source:'supabase', error:error.message }
+    return { data:{ path:route, count:Number(count || 0) }, source:'supabase', error:null }
+  } catch (error) {
+    return { data:null, source:'supabase', error:error instanceof Error ? error.message : 'Could not inspect this catalog page.' }
+  }
+}
+
+async function catalogPageProductIds(path) {
+  const ids = []
+  const pageSize = 500
+  for (let from = 0; ; from += pageSize) {
+    let request = supabase.from('pod_products').select('id').order('id', { ascending:true })
+    request = applyStorefrontRouteFilters(request, { basePath:path })
+    const { data, error } = await request.range(from, from + pageSize - 1)
+    if (error) throw new Error(error.message)
+    ids.push(...(data || []).map(row => row.id).filter(Boolean))
+    if (!data || data.length < pageSize) return ids
+  }
+}
+
+export async function deleteAdminCatalogPageProducts(path, expectedCount, { onProgress } = {}) {
+  if (!supabase) return { data:null, source:'error', error:'Supabase is not configured. Nothing was deleted.' }
+  let route
+  try { route = catalogDeletePath(path) }
+  catch (error) { return { data:null, source:'error', error:error.message } }
+  try {
+    const ids = await catalogPageProductIds(route)
+    const expected = Number(expectedCount)
+    if (!Number.isInteger(expected) || expected < 0 || ids.length !== expected) {
+      return { data:{ path:route, count:ids.length, deletedIds:[] }, source:'supabase', error:`Safety check failed: ${ids.length} matching listings were found, but ${Number.isFinite(expected) ? expected : 'no valid count'} were confirmed. Review the page and try again.` }
+    }
+    const deletedIds = []
+    const failures = []
+    const concurrency = 6
+    for (let offset = 0; offset < ids.length; offset += concurrency) {
+      const chunk = ids.slice(offset, offset + concurrency)
+      const results = await Promise.all(chunk.map(async id => ({ id, result:await deleteAdminProduct(id) })))
+      results.forEach(({ id, result }) => result.error ? failures.push({ id, error:result.error }) : deletedIds.push(id))
+      onProgress?.({ processed:Math.min(ids.length, offset + chunk.length), total:ids.length, deleted:deletedIds.length, failed:failures.length })
+      if (failures.length) break
+    }
+    if (failures.length) return { data:{ path:route, count:ids.length, deletedIds, failures }, source:'supabase', error:`Deletion stopped after ${deletedIds.length} listings because ${failures[0].id} failed: ${failures[0].error}` }
+    return { data:{ path:route, count:ids.length, deletedIds, failures:[] }, source:'supabase', error:null }
+  } catch (error) {
+    return { data:null, source:'supabase', error:error instanceof Error ? error.message : 'Catalog page deletion failed.' }
+  }
 }
 
 const ADMIN_COLLECTION_CATALOG_FIELDS = [

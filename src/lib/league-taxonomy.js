@@ -242,50 +242,29 @@ export const LEAGUE_TAXONOMY = [
       ['eintracht-frankfurt', 'Eintracht Frankfurt'],
       ['vfb-stuttgart', 'VfB Stuttgart']
     ].map(([slug, name]) => ({ slug, name, media: teamMedia('bundesliga', slug, name) }))
+  },
+  {
+    key: 'ligue1',
+    name: 'Ligue 1',
+    sport: 'Soccer',
+    description: 'French Ligue 1 football jerseys and fanwear from leading clubs.',
+    media: leagueMedia('ligue1'),
+    teams: [
+      ['paris-saint-germain', 'Paris Saint-Germain'],
+      ['olympique-marseille', 'Olympique Marseille'],
+      ['olympique-lyonnais', 'Olympique Lyonnais'],
+      ['as-monaco', 'AS Monaco'],
+      ['lille', 'Lille OSC']
+    ].map(([slug, name]) => ({ slug, name, media: teamMedia('ligue1', slug, name) }))
   }
 ]
 
 /**
- * Promotion/series entities that are present in the imported catalogue but
- * do not have a curated team directory yet. Keep them separate from the
- * team-led navigation contract above: adding a leaf with an empty `teams`
- * array must not make the team-logo audit or the curated taxonomy tests treat
- * it as a missing asset. Runtime discovery and SEO use ALL_LEAGUE_TAXONOMY so
- * these entities still get a canonical landing route when products exist.
+ * Umbrella entities that are present in the imported catalogue but do not
+ * have a curated team directory. Keep them separate from the team-led
+ * navigation contract above so the team-logo audit does not invent assets.
  */
 export const SUPPLEMENTAL_LEAGUE_TAXONOMY = Object.freeze([
-  {
-    key: 'wwe',
-    name: 'WWE',
-    sport: 'Wrestling',
-    description: 'WWE wrestling apparel, collectibles and fan gear for every era.',
-    media: null,
-    teams: []
-  },
-  {
-    key: 'aew',
-    name: 'AEW',
-    sport: 'Wrestling',
-    description: 'AEW wrestling apparel, collectibles and fan gear for All Elite Wrestling fans.',
-    media: null,
-    teams: []
-  },
-  {
-    key: 'nascar',
-    name: 'NASCAR',
-    sport: 'Motorsports',
-    description: 'NASCAR racing apparel, caps, collectibles and fan gear.',
-    media: null,
-    teams: []
-  },
-  {
-    key: 'formula1',
-    name: 'Formula 1',
-    sport: 'Motorsports',
-    description: 'Formula 1 racing collectibles, apparel and fan gear.',
-    media: null,
-    teams: []
-  },
   {
     key: 'wrestling',
     name: 'Wrestling',
@@ -303,6 +282,11 @@ export const SUPPLEMENTAL_LEAGUE_TAXONOMY = Object.freeze([
     teams: []
   }
 ])
+
+// These source taxonomies were deliberately removed from the active store.
+// Keep the deny-list explicit so future importer runs cannot silently recreate
+// their listings or generated landing pages.
+export const RETIRED_LEAGUE_KEYS = Object.freeze(['wwe', 'aew', 'nascar', 'formula1'])
 
 /** All controlled league entities, including leaf promotions/series. */
 export const ALL_LEAGUE_TAXONOMY = Object.freeze([
@@ -414,6 +398,15 @@ export const TEAM_SLUG_ALIASES = Object.freeze({
     'leverkusen': 'bayer-leverkusen',
     'frankfurt': 'eintracht-frankfurt',
     'stuttgart': 'vfb-stuttgart'
+  }),
+  ligue1: Object.freeze({
+    'psg': 'paris-saint-germain',
+    'paris': 'paris-saint-germain',
+    'paris-sg': 'paris-saint-germain',
+    'marseille': 'olympique-marseille',
+    'lyon': 'olympique-lyonnais',
+    'monaco': 'as-monaco',
+    'lille-osc': 'lille'
   }),
   // These clubs are present in the imported catalogue but were absent from
   // the first curated navigation pass. They are still normalized here so a

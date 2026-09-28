@@ -6,6 +6,7 @@ import {
 } from './catalog-taxonomy.js'
 import { ALL_LEAGUE_TAXONOMY, leaguePath, normalizeTeamSlug, teamPath, taxonomySlug } from './league-taxonomy.js'
 import { TEAM_PRODUCT_PAGE_MIN_PRODUCTS, teamProductTypeCounts, teamProductTypeForProduct } from './team-product-pages.js'
+import { applyCatalogPageOverride } from './catalog-page-overrides.js'
 
 const routeStatus = count => count >= TEAM_PRODUCT_PAGE_MIN_PRODUCTS ? 'INDEXABLE' : 'NOINDEX'
 const rowWeight = row => Math.max(1, Number(row?.count) || 1)
@@ -65,7 +66,7 @@ function categoryNode(rows, category, children = []) {
  * a `count`; this keeps Admin totals aligned with the deploy artefact without
  * downloading the complete public catalogue again.
  */
-export function buildCatalogPageTree(rows = []) {
+export function buildCatalogPageTree(rows = [], overrides = {}) {
   const source = Array.isArray(rows) ? rows.filter(Boolean) : []
   const leagueNodes = ALL_LEAGUE_TAXONOMY.map(league => {
     const leagueRows = source.filter(row => rowLeague(row) === league.key)
@@ -132,7 +133,12 @@ export function buildCatalogPageTree(rows = []) {
   const accessoryNode = categoryNode(source, accessories, accessoryFamilies)
   const categoryNodes = [...primaryCategories, accessoryNode].filter(node => node.count > 0 || node.children.some(child => child.count > 0))
 
-  return [
+  const applyOverrides = nodes => nodes.map(node => applyCatalogPageOverride({
+    ...node,
+    children:applyOverrides(node.children || [])
+  }, overrides)).filter(node => !node.hidden)
+
+  return applyOverrides([
     {
       id:'catalog:root:leagues', name:'Leagues & teams', handle:'sports', path:'/sports', pageKind:'Page group',
       count:countRows(source.filter(row => rowLeague(row))), publishedCount:countRows(source.filter(row => rowLeague(row))),
@@ -143,7 +149,7 @@ export function buildCatalogPageTree(rows = []) {
       count:countRows(source), publishedCount:countRows(source), status:'SYSTEM', generated:true, icon:'all',
       description:'Product categories and the complete Accessories family/type structure.', children:categoryNodes
     }
-  ]
+  ])
 }
 
 export function flattenCatalogPageTree(nodes = [], output = []) {

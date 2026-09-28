@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, teamMascot, teamPath } from '../src/lib/league-taxonomy.js'
+import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, RETIRED_LEAGUE_KEYS, findLeague, findTeam, leaguePath, productMatchesTaxonomy, teamMascot, teamPath } from '../src/lib/league-taxonomy.js'
 
 test('league taxonomy exposes stable league and team URLs', () => {
   const nfl = findLeague('NFL')
@@ -21,7 +21,8 @@ test('league taxonomy exposes stable league and team URLs', () => {
     '/assets/leagues/marks/epl.webp',
     '/assets/leagues/marks/laliga.webp',
     '/assets/leagues/marks/seriea.webp',
-    '/assets/leagues/marks/bundesliga.webp'
+    '/assets/leagues/marks/bundesliga.webp',
+    '/assets/leagues/marks/ligue1.webp'
   ])
   assert.equal(findTeam('nfl', 'arizona-cardinals').media.src, '/assets/leagues/marks/teams/nfl/arizona-cardinals.webp')
   assert.equal(findTeam('mlb', 'new-york-yankees').media.src, '/assets/leagues/marks/teams/mlb/new-york-yankees.webp')
@@ -57,16 +58,15 @@ test('league taxonomy exposes stable league and team URLs', () => {
   assert.equal(findTeam('laliga', 'real-madrid').media.src, '/assets/leagues/marks/teams/laliga/real-madrid.webp')
   assert.equal(findTeam('seriea', 'inter-milan').media.src, '/assets/leagues/marks/teams/seriea/inter-milan.webp')
   assert.equal(findTeam('bundesliga', 'bayern-munich').media.src, '/assets/leagues/marks/teams/bundesliga/bayern-munich.webp')
+  assert.equal(findTeam('ligue1', 'psg').slug, 'paris-saint-germain')
+  assert.equal(findTeam('ligue1', 'paris-saint-germain').media.src, '/assets/leagues/marks/teams/ligue1/paris-saint-germain.webp')
 })
 
-test('supplemental promotion and racing entities resolve without inventing team assets', () => {
-  for (const [key, name, sport] of [['wwe', 'WWE', 'Wrestling'], ['aew', 'AEW', 'Wrestling'], ['nascar', 'NASCAR', 'Motorsports'], ['formula1', 'Formula 1', 'Motorsports']]) {
-    const league = findLeague(key)
-    assert.equal(league.name, name)
-    assert.equal(league.sport, sport)
-    assert.equal(leaguePath(league), `/league/${key}`)
-    assert.deepEqual(league.teams, [])
-  }
+test('retired promotion and racing pages cannot be regenerated', () => {
+  assert.deepEqual(RETIRED_LEAGUE_KEYS, ['wwe', 'aew', 'nascar', 'formula1'])
+  for (const key of RETIRED_LEAGUE_KEYS) assert.equal(findLeague(key), null)
+  assert.ok(ALL_LEAGUE_TAXONOMY.some(league => league.key === 'wrestling'))
+  assert.ok(ALL_LEAGUE_TAXONOMY.some(league => league.key === 'motorsports'))
   assert.ok(ALL_LEAGUE_TAXONOMY.length > LEAGUE_TAXONOMY.length)
 })
 

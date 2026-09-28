@@ -38,11 +38,12 @@ import {
 import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
-import { applyAdminCollectionAutomation, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, fetchStorefrontNavigationIndex, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
+import { applyAdminCollectionAutomation, deleteAdminCatalogPageProducts, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, fetchStorefrontNavigationIndex, inspectAdminCatalogPageDeletion, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
 import { getMetaPixelId, setMetaPixelId } from './lib/meta-pixel'
 import { resolveMenuImages } from './lib/storefront-model'
 import { applyCollectionMembership } from './lib/collection-assignment'
+import { normalizeCatalogPageOverrides, upsertCatalogPageOverride } from './lib/catalog-page-overrides'
 import './admin-payment.css'
 
 const go = path => {
@@ -489,6 +490,29 @@ function AdminWorkspace() {
     return result
   }
   const persistTheme = async theme => { setThemeDraft(theme); return saveAdminTheme(theme) }
+  const persistCatalogPage = async (path, patch) => {
+    if (themeSource !== 'supabase') return { source:'error', error:'Wait for the live theme to load before editing a catalog page.' }
+    const catalogPages = upsertCatalogPageOverride(themeDraft.content?.catalogPages, path, { ...patch, hidden:false, updatedAt:new Date().toISOString() })
+    const nextTheme = { ...themeDraft, content:{ ...(themeDraft.content || {}), catalogPages } }
+    const result = await saveAdminTheme(nextTheme)
+    if (result.source === 'supabase' && !result.error) setThemeDraft(nextTheme)
+    return { ...result, data:catalogPages[path] }
+  }
+  const inspectCatalogPageDeletion = path => inspectAdminCatalogPageDeletion(path)
+  const removeCatalogPage = async (path, expectedCount, onProgress) => {
+    if (themeSource !== 'supabase') return { source:'error', error:'Wait for the live theme to load before deleting a catalog page.' }
+    const deleted = await deleteAdminCatalogPageProducts(path, expectedCount, { onProgress })
+    if (deleted.error) return deleted
+    const catalogPages = upsertCatalogPageOverride(themeDraft.content?.catalogPages, path, { hidden:true, updatedAt:new Date().toISOString() })
+    const nextTheme = { ...themeDraft, content:{ ...(themeDraft.content || {}), catalogPages } }
+    const saved = await saveAdminTheme(nextTheme)
+    if (saved.error || saved.source !== 'supabase') return { ...deleted, error:`The listings were deleted, but the page tombstone could not be saved: ${saved.error || 'theme save failed'}` }
+    setThemeDraft(nextTheme)
+    const deletedIds = new Set(deleted.data?.deletedIds || [])
+    if (deletedIds.size) setProductRows(current => current.filter(row => !deletedIds.has(row.id)))
+    setCatalogNavigationRows([])
+    return deleted
+  }
   const persistMenus = async menus => { setMenuRows(menus); return saveAdminMenus(menus) }
   const persistCollections = async collections => {
     if (collectionSource !== 'supabase') return { source:'error', error:'Wait for live collections to load before saving.' }
@@ -543,7 +567,7 @@ function AdminWorkspace() {
   else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
   else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} source={themeSource} sourceError={themeError} onSave={persistTheme}/>
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} collections={collectionRows} onSave={persistMenus}/>
-  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} navigationRows={catalogNavigationRows} catalogLoad={catalogLoad} onSave={persistCollections} onDelete={removeCollection} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'}/>
+  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} navigationRows={catalogNavigationRows} catalogLoad={catalogLoad} catalogPageOverrides={normalizeCatalogPageOverrides(themeDraft.content?.catalogPages)} onSave={persistCollections} onDelete={removeCollection} onSaveCatalogPage={persistCatalogPage} onInspectCatalogPageDeletion={inspectCatalogPageDeletion} onDeleteCatalogPage={removeCatalogPage} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'} canEditCatalogPages={themeSource === 'supabase'}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
   const displaySource = catalogLoad.source === 'partial' ? 'partial' : catalogLoad.source === 'error' ? 'preview' : source
   return <AdminShell active={active} source={displaySource} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>

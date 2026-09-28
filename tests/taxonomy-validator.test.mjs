@@ -52,21 +52,24 @@ test('taxonomy validator separates wrestling promotions and racing series', () =
     taxonomy: { league: 'wwe', sport: 'wrestling' },
     productGroup: 'Collectibles'
   })
-  assert.equal(wwe.valid, true)
+  assert.equal(wwe.valid, false)
+  assert.ok(wwe.blockers.includes('TAXONOMY_RETIRED_LEAGUE'))
 
   const aew = validateCatalogTaxonomy({
     title: 'AEW All Elite Wrestling hobby box',
     taxonomy: { league: 'aew', sport: 'wrestling' },
     productGroup: 'Collectibles'
   })
-  assert.equal(aew.valid, true)
+  assert.equal(aew.valid, false)
+  assert.ok(aew.blockers.includes('TAXONOMY_RETIRED_LEAGUE'))
 
   const f1 = validateCatalogTaxonomy({
     title: 'Formula 1 Chrome Racing hobby box',
     taxonomy: { league: 'formula1', sport: 'motorsports' },
     productGroup: 'Collectibles'
   })
-  assert.equal(f1.valid, true)
+  assert.equal(f1.valid, false)
+  assert.ok(f1.blockers.includes('TAXONOMY_RETIRED_LEAGUE'))
 
   const mislabelledAew = validateCatalogTaxonomy({
     title: 'AEW All Elite Wrestling hobby box',

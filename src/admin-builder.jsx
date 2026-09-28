@@ -22,6 +22,7 @@ import {
   Menu as MenuIcon,
   MoreHorizontal,
   PackageCheck,
+  Pencil,
   Plus,
   Save,
   Search,
@@ -300,7 +301,7 @@ function CollectionTreeNode({ node, depth = 0, selectedId, expandedIds, onToggle
 }
 
 export function AdminCollections({
-  collections, products, navigationRows = [], catalogLoad = {}, onSave, onDelete, loadCatalog, onPreviewAutomation, onApplyAutomation, onUploadImage, canEdit = true
+  collections, products, navigationRows = [], catalogLoad = {}, catalogPageOverrides = {}, onSave, onDelete, onSaveCatalogPage, onInspectCatalogPageDeletion, onDeleteCatalogPage, loadCatalog, onPreviewAutomation, onApplyAutomation, onUploadImage, canEdit = true, canEditCatalogPages = true
 }) {
   const [treeMode, setTreeMode] = useState('catalog')
   const [selectedId, setSelectedId] = useState(collections[0]?.id)
@@ -320,6 +321,11 @@ export function AdminCollections({
   const [dirtyIds, setDirtyIds] = useState([])
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [catalogEditing, setCatalogEditing] = useState(false)
+  const [catalogSaving, setCatalogSaving] = useState(false)
+  const [catalogDeleting, setCatalogDeleting] = useState(false)
+  const [catalogDeleteProgress, setCatalogDeleteProgress] = useState(null)
+  const [catalogDraft, setCatalogDraft] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [rulesBusy, setRulesBusy] = useState('')
   const [rulePreview, setRulePreview] = useState(null)
@@ -330,6 +336,7 @@ export function AdminCollections({
   const [assignedOnly, setAssignedOnly] = useState(true)
   const [membershipRevision, setMembershipRevision] = useState(0)
   const fileInputRef = useRef(null)
+  const catalogFileInputRef = useRef(null)
   const catalogRequest = useRef(0)
   const pageSize = 50
   const selected = draftCollections.find(collection => collection.id === selectedId) || draftCollections[0]
@@ -337,7 +344,7 @@ export function AdminCollections({
   const catalogIndexRows = useMemo(() => navigationRows.length
     ? navigationRows
     : (products || []).filter(product => product.status === 'PUBLISHED' && product.seoStatus === 'INDEXABLE'), [navigationRows, products])
-  const generatedTree = useMemo(() => buildCatalogPageTree(catalogIndexRows), [catalogIndexRows])
+  const generatedTree = useMemo(() => buildCatalogPageTree(catalogIndexRows, catalogPageOverrides), [catalogIndexRows, catalogPageOverrides])
   const generatedPages = useMemo(() => flattenCatalogPageTree(generatedTree, []), [generatedTree])
   const generatedStats = useMemo(() => catalogPageTreeStats(generatedTree), [generatedTree])
   const selectedCatalogPage = generatedPages.find(page => page.id === selectedCatalogId) || generatedPages[0]
@@ -360,6 +367,20 @@ export function AdminCollections({
   useEffect(() => {
     if (!generatedPages.some(page => page.id === selectedCatalogId)) setSelectedCatalogId(generatedPages[0]?.id || '')
   }, [generatedPages, selectedCatalogId])
+
+  useEffect(() => {
+    if (!selectedCatalogPage) { setCatalogDraft(null); setCatalogEditing(false); return }
+    setCatalogDraft({
+      title:selectedCatalogPage.override?.title || '',
+      description:selectedCatalogPage.override?.description || '',
+      hero:selectedCatalogPage.override?.hero || '',
+      heroAlt:selectedCatalogPage.override?.heroAlt || '',
+      seoTitle:selectedCatalogPage.override?.seoTitle || '',
+      seoDescription:selectedCatalogPage.override?.seoDescription || ''
+    })
+    setCatalogEditing(false)
+    setCatalogDeleteProgress(null)
+  }, [selectedCatalogPage?.id])
 
   useEffect(() => {
     setCatalogPage(1)
@@ -580,6 +601,66 @@ export function AdminCollections({
     } finally { setDeleting(false) }
   }
 
+  const editCatalogPage = () => {
+    if (!selectedCatalogPage || !canEditCatalogPages) return
+    setCatalogDraft({
+      title:selectedCatalogPage.override?.title || selectedCatalogPage.name || '',
+      description:selectedCatalogPage.override?.description || selectedCatalogPage.description || '',
+      hero:selectedCatalogPage.override?.hero || selectedCatalogPage.hero || '',
+      heroAlt:selectedCatalogPage.override?.heroAlt || selectedCatalogPage.heroAlt || '',
+      seoTitle:selectedCatalogPage.override?.seoTitle || '',
+      seoDescription:selectedCatalogPage.override?.seoDescription || ''
+    })
+    setCatalogEditing(true)
+    setNotice('')
+  }
+  const updateCatalogDraft = patch => setCatalogDraft(current => ({ ...(current || {}), ...patch }))
+  const saveCatalogPage = async () => {
+    if (!selectedCatalogPage || !catalogDraft || !canEditCatalogPages || catalogSaving) return
+    setCatalogSaving(true); setNotice('')
+    try {
+      const result = await onSaveCatalogPage?.(selectedCatalogPage.path, catalogDraft)
+      if (result?.error || result?.source !== 'supabase') throw new Error(result?.error || 'The page override was not saved to the live theme.')
+      setCatalogEditing(false)
+      setNotice(`Catalog page “${catalogDraft.title || selectedCatalogPage.name}” saved.`)
+    } catch (error) { setNotice(`Not saved: ${error.message}`) }
+    finally { setCatalogSaving(false) }
+  }
+  const uploadCatalogHero = async event => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !selectedCatalogPage || !canEditCatalogPages) return
+    setUploading(true); setNotice('')
+    try {
+      const uploadId = `catalog-${selectedCatalogPage.path.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')}`
+      const result = await onUploadImage?.(file, uploadId)
+      if (!result?.image?.url) throw new Error('The upload did not return an image URL.')
+      updateCatalogDraft({ hero:result.image.url })
+      setNotice('Catalog page image uploaded. Save the page to publish it.')
+    } catch (error) { setNotice(`Not saved: ${error.message}`) }
+    finally { setUploading(false) }
+  }
+  const deleteCatalogPage = async () => {
+    if (!selectedCatalogPage || selectedCatalogPage.pageKind === 'Page group' || !canEditCatalogPages || catalogDeleting) return
+    setCatalogDeleting(true); setCatalogDeleteProgress(null); setNotice('Checking the live product count…')
+    try {
+      const inspected = await onInspectCatalogPageDeletion?.(selectedCatalogPage.path)
+      if (inspected?.error || !inspected?.data) throw new Error(inspected?.error || 'The live product count could not be verified.')
+      const count = Number(inspected.data.count || 0)
+      const phrase = `DELETE ${count}`
+      const confirmation = window.prompt(`Permanently delete “${selectedCatalogPage.name}” and all ${count.toLocaleString()} matching listing${count === 1 ? '' : 's'}?\n\nThis cannot be undone. Type ${phrase} to continue.`)
+      if (confirmation !== phrase) { setNotice('Deletion cancelled. Nothing changed.'); return }
+      setNotice(`Deleting 0 of ${count.toLocaleString()} listings…`)
+      const result = await onDeleteCatalogPage?.(selectedCatalogPage.path, count, progress => {
+        setCatalogDeleteProgress(progress)
+        setNotice(`Deleting ${Number(progress.deleted || 0).toLocaleString()} of ${Number(progress.total || count).toLocaleString()} listings…`)
+      })
+      if (result?.error) throw new Error(result.error)
+      setNotice(`Catalog page deleted with ${count.toLocaleString()} matching listing${count === 1 ? '' : 's'}.`)
+    } catch (error) { setNotice(`Not saved: ${error.message}`) }
+    finally { setCatalogDeleting(false); setCatalogDeleteProgress(null) }
+  }
+
   const collectionStats = useMemo(() => ({
     total:draftCollections.length,
     roots:collectionTree.length,
@@ -608,19 +689,41 @@ export function AdminCollections({
             ? generatedTree.map(node => <CollectionTreeNode key={node.id} node={node} selectedId={selectedCatalogPage?.id} expandedIds={expandedCatalogIds} onToggle={toggleCatalogPage} onSelect={setSelectedCatalogId}/>)
             : collectionTree.length ? collectionTree.map(node => <CollectionTreeNode key={node.id} node={node} selectedId={selected?.id} expandedIds={expandedCollectionIds} onToggle={toggleCollection} onSelect={setSelectedId}/>) : <div className="admin-empty"><Layers3 size={22}/><strong>No editorial collections yet</strong><span>Create a collection to curate a manual drop.</span></div>}
         </div>
-        <div className="admin-collection-tree__hint">{generatedMode ? <FolderTree size={14}/> : <Layers3 size={14}/>}<span><strong>{generatedMode ? 'Generated from listing taxonomy' : 'Parent / child structure'}</strong><small>{generatedMode ? 'League, team and product-type routes update at build time. Edit a listing taxonomy to change membership.' : 'Use Parent collection in the editor to nest curated drops and campaigns.'}</small></span></div>
+        <div className="admin-collection-tree__hint">{generatedMode ? <FolderTree size={14}/> : <Layers3 size={14}/>}<span><strong>{generatedMode ? 'Automatic products, editable presentation' : 'Parent / child structure'}</strong><small>{generatedMode ? 'League, team and product-type membership follows listing taxonomy. Select a page to edit its title, story, media and SEO.' : 'Use Parent collection in the editor to nest curated drops and campaigns.'}</small></span></div>
       </aside>
       <section className="admin-collection-editor">
         {generatedMode ? selectedCatalogPage ? <>
           <div className="admin-collection-editor__top"><div><p>AUTO-GENERATED / {selectedCatalogPage.path}</p><h2>{selectedCatalogPage.name}</h2></div><div>
             <Status value={selectedCatalogPage.status}/>
             <button className="admin-button admin-button--outline" disabled={selectedCatalogPage.status === 'NOINDEX'} title={selectedCatalogPage.status === 'NOINDEX' ? 'This route has fewer than six indexable products and is not generated as a public landing page.' : 'Open the generated storefront page.'} onClick={() => window.open(selectedCatalogPage.path,'_blank','noopener,noreferrer')}><Eye size={14}/> Preview page</button>
+            {catalogEditing ? <>
+              <button className="admin-button admin-button--outline" disabled={catalogSaving} onClick={() => setCatalogEditing(false)}><X size={14}/> Cancel</button>
+              <button className="admin-button admin-button--dark" disabled={!canEditCatalogPages || catalogSaving} onClick={saveCatalogPage}>{catalogSaving ? <LoaderCircle className="is-spinning" size={14}/> : <Save size={14}/>} {catalogSaving ? 'Saving…' : 'Save page'}</button>
+            </> : <button className="admin-button admin-button--outline" disabled={!canEditCatalogPages || catalogDeleting || selectedCatalogPage.pageKind === 'Page group'} title={selectedCatalogPage.pageKind === 'Page group' ? 'Edit /shop and /sports in Theme Studio.' : 'Edit this generated page content.'} onClick={editCatalogPage}><Pencil size={14}/> Edit page</button>}
+            <button className="admin-button admin-button--danger" disabled={!canEditCatalogPages || catalogSaving || catalogDeleting || selectedCatalogPage.pageKind === 'Page group'} title={selectedCatalogPage.pageKind === 'Page group' ? 'System page groups cannot delete catalogue listings.' : 'Permanently delete this route and every matching listing.'} onClick={deleteCatalogPage}>{catalogDeleting ? <LoaderCircle className="is-spinning" size={14}/> : <Trash2 size={14}/>} {catalogDeleting ? catalogDeleteProgress ? `${catalogDeleteProgress.deleted}/${catalogDeleteProgress.total}` : 'Checking…' : 'Delete page + products'}</button>
           </div></div>
-          <section className="admin-collection-section admin-catalog-page-detail">
+          {catalogEditing ? <section className="admin-collection-section admin-catalog-page-editor">
+            <div className="admin-collection-section__head"><div><span>CATALOG PAGE CONTENT</span><h3>Override the generated presentation.</h3></div><small>The URL and product membership remain taxonomy-controlled. These fields update the visible page and SEO copy.</small></div>
+            <div className="admin-collection-form admin-catalog-page-form">
+              <label className="admin-builder-field"><span>Page title</span><input value={catalogDraft?.title || ''} onChange={event => updateCatalogDraft({ title:event.target.value })} maxLength={160}/></label>
+              <label className="admin-builder-field"><span>Image alt text</span><input value={catalogDraft?.heroAlt || ''} onChange={event => updateCatalogDraft({ heroAlt:event.target.value })} maxLength={240}/></label>
+              <label className="admin-builder-field admin-builder-field--wide"><span>Page description</span><textarea value={catalogDraft?.description || ''} onChange={event => updateCatalogDraft({ description:event.target.value })} maxLength={4000}/></label>
+              <label className="admin-builder-field"><span>SEO title</span><input value={catalogDraft?.seoTitle || ''} onChange={event => updateCatalogDraft({ seoTitle:event.target.value })} maxLength={180} placeholder={`${catalogDraft?.title || selectedCatalogPage.name} — Jersevo`}/></label>
+              <label className="admin-builder-field"><span>SEO description</span><textarea value={catalogDraft?.seoDescription || ''} onChange={event => updateCatalogDraft({ seoDescription:event.target.value })} maxLength={320}/></label>
+            </div>
+            <div className="admin-collection-hero admin-catalog-page-hero">
+              <div className="admin-collection-hero__preview">{catalogDraft?.hero ? <img src={catalogDraft.hero} alt={catalogDraft.heroAlt || ''}/> : <div><CategoryIcon kind={selectedCatalogPage.icon || 'all'} size={28}/><span>Using generated artwork</span></div>}</div>
+              <div className="admin-collection-hero__controls"><span>PAGE HERO / REPRESENTATIVE IMAGE</span><strong>{selectedCatalogPage.count.toLocaleString()} matching products</strong><p>Upload JPG, PNG or WebP up to 8 MB, or paste a stable image URL. Leave blank to keep the generated league/team/category asset.</p>
+                <input ref={catalogFileInputRef} className="admin-collection-file" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCatalogHero}/>
+                <div className="admin-collection-hero__actions"><button className="admin-button admin-button--outline" disabled={uploading || !canEditCatalogPages} onClick={() => catalogFileInputRef.current?.click()}>{uploading ? <LoaderCircle className="is-spinning" size={14}/> : <Upload size={14}/>} {uploading ? 'Uploading…' : 'Upload image'}</button>{catalogDraft?.hero && <button className="admin-text-button" onClick={() => updateCatalogDraft({ hero:'' })}>Use generated image</button>}</div>
+                <label className="admin-builder-field admin-collection-hero__url"><span>Image URL</span><input value={catalogDraft?.hero || ''} onChange={event => updateCatalogDraft({ hero:event.target.value })} placeholder="https://…"/></label>
+              </div>
+            </div>
+          </section> : <section className="admin-collection-section admin-catalog-page-detail">
             <div className="admin-catalog-page-detail__visual">{selectedCatalogPage.hero ? <img src={selectedCatalogPage.hero} alt=""/> : <CategoryIcon kind={selectedCatalogPage.icon || 'all'} size={34}/>}</div>
             <div className="admin-catalog-page-detail__copy"><span>{selectedCatalogPage.pageKind}</span><h3>{selectedCatalogPage.count.toLocaleString()} matching products</h3><p>{selectedCatalogPage.description}</p><code>{selectedCatalogPage.path}</code></div>
-            <div className="admin-catalog-page-detail__note"><FolderTree size={17}/><span><strong>Managed by taxonomy</strong><small>This page is regenerated from each listing's league, team and product group. Change the listing taxonomy—not this page—to update its products.</small></span></div>
-          </section>
+            <div className="admin-catalog-page-detail__note"><FolderTree size={17}/><span><strong>{selectedCatalogPage.customized ? 'Custom content + automatic products' : 'Managed by taxonomy'}</strong><small>{selectedCatalogPage.customized ? 'Title, story, media and SEO use the saved Admin override. Product membership still follows exact listing taxonomy.' : 'Edit this page to control its title, story, image and SEO. Product membership continues to follow exact listing taxonomy.'}</small></span></div>
+          </section>}
         </> : <div className="admin-empty"><FolderTree size={24}/><strong>No catalog page selected</strong><span>Choose a league, team or product category from the tree.</span></div> : selected ? <>
           <div className="admin-collection-editor__top"><div><p>COLLECTION / {selected.handle}</p><h2>{selected.name}</h2></div><div>
             <button className="admin-button admin-button--outline" disabled={selected.status !== 'PUBLISHED'} title={selected.status === 'PUBLISHED' ? 'Open the live collection page.' : 'Publish this collection before previewing it.'} onClick={() => window.open(`/collection/${selected.handle}`,'_blank','noopener,noreferrer')}><Eye size={14}/> Preview</button>

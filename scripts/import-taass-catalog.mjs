@@ -7,6 +7,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { buildListingInput } from '../src/lib/catalog-model.js'
+import { RETIRED_LEAGUE_KEYS } from '../src/lib/league-taxonomy.js'
 import { prepareTaassImage, taassThumbnailUrl, uploadPreparedTaassImage } from './taass-media-lib.mjs'
 import { isTaassJerseyListing, isTaassJerseyUrl, routeTaassListings, withTaassCatalogCategory } from './taass-catalog-routing.mjs'
 import { isTaassHeadwearListing, isTaassHeadwearUrl, prepareTaassHeadwearPublication } from './taass-headwear-lib.mjs'
@@ -79,6 +80,7 @@ const approveHeadwearRights = hasArg('--approve-headwear-rights')
 const defaultInventory = jerseyOnly ? TAASS_DEFAULT_INVENTORY : Math.min(1_000_000_000, Math.max(0, Math.trunc(Number(process.env.TAASS_DEFAULT_INVENTORY || TAASS_DEFAULT_INVENTORY))))
 const batchSize = Math.min(100, Math.max(1, Number(argValue('--batch-size', process.env.TAASS_BATCH_SIZE || 25)) || 25))
 const priceMultiplier = 1
+const retiredLeagueKeys = new Set(RETIRED_LEAGUE_KEYS)
 
 function usage() {
   console.log(`TAASS catalogue importer\n\n` +
@@ -608,6 +610,11 @@ export async function run() {
       }
       try {
         const item = normalizeTaassProduct(result.product, { usedHandles, usedSkus, defaultInventory })
+        if (retiredLeagueKeys.has(String(item.listing?.taxonomy?.league || '').toLowerCase())) {
+          skipped.push(familyCode)
+          report.skippedRetiredLeagues = Number(report.skippedRetiredLeagues || 0) + 1
+          return
+        }
         if (headwearOnly && !isTaassHeadwearListing(item.listing)) {
           skipped.push(familyCode)
           report.skippedNonHeadwear += 1

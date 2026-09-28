@@ -41,3 +41,18 @@ test('catalog page product matcher follows generated route taxonomy', () => {
   assert.equal(productMatchesCatalogPage(jersey,'/team/nfl/dallas-cowboys/caps'),false)
   assert.equal(productMatchesCatalogPage(bag,'/category/bags'),true)
 })
+
+test('catalog page overrides edit presentation and hide deleted routes', () => {
+  const tree = buildCatalogPageTree(rows, {
+    '/league/nfl': { title:'American football collection', description:'Edited in Admin.', hero:'/edited.webp', seoTitle:'SEO title' },
+    '/league/mlb': { hidden:true }
+  })
+  const pages = flattenCatalogPageTree(tree, [])
+  const nfl = pages.find(page => page.path === '/league/nfl')
+  assert.equal(nfl.name, 'American football collection')
+  assert.equal(nfl.description, 'Edited in Admin.')
+  assert.equal(nfl.hero, '/edited.webp')
+  assert.equal(nfl.seoTitle, 'SEO title')
+  assert.equal(nfl.customized, true)
+  assert.equal(pages.find(page => page.path === '/league/mlb'), undefined)
+})

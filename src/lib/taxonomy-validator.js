@@ -1,5 +1,6 @@
 import {
   LEAGUE_TAXONOMY,
+  RETIRED_LEAGUE_KEYS,
   findLeague,
   findTeam,
   normalizeCatalogTaxonomy,
@@ -67,6 +68,7 @@ const NEUTRAL_GROUPS = new Set([
 ])
 
 const LEAGUE_KEYS = new Set([...LEAGUE_TAXONOMY.map(item => item.key), ...Object.keys(LEAGUE_SPORT)])
+const RETIRED_LEAGUES = new Set(RETIRED_LEAGUE_KEYS)
 const LEAGUE_TERM_TO_KEY = new Map()
 for (const [key, aliases] of Object.entries(LEAGUE_ALIASES)) {
   for (const alias of aliases) LEAGUE_TERM_TO_KEY.set(taxonomySlug(alias).replace(/-/g, ' '), key)
@@ -174,6 +176,7 @@ export function validateCatalogTaxonomy(product = {}) {
 
   if (rawLeague && !declaredLeague) blockers.push('TAXONOMY_UNKNOWN_LEAGUE')
   if (!rawLeague) warnings.push('TAXONOMY_LEAGUE_REQUIRED')
+  if (RETIRED_LEAGUES.has(declaredLeague) || leagueTerms.some(term => RETIRED_LEAGUES.has(term))) blockers.push('TAXONOMY_RETIRED_LEAGUE')
 
   const league = declaredLeague || ''
   const team = declaredTeam || ''
