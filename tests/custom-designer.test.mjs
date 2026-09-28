@@ -73,6 +73,7 @@ test('pattern UI and order handoff are wired to the local catalogue', async () =
   assert.match(source, /manifest\.patterns/)
   assert.match(source, /loadOwayoPatternTexture/)
   assert.match(source, /pattern:\s*state\.pattern\?\.slug/)
+  assert.match(source, /Switch to Cycling patterns/)
 })
 
 test('synchronized mask textures do not render Owayo vendor marks', async () => {

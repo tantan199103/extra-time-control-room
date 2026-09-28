@@ -134,6 +134,8 @@
 
 .designer-pattern-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 18px 0 4px; }
 .designer-pattern-controls .designer-library-switch__field { margin-top: 0; }
+.designer-pattern-switch { min-height: 36px; margin-top: 16px; padding: 0 12px; border: 1px solid var(--designer-ink); background: var(--designer-ink); color: #fff; font: 800 9px var(--body); cursor: pointer; }
+.designer-pattern-switch:hover { box-shadow: inset 0 -3px 0 var(--designer-yellow); }
 .designer-pattern-selected { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 8px; border: 1px solid var(--designer-ink); background: #f1f4ef; }
 .designer-pattern-selected img { width: 46px; height: 34px; object-fit: cover; background: #e5e8e2; }
 .designer-pattern-selected > div { min-width: 0; display: grid; gap: 3px; flex: 1; }

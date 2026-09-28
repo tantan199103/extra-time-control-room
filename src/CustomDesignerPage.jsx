@@ -800,7 +800,7 @@ function ColorPanel({ manifest, state, update }) {
   </div>
 }
 
-function PatternPanel({ manifest, state, update }) {
+function PatternPanel({ manifest, state, update, onProviderChange, onOpenDesign }) {
   const [category, setCategory] = useState('all')
   const [showAll, setShowAll] = useState(false)
   const patterns = Array.isArray(manifest?.patterns) ? manifest.patterns : []
@@ -813,7 +813,8 @@ function PatternPanel({ manifest, state, update }) {
   const colorCodes = (active?.baseColors?.length ? active.baseColors : ['A', 'B', 'C']).filter(code => manifest?.product?.colorCodes?.some(item => item.colorCode === code))
   const selected = patterns.find(pattern => pattern.slug === state.pattern?.slug || pattern.id === state.pattern?.id)
   const setPattern = patch => update(current => ({ ...current, pattern:{ ...(current.pattern || {}), ...patch } }))
-  if (!patterns.length) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are syncing</h2><p>The local pattern catalogue is not available in this build yet. Refresh the designer after the asset sync completes.</p></div></div>
+  if (manifestIsBoombah(manifest)) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are part of Cycling</h2><p>Owayo garment patterns are available in the Cycling library. Switch libraries to browse the mirrored pattern catalogue.</p><button type="button" className="designer-pattern-switch" onClick={() => { onOpenDesign?.(); onProviderChange?.('owayo') }}>Switch to Cycling patterns</button></div></div>
+  if (!patterns.length) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are unavailable</h2><p>The local Owayo pattern catalogue could not be loaded. Refresh the designer and try again.</p></div></div>
   return <div className="designer-panel designer-panel--patterns">
     <div className="designer-panel__intro"><h2>Add a garment pattern</h2><p>These are mirrored Owayo pattern masks. Choose the color region that should carry the pattern, then adjust its scale and strength.</p></div>
     <div className="designer-pattern-controls">
@@ -1165,7 +1166,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       </section>
       <aside className="designer-controls">
         <nav className="designer-tabs" aria-label="Design tools">{TABS.map(tab => { const Icon = tab.icon; return <button type="button" key={tab.id} className={activeTab === tab.id ? 'is-active' : ''} onClick={() => setActiveTab(tab.id)}><Icon size={17}/><span>{tab.label}</span></button> })}</nav>
-        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} onProviderChange={changeProvider} onProductChange={loadBoombahProduct}/></div>
+        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct}/></div>
         <Roster state={history.state} update={history.update} sizes={selectedDesign?.sizes || manifest.product.sizes || []}/>
         <footer className="designer-order">
           <div className="designer-order__price"><span>{quantity} {quantity === 1 ? 'piece' : 'pieces'}{discount ? ` · ${Math.round(discount * 100)}% team saving` : ''}</span><strong>${total.toFixed(2)}</strong><small>{discount ? `$${unitPrice.toFixed(2)} each before team pricing` : 'Artwork review included'}</small></div>
