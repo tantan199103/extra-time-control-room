@@ -35,6 +35,46 @@ test('synchronized Owayo garment assets are local, checksummed and complete for 
   }
 })
 
+test('Owayo pattern catalogue is mirrored locally with complete previews, textures and category links', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+  assert.ok(Array.isArray(manifest.patterns) && manifest.patterns.length >= 100)
+  assert.ok(Array.isArray(manifest.patternCategories) && manifest.patternCategories.length >= 9)
+  assert.equal(manifest.patternLibrary?.provider, 'owayo')
+  assert.equal(manifest.patternLibrary?.total, manifest.patterns.length)
+  const ids = new Set()
+  const slugs = new Set()
+  for (const pattern of manifest.patterns) {
+    assert.match(String(pattern.id), /^\d+$/)
+    assert.equal(ids.has(pattern.id), false, `duplicate pattern id ${pattern.id}`)
+    assert.equal(slugs.has(pattern.slug), false, `duplicate pattern slug ${pattern.slug}`)
+    ids.add(pattern.id)
+    slugs.add(pattern.slug)
+    assert.match(pattern.preview, /^\/designer\/owayo\/cycling-c3\/patterns\/[^/]+\.webp$/)
+    assert.match(pattern.texture, /^\/designer\/owayo\/cycling-c3\/patterns\/[^/]+\.svg$/)
+    assert.ok(pattern.categoryKeys?.length)
+    assert.ok(pattern.colors?.length)
+    for (const url of [pattern.preview, pattern.texture]) {
+      const file = await readFile(resolve(publicRoot, url.slice(1)))
+      const checksum = manifest.checksums?.[url]
+      assert.ok(checksum, `missing checksum for ${url}`)
+      assert.equal(file.length, checksum.bytes, `${url} byte count changed`)
+      assert.equal(createHash('sha256').update(file).digest('hex'), checksum.sha256, `${url} checksum changed`)
+    }
+  }
+  for (const category of manifest.patternCategories) {
+    assert.ok(category.patternIds.length)
+    assert.ok(category.patternIds.every(id => ids.has(String(id))))
+  }
+})
+
+test('pattern UI and order handoff are wired to the local catalogue', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /id:'patterns'/)
+  assert.match(source, /manifest\.patterns/)
+  assert.match(source, /loadOwayoPatternTexture/)
+  assert.match(source, /pattern:\s*state\.pattern\?\.slug/)
+})
+
 test('synchronized mask textures do not render Owayo vendor marks', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
   assert.equal(manifest.branding?.removed, 'Owayo vendor marks from synchronized mask textures')

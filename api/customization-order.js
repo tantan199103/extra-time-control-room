@@ -25,6 +25,11 @@ export function normalizeDesignerSpec(value) {
   if (value == null) return null
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw Object.assign(new Error('The 3D design specification is invalid.'), { status:422 })
   if (safeText(value.source, 60) !== 'JERSEVO_3D_DESIGNER') throw Object.assign(new Error('The 3D design source is not supported.'), { status:422 })
+  const provider = safeText(value.provider, 30).toLowerCase() || 'owayo'
+  if (!['owayo', 'boombah'].includes(provider)) throw Object.assign(new Error('The 3D design provider is not supported.'), { status:422 })
+  const requestedManifest = safeText(value.manifest, 180)
+  const defaultManifest = provider === 'boombah' ? '/designer/boombah/products/fastpitch3d.json' : '/designer/owayo/cycling-c3/manifest.json'
+  const manifest = /^\/designer\/(?:owayo\/[-a-z0-9/]+|boombah\/products\/[a-z0-9-]+)\.json$/i.test(requestedManifest) ? requestedManifest : defaultManifest
   const colorsSource = value.colors && typeof value.colors === 'object' && !Array.isArray(value.colors) ? value.colors : {}
   const colors = Object.fromEntries(Object.entries(colorsSource).slice(0, 12).map(([key, raw]) => [safeText(key, 20), /^#[0-9a-f]{6}$/i.test(String(raw || '')) ? String(raw).toUpperCase() : '']).filter(([key, raw]) => key && raw))
   const textSource = value.text && typeof value.text === 'object' && !Array.isArray(value.text) ? value.text : {}
@@ -36,6 +41,7 @@ export function normalizeDesignerSpec(value) {
     color:/^#[0-9a-f]{6}$/i.test(String(textSource.color || '')) ? String(textSource.color).toUpperCase() : '#F8F8F4'
   }
   const logoSource = value.logo && typeof value.logo === 'object' && !Array.isArray(value.logo) ? value.logo : {}
+  const patternSource = value.pattern && typeof value.pattern === 'object' && !Array.isArray(value.pattern) ? value.pattern : {}
   const rosterSource = Array.isArray(value.roster) ? value.roster : []
   const roster = rosterSource.slice(0, 99).map(player => ({
     name:safeText(player?.name, 80),
@@ -45,13 +51,24 @@ export function normalizeDesignerSpec(value) {
   if (!roster.length) throw Object.assign(new Error('The 3D design needs at least one player.'), { status:422 })
   return {
     source:'JERSEVO_3D_DESIGNER',
-    version:1,
-    manifest:'/designer/owayo/cycling-c3/manifest.json',
+    version:Math.max(1, Math.min(2, Number(value.version) || 1)),
+    provider,
+    manifest,
     model:safeText(value.model, 60) || '253m_KA',
     product:safeText(value.product, 160),
+    productId:safeText(value.productId, 80),
+    styleCode:safeText(value.styleCode, 80),
+    garment:safeText(value.garment, 160),
     designSlug:safeText(value.designSlug, 80),
     designName:safeText(value.designName, 120),
     colors,
+    pattern:patternSource.slug ? {
+      id:safeText(patternSource.id, 40),
+      slug:safeText(patternSource.slug, 100),
+      colorCode:safeText(patternSource.colorCode, 20).toUpperCase() || 'A',
+      scale:clamp(patternSource.scale, .4, 2.4, 1),
+      opacity:clamp(patternSource.opacity, .2, 1, .82)
+    } : null,
     text,
     logo:{ name:safeText(logoSource.name, 160), x:clamp(logoSource.x, -1, 1, 0), y:clamp(logoSource.y, -1, 1, 0), scale:clamp(logoSource.scale, .25, 2, 1), rotation:clamp(logoSource.rotation, -180, 180, 0) },
     roster

@@ -27,6 +27,8 @@
     "publish:comma": "node scripts/publish-comma-catalog.mjs",
     "refresh:comma:seo": "node scripts/refresh-comma-seo.mjs",
     "sync:owayo:designer": "node scripts/sync-owayo-designer-assets.mjs",
+    "sync:owayo:patterns": "node scripts/sync-owayo-patterns.mjs --write",
+    "sync:boombah:designer": "node --env-file-if-exists=.env.local scripts/sync-boombah-designer-assets.mjs --write --owner-confirmed",
     "route:taass": "node scripts/route-taass-catalog.mjs",
     "audit:taass": "node scripts/audit-taass-coverage.mjs",
     "import:fanatics": "node scripts/import-fanatics-catalog.mjs",

@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 2,
+  "provider": "boombah",
+  "source": {
+    "ownerConfirmedByOperator": true,
+    "site": "https://www.boombah.com",
+    "syncedAt": "2026-09-28T13:01:37.069Z"
+  },
+  "storage": {
+    "bucket": "product-media",
+    "root": "designer/boombah",
+    "mirrored": true,
+    "hotlinked": false
+  },
+  "modelsManifest": "/designer/boombah/models.json",
+  "defaultProductId": "FASTPITCH3D",
+  "products": [
+    {
+      "id": "FASTPITCH3D",
+      "name": "Boombah Sublimated Fastpitch Uniforms",
+      "sport": "Fastpitch",
+      "description": "Design the Custom Boombah Sublimated Fastpitch Uniforms. Choose from a variety of uniform types to suit your teams needs. Everything from short sleeve, two button short sleeve, sleeveless, racerback, full button short sleeve, full button sleeveless jerseys, partial dye pants, and full dye pants, Boombah has a uniform for you. With the bold and vibrant designs, these fully sublimated uniforms will make a statement on the field. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/fastpitch3d.json",
+      "styles": 27,
+      "designs": 316,
+      "defaultDesignId": "fastpitch3d-top-fd-fast-ss-1000"
+    },
+    {
+      "id": "BASEBALL3D",
+      "name": "Boombah Ink Baseball Uniforms",
+      "sport": "Baseball",
+      "description": "Design the Custom Boombah Ink Baseball Uniforms. Choose from a variety of jersey types to suit your teams needs. Everything from short sleeve, two button short sleeve, full button short sleeve, and full button sleeveless jerseys, Boombah has a uniform for you. With the bold and vibrant designs, these fully sublimated uniforms will make a statement on the field. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/baseball3d.json",
+      "styles": 19,
+      "designs": 218,
+      "defaultDesignId": "baseball3d-top-fd-base-ss2-1000"
+    },
+    {
+      "id": "SLOWPITCH3D",
+      "name": "Boombah Sublimated Slowpitch Uniforms",
+      "sport": "Slowpitch",
+      "description": "Design the legendary Custom Boombah Sublimated Slowpitch Uniforms. With the bold and vibrant designs, these fully sublimated uniforms will make a statement on the field. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/slowpitch3d.json",
+      "styles": 5,
+      "designs": 64,
+      "defaultDesignId": "slowpitch3d-top-fd-slow-ss2-1000"
+    },
+    {
+      "id": "BASKETBALL3D",
+      "name": "Boombah Sublimated Basketball Uniforms",
+      "sport": "Basketball",
+      "description": "Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/basketball3d.json",
+      "styles": 7,
+      "designs": 65,
+      "defaultDesignId": "basketball3d-top-fd-bask-pgj-1000"
+    },
+    {
+      "id": "BASKETBALLREV3D",
+      "name": "REVERSIBLE Boombah Ink Full-Dye Basketball Uniforms",
+      "sport": "Basketball",
+      "description": "Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/basketballrev3d.json",
+      "styles": 3,
+      "designs": 29,
+      "defaultDesignId": "basketballrev3d-top-fd-bask-rvpn-1000"
+    },
+    {
+      "id": "WOMENSBASKETBALL3D",
+      "name": "Boombah Ink Full-Dye Women's Basketball Uniforms",
+      "sport": "Women's Basketball",
+      "description": "Loose Fit - Machine Wash Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/womensbasketball3d.json",
+      "styles": 5,
+      "designs": 56,
+      "defaultDesignId": "womensbasketball3d-top-fd-baskw-pgj-1000"
+    },
+    {
+      "id": "WOMENSBASKETBALLREV3D",
+      "name": "REVERSIBLE Boombah Ink Full-Dye Basketball Uniforms",
+      "sport": "Basketball",
+      "description": "Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/womensbasketballrev3d.json",
+      "styles": 3,
+      "designs": 29,
+      "defaultDesignId": "womensbasketballrev3d-top-fd-baskw-rvpn-1000"
+    },
+    {
+      "id": "FOOTBALL3D",
+      "name": "Boombah Sublimated Custom Football Uniforms",
+      "sport": "Football",
+      "description": "Boombah Sublimated football uniforms use high quality fabric that is fully sublimated to give you a great fit and feel with bold and vibrant colors that won't wear off. Boombah Ink football uniforms have everything from classic looks to more cutting edge designs to ensure your team looks the best on the field. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/football3d.json",
+      "styles": 10,
+      "designs": 107,
+      "defaultDesignId": "football3d-top-fd-foot-100rs-1000"
+    },
+    {
+      "id": "FOOTBALLREV3D",
+      "name": "REVERSIBLE Boombah Ink Full-Dye Football Uniforms",
+      "sport": "Football",
+      "description": "Boombah Ink football uniforms use high quality fabric that is fully sublimated to give you a great fit and feel with bold and vibrant colors that won't wear off. Boombah Ink football uniforms have everything from classic looks to more cutting edge designs to ensure your team looks the best on the field. Orders having less than 10 garments are subject to a minimum order fee of $25. *Please note that seam stitching in the primary color of the jersey is visible when the jersey is reversed",
+      "manifest": "/designer/boombah/products/footballrev3d.json",
+      "styles": 5,
+      "designs": 61,
+      "defaultDesignId": "footballrev3d-top-fd-foot-revss-1000"
+    },
+    {
+      "id": "VOLLEYBALL3D",
+      "name": "Boombah Sublimated Custom Volleyball Uniforms",
+      "sport": "Women's Volleyball",
+      "description": "Design Custom Boombah Sublimated Volleyball Uniforms. Choose from cap sleeves, long sleeves, shorts and warm up shirts to suit your teams needs. With the bold and vibrant designs, these fully sublimated uniforms will make a statement on the court. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/volleyball3d.json",
+      "styles": 14,
+      "designs": 98,
+      "defaultDesignId": "volleyball3d-top-fd-vol-cs-1000"
+    },
+    {
+      "id": "MENSVOLLEYBALL3D",
+      "name": "Boombah Ink Custom Volleyball Uniforms",
+      "sport": "Men's Volleyball",
+      "description": "Design Custom Boombah Volleyball Uniforms. Choose from short sleeve, sleeveless, shorts and warm up shirts to suit your teams needs. With the bold and vibrant designs, these fully sublimated uniforms will make a statement on the court. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/mensvolleyball3d.json",
+      "styles": 6,
+      "designs": 50,
+      "defaultDesignId": "mensvolleyball3d-top-fd-mvol-sfsl-1000"
+    },
+    {
+      "id": "HOCKEY3D",
+      "name": "Boombah Ink Full-Dye Hockey Uniforms",
+      "sport": "Hockey",
+      "description": "Design your Custom Boombah Ink Hockey Uniforms. Game jerseys, goalie jerseys, and hockey socks are offered. With bold and vibrant designs, these fully sublimated uniforms will make a statement on the field. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/hockey3d.json",
+      "styles": 5,
+      "designs": 25,
+      "defaultDesignId": "hockey3d-top-fd-hoc-ls-1000"
+    },
+    {
+      "id": "MENSAPPAREL3D",
+      "name": "Men's Boombah Sublimated Custom Apparel",
+      "sport": "Men's Tops",
+      "description": "Design your own custom apparel for your team or organization. Choose from a variety t-shirts, hoodies, pullovers, shorts and more. Each piece is fully sublimated to give you bold vibrant designs that won't wear off. Match your uniforms and make a statement with Boombah Sublimated Custom Apparel. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/mensapparel3d.json",
+      "styles": 59,
+      "designs": 422,
+      "defaultDesignId": "mensapparel3d-top-fd-sp-hd-1000a"
+    },
+    {
+      "id": "WOMENSAPPAREL3D",
+      "name": "Women's Boombah Sublimated Custom Apparel",
+      "sport": "Women's Tops",
+      "description": "Design your own custom apparel for your team or organization. Choose from a variety t-shirts, hoodies, pullovers, shorts and more. Each piece is fully sublimated to give you bold vibrant designs that won't wear off. Match your uniforms and make a statement with Boombah Sublimated Custom Apparel. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/womensapparel3d.json",
+      "styles": 59,
+      "designs": 428,
+      "defaultDesignId": "womensapparel3d-top-fd-spw-hd-1000a"
+    },
+    {
+      "id": "ACCESSORIES3D",
+      "name": "Boombah Ink Full-Dye Accessories",
+      "sport": "Accessories",
+      "description": "Boombah Ink Accessories use high quality fabric that is fully sublimated to give you a great fit and feel with bold and vibrant colors that won't wear off. Boombah Ink Accessories have everything from classic looks to more cutting edge designs to ensure your team looks the best on the field. Orders having less than 10 garments are subject to a minimum order fee of $25.",
+      "manifest": "/designer/boombah/products/accessories3d.json",
+      "styles": 2,
+      "designs": 9,
+      "defaultDesignId": "accessories3d-top-fd-sp-asp-1000"
+    },
+    {
+      "id": "SHOES3D",
+      "name": "Boombah Men's Custom Shoes",
+      "sport": "Shoes",
+      "description": "Introducing the customizable Boombah Viper cleat. Crafted with a sublimated fabric vamp, our cleat boasts vibrant, fade-resistant prints that reflect your unique personality and team spirit. With 13 distinct areas for customization, including player names and numbers, you have the power to tailor every detail to your preference. Plus, with an industry-leading lead time, you'll be geared up faster than ever before.",
+      "manifest": "/designer/boombah/products/shoes3d.json",
+      "styles": 6,
+      "designs": 12,
+      "defaultDesignId": "shoes3d-top-cf-m-turf-viper-1000"
+    },
+    {
+      "id": "WOMENSSHOES3D",
+      "name": "Boombah Women's Custom Shoes",
+      "sport": "Women's Shoes",
+      "description": "Introducing the customizable Boombah Viper cleat. Crafted with a sublimated fabric vamp, our cleat boasts vibrant, fade-resistant prints that reflect your unique personality and team spirit. With 13 distinct areas for customization, including player names and numbers, you have the power to tailor every detail to your preference. Plus, with an industry-leading lead time, you'll be geared up faster than ever before.",
+      "manifest": "/designer/boombah/products/womensshoes3d.json",
+      "styles": 12,
+      "designs": 24,
+      "defaultDesignId": "womensshoes3d-top-cf-w-turf-viper-1000"
+    }
+  ],
+  "stats": {
+    "products": 17,
+    "models": 283,
+    "unavailableModels": 3,
+    "templates": 2013,
+    "uploadedFiles": 368,
+    "reusedFiles": 3941,
+    "uploadedBytes": 69146267
+  }
+}

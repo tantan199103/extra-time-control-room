@@ -98,7 +98,7 @@
 .designer-stage__loading.is-error span { border-color: #c63c3c; color: #c63c3c; animation: none; }
 
 .designer-controls { min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; background: #fbfcfa; }
-.designer-tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--designer-line); }
+.designer-tabs { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--designer-line); }
 .designer-tabs button { min-height: 70px; display: grid; place-content: center; justify-items: center; gap: 7px; border: 0; border-right: 1px solid var(--designer-line); background: transparent; color: #6e736e; font: 700 10px var(--body); cursor: pointer; }
 .designer-tabs button:last-child { border-right: 0; }
 .designer-tabs button.is-active { position: relative; background: var(--designer-ink); color: #fff; }
@@ -106,6 +106,18 @@
 
 .designer-controls__scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .designer-panel { padding: 28px clamp(20px, 2.5vw, 34px) 36px; }
+.designer-library-switch { margin: -4px 0 22px; padding: 14px; border: 1px solid var(--designer-line); background: #f1f4ef; }
+.designer-library-switch__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.designer-library-switch__head span { font: 800 12px var(--headline); letter-spacing: -.01em; }
+.designer-library-switch__head small { color: #737a72; font-size: 9px; font-weight: 800; }
+.designer-library-switch__providers { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+.designer-library-switch__providers button { min-height: 34px; border: 1px solid var(--designer-ink); background: #fff; color: var(--designer-ink); font: 800 9px var(--body); cursor: pointer; }
+.designer-library-switch__providers button.is-active { background: var(--designer-ink); color: #fff; box-shadow: inset 0 -3px 0 var(--designer-yellow); }
+.designer-library-switch__field { display: grid; gap: 5px; margin-top: 8px; }
+.designer-library-switch__field span { color: #697169; font-size: 9px; font-weight: 800; }
+.designer-library-switch__field select { width: 100%; min-height: 38px; padding: 0 9px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 10px var(--body); }
+.designer-library-switch__note { margin: 9px 0 0; color: #7b827a; font-size: 8px; line-height: 1.4; }
+.designer-library-empty { margin: 20px 0 0; padding: 15px; background: #f4f5f2; color: #727970; font-size: 10px; }
 .designer-panel__intro { padding-bottom: 22px; border-bottom: 1px solid var(--designer-line); }
 .designer-panel__intro h2 { margin: 0; font: 800 31px/.92 var(--headline); letter-spacing: -.03em; }
 .designer-panel__intro p { max-width: 46ch; margin: 9px 0 0; color: #697069; font-size: 11px; line-height: 1.55; }
@@ -119,6 +131,22 @@
 .designer-design-grid button > svg { position: absolute; top: 7px; right: 7px; padding: 3px; background: var(--designer-yellow); color: var(--designer-ink); box-sizing: content-box; }
 .designer-design-more { width: 100%; min-height: 40px; margin-top: 10px; border: 1px solid var(--designer-ink); background: transparent; color: var(--designer-ink); font: 800 9px var(--body); cursor: pointer; }
 .designer-design-more:hover { background: var(--designer-ink); color: #fff; }
+
+.designer-pattern-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 18px 0 4px; }
+.designer-pattern-controls .designer-library-switch__field { margin-top: 0; }
+.designer-pattern-selected { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 8px; border: 1px solid var(--designer-ink); background: #f1f4ef; }
+.designer-pattern-selected img { width: 46px; height: 34px; object-fit: cover; background: #e5e8e2; }
+.designer-pattern-selected > div { min-width: 0; display: grid; gap: 3px; flex: 1; }
+.designer-pattern-selected strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.designer-pattern-selected small { overflow: hidden; color: #737873; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.designer-pattern-selected button { min-height: 28px; padding: 0 8px; border: 1px solid var(--designer-line); background: #fff; color: #a12727; font: 800 8px var(--body); cursor: pointer; }
+.designer-pattern-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+.designer-pattern-grid button { position: relative; min-width: 0; padding: 0; border: 1px solid var(--designer-line); background: #f1f2ef; color: var(--designer-ink); text-align: left; cursor: pointer; overflow: hidden; }
+.designer-pattern-grid button.is-active { border-color: var(--designer-ink); box-shadow: inset 0 -3px 0 var(--designer-yellow); }
+.designer-pattern-grid button > span { height: 58px; display: block; overflow: hidden; background: #e4e6e1; }
+.designer-pattern-grid button img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.designer-pattern-grid button strong { display: block; overflow: hidden; padding: 7px 7px 8px; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.designer-pattern-grid button > svg { position: absolute; top: 5px; right: 5px; padding: 3px; background: var(--designer-yellow); color: var(--designer-ink); box-sizing: content-box; }
 
 .designer-color-row { padding: 20px 0; border-bottom: 1px solid var(--designer-line); }
 .designer-color-row > div:first-child { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -233,10 +261,13 @@
   .designer-stage__hint { bottom: 10px; font-size: 8px; }
   .designer-tabs { position: sticky; top: 0; z-index: 6; background: #fff; }
   .designer-tabs button { min-height: 58px; gap: 5px; }
+  .designer-tabs button span { font-size: 8px; }
   .designer-tabs button.is-active::after { right: 9px; bottom: 5px; left: 9px; }
   .designer-panel { padding: 24px 16px 30px; }
   .designer-panel__intro h2 { font-size: 28px; }
   .designer-design-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .designer-pattern-controls { grid-template-columns: 1fr; gap: 0; }
+  .designer-pattern-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .designer-swatches { grid-template-columns: repeat(9, 1fr); gap: 4px; }
   .designer-swatches button { padding: 2px; }
   .designer-roster summary { padding: 0 16px; }
