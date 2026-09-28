@@ -28,6 +28,7 @@ import { DEFAULT_QUANTITY_DISCOUNT_POLICY, quantityDiscountForQty } from './lib/
 import './custom-designer.css'
 
 const MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
+const ASSET_CACHE_BUSTER = '1'
 const DRAFT_KEY = 'jersevo-3d-designer-draft-v1'
 const COLOR_SWATCHES = [
   '#111311', '#F8F8F4', '#F3ED45', '#2876FF', '#EF3340', '#F97316',
@@ -40,6 +41,12 @@ const TABS = [
   { id:'text', label:'Text', icon:Type },
   { id:'logos', label:'Logos', icon:ImageIcon }
 ]
+
+function assetUrl(uri, manifest) {
+  if (!uri || /^data:/i.test(uri)) return uri
+  const version = manifest?.source?.syncedAt || ASSET_CACHE_BUSTER
+  return `${uri}${uri.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}`
+}
 
 function id() {
   return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -295,7 +302,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     async function start() {
       try {
         onStatus?.('loading')
-        const response = await fetch(manifest.model.uri)
+        const response = await fetch(assetUrl(manifest.model.uri, manifest), { cache:'force-cache' })
         if (!response.ok) throw new Error(`Model request failed (${response.status}).`)
         const parsed = parseMirl(await response.arrayBuffer())
         if (cancelled) return
@@ -369,7 +376,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     Promise.all([...runtime.partMeshes].map(async ([name, mesh]) => {
       const uri = matchMirlTexture(name, selected.textures)
       if (!uri) return
-      const mask = await loader.loadAsync(uri)
+      const mask = await loader.loadAsync(assetUrl(uri, manifest))
       if (cancelled) { mask.dispose(); return }
       const previous = mesh.material
       mesh.material = maskMaterial(mask, runtime.palette)
@@ -432,7 +439,7 @@ function DesignPanel({ manifest, state, update }) {
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>The garment cut stays fixed. Switch artwork without reloading the 3D stage.</p></div>
     <div className="designer-design-grid">
       {designs.map(item => <button type="button" className={state.design === item.slug ? 'is-active' : ''} key={item.slug} onClick={() => update(current => ({ ...current, design:item.slug }))}>
-        <span className="designer-design-grid__art"><img src={item.preview} alt="" loading="lazy" decoding="async"/></span>
+        <span className="designer-design-grid__art"><img src={assetUrl(item.preview, manifest)} alt="" loading="lazy" decoding="async"/></span>
         <span>{item.name}</span>{state.design === item.slug && <Check size={15}/>}
       </button>)}
     </div>
@@ -589,7 +596,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
 
   useEffect(() => {
     let cancelled = false
-    fetch(MANIFEST_URL).then(response => {
+    fetch(`${MANIFEST_URL}?v=${Date.now()}`, { cache:'no-store' }).then(response => {
       if (!response.ok) throw new Error(`Designer assets returned ${response.status}.`)
       return response.json()
     }).then(data => {
