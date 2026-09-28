@@ -4,9 +4,11 @@ import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import sharp from 'sharp'
 import { matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
 import { STOREFRONT_STATIC_ROUTES } from '../src/lib/storefront-model.js'
 import { normalizeDesignerSpec } from '../api/customization-order.js'
+import { brandColorIndices } from '../scripts/strip-owayo-branding.mjs'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const publicRoot = resolve(root, 'public')
@@ -30,6 +32,28 @@ test('synchronized Owayo garment assets are local, checksummed and complete for 
     const buffer = await readFile(resolve(publicRoot, url.slice(1)))
     assert.equal(buffer.length, expected.bytes, `${url} byte count changed`)
     assert.equal(createHash('sha256').update(buffer).digest('hex'), expected.sha256, `${url} checksum changed`)
+  }
+})
+
+test('synchronized mask textures do not render Owayo vendor marks', async () => {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+  assert.equal(manifest.branding?.removed, 'Owayo vendor marks from synchronized mask textures')
+  const indices = brandColorIndices(manifest.product.colorCodes)
+  assert.ok(indices.size >= 8)
+  const textureUrls = new Set()
+  for (const design of manifest.designs) {
+    for (const url of Object.values(design.textures || {})) {
+      if (String(url).toLowerCase().endsWith('.png')) textureUrls.add(url)
+    }
+  }
+  const urls = [...textureUrls]
+  for (let start = 0; start < urls.length; start += 8) {
+    await Promise.all(urls.slice(start, start + 8).map(async url => {
+      const decoded = await sharp(resolve(publicRoot, url.slice(1))).raw().toBuffer({ resolveWithObject:true })
+      for (let offset = 0; offset < decoded.data.length; offset += decoded.info.channels) {
+        assert.equal(indices.has(decoded.data[offset]), false, `${url} still contains a vendor mark index`)
+      }
+    }))
   }
 })
 

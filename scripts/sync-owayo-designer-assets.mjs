@@ -4,6 +4,7 @@ import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { gunzipSync, inflateRawSync } from 'node:zlib'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { OWAYO_BRAND_COLOR_CODES, brandColorIndices, stripOwayoBranding } from './strip-owayo-branding.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outputRoot = resolve(root, 'public', 'designer', 'owayo', 'cycling-c3')
@@ -204,7 +205,11 @@ async function sync() {
     const textures = {}
     for (const entry of entries) {
       const safeName = entry.name.split(/[\\/]/).at(-1)
-      const path = await writeAsset(join(outputRoot, 'designs', designSlug, safeName), entry.data, checksums)
+      // Remove only the vendor's printed marks from the indexed mask.  Keep
+      // technical artwork such as ULTRADRY and the 3D design label intact.
+      const cleaned = await stripOwayoBranding(entry.data, product.colorCodes, { optimize:true })
+      entry.data = cleaned.buffer
+      const path = await writeAsset(join(outputRoot, 'designs', designSlug, safeName), cleaned.buffer, checksums)
       textures[normalizedPartName(safeName, name)] = path
     }
     // The legacy preview path currently redirects between case variants on
@@ -250,6 +255,11 @@ async function sync() {
       droppableParts: product.namesOfDroppableParts || [],
       colorCodes: product.colorCodes || [],
       defaultColors: product.ColorCodeFarbVorbelegungen || []
+    },
+    branding: {
+      removed: 'Owayo vendor marks from synchronized mask textures',
+      colorCodes: [...OWAYO_BRAND_COLOR_CODES],
+      colorIndices: [...brandColorIndices(product.colorCodes)]
     },
     model: {
       format: 'mirl-v1.1-uncompressed',
