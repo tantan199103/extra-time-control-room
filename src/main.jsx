@@ -187,6 +187,29 @@ function customProductTarget(product) {
   return handle ? `/product/${encodeURIComponent(handle)}?custom=1` : '/shop'
 }
 
+// A teamwear listing owns its designer context. The public card only carries
+// a small, generic tag contract; private provider/source metadata never needs
+// to be shipped to the browser to build the deep link.
+function listingDesignerConfig(product) {
+  if (product?.designerConfig?.provider && product?.designerConfig?.productId) return product.designerConfig
+  const tags = Array.isArray(product?.tags) ? product.tags.map(value => String(value || '').toLowerCase()) : []
+  const productTag = tags.find(value => value.startsWith('designer-product-'))
+  if (!productTag || !tags.includes('3d-designer')) return null
+  const productId = productTag.slice('designer-product-'.length).toUpperCase()
+  if (!productId) return null
+  return { provider:tags.includes('designer-provider-owayo') ? 'owayo' : 'boombah', productId }
+}
+
+function listingDesignerTarget(product) {
+  const config = listingDesignerConfig(product)
+  const listing = product?.handle || product?.id
+  if (!config || !listing) return ''
+  const params = new URLSearchParams({ listing, provider:config.provider, product:config.productId })
+  if (product?.designerConfig?.defaultStyleCode) params.set('style', product.designerConfig.defaultStyleCode)
+  if (product?.designerConfig?.defaultDesignId) params.set('design', product.designerConfig.defaultDesignId)
+  return `/custom/design?${params.toString()}`
+}
+
 function menuTarget(target, customProduct) {
   const value = String(target || '')
   if (value === '/collection') return '/shop'
@@ -562,6 +585,7 @@ function ProductCard({ product, onQuickView, className = '' }) {
   const available = sellableVariants(product)
   const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
   const sizeOption = (product.options || []).find(option => /^(size|fit)$/i.test(option.name))
+  const designerTarget = listingDesignerTarget(product)
   return (
     <article className={`product-card ${className}`}>
       <a className="product-card__image" href={`/product/${product.handle || product.id}`} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(event.currentTarget.getAttribute('href')) } }}>
@@ -577,6 +601,7 @@ function ProductCard({ product, onQuickView, className = '' }) {
       <div className="product-card__footer">
         {product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}
         {sizeOption && <span className="product-card__sizes">{sizeOption.values.join(' · ')}</span>}
+        {designerTarget && <button type="button" className="product-card__designer" onClick={event => { event.preventDefault(); event.stopPropagation(); navigate(designerTarget) }}><Sparkles size={12}/> EDIT IN 3D</button>}
       </div>
     </article>
   )
@@ -2245,6 +2270,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const currentPrice = Number(displayVariant?.price ?? product.price)
   const currentCompare = displayVariant?.compareAt ?? product.compareAt
   const commerceConfig = productCommerceConfig(product)
+  const designerTarget = listingDesignerTarget(product)
   const bulkOffers = commerceConfig.bulkOffers || []
   const estimate = buildDeliveryEstimate(commerceConfig.delivery)
   const soldOut = selectedVariant ? Number(selectedVariant.inventory || 0) < 1 : false
@@ -2484,7 +2510,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       </div>
       <aside className="pdp__info">
-        {product.badge && <p className="product-badge static">{product.badge}</p>}{pageCopy.eyebrow && !product.badge && <p className="product-badge static">{pageCopy.eyebrow}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story || pageCopy.supporting}</p>{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}        <div className="pdp__price">
+        {product.badge && <p className="product-badge static">{product.badge}</p>}{pageCopy.eyebrow && !product.badge && <p className="product-badge static">{pageCopy.eyebrow}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story || pageCopy.supporting}</p>{designerTarget && <button type="button" className="pdp__designer-cta" onClick={() => navigate(designerTarget)}><Sparkles size={18}/><span><strong>EDIT THIS KIT IN 3D</strong><small>Open the matching teamwear design library for this listing.</small></span><ArrowRight size={17}/></button>}{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}        <div className="pdp__price">
           <strong>{money(currentPrice)}</strong>
           {currentCompare > currentPrice && (
             <>

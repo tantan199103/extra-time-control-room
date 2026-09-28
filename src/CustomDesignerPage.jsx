@@ -27,8 +27,9 @@ import {
 } from 'lucide-react'
 import { matchMirlTexture, parseMirl } from './lib/mirl-loader'
 import { isBoombahBrandingName, isBoombahLogoPartName, stripBoombahBrandingText } from './lib/boombah-branding'
-import { createCustomizationOrder, getCustomerSessionId, uploadCustomerReference } from './lib/storefront-api'
+import { createCustomizationOrder, fetchStorefrontProduct, getCustomerSessionId, uploadCustomerReference } from './lib/storefront-api'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, quantityDiscountForQty } from './lib/quantity-pricing'
+import { findActiveVariant } from './lib/variant-selection'
 import './custom-designer.css'
 
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
@@ -104,6 +105,8 @@ function id() {
 function initialDesignerState() {
   return {
     provider:'owayo',
+    listingId:'',
+    listingHandle:'',
     productId:'FASTPITCH3D',
     styleCode:'SS',
     design:'',
@@ -761,12 +764,12 @@ function DesignPanel({ manifest, catalog, owayoAvailable, state, update, onProvi
     <div className="designer-library-switch" aria-label="Designer library">
       <div className="designer-library-switch__head"><span>Design library</span><small>{manifestIsBoombah(manifest) ? 'Teamwear 3D' : 'Cycling 3D'}</small></div>
       <div className="designer-library-switch__providers">
-        <button type="button" disabled={!owayoAvailable} className={!manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('owayo')}>Cycling</button>
-        <button type="button" disabled={!catalog?.products?.length} className={manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('boombah')}>Teamwear</button>
+        <button type="button" disabled={!owayoAvailable || Boolean(state.listingId)} className={!manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('owayo')}>Cycling</button>
+        <button type="button" disabled={!catalog?.products?.length || Boolean(state.listingId)} className={manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('boombah')}>Teamwear</button>
       </div>
       {manifestIsBoombah(manifest) && catalog?.products?.length > 0 && <>
-        <label className="designer-library-switch__field"><span>Sport</span><select value={state.productId} onChange={event => onProductChange?.(event.target.value)}>{catalog.products.map(product => <option key={product.id} value={product.id}>{product.sport} · {product.name}</option>)}</select></label>
-        {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => item.styleCode === event.target.value)?.id || current.design }))}>{styles.map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{style.name}</option>)}</select></label>}
+        <label className="designer-library-switch__field"><span>Sport {state.listingId && <small>· listing locked</small>}</span><select disabled={Boolean(state.listingId)} value={state.productId} onChange={event => onProductChange?.(event.target.value)}>{catalog.products.map(product => <option key={product.id} value={product.id}>{product.sport} · {stripBoombahBrandingText(product.name)}</option>)}</select></label>
+        {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => item.styleCode === event.target.value)?.id || current.design }))}>{styles.map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select></label>}
       </>}
       {currentProduct && <p className="designer-library-switch__note">{currentProduct.designs} mirrored templates · model loads on selection</p>}
     </div>
@@ -876,10 +879,15 @@ function LogoPanel({ state, update }) {
 }
 
 function Roster({ state, update, sizes }) {
-  const visibleSizes = sizes.map(item => item.name || item.size).filter(value => value && !/choose/i.test(value))
+  const visibleSizes = sizes.map(item => {
+    if (typeof item === 'string') return { value:item, label:item }
+    const value = String(item.code || item.size || item.name || '').trim()
+    const label = String(item.name || item.size || item.code || '').trim()
+    return { value, label:label || value }
+  }).filter(item => item.value && !/choose/i.test(item.label))
   const change = (playerId, patch) => update(current => ({ ...current, roster:current.roster.map(player => player.id === playerId ? { ...player, ...patch } : player) }))
   const remove = playerId => update(current => ({ ...current, roster:current.roster.filter(player => player.id !== playerId) }))
-  const add = () => update(current => current.roster.length >= 99 ? current : ({ ...current, roster:[...current.roster, { id:id(), name:'', number:'', size:visibleSizes[4] || 'M' }] }))
+  const add = () => update(current => current.roster.length >= 99 ? current : ({ ...current, roster:[...current.roster, { id:id(), name:'', number:'', size:visibleSizes[4]?.value || visibleSizes[0]?.value || 'M' }] }))
   return <details className="designer-roster">
     <summary><span><UsersRound size={17}/><strong>Team roster</strong><small>{state.roster.length} {state.roster.length === 1 ? 'player' : 'players'}</small></span><Plus size={16}/></summary>
     <div className="designer-roster__body">
@@ -887,7 +895,7 @@ function Roster({ state, update, sizes }) {
         <b>{String(index + 1).padStart(2, '0')}</b>
         <input aria-label={`Player ${index + 1} name`} placeholder="Player name" value={player.name} onChange={event => change(player.id,{ name:event.target.value })}/>
         <input aria-label={`Player ${index + 1} number`} placeholder="No." value={player.number} inputMode="numeric" maxLength={3} onChange={event => change(player.id,{ number:event.target.value.replace(/[^0-9]/g, '') })}/>
-        <select aria-label={`Player ${index + 1} size`} value={player.size} onChange={event => change(player.id,{ size:event.target.value })}>{visibleSizes.map(size => <option key={size}>{size}</option>)}</select>
+        <select aria-label={`Player ${index + 1} size`} value={visibleSizes.some(size => size.value === player.size) ? player.size : (visibleSizes[0]?.value || '')} onChange={event => change(player.id,{ size:event.target.value })}>{visibleSizes.map(size => <option key={size.value} value={size.value}>{size.label}</option>)}</select>
         <button type="button" disabled={state.roster.length === 1} aria-label={`Remove player ${index + 1}`} onClick={() => remove(player.id)}><Trash2 size={14}/></button>
       </div>)}
       <button type="button" className="designer-roster__add" disabled={state.roster.length >= 99} onClick={add}><Plus size={15}/> {state.roster.length >= 99 ? 'Roster limit reached' : 'Add player'}</button>
@@ -896,9 +904,7 @@ function Roster({ state, update, sizes }) {
 }
 
 function activeVariant(product, state) {
-  const variants = (product?.variants || []).filter(variant => String(variant.status || 'ACTIVE').toUpperCase() === 'ACTIVE' && Number(variant.inventory ?? 1000) > 0)
-  const requestedSize = String(state.roster[0]?.size || '').match(/\((.*?)\)/)?.[1] || state.roster[0]?.size || ''
-  return variants.find(variant => Object.values(variant.values || {}).some(value => String(value).toUpperCase() === String(requestedSize).toUpperCase())) || variants[0]
+  return findActiveVariant(product, state.roster[0]?.size || '')
 }
 
 function boundedFieldValue(field, value) {
@@ -932,11 +938,13 @@ function designerNote(state, selectedDesign, manifest) {
   return `3D kit · ${design} · ${model} · ${team} · ${state.roster.length} player${state.roster.length === 1 ? '' : 's'} · ${colors}${pattern}`.slice(0, 500)
 }
 
-function designerPayload(state, selectedDesign, manifest) {
+function designerPayload(state, selectedDesign, manifest, listing = null) {
   return {
     source:'JERSEVO_3D_DESIGNER',
     version:2,
     provider:manifest?.provider || 'owayo',
+    listingId:listing?.id || state.listingId || '',
+    listingHandle:listing?.handle || state.listingHandle || '',
     manifest:manifest?.provider === 'boombah' ? `/designer/boombah/products/${String(manifest.product?.id || '').toLowerCase()}.json` : OWAYO_MANIFEST_URL,
     model:selectedDesign?.modelId || manifest?.product?.model || '253m_KA',
     product:manifest?.product?.name || 'Cycling Jersey C3 Basic Short Sleeve',
@@ -966,6 +974,23 @@ async function fileFromDataUrl(dataUrl, name = 'team-logo.png') {
 }
 
 export default function CustomDesignerPage({ products = [], onAdd, onNavigate }) {
+  const routeParams = useMemo(() => {
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    return {
+      listing: params.get('listing') || params.get('handle') || '',
+      provider: params.get('provider') || '',
+      product: params.get('product') || '',
+      style: params.get('style') || '',
+      design: params.get('design') || ''
+    }
+  }, [])
+  const draftKey = useMemo(() => {
+    const scope = String(routeParams.listing || '').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').slice(0, 120)
+    return scope ? `${DRAFT_KEY}-${scope}` : DRAFT_KEY
+  }, [routeParams.listing])
+  const [listingProduct, setListingProduct] = useState(null)
+  const [listingLoading, setListingLoading] = useState(Boolean(routeParams.listing))
+  const [listingError, setListingError] = useState('')
   const [manifest, setManifest] = useState(null)
   const [owayoManifest, setOwayoManifest] = useState(null)
   const [catalog, setCatalog] = useState(null)
@@ -989,6 +1014,21 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       return response.json()
     }
     const bootstrap = async () => {
+      let resolvedListing = routeParams.listing
+        ? products.find(product => product.id === routeParams.listing || product.handle === routeParams.listing) || null
+        : null
+      if (routeParams.listing && !resolvedListing) {
+        const listingResult = await fetchStorefrontProduct(routeParams.listing, { includeRelated:false })
+        resolvedListing = listingResult?.data?.[0] || null
+      }
+      if (cancelled) return
+      if (routeParams.listing && !resolvedListing) throw new Error('The selected listing is no longer available for the 3D editor.')
+      if (resolvedListing) setListingProduct(resolvedListing)
+      setListingLoading(false)
+      const designer = resolvedListing?.designerConfig || null
+      if (routeParams.listing && (!designer?.provider || !designer?.productId)) {
+        throw new Error('This listing is not connected to a supported 3D designer yet.')
+      }
       const [owayoResult, boombahResult] = await Promise.allSettled([readJson(OWAYO_MANIFEST_URL), readJson(BOOMBAH_CATALOG_URL)])
       if (cancelled) return
       const owayo = owayoResult.status === 'fulfilled' ? owayoResult.value : null
@@ -997,10 +1037,20 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       if (boombahCatalog) setCatalog(boombahCatalog)
       if (!owayo && !boombahCatalog) throw new Error('Cycling and teamwear designer assets are temporarily unavailable.')
       let draft = null
-      try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null') } catch {}
-      const provider = draft?.provider === 'boombah' && boombahCatalog ? 'boombah' : owayo ? 'owayo' : 'boombah'
-      const productId = draft?.productId || boombahCatalog?.defaultProductId || boombahCatalog?.products?.[0]?.id || ''
-      const seed = { ...initialDesignerState(), ...(draft || {}), provider, productId }
+      try { draft = JSON.parse(localStorage.getItem(draftKey) || 'null') } catch {}
+      const requestedProvider = String(designer?.provider || routeParams.provider || draft?.provider || '').toLowerCase()
+      const provider = requestedProvider === 'boombah' && boombahCatalog ? 'boombah' : requestedProvider === 'owayo' && owayo ? 'owayo' : (owayo ? 'owayo' : 'boombah')
+      const productId = designer?.productId || routeParams.product || draft?.productId || boombahCatalog?.defaultProductId || boombahCatalog?.products?.[0]?.id || ''
+      const seed = {
+        ...initialDesignerState(),
+        ...(draft || {}),
+        provider,
+        listingId:resolvedListing?.id || '',
+        listingHandle:resolvedListing?.handle || '',
+        productId,
+        styleCode:designer?.defaultStyleCode || routeParams.style || draft?.styleCode || '',
+        design:designer?.defaultDesignId || routeParams.design || draft?.design || ''
+      }
       history.replace(seed)
       if (provider === 'owayo') {
         setManifest(owayo)
@@ -1008,7 +1058,8 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         history.update(current => ({ ...current, provider:'owayo', productId:'', styleCode:'', design:owayo.designs?.some(item => item.slug === current.design) ? current.design : first }))
         return
       }
-      const product = boombahCatalog.products?.find(item => item.id === productId) || boombahCatalog.products?.[0]
+      const product = boombahCatalog.products?.find(item => item.id === productId)
+        || (resolvedListing ? null : boombahCatalog.products?.[0])
       if (!product?.manifest) throw new Error('The Boombah catalog has no product manifest.')
       let productResponse
       try {
@@ -1022,14 +1073,23 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       }
       if (cancelled) return
       setManifest(productResponse)
-      const first = productResponse.designs?.[0]
-      history.update(current => ({ ...current, provider:'boombah', productId:product.id, styleCode:current.styleCode || first?.styleCode || '', design:productResponse.designs?.some(item => item.id === current.design || item.slug === current.design) ? current.design : first?.id || '' }))
+      const allowedDesigns = designer?.allowedDesignIds?.length ? productResponse.designs?.filter(item => designer.allowedDesignIds.includes(item.id) || designer.allowedDesignIds.includes(item.slug)) : productResponse.designs
+      const first = allowedDesigns?.[0] || productResponse.designs?.[0]
+      const designMatch = allowedDesigns?.find(item => item.id === seed.design || item.slug === seed.design)
+      const styleMatch = designer?.allowedStyleCodes?.length && !designer.allowedStyleCodes.includes(seed.styleCode) ? first?.styleCode : (seed.styleCode || first?.styleCode || '')
+      history.update(current => ({ ...current, provider:'boombah', productId:product.id, styleCode:styleMatch, design:designMatch?.id || first?.id || '', colors:{ ...current.colors, ...(first?.defaultColors || {}) } }))
     }
-    bootstrap().catch(error => !cancelled && setManifestError(error.message || 'Designer assets could not be loaded.'))
+    bootstrap().catch(error => {
+      if (cancelled) return
+      setListingLoading(false)
+      setListingError(error.message || 'The selected listing could not be opened.')
+      setManifestError(error.message || 'Designer assets could not be loaded.')
+    })
     return () => { cancelled = true }
-  }, [])
+  }, [draftKey])
 
   const loadBoombahProduct = useCallback(async productId => {
+    if (routeParams.listing && productId !== routeParams.product) return
     const product = catalog?.products?.find(item => item.id === productId)
     if (!product?.manifest) return
     setStageStatus('loading')
@@ -1044,9 +1104,10 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     } catch (error) {
       setManifestError(error.message || 'Boombah product assets could not be loaded.')
     }
-  }, [catalog, history.update])
+  }, [catalog, history.update, routeParams.listing, routeParams.product])
 
   const changeProvider = useCallback(provider => {
+    if (routeParams.listing) return
     if (provider === 'owayo' && owayoManifest) {
       setManifest(owayoManifest)
       const first = owayoManifest.designs?.[0]?.slug || 'etape'
@@ -1055,23 +1116,24 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     }
     const productId = catalog?.defaultProductId || catalog?.products?.[0]?.id
     if (provider === 'boombah' && productId) loadBoombahProduct(productId)
-  }, [catalog, history.update, loadBoombahProduct, owayoManifest])
+  }, [catalog, history.update, loadBoombahProduct, owayoManifest, routeParams.listing])
 
   useEffect(() => {
     setSaved(false)
     const timer = window.setTimeout(() => {
-      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
+      try { localStorage.setItem(draftKey, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
     }, 700)
     return () => window.clearTimeout(timer)
-  }, [history.state])
+  }, [draftKey, history.state])
 
   const customProduct = useMemo(() => {
+    if (routeParams.listing) return listingProduct
     const candidates = products.filter(product => {
     const searchText = [product?.name, product?.title, product?.type, product?.productGroup, product?.taxonomy?.category].filter(Boolean).join(' ')
     return product?.customFields?.length && /jersey|shirt|kit/i.test(searchText) && activeVariant(product,history.state)
     })
     return candidates.find(product => product.customFields.some(field => field.type === 'logo')) || candidates[0]
-  }, [products,history.state.roster])
+  }, [listingProduct, products, routeParams.listing, history.state.roster])
   const variant = activeVariant(customProduct, history.state)
   const unitPrice = Number(variant?.price ?? customProduct?.price ?? 79)
   const quantity = Math.max(1, history.state.roster.length)
@@ -1079,7 +1141,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const total = unitPrice * quantity * (1 - discount)
   const selectedDesign = manifest?.designs?.find(item => item.slug === history.state.design || item.id === history.state.design)
   const saveNow = () => {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
+    try { localStorage.setItem(draftKey, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
   }
   const addToBag = async () => {
     if (!customProduct || !variant) { onNavigate?.('/category/custom-jerseys'); return }
@@ -1117,7 +1179,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         assetRefs,
         note,
         logoConsent:Boolean(history.state.logo.dataUrl && history.state.logo.consent),
-        designer:designerPayload(history.state, selectedDesign, manifest)
+        designer:designerPayload(history.state, selectedDesign, manifest, customProduct)
       })
       const requestId = result?.data?.id
       if (!requestId) throw new Error('The design request was not created. Please retry.')
@@ -1125,7 +1187,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         variant,
         options:variant.values || {},
         quantity,
-        customization:{ requestId, fields, note, hasLogo:Boolean(history.state.logo.dataUrl), logoConsent:Boolean(history.state.logo.consent), designer:designerPayload(history.state, selectedDesign, manifest) }
+        customization:{ requestId, fields, note, hasLogo:Boolean(history.state.logo.dataUrl), logoConsent:Boolean(history.state.logo.consent), designer:designerPayload(history.state, selectedDesign, manifest, customProduct) }
       })
       setAdded(true)
       setRequestKey(`request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
@@ -1143,7 +1205,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   return <main className="custom-designer">
     <header className="custom-designer__header">
       <button type="button" className="custom-designer__back" onClick={() => onNavigate?.('/custom')}><ArrowLeft size={17}/> Custom lab</button>
-      <div><span>Jersevo 3D kit builder</span><strong>{manifest.product.name}</strong></div>
+      <div><span>Jersevo 3D kit builder</span><strong>{stripBoombahBrandingText(manifest.product.name)}</strong></div>
       <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${manifestIsBoombah(manifest) ? 'Teamwear' : 'Cycling'} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
     </header>
     <div className="custom-designer__workspace">

@@ -53,6 +53,8 @@ export function normalizeDesignerSpec(value) {
     source:'JERSEVO_3D_DESIGNER',
     version:Math.max(1, Math.min(2, Number(value.version) || 1)),
     provider,
+    listingId:safeText(value.listingId, 160),
+    listingHandle:safeText(value.listingHandle, 160),
     manifest,
     model:safeText(value.model, 60) || '253m_KA',
     product:safeText(value.product, 160),
@@ -76,11 +78,27 @@ export function normalizeDesignerSpec(value) {
 }
 
 async function publishedListing(client, productId) {
-  const columns = 'id, handle, title, status, updated_at, image, custom_fields'
+  const columns = 'id, handle, title, status, updated_at, image, custom_fields, ai_metadata'
   let result = await client.from('pod_products').select(columns).eq('id', productId).eq('status','PUBLISHED').maybeSingle()
   if (!result.data && !result.error) result = await client.from('pod_products').select(columns).eq('handle', productId).eq('status','PUBLISHED').maybeSingle()
   if (result.error) throw result.error
   return result.data
+}
+
+function validateListingDesigner(product, designer) {
+  if (!designer) return
+  const config = product?.ai_metadata?.designer
+  if (!config || typeof config !== 'object') throw Object.assign(new Error('This listing is not connected to a 3D designer.'), { status:422 })
+  const provider = safeText(config.provider, 30).toLowerCase()
+  if (provider !== designer.provider) throw Object.assign(new Error('The selected 3D provider does not belong to this listing.'), { status:422 })
+  if (safeText(config.productId, 80) !== designer.productId) throw Object.assign(new Error('The selected 3D product does not belong to this listing.'), { status:422 })
+  if (safeText(config.manifest, 180) !== designer.manifest) throw Object.assign(new Error('The selected 3D manifest does not belong to this listing.'), { status:422 })
+  const allowedDesigns = Array.isArray(config.allowedDesignIds) ? config.allowedDesignIds.map(value => String(value)) : []
+  if (allowedDesigns.length && !allowedDesigns.includes(designer.designSlug)) throw Object.assign(new Error('The selected 3D artwork is not available for this listing.'), { status:422 })
+  const allowedStyles = Array.isArray(config.allowedStyleCodes) ? config.allowedStyleCodes.map(value => String(value)) : []
+  if (allowedStyles.length && designer.styleCode && !allowedStyles.includes(designer.styleCode)) throw Object.assign(new Error('The selected garment cut is not available for this listing.'), { status:422 })
+  if (designer.listingId && safeText(designer.listingId, 160) !== String(product.id) && safeText(designer.listingId, 160) !== String(product.handle)) throw Object.assign(new Error('The 3D design references a different listing.'), { status:422 })
+  if (designer.listingHandle && safeText(designer.listingHandle, 160) !== String(product.handle)) throw Object.assign(new Error('The 3D design handle does not match this listing.'), { status:422 })
 }
 
 export default async function handler(request, response) {
@@ -155,6 +173,7 @@ export default async function handler(request, response) {
     }
     if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
     const designer = normalizeDesignerSpec(body.designer)
+    validateListingDesigner(product, designer)
 
     const payload = {
       listingId:product.id,

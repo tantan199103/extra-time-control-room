@@ -28,6 +28,7 @@
     "refresh:comma:seo": "node scripts/refresh-comma-seo.mjs",
     "sync:owayo:designer": "node scripts/sync-owayo-designer-assets.mjs",
     "sync:owayo:patterns": "node scripts/sync-owayo-patterns.mjs --write",
+    "create:owayo:listing": "node scripts/create-owayo-listing.mjs",
     "sync:boombah:designer": "node --env-file-if-exists=.env.local scripts/sync-boombah-designer-assets.mjs --write --owner-confirmed",
     "route:taass": "node scripts/route-taass-catalog.mjs",
     "audit:taass": "node scripts/audit-taass-coverage.mjs",
