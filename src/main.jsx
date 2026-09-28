@@ -78,6 +78,7 @@ const MembershipPage = lazy(() => import('./MembershipPage'))
 const CheckoutPage = lazy(() => import('./CheckoutPage'))
 const OrderTrackingPage = lazy(() => import('./OrderTrackingPage'))
 const HomeJerseyPersonalizer = lazy(() => import('./HomeJerseyPersonalizer'))
+const CustomDesignerPage = lazy(() => import('./CustomDesignerPage'))
 
 const money = usd
 const initialCatalog = buildFallbackCatalog(fallbackProducts)
@@ -968,9 +969,9 @@ function CustomHub({ products = [], onQuickView, pageConfig = null }) {
           <nav className="custom-hub__crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom</strong></nav>
           <p className="custom-hub__eyebrow">{copy.eyebrow || 'CUSTOM LAB / REVIEWED PERSONALIZATION'}</p>
           <h1 id="custom-hub-title">{String(copy.headline || 'PUT YOUR\nMOMENT ON IT.').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{index === 1 ? <em>{line.toLowerCase()}</em> : line.toLowerCase()}</React.Fragment>)}</h1>
-          <p className="custom-hub__lede">{copy.supporting || 'Choose a designer-led jersey, add the details that make it yours, and see every important field before the studio sends it to production.'}</p>
-          <div className="custom-hub__actions"><button className="button button--acid" onClick={() => featured ? go(`/product/${featured.handle}?custom=1`) : go('/category/custom-jerseys')}>{copy.button || (featured ? 'CHOOSE A JERSEY' : 'BROWSE CUSTOM JERSEYS')} <ArrowRight size={16}/></button><button className="button-link" onClick={() => go('/shipping')}>HOW DELIVERY WORKS <ArrowRight size={16}/></button></div>
-          <p className="custom-hub__note"><Lock size={14}/> Artwork stays fixed. Only enabled fields can change.</p>
+          <p className="custom-hub__lede">{copy.supporting || 'Build the jersey in 3D, shape the color story, add names, numbers and a team logo, then keep every player organized before production.'}</p>
+          <div className="custom-hub__actions"><button className="button button--acid" onClick={() => go('/custom/design')}>{copy.button || 'OPEN 3D KIT BUILDER'} <ArrowRight size={16}/></button><button className="button-link" onClick={() => featured ? go(`/product/${featured.handle}?custom=1`) : go('/category/custom-jerseys')}>{featured ? 'PERSONALIZE A LIVE JERSEY' : 'BROWSE CUSTOM JERSEYS'} <ArrowRight size={16}/></button></div>
+          <p className="custom-hub__note"><Lock size={14}/> Drafts stay on this device until you add the design to your bag.</p>
         </div>
         <div className="custom-hub__hero-art">
           <img src={SHOP_COVER.src} alt="A football jersey ready for personal details" width="2048" height="683" loading="eager" fetchPriority="high" decoding="async" />
@@ -982,9 +983,9 @@ function CustomHub({ products = [], onQuickView, pageConfig = null }) {
       {show('custom-steps') && <section className="custom-hub__steps" aria-labelledby="custom-steps-title">
         <div className="custom-hub__section-intro"><p>THE HAND-OFF</p><h2 id="custom-steps-title">Three moves.<br /><em>One piece.</em></h2></div>
         <div className="custom-hub__step-grid">
-          <article><span>01</span><Shirt size={22}/><h3>Choose the base</h3><p>Start with a published jersey and check the available size and color options.</p></article>
-          <article><span>02</span><Sparkles size={22}/><h3>Add your details</h3><p>Enter a name, number or approved reference only where that listing allows it.</p></article>
-          <article><span>03</span><ShieldCheck size={22}/><h3>Review before print</h3><p>The studio checks the request, then production begins with the locked artwork intact.</p></article>
+          <article><span>01</span><Shirt size={22}/><h3>Choose the design</h3><p>Start with a production-ready garment and switch designs directly on the 3D model.</p></article>
+          <article><span>02</span><Sparkles size={22}/><h3>Build the identity</h3><p>Set team colors, add shared text and place a clean logo on the garment.</p></article>
+          <article><span>03</span><ShieldCheck size={22}/><h3>Complete the roster</h3><p>Add player names, numbers and sizes, then send one organized design to review.</p></article>
         </div>
       </section>}
 
@@ -2459,7 +2460,8 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
       '/sports':['Shop sports and leagues | Jersevo','Explore football, baseball, basketball, hockey, soccer and college fan gear by league and team.'],
       '/teams':['Find your team | Jersevo','Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.'],
       '/collections':['Shop collections | Jersevo','Explore currently published Jersevo collections and shop fan gear by sport, team and product type.'],
-      '/custom':['Custom jerseys and personalized fan gear | Jersevo','Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.']
+      '/custom':['Custom jerseys and personalized fan gear | Jersevo','Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.'],
+      '/custom/design':['3D custom jersey designer | Jersevo','Design a custom cycling jersey in 3D, change colors, add names, numbers and a team logo, then organize every player in one roster.']
     }[path]
     const taxonomySeoTitle = productType ? taxonomyTitle : taxonomyTitle ? `${taxonomyTitle} fan gear` : ''
     const title = product ? withBrand(productTitle) : editableTitle ? withBrand(editableTitle) : collection ? withBrand(collectionTitle) : category ? withBrand(category.label) : taxonomySeoTitle ? withBrand(taxonomySeoTitle) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop fan gear by sport, team and product | Jersevo' : path === '/sports' ? 'Shop sports and leagues | Jersevo' : path === '/teams' ? 'Find your team | Jersevo' : path === '/collections' ? 'Shop collections | Jersevo' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
@@ -2486,7 +2488,7 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const productIndexable = !product || pdpMetadata.indexable
     const collectionSeoStatus = String(collection?.seo?.status || '').toUpperCase()
     const collectionIndexable = !collection || !['BLOCKED', 'NOINDEX'].includes(collectionSeoStatus) && catalogCount >= 6
-    const knownPublicRoute = ['/', '/shop', '/custom', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
+    const knownPublicRoute = ['/', '/shop', '/custom', '/custom/design', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
     const editableNoindex = Boolean(catalogOverride?.hidden) || String(editableSeo.robots || '').toLowerCase().includes('noindex') || editableSeo.indexable === false
     const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !queryNoindex && !editableNoindex && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
     const routePage = routeMeta ? TRUST_PAGES[path.slice(1)] : null
@@ -2626,7 +2628,7 @@ function App() {
   const rawPath = route.split(/[?#]/)[0]
   const { basePath:path, page:catalogPage, paginated } = parseCatalogPagePath(rawPath)
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
-  const customRoute = path === '/custom'
+  const customRoute = path === '/custom' || path === '/custom/design'
   const catalogRequestKey = `${path}:${catalogPage}:${search}`
   const [products,setProducts] = useState(() => productBootstrap ? [productBootstrap.product,...(productBootstrap.related || [])] : (import.meta.env.DEV ? initialCatalog : []))
   const [menus,setMenus] = useState([])
@@ -2932,6 +2934,8 @@ function App() {
   const addToCart = (product, selection = {}) => {
     const variant = selection.variant || sellableVariants(product)[0]
     if(!isSellableVariant(variant)){setCartNotice(`${product.name} is sold out or no longer available.`);return}
+    const requestedQty = Math.max(1, Math.floor(Number(selection.quantity) || 1))
+    if(requestedQty > Number(variant.inventory)){setCartNotice(`Only ${variant.inventory} of ${product.name} are currently available.`);return}
     const line = {
       product:{ id:product.id,handle:product.handle,name:product.name,image:product.image,alt:product.alt,color:product.color,price:product.price },
       variantId:variant.id,
@@ -2939,14 +2943,14 @@ function App() {
       options:selection.options || variant.values || {},
       customization:selection.customization || null,
       unitPrice:Number(variant.price ?? product.price),
-      qty:1
+      qty:requestedQty
     }
     line.key=cartLineKey(line)
     setCart(current => {
       const found = current.find(item => (item.key || cartLineKey(item)) === line.key)
-      if(found && found.qty >= Number(variant.inventory)){setCartNotice(`Only ${variant.inventory} of ${product.name} are currently available.`);return current}
+      if(found && found.qty + requestedQty > Number(variant.inventory)){setCartNotice(`Only ${variant.inventory} of ${product.name} are currently available.`);return current}
       setCartNotice('')
-      return found ? current.map(item => item === found ? {...item,qty:item.qty+1} : item) : [...current,line]
+      return found ? current.map(item => item === found ? {...item,qty:item.qty+requestedQty} : item) : [...current,line]
     })
     setCartOpen(true)
     trackAddToCart(line)
@@ -2998,6 +3002,7 @@ function App() {
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/sports' || path === '/teams' || path === '/collections') page = <DiscoveryLanding kind={path.slice(1)} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} collections={collections} products={products} onSearch={() => setSearchOpen(true)}/>
   else if (path === '/custom') page = <CustomHub products={products} onQuickView={setQuickViewProduct} pageConfig={pageConfig('custom')}/>
+  else if (path === '/custom/design') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the 3D kit builder…</p></div>}><CustomDesignerPage products={products} onAdd={addToCart} onNavigate={navigate}/></Suspense>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')}/>
   else if (path.startsWith('/category/')) page = routeCategory && !catalogPageHidden ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')} pageOverride={catalogPageOverride}/> : <NotFound/>
   else if (path.startsWith('/league/')) page = routeLeague && !catalogPageHidden ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct} pageOverride={catalogPageOverride}/> : <NotFound/>

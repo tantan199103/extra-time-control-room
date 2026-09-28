@@ -29,6 +29,8 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
 test('static assets are cacheable while API responses remain no-store', async () => {
   const assetPolicy = config.headers.find(rule => rule.source === '/assets/(.*)')
   assert.match(assetPolicy.headers.find(header => header.key === 'Cache-Control').value, /stale-while-revalidate/)
+  const designerPolicy = config.headers.find(rule => rule.source === '/designer/(.*)')
+  assert.match(designerPolicy.headers.find(header => header.key === 'Cache-Control').value, /stale-while-revalidate/)
   const security = await readFile(new URL('../api/_security.js', import.meta.url), 'utf8')
   assert.match(security, /setHeader\('Cache-Control', 'no-store'\)/)
 })

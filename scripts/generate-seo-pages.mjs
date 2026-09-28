@@ -391,11 +391,23 @@ await writePage('/custom', pageHtml(shell, {
   title:'Custom jerseys and personalized fan gear | Jersevo',
   description:'Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.',
   image:absolute(SHOP_COVER.src),
-  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/shop">Shop</a> / <strong>Custom</strong></nav><h1>Put your moment on it.</h1><p>Choose a designer-led jersey, add your name or number, and review every enabled field before the studio sends it to production. Artwork stays fixed.</p><h2>How custom ordering works</h2><ol><li>Choose a published jersey and check its options.</li><li>Add the name, number or approved reference fields shown on that listing.</li><li>Review the request before it enters production.</li></ol><h2>Live custom jerseys</h2><ul>${customFallbackProducts || '<li><a href="/category/custom-jerseys">Browse custom jerseys</a></li>'}</ul><p><a href="/category/custom-jerseys">View all custom jerseys</a> · <a href="/shipping">Read delivery details</a></p></main>`,
+  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/shop">Shop</a> / <strong>Custom</strong></nav><h1>Put your moment on it.</h1><p>Build a jersey in 3D, choose colors, add names, numbers and a team logo, then organize every player before production.</p><p><a href="/custom/design">Open the 3D kit builder</a></p><h2>How custom ordering works</h2><ol><li>Choose a production-ready design.</li><li>Add team colors, text and a logo.</li><li>Complete the player roster and review before print.</li></ol><h2>Live custom jerseys</h2><ul>${customFallbackProducts || '<li><a href="/category/custom-jerseys">Browse custom jerseys</a></li>'}</ul><p><a href="/category/custom-jerseys">View all custom jerseys</a> · <a href="/shipping">Read delivery details</a></p></main>`,
   schema:[
     { '@context':'https://schema.org', '@type':'CollectionPage', name:'Custom jerseys and personalized fan gear', description:'Choose a designer-led jersey and add approved personal details.', url:`${PUBLIC_ORIGIN}/custom`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/`, name:'Jersevo' } },
     { '@context':'https://schema.org', '@type':'HowTo', name:'How to order a personalized jersey', step:[{ '@type':'HowToStep', name:'Choose a jersey' },{ '@type':'HowToStep', name:'Add your details' },{ '@type':'HowToStep', name:'Review before print' }] },
     breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:'Custom',url:`${PUBLIC_ORIGIN}/custom`}])
+  ]
+}))
+
+await writePage('/custom/design', pageHtml(shell, {
+  path:'/custom/design',
+  title:'3D custom jersey designer | Jersevo',
+  description:'Design a custom cycling jersey in 3D, change colors, add names, numbers and a team logo, then organize every player in one roster.',
+  image:absolute(SHOP_COVER.src),
+  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/custom">Custom</a> / <strong>3D kit builder</strong></nav><h1>Build your custom jersey in 3D</h1><p>Choose a garment design, set the team colors, add shared text and a logo, then organize player names, numbers and sizes in one roster.</p><h2>Included design tools</h2><ul><li>Interactive 3D garment rotation and zoom</li><li>Design and color controls</li><li>Name, number and team text placement</li><li>Team logo upload and placement</li><li>Draft saving, undo and redo</li><li>Multi-player roster handoff</li></ul><p><a href="/custom">Read about custom ordering</a> · <a href="/category/custom-jerseys">Browse live custom jerseys</a></p></main>`,
+  schema:[
+    { '@context':'https://schema.org', '@type':'WebApplication', name:'Jersevo 3D Kit Builder', applicationCategory:'DesignApplication', operatingSystem:'Web browser', description:'Interactive custom jersey designer with colors, text, logos and team roster tools.', url:`${PUBLIC_ORIGIN}/custom/design`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/`, name:'Jersevo' } },
+    breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Custom',url:`${PUBLIC_ORIGIN}/custom`},{name:'3D kit builder',url:`${PUBLIC_ORIGIN}/custom/design`}])
   ]
 }))
 

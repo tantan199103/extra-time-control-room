@@ -1,0 +1,4482 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "ownerConfirmedByOperator": true,
+    "configurator": "https://www.owayo.com/konfigurator_html/?color=RDY47588493&design=Etape&land=us&lang=en&product=bikejerseys&sport=cycling",
+    "productEndpoint": "https://www.owayo.com/konfigurator_php/auswahlmodul/produkt.php",
+    "assetOrigin": "https://static.owayo-cdn.com",
+    "syncedAt": "2026-09-28T06:30:32.971Z"
+  },
+  "product": {
+    "name": "Cycling Jersey C3 Basic Short Sleeve",
+    "publicSlug": "bikejerseys",
+    "normalizedSlug": "radtrikots_c3",
+    "orderType": "Bike Jersey 2.0",
+    "cut": "253m",
+    "model": "253m_KA",
+    "baseModel": "253m_[Ärmel]",
+    "baseDesign": "Pure",
+    "sizes": [
+      {
+        "name": "Choose your size",
+        "size": "Choose your size"
+      },
+      {
+        "name": "2  (XS)",
+        "size": "2"
+      },
+      {
+        "name": "3 (S)",
+        "size": "3"
+      },
+      {
+        "name": "4 (S)",
+        "size": "4"
+      },
+      {
+        "name": "5 (M)",
+        "size": "5"
+      },
+      {
+        "name": "6 (M)",
+        "size": "6"
+      },
+      {
+        "name": "7 (L)",
+        "size": "7"
+      },
+      {
+        "name": "8 (L)",
+        "size": "8"
+      },
+      {
+        "name": "9 (XL)",
+        "size": "9"
+      },
+      {
+        "name": "10 (XL)",
+        "size": "10"
+      },
+      {
+        "name": "11 (XXL)",
+        "size": "11"
+      },
+      {
+        "name": "12 (XXL)",
+        "size": "12"
+      },
+      {
+        "name": "14 (3XL)",
+        "size": "14"
+      }
+    ],
+    "minimumOrder": 1,
+    "maximumOrder": -1,
+    "droppableParts": [
+      "Back",
+      "Bag",
+      "Collar",
+      "Front Left Part",
+      "Front Right Part",
+      "Left Arm",
+      "Right Arm"
+    ],
+    "colorCodes": [
+      {
+        "colorCode": "A",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "1",
+        "Farbname": "Main Colour",
+        "GroupID": "101",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": true,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "A_O",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "50",
+        "Farbname": "Main Colour Contour",
+        "GroupID": "101",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "B",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "2",
+        "Farbname": "Second Colour",
+        "GroupID": "102",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": true,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "B_O",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "51",
+        "Farbname": "2nd Colour Contour",
+        "GroupID": "102",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "C",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "3",
+        "Farbname": "Third Colour",
+        "GroupID": "103",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": true,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "C_O",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "52",
+        "Farbname": "3rd Colour Contour",
+        "GroupID": "103",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "D",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "4",
+        "Farbname": "Fourth Colour",
+        "GroupID": "104",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": true,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "D_O",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "53",
+        "Farbname": "4th Color Contour",
+        "GroupID": "104",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "E",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "5",
+        "Farbname": "Fifth Colour",
+        "GroupID": "105",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": true,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "K",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "6",
+        "Farbname": "Collar Colour",
+        "GroupID": "200",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": true,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "RV",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 owayo Reißverschlussfarben",
+        "ColorCodeNr": "7",
+        "Farbname": "Front zipper\r\n",
+        "GroupID": "1000",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "Nahste Farbe nach Hauptfarben"
+      },
+      {
+        "colorCode": "K1",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "22",
+        "Farbname": "Collar Colour 1",
+        "GroupID": "200",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Händische editierte Abhängigkeit"
+      },
+      {
+        "colorCode": "K2",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "23",
+        "Farbname": "Collar Colour 2",
+        "GroupID": "200",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Händische editierte Abhängigkeit"
+      },
+      {
+        "colorCode": "EK",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "230",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Wie B, wenn auf A; Sonst wie A"
+      },
+      {
+        "colorCode": "EF",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "226",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "EFK",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "227",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "EFKO",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "228",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "HLA",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "216",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "HRA",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "221",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "OOF",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "204",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "HF",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "214",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "OOFK",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
+        "ColorCodeNr": "205",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "HB",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "210",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "OOB",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "202",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "OOL",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "199",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "OOR",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "197",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+      },
+      {
+        "colorCode": "OOBK",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
+        "ColorCodeNr": "203",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "OOLK",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
+        "ColorCodeNr": "198",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "OORK",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
+        "ColorCodeNr": "196",
+        "Farbname": null,
+        "GroupID": null,
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "Tec",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "240",
+        "Farbname": "Ultra Dry",
+        "GroupID": "300",
+        "IsHideable": true,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Versteckbar"
+      },
+      {
+        "colorCode": "TecO",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "241",
+        "Farbname": null,
+        "GroupID": "300",
+        "IsHideable": true,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Versteckbar"
+      },
+      {
+        "colorCode": "3D_3D",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "195",
+        "Farbname": null,
+        "GroupID": "300",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "3D_DSGN",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "194",
+        "Farbname": null,
+        "GroupID": "300",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "<nix>"
+      }
+    ],
+    "defaultColors": {
+      "A": "3032413",
+      "A_O": "16777215",
+      "B": "2054801",
+      "B_O": "16777215",
+      "C": "96955",
+      "C_O": "16777215",
+      "D": "6459072",
+      "D_O": "16777215",
+      "E": "16777215",
+      "HoBo": "3428744",
+      "K": "3032413",
+      "KI": "0",
+      "STL": "0",
+      "Tec": "13421772",
+      "3D_3D": "16777215",
+      "3D_DSGN": "12463204",
+      "A_2": "5996438",
+      "BW": "4806557",
+      "B_2": "2633275",
+      "B_2_O": "16777215",
+      "C_2": "16777215",
+      "C_2_O": "12570064",
+      "D_2": "10204093",
+      "D_2_O": "0",
+      "KE": "16777215",
+      "MR": "15127229",
+      "OOBK": "2718906",
+      "OOFK": "2718906",
+      "OOLK": "2718906",
+      "OORK": "2718906",
+      "OOSTK": "2718906",
+      "RV": "10921891",
+      "RVP": "16777215",
+      "RVPH": "10921891",
+      "RVPL": "16777215",
+      "RVPR": "16777215",
+      "SL": "3428744",
+      "SLL": "3428744",
+      "SLR": "3428744",
+      "TecO": "7830655",
+      "TR-Tex": "2172493",
+      "VTL": "739934",
+      "VTR": "739934",
+      "*": "16777215"
+    }
+  },
+  "model": {
+    "format": "mirl-v1.1-uncompressed",
+    "uri": "/designer/owayo/cycling-c3/model/253m_KA.mirl.bin",
+    "parts": "/designer/owayo/cycling-c3/model/parts.json",
+    "restrictedZones": "/designer/owayo/cycling-c3/model/sperrbezirke.json",
+    "seamLines": "/designer/owayo/cycling-c3/model/teilungslinien.json"
+  },
+  "designs": [
+    {
+      "name": "Etape",
+      "slug": "etape",
+      "preview": "/designer/owayo/cycling-c3/previews/etape.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/etape/Etape_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/etape/Etape_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/etape/Etape_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/etape/Etape_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/etape/Etape_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/etape/Etape_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/etape/Etape_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/etape/Etape_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/etape/Etape_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/etape/Etape_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/etape/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Velocity",
+      "slug": "velocity",
+      "preview": "/designer/owayo/cycling-c3/previews/velocity.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/velocity/Velocity_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/velocity/Velocity_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/velocity/Velocity_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/velocity/Velocity_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/velocity/Velocity_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/velocity/Velocity_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/velocity/Velocity_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/velocity/Velocity_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/velocity/Velocity_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/velocity/Velocity_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/velocity/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Attack",
+      "slug": "attack",
+      "preview": "/designer/owayo/cycling-c3/previews/attack.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/attack/Attack_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/attack/Attack_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/attack/Attack_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/attack/Attack_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/attack/Attack_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/attack/Attack_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/attack/Attack_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/attack/Attack_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/attack/Attack_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/attack/Attack_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/attack/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Break",
+      "slug": "break",
+      "preview": "/designer/owayo/cycling-c3/previews/break.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/break/Break_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/break/Break_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/break/Break_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/break/Break_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/break/Break_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/break/Break_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/break/Break_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/break/Break_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/break/Break_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/break/Break_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/break/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Shield",
+      "slug": "shield",
+      "preview": "/designer/owayo/cycling-c3/previews/shield.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/shield/Shield_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/shield/Shield_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/shield/Shield_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/shield/Shield_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/shield/Shield_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/shield/Shield_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/shield/Shield_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/shield/Shield_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/shield/Shield_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/shield/Shield_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/shield/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "name": "Gruppetto",
+      "slug": "gruppetto",
+      "preview": "/designer/owayo/cycling-c3/previews/gruppetto.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/gruppetto/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "C"
+      ]
+    },
+    {
+      "name": "Galibier 2",
+      "slug": "galibier-2",
+      "preview": "/designer/owayo/cycling-c3/previews/galibier-2.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/galibier-2/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Sprint",
+      "slug": "sprint",
+      "preview": "/designer/owayo/cycling-c3/previews/sprint.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/sprint/Sprint_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/sprint/Sprint_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/sprint/Sprint_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/sprint/Sprint_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/sprint/Sprint_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/sprint/Sprint_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/sprint/Sprint_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/sprint/Sprint_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/sprint/Sprint_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/sprint/Sprint_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/sprint/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Zone",
+      "slug": "zone",
+      "preview": "/designer/owayo/cycling-c3/previews/zone.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/zone/Zone_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/zone/Zone_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/zone/Zone_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/zone/Zone_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/zone/Zone_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/zone/Zone_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/zone/Zone_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/zone/Zone_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/zone/Zone_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/zone/Zone_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/zone/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Sunrise",
+      "slug": "sunrise",
+      "preview": "/designer/owayo/cycling-c3/previews/sunrise.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/sunrise/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Pace",
+      "slug": "pace",
+      "preview": "/designer/owayo/cycling-c3/previews/pace.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/pace/Pace_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/pace/Pace_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/pace/Pace_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/pace/Pace_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/pace/Pace_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/pace/Pace_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/pace/Pace_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/pace/Pace_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/pace/Pace_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/pace/Pace_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/pace/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Champion",
+      "slug": "champion",
+      "preview": "/designer/owayo/cycling-c3/previews/champion.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/champion/Champion_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/champion/Champion_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/champion/Champion_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/champion/Champion_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/champion/Champion_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/champion/Champion_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/champion/Champion_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/champion/Champion_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/champion/Champion_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/champion/Champion_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/champion/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Aero",
+      "slug": "aero",
+      "preview": "/designer/owayo/cycling-c3/previews/aero.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/aero/Aero_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/aero/Aero_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/aero/Aero_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/aero/Aero_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/aero/Aero_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/aero/Aero_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/aero/Aero_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/aero/Aero_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/aero/Aero_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/aero/Aero_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/aero/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Stage",
+      "slug": "stage",
+      "preview": "/designer/owayo/cycling-c3/previews/stage.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/stage/Stage_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/stage/Stage_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/stage/Stage_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/stage/Stage_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/stage/Stage_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/stage/Stage_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/stage/Stage_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/stage/Stage_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/stage/Stage_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/stage/Stage_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/stage/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "A",
+        "B",
+        "D"
+      ]
+    },
+    {
+      "name": "Brevet",
+      "slug": "brevet",
+      "preview": "/designer/owayo/cycling-c3/previews/brevet.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/brevet/Brevet_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/brevet/Brevet_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/brevet/Brevet_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/brevet/Brevet_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/brevet/Brevet_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/brevet/Brevet_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/brevet/Brevet_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/brevet/Brevet_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/brevet/Brevet_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/brevet/Brevet_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/brevet/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "D"
+      ]
+    },
+    {
+      "name": "Velo 2",
+      "slug": "velo-2",
+      "preview": "/designer/owayo/cycling-c3/previews/velo-2.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/velo-2/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Leader",
+      "slug": "leader",
+      "preview": "/designer/owayo/cycling-c3/previews/leader.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/leader/Leader_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/leader/Leader_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/leader/Leader_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/leader/Leader_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/leader/Leader_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/leader/Leader_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/leader/Leader_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/leader/Leader_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/leader/Leader_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/leader/Leader_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/leader/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "C"
+      ]
+    },
+    {
+      "name": "Paceline",
+      "slug": "paceline",
+      "preview": "/designer/owayo/cycling-c3/previews/paceline.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/paceline/Paceline_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/paceline/Paceline_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/paceline/Paceline_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/paceline/Paceline_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/paceline/Paceline_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/paceline/Paceline_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/paceline/Paceline_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/paceline/Paceline_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/paceline/Paceline_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/paceline/Paceline_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/paceline/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Allez",
+      "slug": "allez",
+      "preview": "/designer/owayo/cycling-c3/previews/allez.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/allez/Allez_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/allez/Allez_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/allez/Allez_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/allez/Allez_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/allez/Allez_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/allez/Allez_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/allez/Allez_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/allez/Allez_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/allez/Allez_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/allez/Allez_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/allez/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Granfondo",
+      "slug": "granfondo",
+      "preview": "/designer/owayo/cycling-c3/previews/granfondo.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/granfondo/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Montagne",
+      "slug": "montagne",
+      "preview": "/designer/owayo/cycling-c3/previews/montagne.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/montagne/Montagne_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/montagne/Montagne_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/montagne/Montagne_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/montagne/Montagne_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/montagne/Montagne_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/montagne/Montagne_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/montagne/Montagne_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/montagne/Montagne_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/montagne/Montagne_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/montagne/Montagne_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/montagne/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    {
+      "name": "Trail",
+      "slug": "trail",
+      "preview": "/designer/owayo/cycling-c3/previews/trail.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/trail/Trail_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/trail/Trail_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/trail/Trail_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/trail/Trail_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/trail/Trail_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/trail/Trail_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/trail/Trail_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/trail/Trail_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/trail/Trail_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/trail/Trail_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/trail/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Dirt",
+      "slug": "dirt",
+      "preview": "/designer/owayo/cycling-c3/previews/dirt.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/dirt/Dirt_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/dirt/Dirt_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/dirt/Dirt_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/dirt/Dirt_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/dirt/Dirt_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/dirt/Dirt_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/dirt/Dirt_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/dirt/Dirt_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/dirt/Dirt_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/dirt/Dirt_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/dirt/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Trouble",
+      "slug": "trouble",
+      "preview": "/designer/owayo/cycling-c3/previews/trouble.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/trouble/Trouble_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/trouble/Trouble_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/trouble/Trouble_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/trouble/Trouble_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/trouble/Trouble_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/trouble/Trouble_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/trouble/Trouble_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/trouble/Trouble_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/trouble/Trouble_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/trouble/Trouble_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/trouble/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Loop",
+      "slug": "loop",
+      "preview": "/designer/owayo/cycling-c3/previews/loop.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/loop/Loop_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/loop/Loop_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/loop/Loop_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/loop/Loop_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/loop/Loop_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/loop/Loop_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/loop/Loop_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/loop/Loop_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/loop/Loop_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/loop/Loop_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/loop/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Chaser",
+      "slug": "chaser",
+      "preview": "/designer/owayo/cycling-c3/previews/chaser.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/chaser/Chaser_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/chaser/Chaser_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/chaser/Chaser_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/chaser/Chaser_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/chaser/Chaser_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/chaser/Chaser_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/chaser/Chaser_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/chaser/Chaser_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/chaser/Chaser_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/chaser/Chaser_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/chaser/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Prolog",
+      "slug": "prolog",
+      "preview": "/designer/owayo/cycling-c3/previews/prolog.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/prolog/Prolog_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/prolog/Prolog_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/prolog/Prolog_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/prolog/Prolog_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/prolog/Prolog_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/prolog/Prolog_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/prolog/Prolog_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/prolog/Prolog_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/prolog/Prolog_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/prolog/Prolog_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/prolog/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Scorpion 2",
+      "slug": "scorpion-2",
+      "preview": "/designer/owayo/cycling-c3/previews/scorpion-2.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/scorpion-2/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Sanremo",
+      "slug": "sanremo",
+      "preview": "/designer/owayo/cycling-c3/previews/sanremo.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/sanremo/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Piet",
+      "slug": "piet",
+      "preview": "/designer/owayo/cycling-c3/previews/piet.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/piet/Piet_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/piet/Piet_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/piet/Piet_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/piet/Piet_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/piet/Piet_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/piet/Piet_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/piet/Piet_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/piet/Piet_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/piet/Piet_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/piet/Piet_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/piet/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": [
+        "C"
+      ]
+    },
+    {
+      "name": "Spirit",
+      "slug": "spirit",
+      "preview": "/designer/owayo/cycling-c3/previews/spirit.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/spirit/Spirit_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/spirit/Spirit_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/spirit/Spirit_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/spirit/Spirit_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/spirit/Spirit_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/spirit/Spirit_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/spirit/Spirit_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/spirit/Spirit_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/spirit/Spirit_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/spirit/Spirit_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/spirit/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Animal",
+      "slug": "animal",
+      "preview": "/designer/owayo/cycling-c3/previews/animal.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/animal/Animal_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/animal/Animal_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/animal/Animal_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/animal/Animal_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/animal/Animal_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/animal/Animal_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/animal/Animal_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/animal/Animal_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/animal/Animal_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/animal/Animal_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/animal/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "Pure",
+      "slug": "pure",
+      "preview": "/designer/owayo/cycling-c3/previews/pure.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/pure/Pure_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/pure/Pure_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/pure/Pure_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/pure/Pure_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/pure/Pure_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/pure/Pure_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/pure/Pure_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/pure/Pure_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/pure/Pure_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/pure/Pure_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/pure/snap-lines.json",
+      "baseColors": [
+        "A"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Derny",
+      "slug": "derny",
+      "preview": "/designer/owayo/cycling-c3/previews/derny.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/derny/Derny_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/derny/Derny_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/derny/Derny_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/derny/Derny_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/derny/Derny_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/derny/Derny_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/derny/Derny_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/derny/Derny_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/derny/Derny_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/derny/Derny_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/derny/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Burn",
+      "slug": "burn",
+      "preview": "/designer/owayo/cycling-c3/previews/burn.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/burn/Burn_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/burn/Burn_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/burn/Burn_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/burn/Burn_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/burn/Burn_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/burn/Burn_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/burn/Burn_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/burn/Burn_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/burn/Burn_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/burn/Burn_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/burn/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Campeon",
+      "slug": "campeon",
+      "preview": "/designer/owayo/cycling-c3/previews/campeon.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/campeon/Campeon_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/campeon/Campeon_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/campeon/Campeon_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/campeon/Campeon_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/campeon/Campeon_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/campeon/Campeon_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/campeon/Campeon_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/campeon/Campeon_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/campeon/Campeon_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/campeon/Campeon_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/campeon/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Celtic",
+      "slug": "celtic",
+      "preview": "/designer/owayo/cycling-c3/previews/celtic.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/celtic/Celtic_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/celtic/Celtic_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/celtic/Celtic_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/celtic/Celtic_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/celtic/Celtic_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/celtic/Celtic_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/celtic/Celtic_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/celtic/Celtic_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/celtic/Celtic_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/celtic/Celtic_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/celtic/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Dominator",
+      "slug": "dominator",
+      "preview": "/designer/owayo/cycling-c3/previews/dominator.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/dominator/Dominator_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/dominator/Dominator_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/dominator/Dominator_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/dominator/Dominator_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/dominator/Dominator_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/dominator/Dominator_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/dominator/Dominator_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/dominator/Dominator_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/dominator/Dominator_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/dominator/Dominator_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/dominator/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Fire",
+      "slug": "fire",
+      "preview": "/designer/owayo/cycling-c3/previews/fire.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/fire/Fire_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/fire/Fire_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/fire/Fire_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/fire/Fire_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/fire/Fire_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/fire/Fire_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/fire/Fire_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/fire/Fire_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/fire/Fire_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/fire/Fire_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/fire/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Giro",
+      "slug": "giro",
+      "preview": "/designer/owayo/cycling-c3/previews/giro.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/giro/Giro_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/giro/Giro_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/giro/Giro_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/giro/Giro_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/giro/Giro_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/giro/Giro_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/giro/Giro_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/giro/Giro_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/giro/Giro_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/giro/Giro_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/giro/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Mountain",
+      "slug": "mountain",
+      "preview": "/designer/owayo/cycling-c3/previews/mountain.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/mountain/Mountain_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/mountain/Mountain_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/mountain/Mountain_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/mountain/Mountain_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/mountain/Mountain_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/mountain/Mountain_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/mountain/Mountain_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/mountain/Mountain_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/mountain/Mountain_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/mountain/Mountain_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/mountain/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Move",
+      "slug": "move",
+      "preview": "/designer/owayo/cycling-c3/previews/move.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/move/Move_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/move/Move_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/move/Move_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/move/Move_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/move/Move_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/move/Move_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/move/Move_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/move/Move_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/move/Move_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/move/Move_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/move/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Parcours",
+      "slug": "parcours",
+      "preview": "/designer/owayo/cycling-c3/previews/parcours.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/parcours/Parcours_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/parcours/Parcours_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/parcours/Parcours_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/parcours/Parcours_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/parcours/Parcours_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/parcours/Parcours_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/parcours/Parcours_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/parcours/Parcours_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/parcours/Parcours_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/parcours/Parcours_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/parcours/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Peloton",
+      "slug": "peloton",
+      "preview": "/designer/owayo/cycling-c3/previews/peloton.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/peloton/Peloton_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/peloton/Peloton_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/peloton/Peloton_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/peloton/Peloton_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/peloton/Peloton_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/peloton/Peloton_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/peloton/Peloton_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/peloton/Peloton_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/peloton/Peloton_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/peloton/Peloton_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/peloton/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Rally",
+      "slug": "rally",
+      "preview": "/designer/owayo/cycling-c3/previews/rally.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/rally/Rally_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/rally/Rally_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/rally/Rally_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/rally/Rally_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/rally/Rally_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/rally/Rally_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/rally/Rally_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/rally/Rally_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/rally/Rally_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/rally/Rally_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/rally/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Salida",
+      "slug": "salida",
+      "preview": "/designer/owayo/cycling-c3/previews/salida.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/salida/Salida_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/salida/Salida_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/salida/Salida_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/salida/Salida_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/salida/Salida_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/salida/Salida_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/salida/Salida_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/salida/Salida_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/salida/Salida_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/salida/Salida_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/salida/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": [
+        "B"
+      ]
+    },
+    {
+      "name": "Serpentine",
+      "slug": "serpentine",
+      "preview": "/designer/owayo/cycling-c3/previews/serpentine.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/serpentine/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Spice",
+      "slug": "spice",
+      "preview": "/designer/owayo/cycling-c3/previews/spice.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/spice/Spice_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/spice/Spice_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/spice/Spice_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/spice/Spice_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/spice/Spice_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/spice/Spice_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/spice/Spice_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/spice/Spice_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/spice/Spice_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/spice/Spice_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/spice/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Sprinter",
+      "slug": "sprinter",
+      "preview": "/designer/owayo/cycling-c3/previews/sprinter.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/sprinter/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Tourmalet",
+      "slug": "tourmalet",
+      "preview": "/designer/owayo/cycling-c3/previews/tourmalet.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_RightArm.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/tourmalet/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Velo alt",
+      "slug": "velo-alt",
+      "preview": "/designer/owayo/cycling-c3/previews/velo-alt.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/velo-alt/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Route",
+      "slug": "route",
+      "preview": "/designer/owayo/cycling-c3/previews/route.webp",
+      "textures": {
+        "Back": "/designer/owayo/cycling-c3/designs/route/Route_Back.png",
+        "Bag": "/designer/owayo/cycling-c3/designs/route/Route_Bag.png",
+        "Collar": "/designer/owayo/cycling-c3/designs/route/Route_Collar.png",
+        "FrontLeftPart": "/designer/owayo/cycling-c3/designs/route/Route_FrontLeftPart.png",
+        "FrontRightPart": "/designer/owayo/cycling-c3/designs/route/Route_FrontRightPart.png",
+        "LeftArm": "/designer/owayo/cycling-c3/designs/route/Route_LeftArm.png",
+        "RightArm": "/designer/owayo/cycling-c3/designs/route/Route_RightArm.png",
+        "RV": "/designer/owayo/cycling-c3/designs/route/Route_RV.png",
+        "Toothmesh": "/designer/owayo/cycling-c3/designs/route/Route_Toothmesh.png",
+        "Toothmesh_BG": "/designer/owayo/cycling-c3/designs/route/Route_Toothmesh_BG.png"
+      },
+      "snapLines": "/designer/owayo/cycling-c3/designs/route/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    }
+  ],
+  "availableDesigns": [
+    "Etape",
+    "Velocity",
+    "Attack",
+    "Break",
+    "Shield",
+    "Gruppetto",
+    "Galibier 2",
+    "Sprint",
+    "Zone",
+    "Sunrise",
+    "Pace",
+    "Champion",
+    "Aero",
+    "Stage",
+    "Brevet",
+    "Velo 2",
+    "Leader",
+    "Paceline",
+    "Allez",
+    "Granfondo",
+    "Montagne",
+    "Trail",
+    "Dirt",
+    "Trouble",
+    "Loop",
+    "Chaser",
+    "Prolog",
+    "Scorpion 2",
+    "Sanremo",
+    "Piet",
+    "Spirit",
+    "Animal",
+    "Pure",
+    "Derny",
+    "Burn",
+    "Campeon",
+    "Celtic",
+    "Dominator",
+    "Fire",
+    "Giro",
+    "Mountain",
+    "Move",
+    "Parcours",
+    "Peloton",
+    "Rally",
+    "Salida",
+    "Serpentine",
+    "Spice",
+    "Sprinter",
+    "Tourmalet",
+    "Velo alt",
+    "Route"
+  ],
+  "checksums": {
+    "/designer/owayo/cycling-c3/model/253m_KA.mirl.bin": {
+      "bytes": 1299174,
+      "sha256": "c2a274a0fbcc64bf0aae527e11c38a57afe610a606302cb6f71b027c3e4c91b3"
+    },
+    "/designer/owayo/cycling-c3/model/parts.json": {
+      "bytes": 2161,
+      "sha256": "febd6636475ef2802db4f18f0663709753dbccc4943dee607fd5c5b4c2f8cd8f"
+    },
+    "/designer/owayo/cycling-c3/model/sperrbezirke.json": {
+      "bytes": 152,
+      "sha256": "faf8e1ecc7ce1f7742c4168c94ec02f9ef23fe6b90708e40e50f53ed2205b6b2"
+    },
+    "/designer/owayo/cycling-c3/model/teilungslinien.json": {
+      "bytes": 267,
+      "sha256": "dec725dade323a63f1894b02c10357387f79f0dae09de54db22698b41b78c1e2"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_Back.png": {
+      "bytes": 29295,
+      "sha256": "d66330495889d3db3a865a9abce611ab9a170d8eb79fb38065b253ed7ef938c6"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_Bag.png": {
+      "bytes": 14561,
+      "sha256": "9b9e2c75957b6f1f14af022279bc7a5485983453d92dca61d07ea94a91a22d19"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_FrontLeftPart.png": {
+      "bytes": 24870,
+      "sha256": "3f0f03f1e7b8cc721aa9ebc49095a05398e5bb480ee4fb602b6d4f0c75166a65"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_FrontRightPart.png": {
+      "bytes": 18156,
+      "sha256": "a91b9905844d3bd93485584cb82dc0585af90247a9fca9c49030e1884a8d459c"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_LeftArm.png": {
+      "bytes": 25952,
+      "sha256": "295c72e88a152c002e2f2e47aab211b815e61ee9a01beaad5eb821e9c5a171e2"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/Etape_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/etape.webp": {
+      "bytes": 2332,
+      "sha256": "e50ba6a1a4bea1de97c131e74478def1f28816d95844758912316ef07c144a90"
+    },
+    "/designer/owayo/cycling-c3/designs/etape/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_FrontLeftPart.png": {
+      "bytes": 15556,
+      "sha256": "998f3e59666c0ba872815f6541d89c7cfaf789313900914260974d0c618d5e11"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_FrontRightPart.png": {
+      "bytes": 15659,
+      "sha256": "0034820a35e25a39021740fc79a2fb7f7f5d1f2ec76338bfb84ae004aaadffd8"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_LeftArm.png": {
+      "bytes": 26446,
+      "sha256": "c552a02b6ca0968c71cd27e36d8ab23d1d4afb732c6ea3e1cee908ca8387ad18"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_RightArm.png": {
+      "bytes": 26495,
+      "sha256": "22d2d6558e8cfad04a906698c85432563fe27fa1b4f5b4373d579c7ef3602815"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/Velocity_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/velocity.webp": {
+      "bytes": 2204,
+      "sha256": "2966e998ddb3700aed3491fede78e971d87fa2362b1468f8fbeb03398461ce8b"
+    },
+    "/designer/owayo/cycling-c3/designs/velocity/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_Back.png": {
+      "bytes": 24249,
+      "sha256": "8cbfa75bfba30526311ee21d5051946077ce16fbe259023b4e24819c7c3969c0"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_FrontLeftPart.png": {
+      "bytes": 20009,
+      "sha256": "704d965c39b1d209b97919bccd846ca1d7f4abce045143aa75d617a8c195c3b4"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_FrontRightPart.png": {
+      "bytes": 19695,
+      "sha256": "9e0677aede71713a5d1a07db8605a212be6008a14fb4f5b774ad53a068979094"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_LeftArm.png": {
+      "bytes": 29817,
+      "sha256": "efea185770d3f59f32e4afa7c732139489276b3ab2d99a7266d234977e048a47"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_RightArm.png": {
+      "bytes": 31005,
+      "sha256": "c242d9dd1ed75df1a76c669a0d4a82bca260c9fce15f38c26e5c9d20a58e4edc"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/Attack_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/attack.webp": {
+      "bytes": 2036,
+      "sha256": "53767a9374dd505499dbeba68a3ef41e30961bc1f6fd62886efd628ee5c77d8e"
+    },
+    "/designer/owayo/cycling-c3/designs/attack/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_FrontLeftPart.png": {
+      "bytes": 17603,
+      "sha256": "b441a222ce3588ee20b60d521dd42abf00ad90ea56a9f7f2b88402f0ffdcdeac"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_FrontRightPart.png": {
+      "bytes": 17541,
+      "sha256": "c7cc402daddc3ee8cba58c333452fdf4405d7c88e9abfa152b973fc91e6a3892"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_LeftArm.png": {
+      "bytes": 33692,
+      "sha256": "2876a36f38cc8bacbc9cb3eaa8c103c3573471dc2329ecf0fe97df7085aba668"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_RightArm.png": {
+      "bytes": 34630,
+      "sha256": "d3bc3f5f1b796b1161fb7ef476297b834a71d9d9acbed8faab89357f6cdb4c7c"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/break/Break_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/break.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/break/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_Back.png": {
+      "bytes": 30884,
+      "sha256": "5db52498614fe0593c6bdfc5bba63da0a277ec433e1bc36c0b9ccdc5b9edeebd"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_Bag.png": {
+      "bytes": 13992,
+      "sha256": "6e30aa39e0e2bcb99ac56a282a4c031128f73f652265a06ce091fdbaff5d960d"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_FrontLeftPart.png": {
+      "bytes": 19056,
+      "sha256": "c15f730ac3baa8a6f690034bb837ca1dfffc8ffba6ae922a21b06f358c8b4181"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_FrontRightPart.png": {
+      "bytes": 18918,
+      "sha256": "c67d2693713daa8c7017568b65c822857baa4c68f5f1baa56032136520981272"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_LeftArm.png": {
+      "bytes": 29702,
+      "sha256": "667805c2d1d0099e136f469d6565313d0abe80106e302440fea37c8806f685ca"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_RightArm.png": {
+      "bytes": 31106,
+      "sha256": "693b2e1b78375fb9f36b54868938016207164b2823cca319e65bdc2b62d0e3f2"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/Shield_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/shield.webp": {
+      "bytes": 3314,
+      "sha256": "45b6f7d5aecc4f78abaafce9d0dd742b84ec37d1234355f39990ed062ec0af2c"
+    },
+    "/designer/owayo/cycling-c3/designs/shield/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Back.png": {
+      "bytes": 23454,
+      "sha256": "4e52cb3c6e055db458e4593f8e5ff4ecca21f777ca4f3af12f9176eb9da9000e"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Bag.png": {
+      "bytes": 10820,
+      "sha256": "04832d6ccca46a6c2b445e9a5adbbf0c04020c24eb3427e3d27ad0cf0e308105"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_FrontLeftPart.png": {
+      "bytes": 16002,
+      "sha256": "d449f920155f30dee00496281fa91a66b472c243d2887f6f45c20433a057a59c"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_FrontRightPart.png": {
+      "bytes": 16816,
+      "sha256": "d9041bc2243b880315473b7afc6a913b210e75305323a59b4c605b9388a18e64"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_LeftArm.png": {
+      "bytes": 24858,
+      "sha256": "42a135c7afc977e3f106a366a816c8acd1bee0bae074a3f8c2fe9208df630718"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_RightArm.png": {
+      "bytes": 24788,
+      "sha256": "c2a1b3ba14d6617b1256632e1ba8b6e69869ea2e612405d2c44a849baa945541"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/gruppetto.webp": {
+      "bytes": 3004,
+      "sha256": "6b45b54b0cff0a201be375c2ecf8612d64e25862aeb66b65034c82ff67427330"
+    },
+    "/designer/owayo/cycling-c3/designs/gruppetto/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Back.png": {
+      "bytes": 23507,
+      "sha256": "a24c74adfd75974d9d5da821674e14d69f1b897d71e1a7fc2a21c6b454dd0dfb"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Bag.png": {
+      "bytes": 10821,
+      "sha256": "8dd09fd7ed8cd24294e600bb33d282d787f011aa31c5b3f172079e531e1a1afc"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_FrontLeftPart.png": {
+      "bytes": 15015,
+      "sha256": "351063053b9529d7262eaedd517b4aaef324acdfe6bf40426d0deeb9606175db"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_FrontRightPart.png": {
+      "bytes": 14989,
+      "sha256": "0c0f7c0337021857363a621c6976f4b61bf9bbf41935e4b173e6d6765c39a356"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_LeftArm.png": {
+      "bytes": 24527,
+      "sha256": "753f564e750612e8a0cb07435a52dfaab6410a060aed91fdbadedbd9b52f8f7a"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_RightArm.png": {
+      "bytes": 25048,
+      "sha256": "6f39212bd0efc419767867ff85e2a5265feb2b9dc83c4586ea13dfc18972eb48"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/galibier-2.webp": {
+      "bytes": 1450,
+      "sha256": "214bf95efbb78f3a44b5ed5bc68f0d16a51db3d7439cf11e6fc5f8b57d2b0a0d"
+    },
+    "/designer/owayo/cycling-c3/designs/galibier-2/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_FrontLeftPart.png": {
+      "bytes": 17444,
+      "sha256": "75fb4b087be0698eb5705bba44693e42b94b14be17ca4b04c96f515ec11e30da"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_FrontRightPart.png": {
+      "bytes": 17432,
+      "sha256": "71a5e6067e98a0ea5101e2e4d08b7db9803cc0380861d112e89fa5543cfb7d0d"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_LeftArm.png": {
+      "bytes": 28613,
+      "sha256": "3b5d0b1e635cad95ba3019969a5348620ad3041201df8d9220b2ad0b584be0bf"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_RightArm.png": {
+      "bytes": 29689,
+      "sha256": "799f5eddace1f9136422dd700d49709fb082dc4e07dfa69cac6a3c70b7f5d75b"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/Sprint_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/sprint.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/sprint/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_Back.png": {
+      "bytes": 23755,
+      "sha256": "92b4d4d9c305e2081b77422f483296d1d0e5bb7d0fb1f4b0240119f68cbe2d14"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_FrontLeftPart.png": {
+      "bytes": 15134,
+      "sha256": "8e9c9919dd535d7601f9eee3ed25f3d26cdbf269d58cdadf9cf542705394d1ff"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_FrontRightPart.png": {
+      "bytes": 15152,
+      "sha256": "ce540cf070d0ce56b0d51df257074aadc55d663a516c7cfc94d1fea9480c81c3"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_LeftArm.png": {
+      "bytes": 27909,
+      "sha256": "902b68f067794fb108b1c648e3c18a8274e0538bcb3fd250a39f0fb953e3ed71"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_RightArm.png": {
+      "bytes": 29019,
+      "sha256": "1e9fe9ef2ad43e78f18d5d4afa9323f042c31a740ada981cd91954d3fb733d7e"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/Zone_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/zone.webp": {
+      "bytes": 1512,
+      "sha256": "ee9722dcd5f36a1bc37929d7a570658858cd4f2d77fc101afdc3b64ff85be51a"
+    },
+    "/designer/owayo/cycling-c3/designs/zone/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Back.png": {
+      "bytes": 24458,
+      "sha256": "1069aaaf5d394dc19d7e2f1aaf41b124b9320d68873d9e646f1acc417d7eb529"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Bag.png": {
+      "bytes": 11118,
+      "sha256": "db2e62a78a53158c774f020d7c17e43c73251c615a7ef56523d00d9fc31c1175"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_FrontLeftPart.png": {
+      "bytes": 15222,
+      "sha256": "44d99722a7c2d37324ec2db5c1464d675818faf762eb3b3f892fd2443feaa71d"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_FrontRightPart.png": {
+      "bytes": 15530,
+      "sha256": "ca3df258bb4150c4f784eb20471e7512606850af49a175bcf54955e4a3ad1794"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_RightArm.png": {
+      "bytes": 24834,
+      "sha256": "bd54bd880165f04dcea775df379c852578c1f6c594500f84d1e8ce9ef9c83362"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/sunrise.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/sunrise/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_Bag.png": {
+      "bytes": 10840,
+      "sha256": "0cd47e55845d46bc7b95d8532671eb35fc98be01396959072520e91e079987e1"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_FrontRightPart.png": {
+      "bytes": 14938,
+      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_LeftArm.png": {
+      "bytes": 25556,
+      "sha256": "99e0b3175fe18e091bacc3b26c865380b401f5a1777edf12774431ac4bc9a895"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_RightArm.png": {
+      "bytes": 26444,
+      "sha256": "cbf0ee63820c29739068f6675463a5a2beadcba08f2478e4d8db86844d0795dc"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/Pace_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/pace.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/pace/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_Back.png": {
+      "bytes": 24817,
+      "sha256": "b6db68630180b39b5d73ea2a782e458466b3d2b3cb4d139cf05084487b1c3bb2"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_FrontLeftPart.png": {
+      "bytes": 15663,
+      "sha256": "1dd5cbc38780c8c67d936b9682a9ac417182c331c45fcee60a74086fc58909c4"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_FrontRightPart.png": {
+      "bytes": 15454,
+      "sha256": "23f644c4bdb35dfda4ed4d678d6a1792ac7a1dec8f1932ff2e250327c1291227"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/Champion_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/champion.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/champion/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_Back.png": {
+      "bytes": 24355,
+      "sha256": "2562b6376bc056d0abd3eaaad90b4b455790e8d2bb8730ea399251fd474a5b32"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_Bag.png": {
+      "bytes": 10773,
+      "sha256": "9d57f718168d6153078c945fefbdce3c465443a206f75ceec0ea08b07c1099b4"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_FrontLeftPart.png": {
+      "bytes": 15787,
+      "sha256": "3a6a0457ea3bd07d808de724a9f2d485b3aec04a29cc5ef85b447c50dc4a61a9"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_FrontRightPart.png": {
+      "bytes": 16667,
+      "sha256": "c5bac0475f1f8076d7646d59e779a78ed23895084665b5bc642ba8c4c2f21129"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_LeftArm.png": {
+      "bytes": 24627,
+      "sha256": "6690d3e26ebff0fba21a643c89bb4d6f09d97cae8c31061c2ccbd7785e89eb54"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_RightArm.png": {
+      "bytes": 24510,
+      "sha256": "591478e706f188315ccbb068d9c7b0b56168545dd4f7c69d2eee1cc4de111692"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/Aero_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/aero.webp": {
+      "bytes": 2326,
+      "sha256": "b85794b6e3c49f55039ed22565f01f03b6e419b85f5bf573d1ef6a2cbcf9fc10"
+    },
+    "/designer/owayo/cycling-c3/designs/aero/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_Bag.png": {
+      "bytes": 11267,
+      "sha256": "f8f210aca92c674c454aba44fcf3cbe724d7bf9dfc2a9fdee2994d4b0e6a4807"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_FrontRightPart.png": {
+      "bytes": 15031,
+      "sha256": "f7a1f30b0a38f197f0f0fd2687f88051a43accd206469d516681ed97a9b2dbc8"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_LeftArm.png": {
+      "bytes": 25198,
+      "sha256": "20ba84a28b2633f779e5c9fe04d93ab0c4c48661bfee73c104cdf641fba4c0af"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_RightArm.png": {
+      "bytes": 24834,
+      "sha256": "bd54bd880165f04dcea775df379c852578c1f6c594500f84d1e8ce9ef9c83362"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/Stage_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/stage.webp": {
+      "bytes": 2000,
+      "sha256": "5247a90b5ed469b7be63b45bbde07cc258ab6c38e4ce84173077859dcbdfc971"
+    },
+    "/designer/owayo/cycling-c3/designs/stage/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_FrontRightPart.png": {
+      "bytes": 15000,
+      "sha256": "e04a5b5ff03519ffdcad8c1a71cd43eedf4990ffec6b3be333f46f39234f9d65"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_LeftArm.png": {
+      "bytes": 25776,
+      "sha256": "f43de3a3a257aac009ff764025d0ceaa051c43e49779d5e0fab63658954cdadd"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/Brevet_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/brevet.webp": {
+      "bytes": 1676,
+      "sha256": "13f4467758614cbb356ea79d74ed69571a937b151db34ebc789cd66ea0179331"
+    },
+    "/designer/owayo/cycling-c3/designs/brevet/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Back.png": {
+      "bytes": 29884,
+      "sha256": "414949ee3b4e660853fe5fdfa2541c3ea60f18dcf8ea84a12a9536811d7f7e1b"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Bag.png": {
+      "bytes": 12310,
+      "sha256": "5369f640175570cfade1917e32e67d8067c30fdcf63f75933e5c44987d453b15"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Collar.png": {
+      "bytes": 6009,
+      "sha256": "fbed7b7de73fd1078d0d7ff114ef7d7d8f127dc3190759856637eeb11655108c"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_FrontLeftPart.png": {
+      "bytes": 19859,
+      "sha256": "2fc9b644681aae3a08fc90ca5129923040e79ad17498a7563af194c87774af7f"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_FrontRightPart.png": {
+      "bytes": 20244,
+      "sha256": "10e76185a21255881413d42391e126c8409aeb9432695a151019401d5b167584"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_LeftArm.png": {
+      "bytes": 28408,
+      "sha256": "db98ec60fb990194c9d9a5dbc7394870f1101c66234b671b18cbee86d58568e7"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_RightArm.png": {
+      "bytes": 29333,
+      "sha256": "2225cee3ee4af6630b61910b7729520de345c6064fa3d296def05bb54f080630"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/velo-2.webp": {
+      "bytes": 2236,
+      "sha256": "f3eff5bfba238e9a1cd8bc68a7e8e8cf19514af75bcf7bc629f77de9c761daf8"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-2/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_Back.png": {
+      "bytes": 23461,
+      "sha256": "46e6f0e0408483a3909a29b5cc39fae913730daf1a9d718ab576b813b953de1a"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_Bag.png": {
+      "bytes": 10801,
+      "sha256": "fcd942e991e9592f823d3f1aca69df794470912169605d858af93d927846520c"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_FrontLeftPart.png": {
+      "bytes": 19074,
+      "sha256": "2abf08c1ec4d24119e1363d8017f4e70a17ba389f5ee54a30f69bf8c018cdfb7"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_FrontRightPart.png": {
+      "bytes": 19478,
+      "sha256": "5eb1589e73a80dfd495740900b70e83d4b3d51553c8848ad4e644971bede9402"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_RightArm.png": {
+      "bytes": 24856,
+      "sha256": "4eacd40612ad21be5d0e69d236cf7de913369ccba778a2c8420387da5d2d5403"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/Leader_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/leader.webp": {
+      "bytes": 3984,
+      "sha256": "470630cb89b98787c965aa38a9d962bc048d5a3f5f257fe15b703e6c993c6c3f"
+    },
+    "/designer/owayo/cycling-c3/designs/leader/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_Back.png": {
+      "bytes": 24158,
+      "sha256": "fbfb37326750742338891ef8185e681684726659b3bb05896b66d4068b3c7b22"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_FrontLeftPart.png": {
+      "bytes": 17027,
+      "sha256": "f0fbdaa8f963bd2ba4a233888e75a266e9208e74dff838da96c1a33037c44c55"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_FrontRightPart.png": {
+      "bytes": 17398,
+      "sha256": "4f6c137de120e714ea92aa8cebe3b5a8f755bcce560bf52416b0a205d28a4221"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_LeftArm.png": {
+      "bytes": 27520,
+      "sha256": "d8c908e9b30a52c39ab0d946cc79549455f68b6b8e289c6ec63ef78ba4f0b59d"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_RightArm.png": {
+      "bytes": 28500,
+      "sha256": "a2e121829898de67870bd9d2aab789e5b56835c4555e19a8429950775e7cd376"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/Paceline_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/paceline.webp": {
+      "bytes": 1692,
+      "sha256": "43309b42f97688f53ae048bdc56820ccd3c4ac4deb0ffaee544cb7a2ec65f13a"
+    },
+    "/designer/owayo/cycling-c3/designs/paceline/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_Back.png": {
+      "bytes": 27557,
+      "sha256": "2267fff6fef9aee8ad231ccfd08d2f60f1ce977cacd89058b2d7bc217ad8c5f9"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_FrontLeftPart.png": {
+      "bytes": 22055,
+      "sha256": "e6bbbb6d7e1af5b25317d8b4642d3618e7bf2b5feba4b13ad3639ddcb9d36f8e"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_FrontRightPart.png": {
+      "bytes": 17468,
+      "sha256": "896121a4a08409fd600dadb1d64136ca47138d63c0cccc98955760761d5c5ab8"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_RightArm.png": {
+      "bytes": 28940,
+      "sha256": "af1dc3f041d7508684cc787498dbf3ecc7a087f0ea03a450ebf28d8914dfa81b"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/Allez_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/allez.webp": {
+      "bytes": 2212,
+      "sha256": "a3836ae7b59cafdc14d1a10d5b9327dd833788761294383c30a58648c3aac2e6"
+    },
+    "/designer/owayo/cycling-c3/designs/allez/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_FrontLeftPart.png": {
+      "bytes": 18963,
+      "sha256": "ad8265aaeb90726d700a32d37e6621a00d280f4aade43062dfd2dd3ab8119570"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_FrontRightPart.png": {
+      "bytes": 19073,
+      "sha256": "6959449f1e95ae4056f9afc0490b3a898c8b34dc86fcc0b4f555af5693cd252b"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_LeftArm.png": {
+      "bytes": 32113,
+      "sha256": "8747ab6c16678ad87e13475f319491201b3ad753d3784e9bd0277e28a72d5509"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_RightArm.png": {
+      "bytes": 32167,
+      "sha256": "c80c7d242e9e30d92bc7c289ac09fa0135b8b8ba70ca9d1fc355581e9785ca54"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/granfondo.webp": {
+      "bytes": 2312,
+      "sha256": "7e107fdad29c9fff99bafc32bb464561ea665440d76fc9d3b1b289d9807d37ac"
+    },
+    "/designer/owayo/cycling-c3/designs/granfondo/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_Back.png": {
+      "bytes": 30164,
+      "sha256": "3f346c1318c23ecfdbbbe6a11d2a50b33827f740c3c7babd76b857bac709bf88"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_Bag.png": {
+      "bytes": 17949,
+      "sha256": "5f7074ba5ffc1473d7901130d5e557229fa91bb084981a4906c698dfce4e3ad5"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_FrontLeftPart.png": {
+      "bytes": 18950,
+      "sha256": "4a041f5b24b300346bc78af000530495c3dd0ffd62d8e09ecd823107d514a58c"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_FrontRightPart.png": {
+      "bytes": 22994,
+      "sha256": "80314f5b99291e34874c58bbcf00553341909bbecd822e0a7e7f1016ce534704"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_RightArm.png": {
+      "bytes": 24834,
+      "sha256": "bd54bd880165f04dcea775df379c852578c1f6c594500f84d1e8ce9ef9c83362"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/Montagne_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/montagne.webp": {
+      "bytes": 4432,
+      "sha256": "45a8819fa9380cdf3a7153420164a79484e22ad1576a8a18364e767c1db2730f"
+    },
+    "/designer/owayo/cycling-c3/designs/montagne/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_Back.png": {
+      "bytes": 30326,
+      "sha256": "2c63006931f9a3ef0d02a43128f65c21448c1f87fdf5c60c511da2b802e96357"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_Bag.png": {
+      "bytes": 10820,
+      "sha256": "04832d6ccca46a6c2b445e9a5adbbf0c04020c24eb3427e3d27ad0cf0e308105"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_FrontLeftPart.png": {
+      "bytes": 21573,
+      "sha256": "11ec207ce98cd65fc7e49f27a6190ca44972d07932ee03e7b578acb97393aa1e"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_FrontRightPart.png": {
+      "bytes": 19318,
+      "sha256": "8535907cf13a779cd08370ef21d174faf06ec603aaaa91385d7bf7a3ce291895"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_RightArm.png": {
+      "bytes": 24834,
+      "sha256": "bd54bd880165f04dcea775df379c852578c1f6c594500f84d1e8ce9ef9c83362"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/Trail_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/trail.webp": {
+      "bytes": 3008,
+      "sha256": "08d64be473d24e1d3364ac237e9022ab18bb67dd3b86cc6b29911b65c56755db"
+    },
+    "/designer/owayo/cycling-c3/designs/trail/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_Back.png": {
+      "bytes": 126742,
+      "sha256": "cc6070cd622f4595dc1460a0bc8df5772ee3ae91e0eb6229d18f1d157057741d"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_Bag.png": {
+      "bytes": 32265,
+      "sha256": "cab8d959b2534ee246d89b0da86fbd645b4f5322fd1da3598a4ec9d55888a42e"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_FrontLeftPart.png": {
+      "bytes": 83652,
+      "sha256": "f69669e845747682eddc68fb2f07e487bd6b3cee6356b2a4fadb656f82cee506"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_FrontRightPart.png": {
+      "bytes": 82812,
+      "sha256": "9bd64434c28fd2ebf372b5f2840adf651fe2f100a45a171d9b62641c4a37a054"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_LeftArm.png": {
+      "bytes": 79247,
+      "sha256": "87073a497e275dd50d4ba8a17cc5084508e295dfb4485c011d8943ede00fde9b"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_RightArm.png": {
+      "bytes": 79987,
+      "sha256": "2afbc92a71f41bc582dd906a2f8c4aa9dd8dad1dc0f6fa4f58559c2aca21cb43"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/Dirt_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/dirt.webp": {
+      "bytes": 11476,
+      "sha256": "27c4ce6d85e6492ffe01f513fa99799b8246c552a994a48ab162bc768f033c63"
+    },
+    "/designer/owayo/cycling-c3/designs/dirt/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_Back.png": {
+      "bytes": 36435,
+      "sha256": "beb0c69d68bb92d1f05391aa56dd2db356c7898ef51de43f63200f1cfb410109"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_Bag.png": {
+      "bytes": 17613,
+      "sha256": "a72393c56be66b6a8187fb422f9b171d78a9befa2463e3d38ca48d59ff9ae10b"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_FrontLeftPart.png": {
+      "bytes": 20315,
+      "sha256": "1fec64ea509bebd670ed95c478526c3f8c8b1882ef6f777d869735fd5a289434"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_FrontRightPart.png": {
+      "bytes": 22131,
+      "sha256": "d095a46b5c84bcf9d609a6b8cd608d821fbe66c8ff90083726e5a763aa8a899d"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_LeftArm.png": {
+      "bytes": 24619,
+      "sha256": "cc85f380971240d55d600fd1bf71b201051049006f6fced3efb4deff16f9dc38"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_RightArm.png": {
+      "bytes": 24510,
+      "sha256": "591478e706f188315ccbb068d9c7b0b56168545dd4f7c69d2eee1cc4de111692"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/Trouble_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/trouble.webp": {
+      "bytes": 5740,
+      "sha256": "bea0b5f1fa5ab8288ca5af2471820d886476170cd68e02ff73876ceacd2064f1"
+    },
+    "/designer/owayo/cycling-c3/designs/trouble/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_Back.png": {
+      "bytes": 27855,
+      "sha256": "7804ffad9f883673480fc4f4aac26c88be52a2d72acd56a64144a3fd7d2d704d"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_Bag.png": {
+      "bytes": 13034,
+      "sha256": "f9c55c985b980e9c1dd5da412b8c1182eabb0fae9205fca954a0d2785f26f9f7"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_FrontRightPart.png": {
+      "bytes": 20622,
+      "sha256": "444c13ff3c18bfd874c69100dc6c27a53a98203f2a9325918a7b73aef9240dc1"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/Loop_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/loop.webp": {
+      "bytes": 2698,
+      "sha256": "5a34ee3e8fbe124d59adc871dac980ca4b66a3036cdeb21c504e0c6e01206a1b"
+    },
+    "/designer/owayo/cycling-c3/designs/loop/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_FrontLeftPart.png": {
+      "bytes": 23293,
+      "sha256": "f4ce70c8685127fb6c6e76c2c6656f885517aab63915eccc6b81e9662721c648"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_FrontRightPart.png": {
+      "bytes": 22655,
+      "sha256": "e2f5123486dc331deb43316b808d962ca3e46b88bbd6fd5c776d4e045174caa9"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_LeftArm.png": {
+      "bytes": 29528,
+      "sha256": "eb03e86976a5a91bce99cec1f3e6adf821c8863e5455b430576448d5504f626a"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_RightArm.png": {
+      "bytes": 30978,
+      "sha256": "f55f1efd7ebaf07e534de038c249766e0d8e3f6f25309289044213963dfe0812"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/Chaser_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/chaser.webp": {
+      "bytes": 2784,
+      "sha256": "8063d54f62f3574c776bc92cea2c0d7e6149c5bfeab4d27ed6cf130f52a6e0c2"
+    },
+    "/designer/owayo/cycling-c3/designs/chaser/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_Back.png": {
+      "bytes": 25083,
+      "sha256": "e1efeb317f10e34a6c4e3d6b3f1350c26b2d5fa3c539e4c8ff3221cb285d1f71"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_FrontLeftPart.png": {
+      "bytes": 18916,
+      "sha256": "fa2253dcf3319344a430724c700e81e69d098130d965d317ccd8a2ac3c8648ae"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_FrontRightPart.png": {
+      "bytes": 19440,
+      "sha256": "edf54e93da124196f380669fea03647c4a80b851c0d83e7731cfb6f23f2703fe"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_LeftArm.png": {
+      "bytes": 27322,
+      "sha256": "48e2d61c4892c8af96d4ee13615f0e41bc61fc02d197b3458a8941af4a59ef66"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_RightArm.png": {
+      "bytes": 28102,
+      "sha256": "7c3ec3c7b280b56d3f2f68f3c76244a82046215999e283816c930d3472a806ea"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/Prolog_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/prolog.webp": {
+      "bytes": 1588,
+      "sha256": "82153a7779ac5dadfd09f70ce35d5a6c2514b64d4f202bb5cdfdb396cd524d5d"
+    },
+    "/designer/owayo/cycling-c3/designs/prolog/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Back.png": {
+      "bytes": 37117,
+      "sha256": "04c649ae328d77ffef590ad3f42709dbc7489b1d30aa5262d0c5a065995c3c94"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Bag.png": {
+      "bytes": 17600,
+      "sha256": "547ae0551ca3095e207b4386454dafc8a2343e5bd0d0c3d1f6e2e35a83cf3b08"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_FrontLeftPart.png": {
+      "bytes": 22980,
+      "sha256": "e93199f6dd428245ab1225b6c4a740be0861f6c09f565d6a52311bc9bb159402"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_FrontRightPart.png": {
+      "bytes": 22853,
+      "sha256": "e049560a36941f35cd57a9f8bf7bf3d3e095807f23f77230d5e5e1ad320c768d"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_LeftArm.png": {
+      "bytes": 30632,
+      "sha256": "3d4a67d98b23e7247e0ca91b77ed5611ce0409ce0737430a37ccd01f96a4f019"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_RightArm.png": {
+      "bytes": 31039,
+      "sha256": "ea919d19eba5e0867a98a7fc212ebb0f08cdddc42fa78812c77cdab5552f4056"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/scorpion-2.webp": {
+      "bytes": 2874,
+      "sha256": "fdd63288ad2a647745ebbd8e21a3208894a5b93f186c7ebe2cad937e278772d9"
+    },
+    "/designer/owayo/cycling-c3/designs/scorpion-2/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Back.png": {
+      "bytes": 23764,
+      "sha256": "66a264c8fa95a9efd539c5e2766e08d92afd0fcf4b49379c6bb1fe5fc78729f5"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Bag.png": {
+      "bytes": 37149,
+      "sha256": "ab1483fdff5c0441b104d5e5b4831f340e31e5d6c762b3011daabe79385d5b2d"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_FrontLeftPart.png": {
+      "bytes": 30463,
+      "sha256": "dfae3c97ef39aadb3e6485cb9fd2d9bfbc5455ca4f7704281dd0796dec0dedf3"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_FrontRightPart.png": {
+      "bytes": 30537,
+      "sha256": "54aa5543d21ca3077710fbd3cd52b35215245d9093e153ee446b2d021bbe57e1"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_LeftArm.png": {
+      "bytes": 24320,
+      "sha256": "a162ca6dbd48238161d5499e1c0ed536838faf590859eec37747a1fcd4f253f9"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_RightArm.png": {
+      "bytes": 24856,
+      "sha256": "4eacd40612ad21be5d0e69d236cf7de913369ccba778a2c8420387da5d2d5403"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/sanremo.webp": {
+      "bytes": 3300,
+      "sha256": "0ce88a7f7888432d91cc1e4d5d700677762bdd9fc9afb7bf6469c1d1393966e5"
+    },
+    "/designer/owayo/cycling-c3/designs/sanremo/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_Back.png": {
+      "bytes": 23536,
+      "sha256": "99c70973cb563904f74087da045c1d68c762f0f54ce1599b1176e42262d9a4f5"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_Bag.png": {
+      "bytes": 10959,
+      "sha256": "02d869bfc9b80f2ff12db24f671a2f595d3c0707096fa9663901db4a1e4af3e4"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_FrontLeftPart.png": {
+      "bytes": 15087,
+      "sha256": "86a199a668bec6a72ed93021422ca85e776c6a410380f5a6042278baadb8b297"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_FrontRightPart.png": {
+      "bytes": 16938,
+      "sha256": "9cb43adf0d07c40c30ab324573db088ebb0ba602eea5c245348064fbeb16b1d3"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/Piet_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/piet.webp": {
+      "bytes": 2002,
+      "sha256": "52a1393367f3594ce6667d69fe7e15baf19486686274bc70191037e009236f82"
+    },
+    "/designer/owayo/cycling-c3/designs/piet/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_Back.png": {
+      "bytes": 42499,
+      "sha256": "fdf9a87c49636ac966505b8d142a008344647291dc793ed70e1660f07fef744d"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_Collar.png": {
+      "bytes": 6214,
+      "sha256": "ddb4f3f78069d5f686e810ce51fc81a106745c720c632c555bf5198f8afe3343"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_FrontLeftPart.png": {
+      "bytes": 27447,
+      "sha256": "269ad9152cfcf42d560e8a54afed2264e1480c932725534ad04c40183a993d27"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_FrontRightPart.png": {
+      "bytes": 32963,
+      "sha256": "c4120b29c263367cefe8662292e84362456a5d3f84723f312b9ab7e2340d420e"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_LeftArm.png": {
+      "bytes": 24320,
+      "sha256": "a162ca6dbd48238161d5499e1c0ed536838faf590859eec37747a1fcd4f253f9"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_RightArm.png": {
+      "bytes": 30297,
+      "sha256": "dd3b763df123785e717811ff7b9b31447b1918286ff617dde803aa49bdcf2ba1"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/Spirit_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/spirit.webp": {
+      "bytes": 3524,
+      "sha256": "10a4a899e9dee21f7650e829eae5736c17ebecea7c2517f4bb98d99234b8ade1"
+    },
+    "/designer/owayo/cycling-c3/designs/spirit/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_Back.png": {
+      "bytes": 31811,
+      "sha256": "179129b6c4048ae5be7772f637e41d31ae107fc43d309c8d7a55c795a3f421dc"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_Bag.png": {
+      "bytes": 14531,
+      "sha256": "99885fec0136565ec7d7ddf7654719398b29ecea5797cb9bba32495e44c84e76"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_FrontLeftPart.png": {
+      "bytes": 24717,
+      "sha256": "cf6c25e5955ace665808ea768337adbf48523dec7253fe1162e3eda16e42b573"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_FrontRightPart.png": {
+      "bytes": 22495,
+      "sha256": "931ff72ad7b1cd6ccc7747e94634487fbac75d599e2f69d882def36714b90e98"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_LeftArm.png": {
+      "bytes": 26888,
+      "sha256": "cb8b7c7d0de6c10715b865eee9816751f3c6c1a2baff133306a84126030ccaef"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_RightArm.png": {
+      "bytes": 26757,
+      "sha256": "fde304dfd17d61bb11e54fb90f958dc69308690c0af74104b44fb3778179ee8e"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/Animal_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/animal.webp": {
+      "bytes": 2198,
+      "sha256": "d8b8df3374e12a70bc71946a28cc3a1cf0a24ac66e4d00695921dc681ac9a123"
+    },
+    "/designer/owayo/cycling-c3/designs/animal/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_FrontRightPart.png": {
+      "bytes": 14938,
+      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/Pure_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/pure.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/pure/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_FrontRightPart.png": {
+      "bytes": 14938,
+      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_LeftArm.png": {
+      "bytes": 24320,
+      "sha256": "a162ca6dbd48238161d5499e1c0ed536838faf590859eec37747a1fcd4f253f9"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_RightArm.png": {
+      "bytes": 24856,
+      "sha256": "4eacd40612ad21be5d0e69d236cf7de913369ccba778a2c8420387da5d2d5403"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/Derny_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/derny.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/derny/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_Back.png": {
+      "bytes": 39221,
+      "sha256": "9b5fba26dd461dc5dac4bc8fe7922e92857a018ef997ed5972c4fac067b47303"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_Bag.png": {
+      "bytes": 19866,
+      "sha256": "bcc94552c138c607b0e1df44241a14266de73440c7e2573eb10afcd767088db5"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_FrontLeftPart.png": {
+      "bytes": 24404,
+      "sha256": "1a7d36fba11c5686abb8b08d27f1632e441ad186ec91075bf406c43acc0efcad"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_FrontRightPart.png": {
+      "bytes": 25374,
+      "sha256": "53251c7d1e84d1c84e0dae518cb406adde10e96f04d6f6d41ef44ac77ff1311c"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_LeftArm.png": {
+      "bytes": 36147,
+      "sha256": "230c3da35518d551728f3142d6328b1aec427e8bdfdf7965bc1fe79c938c9d2a"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_RightArm.png": {
+      "bytes": 36635,
+      "sha256": "49c7c2ad6254ebb01718856964fc33ff8717487ffdd0fa209c5409b77375e356"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/Burn_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/burn.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/burn/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_Back.png": {
+      "bytes": 34358,
+      "sha256": "24984d3860f9d950ae4477b0b8c9b3ae509fcec2bce351184ad9699be71d8be0"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_Bag.png": {
+      "bytes": 13493,
+      "sha256": "ce1e33ea8cd8501299f85ae27ce811f21a490d69164e750782d98ac7e65fbf07"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_FrontLeftPart.png": {
+      "bytes": 18665,
+      "sha256": "07022574064f40db9dc07efee7689e8ae66309ad6c0964a4ebfadba6f1bbf01f"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_FrontRightPart.png": {
+      "bytes": 20804,
+      "sha256": "c1353943dda390f82e10c6700d468cb3d06224a8cd5e0adf2e01af5c63db188a"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_LeftArm.png": {
+      "bytes": 27177,
+      "sha256": "55e96bd08cfe430cd5785c92fe6a343cdd794aa339c5c44a89ef8ab7424e02a1"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_RightArm.png": {
+      "bytes": 27760,
+      "sha256": "0e83d736098936334c91f5c1c84abc7c6b6d42523b37051af52581bf1bc49802"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/Campeon_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/campeon.webp": {
+      "bytes": 4270,
+      "sha256": "2ff189832083f9d27bf51a8ac13052a90cf34f44f0721833357b917c7e009154"
+    },
+    "/designer/owayo/cycling-c3/designs/campeon/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_Back.png": {
+      "bytes": 31214,
+      "sha256": "b7d3937af2bbfab888e16b953c8a97925a358f8e9d1776e96cd6f7cb1ff99fb8"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_Bag.png": {
+      "bytes": 10820,
+      "sha256": "04832d6ccca46a6c2b445e9a5adbbf0c04020c24eb3427e3d27ad0cf0e308105"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_FrontLeftPart.png": {
+      "bytes": 18739,
+      "sha256": "5978fa144d03be6a1b7b1cc184215e9d0e427e052b754d4834935c9b9ec8e36c"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_FrontRightPart.png": {
+      "bytes": 19244,
+      "sha256": "f02d4020479e2e07d3278ae9cc896588bfd86a98cc6b2e3d7cd78476ae515617"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_LeftArm.png": {
+      "bytes": 32061,
+      "sha256": "a412f65de8a818900ae30d0023fec20106d03b1087855cabad8eb41de0456d56"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_RightArm.png": {
+      "bytes": 32827,
+      "sha256": "6bb2d2d5015530e01c4c69b5bf770d5b4a8ca65838a874b2ba6e832d41c743e1"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/Celtic_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/celtic.webp": {
+      "bytes": 1438,
+      "sha256": "deb74b2cba549b0bfaba5a5c8add1bbfb8cf54a39de2b44584573dc0b2a00255"
+    },
+    "/designer/owayo/cycling-c3/designs/celtic/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_Back.png": {
+      "bytes": 23494,
+      "sha256": "4134d2243a8811673abad39bf12cd5c91d8182d63cfb9bf34b242e4e02c6d8cc"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_FrontLeftPart.png": {
+      "bytes": 15541,
+      "sha256": "0ce50b588abc5f1c5d18889e708d34033862533c554b97870ee70d108e5c82d2"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_FrontRightPart.png": {
+      "bytes": 16026,
+      "sha256": "53236876176940d03b526d02947f2e75c6179339a7fbe3b51df4915e0ea6cb29"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_LeftArm.png": {
+      "bytes": 26606,
+      "sha256": "4d6cf5b642d629342d728e6f504303758f15d61c72e946dc02937467a608022f"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_RightArm.png": {
+      "bytes": 27430,
+      "sha256": "5f49d935853422852823f0ea81af590ca0627f89c97ccbf30c212a738865e972"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/Dominator_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/dominator.webp": {
+      "bytes": 1626,
+      "sha256": "f8b6a672045fdd91664e20acfbe2532a4a319d60b01baa177b7ec138173c645a"
+    },
+    "/designer/owayo/cycling-c3/designs/dominator/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_Back.png": {
+      "bytes": 36257,
+      "sha256": "f8c39fe54f6d8d1dc2418642ebb2d8dd4ffa5754e560f7632faf60b852d26a99"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_Bag.png": {
+      "bytes": 15124,
+      "sha256": "0d0182fbc645878cd223e39a02a92c6e35091d5812ca85d2e498c5f856f98a21"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_FrontLeftPart.png": {
+      "bytes": 23229,
+      "sha256": "9b7321dda4b948ee8a3eb54af020b5e755e471f5e1d639c0558d62cb26243122"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_FrontRightPart.png": {
+      "bytes": 23583,
+      "sha256": "c6c1920ef5edbefc750daf7c90349d70d0f74728456734424de57bfc99125fab"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_LeftArm.png": {
+      "bytes": 33696,
+      "sha256": "4b76f4221cff66c73ece582ba3f9b23e9a4ff7d817c6b752275dc081ee5aa68e"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_RightArm.png": {
+      "bytes": 34001,
+      "sha256": "221ee012ea5bc310c245d7cac2d97e0e7d4594352e022ed8653963c447223211"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/Fire_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/fire.webp": {
+      "bytes": 1738,
+      "sha256": "9a43e830a18ed5fea74f80d8205b6fffcf1579c1e1846bca2b68d4bdf44bad1a"
+    },
+    "/designer/owayo/cycling-c3/designs/fire/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_Back.png": {
+      "bytes": 23530,
+      "sha256": "391e3986ad2841271697a60faddacc6a42f90edb73ad2cec616adf11f4eea01f"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_Bag.png": {
+      "bytes": 10830,
+      "sha256": "ea06b5bc3d7822131451946a3dad6099e0a14328dbc1a1d11f37b9ddec485cf2"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_FrontLeftPart.png": {
+      "bytes": 15320,
+      "sha256": "93b0f105dd9cdc2106cc90c807885c1fa627c8911b9e1c98ea2a15e7993b1c51"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_FrontRightPart.png": {
+      "bytes": 15365,
+      "sha256": "453540a69d4ab88b8651c1cf836b2f0f58aa0970a5791f432cf686e7d3607510"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/Giro_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/giro.webp": {
+      "bytes": 1578,
+      "sha256": "f8b66036eacc2dd0671f03860305c94d37c6e47bf29e656eb42e5c01ddbfc732"
+    },
+    "/designer/owayo/cycling-c3/designs/giro/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_Back.png": {
+      "bytes": 33027,
+      "sha256": "78beb0ee39164f9a25859f32681436e725709e64bcaeb0ca069480df605b5264"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_Bag.png": {
+      "bytes": 14900,
+      "sha256": "7a6eeff540687248402f11d3b2f8a9518b08cd355ea4e4d37b5c40a266d5cc9e"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_FrontLeftPart.png": {
+      "bytes": 19645,
+      "sha256": "a265e3ac671f49fd9cbad458168b0bec21bd0fa5d5df842a2a1a6bd801c1f3a4"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_FrontRightPart.png": {
+      "bytes": 21176,
+      "sha256": "31efb8afe31d073b9c98a0f3bf57b72974977fd645396c302176ee636d927732"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_LeftArm.png": {
+      "bytes": 28705,
+      "sha256": "5418110a4b55485bce5b9eda0f640f000f069543a14950531095b7a6bee9bf84"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_RightArm.png": {
+      "bytes": 29216,
+      "sha256": "dfacdd19114c1d4a722f74ebbf7c91fa75bca54a36049bc81c62e7df9e9f3ae6"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/Mountain_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/mountain.webp": {
+      "bytes": 2584,
+      "sha256": "1ea02467e51a1bf129a31ef65b415eda202b1285f8d369f5acf78a38d0dda28e"
+    },
+    "/designer/owayo/cycling-c3/designs/mountain/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_Back.png": {
+      "bytes": 27724,
+      "sha256": "9113b89b17113fc62c4fb8630f5425201cfa9442bd4756f9b6771daab938d6b5"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_Bag.png": {
+      "bytes": 13731,
+      "sha256": "e0050299c89aeb28b9f1aaf3ced171ff12d18fd99a855b8fd2e697802987cc11"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_FrontLeftPart.png": {
+      "bytes": 15451,
+      "sha256": "38edb5d857775ea8d731b3f4d307ae142e4a14eb1a05dde38775ec4cf3d49a78"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_FrontRightPart.png": {
+      "bytes": 18389,
+      "sha256": "93bfda205b27b01be4f52d56762c680a0348569136c2787970b8c412023e395a"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_RightArm.png": {
+      "bytes": 24856,
+      "sha256": "4eacd40612ad21be5d0e69d236cf7de913369ccba778a2c8420387da5d2d5403"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/move/Move_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/move.webp": {
+      "bytes": 2494,
+      "sha256": "42406557df28fcf8b5ec2205b9604283071deb5805113cba3670fcf34588a03e"
+    },
+    "/designer/owayo/cycling-c3/designs/move/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_FrontLeftPart.png": {
+      "bytes": 18890,
+      "sha256": "999bdec499b4ddb93142ce0e57f267ba6762d1e290e793675abedd056a1f7107"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_FrontRightPart.png": {
+      "bytes": 15213,
+      "sha256": "c69145fc070625e76d049d25573077e0e7eaf5b11700de66c6cf930fab55140a"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_LeftArm.png": {
+      "bytes": 28263,
+      "sha256": "b2aa62d992a93386fcfcef15f7c6b9e08a4c61059278e5e6f826338e0af1d19d"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_RightArm.png": {
+      "bytes": 28971,
+      "sha256": "c15a853dfe53c7f5af716282d5d1c75f3a110b730200e6cda9a532c92c7d9dd4"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/Parcours_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/parcours.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/parcours/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_Back.png": {
+      "bytes": 24793,
+      "sha256": "eeb187499918110b11122c6f25104a2d6670c610976f9b1069f8bee6e0d2bf15"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_FrontLeftPart.png": {
+      "bytes": 16427,
+      "sha256": "08d653dd9fe670869a21cdbf423adc22275ed732400bf94212e9d9b17193ca34"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_FrontRightPart.png": {
+      "bytes": 17060,
+      "sha256": "68440886a377721bc8c4ece03149693c68915e1c9b7e34264ebb2abd43a877b7"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_LeftArm.png": {
+      "bytes": 30891,
+      "sha256": "8773864ec45149d75e65b6d022c9ac23c80575aea692f91dd77e28682167d17e"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_RightArm.png": {
+      "bytes": 31451,
+      "sha256": "8c12e5ed5dc231b39a0257cb8fc73a02ead6e1ce75227b61d4dadc2013d2a0d3"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/Peloton_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/peloton.webp": {
+      "bytes": 1950,
+      "sha256": "4a3507c9c4975e4fedf5a03fbbfe7ce019ca8c66651f9b19d68b4d372e863782"
+    },
+    "/designer/owayo/cycling-c3/designs/peloton/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_Back.png": {
+      "bytes": 24016,
+      "sha256": "b320d7314c3ceb119db8beeb0c743bf15d3e851b0b0c1e06e8a3e30fd489fc3c"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_Bag.png": {
+      "bytes": 10904,
+      "sha256": "e6c2927dcf8bb837f0a79d716d99d9374fe6966d60bd39f1e6f251a0ef1d2e5e"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_FrontLeftPart.png": {
+      "bytes": 15507,
+      "sha256": "1d42ff95a9466c139369f92ed0acf6cfc9ec066a798a3ac23cfc46e37924f89d"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_FrontRightPart.png": {
+      "bytes": 15668,
+      "sha256": "a411076f7a5002c1bff5fd217308d0539fc205f563147d4b7fc2b19dafe070db"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_LeftArm.png": {
+      "bytes": 24553,
+      "sha256": "b3eedbf289fbd78c4a1ed9130ad39ae7ddb9b4a8bf26f71f94a27f7c1ad047bb"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_RightArm.png": {
+      "bytes": 25075,
+      "sha256": "40394a17e66129d55b35666881c2110392412d035c0b4affc0d256ea111ca9e0"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/Rally_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/rally.webp": {
+      "bytes": 2088,
+      "sha256": "7250e2e1304a0c105c38f70b9d0248157091e911c21a761991ec526960c12280"
+    },
+    "/designer/owayo/cycling-c3/designs/rally/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_Back.png": {
+      "bytes": 25822,
+      "sha256": "baf6f71c6053c880152bbe9fbe6cba1b98051f7712c417b2982e30634e615ad8"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_FrontLeftPart.png": {
+      "bytes": 17099,
+      "sha256": "248c45748aa145feb3208c9eed5beb66ee89d1a22016494223b2724b7e24db91"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_FrontRightPart.png": {
+      "bytes": 17553,
+      "sha256": "5f608fe1f36f60105733cfc93750c4cdf5f33fdf16b2f031c327e219cb1db694"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_LeftArm.png": {
+      "bytes": 27638,
+      "sha256": "cb400b4c62de1b76910bb8fe65d76dbb1b0a5eb52b1997fef50a0b34e4e5f224"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_RightArm.png": {
+      "bytes": 28138,
+      "sha256": "c53fbe95ac547932bafd5a5f2784cf63dbaa21aa24970ffaee7fc639aed97077"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/Salida_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/salida.webp": {
+      "bytes": 2888,
+      "sha256": "7325977fde1b45ce15f1442f3eaa976dfd325ea7ddd32ebf2ed8222871ad5ffd"
+    },
+    "/designer/owayo/cycling-c3/designs/salida/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Back.png": {
+      "bytes": 27101,
+      "sha256": "83d2f047b67664de85c27895816f3caf78c64c79b973d92f5ec5539a1f03b7ef"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Bag.png": {
+      "bytes": 14997,
+      "sha256": "806ba4812f672422e4a538e0f62d9542b771702ba7ee391a16159e1be1fcbb9c"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_FrontLeftPart.png": {
+      "bytes": 18321,
+      "sha256": "5c984ca8018087b864f3f8d11a829bc4ab250c50dc02b08b70c45a20cde70304"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_FrontRightPart.png": {
+      "bytes": 20575,
+      "sha256": "53f6214268516b241ecc426a3eb9a348919efdf3c04f433c5ee8fdb93a8ccce5"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_LeftArm.png": {
+      "bytes": 26433,
+      "sha256": "cbd578e1a6d2d7746e6054ac960a1b0d23ecd8be7f7b0b8030d18be2905f1686"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_RightArm.png": {
+      "bytes": 26952,
+      "sha256": "c7dee7b7ad5cf09dae94081be5a54fdbbbf36e8cad30a3323b1974cc232520e9"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/serpentine.webp": {
+      "bytes": 3242,
+      "sha256": "54431d6c92fb2fccbd5bc1725b93435208650cac24bd29abb0514f6e296b601f"
+    },
+    "/designer/owayo/cycling-c3/designs/serpentine/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_Bag.png": {
+      "bytes": 13808,
+      "sha256": "413d1f24550a0de60b114e3737580d47b99d3cc2c17468004f4db40ed6796c38"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_FrontLeftPart.png": {
+      "bytes": 18682,
+      "sha256": "8c9398753245c3a3c39de3672aed153908c08d5524d9bb766eb84fd817db1953"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_FrontRightPart.png": {
+      "bytes": 18913,
+      "sha256": "cb0acb97b17f50ecd9b44511f21bd4619c2ac161b35e9a0f8f41ea622d5f44b8"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_LeftArm.png": {
+      "bytes": 27721,
+      "sha256": "f6c384dfc4153473a22a301ba1573a97a67ac052b4bb6825be2179a4601dab2b"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_RightArm.png": {
+      "bytes": 28279,
+      "sha256": "5f8169a6d9e62dac3b80677e0c123e57c6058f013ddba4a5cb58ea4fd7d88185"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/Spice_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/spice.webp": {
+      "bytes": 2024,
+      "sha256": "ee3e02e15f23b5dac8f03ad1767873f678e46cd9c797fdbc83a899e4af3ba1c8"
+    },
+    "/designer/owayo/cycling-c3/designs/spice/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_FrontLeftPart.png": {
+      "bytes": 15697,
+      "sha256": "1249efe6cc8f22950be5efb4c880eff128230cf86b5256f6a1c97302a0a55783"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_FrontRightPart.png": {
+      "bytes": 16201,
+      "sha256": "39502670d25a317b97e2ef81f36bec5428351b6961842fd9807d8a7930b84acd"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_LeftArm.png": {
+      "bytes": 32287,
+      "sha256": "e590daf6d29b6e336ce4ffdea627b29b967916d0121041be9c6d9ef908f178a0"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_RightArm.png": {
+      "bytes": 32814,
+      "sha256": "fc5f7eca48cb56039ca2c8af6dd4bb4e9ad8fed80749d9c599a96821af4cf15b"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/sprinter.webp": {
+      "bytes": 1446,
+      "sha256": "a281d1088e265465dcd4a1c1586194fcc520ca9c17ae6149f586ea2e79706c7c"
+    },
+    "/designer/owayo/cycling-c3/designs/sprinter/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Back.png": {
+      "bytes": 24715,
+      "sha256": "67df8cb1a02b9d58fb97d801ea8abb090aa71e0a3415b26fd1178ad364d89bbc"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Bag.png": {
+      "bytes": 10839,
+      "sha256": "4775964de70894fbe9133c3b2b5daebdb8c3eb9a601c0da30bc008346888efa0"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_FrontLeftPart.png": {
+      "bytes": 15103,
+      "sha256": "b4d4c2f0dfdf9ac82df3e24d5cb1ed852eba83ea3789e525b7adcc1c7f9f6b9a"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_FrontRightPart.png": {
+      "bytes": 15213,
+      "sha256": "c69145fc070625e76d049d25573077e0e7eaf5b11700de66c6cf930fab55140a"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_LeftArm.png": {
+      "bytes": 26011,
+      "sha256": "875700cf54e4a4d3157bd6ca6eea58fed68059b3d3b62d98b790554bcaa29c61"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_RightArm.png": {
+      "bytes": 25399,
+      "sha256": "735f14289f0067c51b89a596585d259916d5097d1693bb51b9ad3db4483efe3b"
+    },
+    "/designer/owayo/cycling-c3/previews/tourmalet.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/tourmalet/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Back.png": {
+      "bytes": 30579,
+      "sha256": "861f9b666b18c19a422d250492ae35490221a9e851f99143ad13e8afbc65de99"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Bag.png": {
+      "bytes": 12179,
+      "sha256": "0d23b47464683f0d8d9db12c0bc1bd35c7cc66820f4f871fb93e70cabb40f9d0"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Collar.png": {
+      "bytes": 5992,
+      "sha256": "f7a9e6e4068d0f4fc105f551bbc7f0f319552a2117b0e49a712ed0b993cf18fc"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_FrontLeftPart.png": {
+      "bytes": 19655,
+      "sha256": "4ec76e75d757eb955753caba7982f1006b7d1ff4251f47f6b9c13e4c64ce078e"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_FrontRightPart.png": {
+      "bytes": 20046,
+      "sha256": "ef8bf0072812699d0efaf7ed999305910bd2ad6c3b7d91758f61635cfca266e7"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_LeftArm.png": {
+      "bytes": 29078,
+      "sha256": "e84fe64d074525881794a96365f71d4e8085bdfd4091ea0d0d51974cc3d8eddd"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_RightArm.png": {
+      "bytes": 30268,
+      "sha256": "6a7e3d8934767eabc1cb2a50d782342e1ef34b1cd24e2cc672cd08e9c9abc58a"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/velo-alt.webp": {
+      "bytes": 2710,
+      "sha256": "de4281859b5a3a0a42057107ce5ebf7fcd3ee11f0a546269011719bdfac5ab11"
+    },
+    "/designer/owayo/cycling-c3/designs/velo-alt/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_Back.png": {
+      "bytes": 23452,
+      "sha256": "3c77b7fa05262aad0f42123521538f018eac8395ad36b82946df62e25c3476de"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_Bag.png": {
+      "bytes": 10796,
+      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_Collar.png": {
+      "bytes": 5287,
+      "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_FrontLeftPart.png": {
+      "bytes": 14990,
+      "sha256": "89f9474bf913e7b123549ce75af3f20991d4150969efa391e6b73b9592a3f57e"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_FrontRightPart.png": {
+      "bytes": 14938,
+      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_LeftArm.png": {
+      "bytes": 24318,
+      "sha256": "2804587e81f0e206f75cec8f06e9eebf85547abea9511d9f024f7284dbc404ed"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_RightArm.png": {
+      "bytes": 24854,
+      "sha256": "184d602284419274ed3bdd44cf61733e5abf4a18c0bc151d5e7b9aaf496db329"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_RV.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_Toothmesh.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/designs/route/Route_Toothmesh_BG.png": {
+      "bytes": 379,
+      "sha256": "dcc80b605a887f7e811da41a963436b13d110ba3c6207d41d25c4fb516305b4f"
+    },
+    "/designer/owayo/cycling-c3/previews/route.webp": {
+      "bytes": 1384,
+      "sha256": "22decb8e041b74c9ddf7bcc8ac3f8a6ed046f50e2d80cfd0330dc4f41ce357ec"
+    },
+    "/designer/owayo/cycling-c3/designs/route/snap-lines.json": {
+      "bytes": 1427,
+      "sha256": "96c7120d9ba46c8c6fe15ff121570f0c8cc20dd6b5853413f9fb5e0c1e3f4d00"
+    }
+  }
+}

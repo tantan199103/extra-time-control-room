@@ -22,6 +22,7 @@
     "sync:taass": "node scripts/import-taass-catalog.mjs --write",
     "sync:taass:jerseys": "node scripts/import-taass-catalog.mjs --write --jersey-only --media",
     "sync:taass:jerseys:metadata": "node scripts/import-taass-catalog.mjs --write --jersey-only",
+    "sync:owayo:designer": "node scripts/sync-owayo-designer-assets.mjs",
     "route:taass": "node scripts/route-taass-catalog.mjs",
     "audit:taass": "node scripts/audit-taass-coverage.mjs",
     "import:fanatics": "node scripts/import-fanatics-catalog.mjs",

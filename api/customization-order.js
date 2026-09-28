@@ -16,6 +16,48 @@ const fieldValue = (field, raw) => {
   return value
 }
 
+const clamp = (value, min, max, fallback = min) => {
+  const number = Number(value)
+  return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback
+}
+
+export function normalizeDesignerSpec(value) {
+  if (value == null) return null
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw Object.assign(new Error('The 3D design specification is invalid.'), { status:422 })
+  if (safeText(value.source, 60) !== 'JERSEVO_3D_DESIGNER') throw Object.assign(new Error('The 3D design source is not supported.'), { status:422 })
+  const colorsSource = value.colors && typeof value.colors === 'object' && !Array.isArray(value.colors) ? value.colors : {}
+  const colors = Object.fromEntries(Object.entries(colorsSource).slice(0, 12).map(([key, raw]) => [safeText(key, 20), /^#[0-9a-f]{6}$/i.test(String(raw || '')) ? String(raw).toUpperCase() : '']).filter(([key, raw]) => key && raw))
+  const textSource = value.text && typeof value.text === 'object' && !Array.isArray(value.text) ? value.text : {}
+  const text = {
+    team:safeText(textSource.team, 80),
+    name:safeText(textSource.name, 80),
+    number:safeText(textSource.number, 6).replace(/\D/g, '').slice(0, 3),
+    scale:clamp(textSource.scale, .5, 1.5, 1),
+    color:/^#[0-9a-f]{6}$/i.test(String(textSource.color || '')) ? String(textSource.color).toUpperCase() : '#F8F8F4'
+  }
+  const logoSource = value.logo && typeof value.logo === 'object' && !Array.isArray(value.logo) ? value.logo : {}
+  const rosterSource = Array.isArray(value.roster) ? value.roster : []
+  const roster = rosterSource.slice(0, 99).map(player => ({
+    name:safeText(player?.name, 80),
+    number:safeText(player?.number, 6).replace(/\D/g, '').slice(0, 3),
+    size:safeText(player?.size, 32)
+  }))
+  if (!roster.length) throw Object.assign(new Error('The 3D design needs at least one player.'), { status:422 })
+  return {
+    source:'JERSEVO_3D_DESIGNER',
+    version:1,
+    manifest:'/designer/owayo/cycling-c3/manifest.json',
+    model:safeText(value.model, 60) || '253m_KA',
+    product:safeText(value.product, 160),
+    designSlug:safeText(value.designSlug, 80),
+    designName:safeText(value.designName, 120),
+    colors,
+    text,
+    logo:{ name:safeText(logoSource.name, 160), x:clamp(logoSource.x, -1, 1, 0), y:clamp(logoSource.y, -1, 1, 0), scale:clamp(logoSource.scale, .25, 2, 1), rotation:clamp(logoSource.rotation, -180, 180, 0) },
+    roster
+  }
+}
+
 async function publishedListing(client, productId) {
   const columns = 'id, handle, title, status, updated_at, image, custom_fields'
   let result = await client.from('pod_products').select(columns).eq('id', productId).eq('status','PUBLISHED').maybeSingle()
@@ -28,7 +70,7 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') return sendJson(response, 405, { error:'POST customization requests only.' })
   try {
     enforceSameOrigin(request)
-    const body = readBody(request)
+    const body = readBody(request, 80000)
     const sessionId = customerSession(body)
     const identityHash = requestIdentity(request, sessionId)
     const client = serverSupabase()
@@ -95,6 +137,7 @@ export default async function handler(request, response) {
       if (!field.previewRegion && !field.studioReviewRequired) throw Object.assign(new Error(`${field.label || 'Logo'} has no designer-approved placement area.`), { status:422 })
     }
     if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
+    const designer = normalizeDesignerSpec(body.designer)
 
     const payload = {
       listingId:product.id,
@@ -111,7 +154,8 @@ export default async function handler(request, response) {
       aiPreviewStorage,
       aiPrompt:aiPrompt || null,
       logoConsent:logoFields.length ? { accepted:logoConsent, acceptedAt:new Date().toISOString(), fieldKeys:logoFields.map(field => field.key) } : null,
-      source:aiPreviewUrl ? 'ai-assisted-product-page' : 'product-page'
+      designer,
+      source:designer ? 'jersevo-3d-designer' : aiPreviewUrl ? 'ai-assisted-product-page' : 'product-page'
     }
     const order = {
       id:`custom-${randomUUID()}`,
