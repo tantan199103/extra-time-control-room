@@ -166,8 +166,11 @@ a { color: inherit; }
 .discovery-landing__hero { padding:56px 32px 38px; background:var(--chalk); border-bottom:1px solid var(--line); }
 .discovery-landing__hero h1 { margin:34px 0 14px; font:700 clamp(54px,7vw,105px)/.8 var(--headline); letter-spacing:-.04em; }
 .discovery-landing__hero > p { max-width:520px; color:var(--muted); font:500 14px/1.5 var(--body); }
-.discovery-landing__search { max-width:520px; min-height:46px; display:flex; align-items:center; gap:10px; margin-top:25px; padding:0 13px; border:1px solid var(--ink); background:var(--paper); }
-.discovery-landing__search input { width:100%; border:0; outline:0; background:none; }
+.discovery-landing__search { max-width:520px; min-height:46px; display:flex; align-items:center; gap:10px; margin-top:25px; padding:0 8px 0 13px; border:1px solid var(--ink); background:var(--paper); }
+.discovery-landing__search:focus-within { outline:2px solid rgba(201,35,44,.55); outline-offset:2px; }
+.discovery-landing__search input { width:100%; min-width:0; border:0; outline:0; background:none; }
+.discovery-landing__search button { width:30px; height:30px; display:grid; place-items:center; flex:none; border-radius:3px; color:var(--muted); }
+.discovery-landing__search button:hover, .discovery-landing__search button:focus-visible { background:var(--chalk); color:var(--ink); }
 .discovery-landing__groups { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; padding:46px 32px 70px; }
 .discovery-landing__groups section { min-width:0; border-top:2px solid var(--ink); }
 .discovery-landing__groups h2 { margin:15px 0; font:700 34px var(--headline); }
@@ -3981,4 +3984,157 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   .home-page > :not(:first-child) { contain-intrinsic-size: auto 520px; }
   .home-page .newsletter { min-height: 440px; padding: 48px 16px; gap: 36px; }
   .home-page .newsletter h2 { font-size: 17vw; }
+}
+
+/* Contextual catalog search -------------------------------------------------
+   Category and collection pages keep their search beside the existing filter
+   rail. Root Shop still uses the larger discovery search above the grid. */
+.filter-bar--contextual {
+  min-height: 66px;
+  height: auto;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.catalog-inline-search {
+  min-width: 190px;
+  width: min(100%, 310px);
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 220px;
+  padding: 0 5px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--chalk);
+  color: var(--ink);
+}
+.catalog-inline-search:focus-within,
+.catalog-inline-search:hover { border-color: var(--ink); }
+.catalog-inline-search > svg { flex: none; color: var(--signal); }
+.catalog-inline-search input {
+  min-width: 0;
+  flex: 1;
+  height: 32px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 500 10px var(--body);
+}
+.catalog-inline-search input::placeholder { color: var(--muted); }
+.catalog-inline-search button {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 2px;
+  color: var(--muted);
+}
+.catalog-inline-search button:hover,
+.catalog-inline-search button:focus-visible { background: var(--paper); color: var(--ink); }
+.catalog-inline-search button[type="submit"] { background: var(--ink); color: var(--chalk); }
+.catalog-inline-search button[type="submit"]:hover,
+.catalog-inline-search button[type="submit"]:focus-visible { background: var(--signal); color: #fff; }
+.filter-bar--contextual > .desktop-filters { flex: 0 1 auto; }
+.filter-bar--contextual > .mobile-filter,
+.filter-bar--contextual > .mobile-grid-toggle { flex: none; }
+
+/* Team directory controls: league scope, result count and ordering read as one
+   toolbar instead of two disconnected rows. */
+.discovery-landing__team-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 32px 0;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.discovery-landing__team-toolbar .discovery-landing__league-tabs {
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+}
+.discovery-landing__team-toolbar .discovery-landing__league-tabs::-webkit-scrollbar { display: none; }
+.discovery-landing__team-toolbar .discovery-landing__league-tabs button { flex: none; }
+.discovery-landing__team-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  color: var(--muted);
+  font: 600 9px var(--body);
+  white-space: nowrap;
+}
+.discovery-landing__team-meta label {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--chalk);
+  color: var(--ink);
+}
+.discovery-landing__team-meta select {
+  min-height: 22px;
+  padding-right: 5px;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  font: 700 9px var(--body);
+}
+.discovery-landing__team-limit {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 10px 4px 0;
+  color: var(--muted);
+  font: 500 10px var(--body);
+}
+
+@media (max-width: 1000px) and (min-width: 781px) {
+  .catalog-inline-search { flex-basis: 180px; }
+  .filter-bar--contextual > .desktop-filters { max-width: 55%; overflow-x: auto; scrollbar-width: none; }
+  .filter-bar--contextual > .desktop-filters::-webkit-scrollbar { display: none; }
+}
+
+@media (max-width: 780px) {
+  .filter-bar--contextual {
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+  }
+  .catalog-inline-search {
+    width: 100%;
+    min-width: 0;
+    flex: 1 0 100%;
+    min-height: 38px;
+    order: -2;
+  }
+  .filter-bar--contextual > .desktop-filters { display: none; }
+  .filter-bar--contextual > .mobile-filter { order: -1; }
+  .discovery-landing__team-toolbar {
+    display: block;
+    padding: 11px 16px 0;
+  }
+  .discovery-landing__team-toolbar .discovery-landing__league-tabs { margin: 0; }
+  .discovery-landing__team-meta {
+    justify-content: space-between;
+    padding: 9px 0 10px;
+    border-top: 1px solid var(--line);
+    margin-top: 9px;
+  }
+  .discovery-landing__team-meta label { min-height: 28px; }
+  .discovery-landing__team-limit { padding: 8px 0 0; font-size: 9px; }
 }

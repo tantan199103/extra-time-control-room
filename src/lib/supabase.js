@@ -8,7 +8,7 @@ import { apiFetch } from './api-client'
 import { collectionMembershipDiff } from './collection-assignment'
 import { collectionAutomationHasConditions, normalizeCollectionAutomation } from './collection-rules'
 import { ALL_LEAGUE_TAXONOMY } from './league-taxonomy'
-import { accessoryGroupsForCategory, catalogCategoryByHandle } from './catalog-taxonomy'
+import { accessoryGroupsForCategory, catalogCategoryByHandle, catalogCategoryIntentFilter } from './catalog-taxonomy'
 import { teamProductTypeByHandle } from './team-product-pages'
 import { catalogPageRouteCanDeleteProducts } from './catalog-page-overrides'
 
@@ -142,6 +142,15 @@ export async function fetchStorefrontProduct(handle, { includeRelated = true } =
 // Cards do not need long descriptions, full galleries or SEO JSON. Those are
 // hydrated by fetchStorefrontProduct when a shopper opens a product page.
 const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,inventory,sku,tags,taxonomy,product_group,type,color,custom_fields,status,seo_status,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image)'
+const STOREFRONT_SEARCH_FIELDS = Object.freeze([
+  'title','subtitle','handle','sku','product_group','type','color',
+  'taxonomy->>league','taxonomy->>team','taxonomy->>category','taxonomy->>brand',
+  'taxonomy->>nationalTeam','taxonomy->>national_team','taxonomy->>country',
+  'taxonomy->>player','taxonomy->>playerName','taxonomy->>player_name',
+  'taxonomy->>competition','taxonomy->>fit','taxonomy->>theme',
+  'taxonomy->>lifecycle','taxonomy->>year',
+  'taxonomy->>accessoryCategory','taxonomy->>accessoryType'
+])
 const transientCatalogueError = (error, status) => String(error?.code || '') === '57014' || [0,408,429,500,502,503,504].includes(Number(status)) || /timeout|temporarily unavailable|fetch failed/i.test(String(error?.message || ''))
 const storefrontPageCache = new Map()
 const STOREFRONT_PAGE_CACHE_TTL = 10 * 60 * 1000
@@ -182,6 +191,7 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   }
   if (parts[0] === 'category' && parts[1]) {
     const routeCategory = catalogCategoryByHandle(parts[1])
+    const intentFilter = catalogCategoryIntentFilter(routeCategory)
     const accessoryGroups = routeCategory?.accessoryFamily ? accessoryGroupsForCategory(routeCategory) : []
     const categoryMap = {
       accessories:['Caps','Knit Hats','Accessories','Bags','Backpacks','Sports Bags','Scarves','Gloves','Flags','Banners','Pins','Patches','Key Chains','Keychains','Decals','Magnets','Stickers','Bottles','Mugs','Drinkware','Glassware','Coasters','Socks','Leg Sleeves','Gift Sets','Gift Bundles','Bundles'],
@@ -191,10 +201,17 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
       'baseball-jerseys':['Baseball Jersey'],
       'basketball-jerseys':['Basketball Jersey'],
       'hockey-jerseys':['Hockey Jersey'],
-      'soccer-jerseys':['Soccer Jersey']
+      'soccer-jerseys':['Soccer Jersey'],
+      'fan-apparel':['Fan Apparel'],
+      collectibles:['Collectibles'],
+      'fan-gear':['Fan Gear']
     }
     const groups = accessoryGroups.length ? accessoryGroups : categoryMap[parts[1]]
-    if (routeCategory?.accessoryFamily && groups?.length) {
+    if (intentFilter?.operator === 'eq') {
+      query = query.eq(intentFilter.field,intentFilter.value)
+    } else if (intentFilter?.operator === 'presentAny') {
+      query = query.or(intentFilter.fields.map(field => `${field}.not.is.null`).join(','))
+    } else if (routeCategory?.accessoryFamily && groups?.length) {
       const groupFilter = `product_group.in.(${groups.map(value => `"${String(value).replaceAll('"','\\"')}"`).join(',')})`
       const taxonomyFilters = [`taxonomy->>accessoryCategory.eq.${routeCategory.accessoryFamily}`]
       if (routeCategory.accessoryType) taxonomyFilters.push(`taxonomy->>accessoryType.eq.${routeCategory.accessoryType}`)
@@ -237,10 +254,9 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   if (price === 'OVER_100') query = query.gt('price',100)
   if (searchTerm.length >= 2) {
     const safe = searchTerm.replace(/[(),"']/g, ' ').replace(/\s+/g, ' ').trim()
-    const fields = ['title','subtitle','handle','sku','product_group','type','color','taxonomy->>league','taxonomy->>team','taxonomy->>category','taxonomy->>accessoryCategory','taxonomy->>accessoryType']
     for (const token of safe.split(' ').filter(Boolean).slice(0, 6)) {
       const pattern = `*${token}*`
-      query = query.or(fields.map(field => `${field}.ilike.${pattern}`).join(','))
+      query = query.or(STOREFRONT_SEARCH_FIELDS.map(field => `${field}.ilike.${pattern}`).join(','))
     }
   }
   return query
@@ -337,11 +353,10 @@ export async function fetchStorefrontSearch(term, limit = 12) {
   if (value.length < 2) return { data:[],source:'supabase',error:null }
   const safeLimit = Math.min(24,Math.max(1,Number(limit) || 12))
   const safe = value.replace(/[(),"']/g,' ').replace(/\s+/g,' ').trim()
-  const fields = ['title','subtitle','handle','sku','product_group','type','color','taxonomy->>league','taxonomy->>team','taxonomy->>category','taxonomy->>accessoryCategory','taxonomy->>accessoryType']
   let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED')
   for (const token of safe.split(' ').filter(Boolean).slice(0, 6)) {
     const pattern = `*${token}*`
-    query = query.or(fields.map(field => `${field}.ilike.${pattern}`).join(','))
+    query = query.or(STOREFRONT_SEARCH_FIELDS.map(field => `${field}.ilike.${pattern}`).join(','))
   }
   const { data,error } = await query.order('updated_at',{ascending:false}).limit(safeLimit)
   if (error) return { data:[],source:'unavailable',error:error.message }

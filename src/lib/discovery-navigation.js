@@ -27,6 +27,8 @@ export function productSearchText(product = {}) {
     product.name, product.title, product.subtitle, product.story, product.description,
     product.meta, product.handle, product.sku, product.type, product.productGroup,
     product.color, taxonomy.league, taxonomy.team, taxonomy.category, taxonomy.brand,
+    taxonomy.nationalTeam, taxonomy.country, taxonomy.player, taxonomy.playerName,
+    taxonomy.competition, taxonomy.fit, taxonomy.theme, taxonomy.lifecycle, taxonomy.year,
     ...(Array.isArray(product.tags) ? product.tags : []), ...(Array.isArray(product.brands) ? product.brands : []),
     ...customFields
   ]
@@ -43,19 +45,50 @@ export function matchesDiscoveryQuery(product, query) {
   return needle.split(' ').filter(Boolean).every(token => text.includes(token))
 }
 
+// Imported/preview rows do not always carry the structured taxonomy columns
+// yet.  They still expose a title, story or meta line such as “NFL · Dallas
+// Cowboys”.  Recover the controlled league/team key at the discovery boundary
+// so the Sports and Teams directories never collapse to an empty state while
+// the full navigation index is being rebuilt.
+function inferredDiscoveryTaxonomy(row = {}) {
+  const explicit = row.taxonomy && typeof row.taxonomy === 'object' ? row.taxonomy : {}
+  const text = normalizeDiscoveryQuery([
+    row.name, row.title, row.handle, row.story, row.description, row.meta,
+    row.productGroup, row.type, explicit.league, explicit.team
+  ].filter(Boolean).join(' '))
+  const leagueValue = String(row.league || row.leagueKey || explicit.league || explicit.leagueKey || '').trim()
+  const explicitLeague = ALL_LEAGUE_TAXONOMY.find(item => {
+    const value = normalizeDiscoveryQuery(leagueValue)
+    return value && (normalizeDiscoveryQuery(item.key) === value || normalizeDiscoveryQuery(item.name) === value)
+  })
+  const league = explicitLeague?.key || ALL_LEAGUE_TAXONOMY.find(item => {
+    const key = normalizeDiscoveryQuery(item.key)
+    const name = normalizeDiscoveryQuery(item.name)
+    return (key && text.includes(key)) || (name && text.includes(name))
+  })?.key || ''
+  const teamValue = String(row.team || row.teamSlug || explicit.team || explicit.teamSlug || '').trim()
+  const leagueDefinition = ALL_LEAGUE_TAXONOMY.find(item => item.key === league)
+  const team = teamValue || leagueDefinition?.teams.find(item => {
+    const name = normalizeDiscoveryQuery(item.name)
+    const slug = normalizeDiscoveryQuery(item.slug)
+    return (name && text.includes(name)) || (slug && text.includes(slug))
+  })?.slug || ''
+  return { league, team }
+}
+
 export function discoveryIndex(rows = []) {
   const products = Array.isArray(rows) ? rows : []
   const leagueCounts = new Map()
   const teamCounts = new Map()
   let total = 0
   for (const row of products) {
-    const taxonomy = row.taxonomy || {}
-    const league = String(taxonomy.league || '').toLowerCase()
+    const { league:inferredLeague, team:inferredTeam } = inferredDiscoveryTaxonomy(row)
+    const league = String(inferredLeague || '').toLowerCase()
     const weight = Math.max(1, Number(row.count) || 1)
     total += weight
     if (!league) continue
     leagueCounts.set(league, (leagueCounts.get(league) || 0) + weight)
-    const team = normalizeTeamSlug(league, taxonomy.team || '')
+    const team = normalizeTeamSlug(league, inferredTeam)
     if (team) teamCounts.set(`${league}/${team}`, (teamCounts.get(`${league}/${team}`) || 0) + weight)
   }
   const leagues = ALL_LEAGUE_TAXONOMY.filter(league => leagueCounts.get(league.key) > 0)
@@ -76,7 +109,7 @@ export function discoveryMenu(index, collections = [], products = []) {
   const leagues = index?.leagues || []
   const teams = index?.teams || []
   const category = handle => categories.find(item => item.handle === handle)
-  const categoryLinks = ['football-jerseys','baseball-jerseys','basketball-jerseys','hockey-jerseys','soccer-jerseys','caps','knit-hats','fan-apparel','accessories','collectibles']
+  const categoryLinks = ['football-jerseys','baseball-jerseys','basketball-jerseys','hockey-jerseys','soccer-jerseys','world-cup-jerseys','national-team-jerseys','football-legends','caps','knit-hats','fan-apparel','accessories','collectibles']
     .map(category).filter(Boolean).map(item => ({ label:item.label, href:`/category/${item.handle}`, icon:item.icon }))
   const accessoryLinks = ACCESSORY_FAMILY_OPTIONS
     .filter(item => categories.some(category => category.handle === item.handle) || index?.total)
@@ -95,7 +128,7 @@ export function discoveryMenu(index, collections = [], products = []) {
     { id:'shop', label:'Shop', href:'/shop', sections:[
       { label:'Shop by product', links:[{ label:'Shop all', href:'/shop' },...categoryLinks] },
       { label:'Accessories', links:[...accessoryLinks, ...accessoryTypeLinks] },
-      { label:'Explore', links:[{ label:'Find your team', href:'/teams' },{ label:'Browse sports', href:'/sports' },{ label:'Personalized gear', href:'/shop?custom=1' }] }
+      { label:'Explore', links:[{ label:'Find your team', href:'/teams' },{ label:'Browse sports', href:'/sports' },{ label:'World Cup jerseys', href:'/category/world-cup-jerseys' },{ label:'National team jerseys', href:'/category/national-team-jerseys' },{ label:'Football legends', href:'/category/football-legends' },{ label:'Personalized gear', href:'/shop?custom=1' }] }
     ] },
     { id:'sports', label:'Sports', href:'/sports', sections:groupedSports },
     { id:'teams', label:'Teams', href:'/teams', searchTeams:true, sections:[

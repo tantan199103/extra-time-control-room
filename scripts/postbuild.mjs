@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 
@@ -7,6 +8,23 @@ import { dirname, resolve } from 'node:path'
 // publish wave while the production service key is available server-side.
 // Neither flag is enabled by default; a normal local/CI build is read-only.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+// Vite reads .env files for the browser bundle, but Node postbuild scripts do
+// not. Load the local server configuration when present so a local production
+// build generates SEO/sitemap/feed files from the same live catalogue as the
+// deployed build. Explicit process variables always win; no secret is written
+// into dist or exposed to the client bundle.
+for (const envFile of ['.env.local', '.env']) {
+  const path = resolve(root, envFile)
+  if (!fs.existsSync(path)) continue
+  for (const line of fs.readFileSync(path, 'utf8').split(/\r?\n/)) {
+    const index = line.indexOf('=')
+    if (index <= 0) continue
+    const name = line.slice(0, index).trim()
+    const value = line.slice(index + 1).trim().replace(/^['"]|['"]$/g, '')
+    if (!process.env[name]) process.env[name] = value
+  }
+}
 
 function runScript(script, args = []) {
   return new Promise((resolvePromise, reject) => {

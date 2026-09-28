@@ -36,6 +36,9 @@ export const CATALOG_CATEGORY_PAGES = Object.freeze([
   { value:'Baseball Jerseys', handle:'baseball-jerseys', label:'Baseball jerseys', icon:'jersey', description:'Shop baseball jerseys and personalized fan gear with clear size and delivery details.' },
   { value:'Hockey Jerseys', handle:'hockey-jerseys', label:'Hockey jerseys', icon:'jersey', description:'Shop hockey jerseys and fan gear with tracked delivery across supported destinations.' },
   { value:'Soccer Jerseys', handle:'soccer-jerseys', label:'Soccer jerseys', icon:'jersey', description:'Shop soccer jerseys and personalized fan gear built for match day.' },
+  { value:'World Cup Jerseys', handle:'world-cup-jerseys', label:'World Cup jerseys', icon:'jersey', intent:'world-cup', description:'Browse World Cup jerseys by national team, tournament year and football story.' },
+  { value:'National Team Jerseys', handle:'national-team-jerseys', label:'National team jerseys', icon:'jersey', intent:'national-teams', description:'Shop national team jerseys and international football stories.' },
+  { value:'Football Legends', handle:'football-legends', label:'Football legends', icon:'jersey', intent:'football-legends', description:'Explore football jerseys inspired by legendary players and defining eras.' },
   { value:'Fan Apparel', handle:'fan-apparel', label:'Fan apparel', icon:'apparel', description:'Explore fan apparel, layers and match-day pieces from Jersevo.' },
   { value:'Custom Jerseys', handle:'custom-jerseys', label:'Custom jerseys', icon:'custom', description:'Choose a fixed jersey design and add the name and number that make it yours.' },
   { value:'Accessories', handle:'accessories', label:'All accessories', icon:'accessories', description:'Shop headwear, bags, cold-weather layers, matchday details, drinkware and giftable fan accessories.' },
@@ -147,6 +150,20 @@ export function catalogCategoryByHandle(handle) {
   return ALL_CATALOG_CATEGORY_PAGES.find(item => item.handle === value) || null
 }
 
+/**
+ * Translate customer-intent category pages into the structured JSON fields
+ * used by the live Supabase catalogue query. Keeping this beside the
+ * in-memory matcher prevents a category from behaving correctly in the menu
+ * while returning an unfiltered product page from the database.
+ */
+export function catalogCategoryIntentFilter(category = {}) {
+  const intent = String(category?.intent || '').trim().toLowerCase()
+  if (intent === 'world-cup') return { operator:'eq', field:'taxonomy->>competition', value:'world-cup' }
+  if (intent === 'national-teams') return { operator:'presentAny', fields:['taxonomy->>nationalTeam','taxonomy->>national_team'] }
+  if (intent === 'football-legends') return { operator:'eq', field:'taxonomy->>theme', value:'football-legends' }
+  return null
+}
+
 export function catalogCategoryHandle(value) {
   return ALL_CATALOG_CATEGORY_PAGES.find(item => item.value === value)?.handle || ''
 }
@@ -174,10 +191,14 @@ export function productMatchesCatalogCategory(product = {}, category = {}) {
   const taxonomy = product.taxonomy && typeof product.taxonomy === 'object' ? product.taxonomy : {}
   const target = String(category.value || category || '').toLowerCase()
   if (!target) return true
-  const accessory = accessoryTaxonomyForProduct(product)
   const resolvedCategory = String(category.accessoryFamily || '').trim()
     ? category
     : ALL_CATALOG_CATEGORY_PAGES.find(item => normalizeAccessoryValue(item.value) === target || item.handle === target) || category
+  const resolvedIntent = String(resolvedCategory.intent || '').trim().toLowerCase()
+  if (resolvedIntent === 'world-cup') return String(taxonomy.competition || '').toLowerCase() === 'world-cup'
+  if (resolvedIntent === 'national-teams') return Boolean(String(taxonomy.nationalTeam || taxonomy.national_team || '').trim())
+  if (resolvedIntent === 'football-legends') return String(taxonomy.theme || '').toLowerCase() === 'football-legends'
+  const accessory = accessoryTaxonomyForProduct(product)
   if (String(resolvedCategory.accessoryFamily || '').trim()) {
     if (!accessory.isAccessory || normalizeAccessoryValue(accessory.family) !== normalizeAccessoryValue(resolvedCategory.accessoryFamily)) return false
     if (resolvedCategory.accessoryType) return normalizeAccessoryValue(accessory.type) === normalizeAccessoryValue(resolvedCategory.accessoryType)
