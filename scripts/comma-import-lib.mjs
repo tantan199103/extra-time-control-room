@@ -325,12 +325,17 @@ function publicCommaTitle(sourceTitle) {
   return `${COMMA_PUBLIC_BRAND} Custom Personalized ${clean}`.replace(/\s+/g, ' ').trim()
 }
 
-function commaSeoTitle(title, classification) {
-  const keyword = classification.productGroup === 'Soccer Jersey' ? 'Soccer Jersey' : 'Fan Apparel'
-  const preferred = `${COMMA_PUBLIC_BRAND} Custom Personalized ${keyword}`
-  const candidate = `${preferred} | ${title.replace(/^Jersevo\s+Custom\s+Personalized\s+/i, '')}`
-  if (candidate.length <= 60) return candidate
-  return `${preferred} | Jersevo`.slice(0, 60).replace(/[|\s]+$/g, '')
+export function commaSeoTitle(title, classification, sourceId = '') {
+  const source = sanitizeCommaPublicText(title).replace(/^Jersevo\s+Custom\s+Personalized\s+/i, '').trim() || (classification.productGroup === 'Soccer Jersey' ? 'Soccer Jersey' : 'Fan Apparel')
+  const prefix = `${COMMA_PUBLIC_BRAND} Custom Personalized `
+  if (prefix.length + source.length <= 60) return `${prefix}${source}`
+  // Keep the title unique when a source name is longer than the SERP budget.
+  // A short deterministic suffix is preferable to collapsing hundreds of
+  // PDPs into one generic title.
+  const suffix = `-${stableHash(`${sourceId}:${source}`, 4).toUpperCase()}`
+  const budget = 60 - prefix.length - suffix.length
+  const compact = source.slice(0, Math.max(8, budget)).replace(/\s+\S*$/, '').trim()
+  return `${prefix}${compact}${suffix}`.slice(0, 60)
 }
 
 function commaSeoDescription(title, description, classification) {
@@ -487,7 +492,7 @@ export function normalizeCommaProduct(product = {}, {
     taxonomy:classification.taxonomy,
     customFields:commaCustomFields(productId, classification.productGroup),
     seo:{
-      title:commaSeoTitle(title, classification),
+      title:commaSeoTitle(title, classification, sourceId),
       description:commaSeoDescription(title, sourceStory, classification),
       primaryKeyword:[COMMA_PUBLIC_BRAND, 'custom', 'personalized', classification.taxonomy.playerName, classification.taxonomy.country, classification.productGroup].filter(Boolean).join(' ').slice(0, 100)
     },

@@ -72,6 +72,7 @@ test('Shopify size and product data normalize to a safe draft contract', () => {
   assert.ok(item.listing.description.length >= 160)
   assert.match(item.listing.seo.title, /Jersevo.*Custom.*Personalized/i)
   assert.ok(item.listing.seo.title.length >= 30 && item.listing.seo.title.length <= 60)
+  assert.notEqual(item.listing.seo.title, 'Jersevo Custom Personalized Soccer Jersey | Jersevo')
   assert.ok(item.listing.seo.description.length >= 120)
   assert.ok(item.listing.tags.includes('jersevo'))
   assert.equal(item.listing.price, 0)

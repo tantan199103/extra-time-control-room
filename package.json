@@ -25,6 +25,7 @@
     "import:comma": "node scripts/import-comma-catalog.mjs",
     "sync:comma": "node scripts/import-comma-catalog.mjs --write",
     "publish:comma": "node scripts/publish-comma-catalog.mjs",
+    "refresh:comma:seo": "node scripts/refresh-comma-seo.mjs",
     "sync:owayo:designer": "node scripts/sync-owayo-designer-assets.mjs",
     "route:taass": "node scripts/route-taass-catalog.mjs",
     "audit:taass": "node scripts/audit-taass-coverage.mjs",
