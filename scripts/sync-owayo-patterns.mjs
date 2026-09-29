@@ -9,6 +9,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const publicRoot = resolve(root, 'public')
@@ -38,7 +39,7 @@ function publicPath(path) {
 
 async function fetchBuffer(url) {
   const response = await fetch(url, {
-    headers: { accept: '*/*', 'user-agent': 'JersevoOwayoPatternSync/1.0' }
+    headers: catalogRequestHeaders({ accept: '*/*' })
   })
   if (!response.ok) throw new Error(`Pattern asset request failed (${response.status}) ${url}`)
   return Buffer.from(await response.arrayBuffer())
@@ -132,7 +133,7 @@ function uniquePatterns(categories) {
 export async function syncOwayoPatterns({ manifest, checksums = {}, persist = write } = {}) {
   if (!manifest?.product?.normalizedSlug) throw new Error('Owayo manifest product metadata is required.')
   const response = await fetch(`${sourceOrigin}/konfigurator_php/stocklogos/getAllLogos.php?lang=${encodeURIComponent(language)}&sport=${encodeURIComponent(sport)}`, {
-    headers: { accept: 'application/json', 'user-agent': 'JersevoOwayoPatternSync/1.0' }
+    headers: catalogRequestHeaders({ accept: 'application/json' })
   })
   if (!response.ok) throw new Error(`Owayo pattern catalogue request failed (${response.status}).`)
   const categories = await response.json()

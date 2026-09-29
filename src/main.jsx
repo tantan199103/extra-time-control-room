@@ -48,7 +48,7 @@ import { taxonomyHubCounts } from './lib/taxonomy-hub'
 import CategoryIcon from './CategoryIcon'
 import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from './lib/catalog-pagination'
 import { routeIndexability } from './lib/route-indexability'
-import { productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeByHandle, teamProductTypePath } from './lib/team-product-pages'
+import { TEAM_PRODUCT_PAGE_MIN_PRODUCTS, productMatchesTeamProductType, teamProductTypeCounts, teamProductTypeByHandle, teamProductTypePath } from './lib/team-product-pages'
 import { validateCatalogTaxonomy } from './lib/taxonomy-validator'
 import { resolveCollectionArtwork } from './lib/collection-artwork'
 import { listingMediaRole } from './lib/listing-media'
@@ -63,7 +63,7 @@ import { apiFetch } from './lib/api-client'
 import { availableFinderSizes, canonicalSize, findAudienceOption, recommendCatalogSize, sizeFinderAudiences, sizeProfile, sortSizes } from './lib/size-guide'
 import { buildDeliveryEstimate } from './lib/product-commerce'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quantityDiscountForQty, quantityDiscountLabel } from './lib/quantity-pricing'
-import { adminMenus, adminTheme, themeBlocks } from './admin-builder-data'
+import { adminCollections, adminMenus, adminTheme, themeBlocks } from './admin-builder-data'
 import { pageIdForPath, resolveBlockContent, resolvePageBlocks, resolvePageContent, resolveThemePage } from './lib/theme-runtime'
 import { catalogPageOverrideFor } from './lib/catalog-page-overrides'
 import { initMetaPixel, trackPageView, trackViewContent, trackAddToCart, trackCustomizeProduct, trackInitiateCheckout, trackSearch } from './lib/meta-pixel'
@@ -863,6 +863,58 @@ function ProductGridSkeleton({ count = 8 }) {
   </div>
 }
 
+/**
+ * The team catalogue has two useful mental models: the whole team shop and
+ * one product family. Keep that choice visible before filters so a shopper can
+ * change context without hunting through the control strip.
+ */
+function TeamProductTabs({ league, team, types = [], activeType = null, selectedGroup = '', total = 0, loading = false }) {
+  if (!league || !team) return null
+  const basePath = teamPath(league.key, team)
+  const tabs = [
+    { handle:'all', label:'All gear', count:total, href:basePath, icon:'all', active:!activeType && !selectedGroup },
+    ...types.filter(type => Number(type.count || 0) > 0).map(type => {
+      // Keep thin families discoverable without creating a crawlable page that
+      // has not met the six-product landing-page threshold.
+      const qualified = Number(type.count || 0) >= TEAM_PRODUCT_PAGE_MIN_PRODUCTS
+      const href = qualified ? type.path : `${basePath}?group=${encodeURIComponent(type.groups[0] || type.label)}`
+      return {
+        ...type,
+        href,
+        icon:type.groups?.[0] || type.label,
+        active:activeType?.handle === type.handle || (!activeType && Boolean(selectedGroup) && type.groups?.includes(selectedGroup))
+      }
+    })
+  ]
+  return (
+    <section className="team-product-tabs" aria-labelledby="team-product-tabs-title">
+      <div className="team-product-tabs__intro">
+        <span>TEAM SHOP</span>
+        <h2 id="team-product-tabs-title">Browse by product</h2>
+        <p>{loading ? 'Loading the current product mix…' : `${Number(total || 0).toLocaleString('en-US')} pieces across this team shop.`}</p>
+      </div>
+      <nav className="team-product-tabs__nav" role="tablist" aria-label={`${team.name} products by type`}>
+        {tabs.map(tab => (
+          <a
+            key={tab.handle}
+            href={tab.href}
+            role="tab"
+            aria-selected={Boolean(tab.active)}
+            aria-current={tab.active ? 'page' : undefined}
+            className={`team-product-tabs__tab${tab.active ? ' is-active' : ''}`}
+            onClick={event => { event.preventDefault(); navigate(tab.href) }}
+          >
+            <span className="team-product-tabs__icon"><CategoryIcon kind={tab.icon} size={17}/></span>
+            <span className="team-product-tabs__label"><strong>{tab.label}</strong><small>{loading ? '…' : `${Number(tab.count || 0).toLocaleString('en-US')} pieces`}</small></span>
+            <ArrowRight size={14}/>
+          </a>
+        ))}
+        {!loading && tabs.length === 1 && <span className="team-product-tabs__empty">More product families will appear as inventory is published.</span>}
+      </nav>
+    </section>
+  )
+}
+
 function TaxonomyLanding({ league, team, productType = null, products, discoveryProducts = [], onQuickView, page = 1, pagination = null, loading = false, pageOverride = null }) {
   const [mobileCols, setMobileCols] = useMobileCols()
   const [teamQuery,setTeamQuery] = useState('')
@@ -925,6 +977,7 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
         : 0)
   const pagedProducts = serverPaginated ? orderedProducts : orderedProducts.slice((currentPage - 1) * CATALOG_PAGE_SIZE, currentPage * CATALOG_PAGE_SIZE)
   const teamTypePages = team ? teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug }) : []
+  const teamProductTabs = team ? teamProductTypeCounts(discoveryProducts,{ league:league.key, team:team.slug, minProducts:0 }) : []
   const typeDirectoryCount = productType ? (teamTypePages.find(item => item.handle === productType.handle)?.count ?? filtered.length) : 0
   const indexedCount = selectedGroup ? (resultHub.groups.find(group => group.name === selectedGroup)?.count ?? 0) : productType ? (pagination?.total ?? typeDirectoryCount) : resultHub.total
   const needsLocalCount = Boolean(searchQuery.trim().length >= 2 || selectedSize !== 'ALL' || inStock)
@@ -1033,13 +1086,14 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
           <button type="button" className="taxonomy-control-strip__clear" onClick={() => { const url = new URL(window.location.href); ['search','q','group','size','price','stock','custom','sort'].forEach(key => url.searchParams.delete(key)); navigate(url.pathname + url.search) }}>Clear all</button>
         </div>}
         <div className="taxonomy-control-strip__bottom">
-          <nav className="taxonomy-hub-shop__types taxonomy-control-strip__types" aria-label="Product types">
+          {!team && <nav className="taxonomy-hub-shop__types taxonomy-control-strip__types" aria-label="Product types">
              <a href={team && productType ? teamPath(league.key,team) : path} className={!selectedGroup && !productType ? 'is-active' : undefined} aria-current={!selectedGroup && !productType ? 'page' : undefined} onClick={event => { event.preventDefault(); productType ? navigate(teamPath(league.key,team)) : changeFacet('group','') }}><CategoryIcon kind="all" size={15}/><span>{productType ? 'All team gear' : 'All gear'}</span><small>{loading ? '…' : (taxonomyActiveCount ? filtered.length : hub.total).toLocaleString('en-US')}</small></a>
-             {team && teamTypePages.length ? teamTypePages.map(type => <a key={type.handle} href={type.path} className={productType?.handle === type.handle ? 'is-active' : undefined} aria-current={productType?.handle === type.handle ? 'page' : undefined} onClick={event => { event.preventDefault(); navigate(type.path) }}><CategoryIcon kind={catalogIconForProduct({productGroup:type.groups[0]})} size={15}/><span>{type.label}</span><small>{taxonomyActiveCount ? refinedTeamTypeCount(type).toLocaleString('en-US') : type.count.toLocaleString('en-US')}</small></a>) : !productType && displayFacetGroups.map(group => <a key={group.name} href={path + '?group=' + encodeURIComponent(group.name)} className={selectedGroup === group.name ? 'is-active' : ''} aria-current={selectedGroup === group.name ? 'page' : undefined} onClick={event => { event.preventDefault(); changeFacet('group',group.name) }}><CategoryIcon kind={catalogIconForProduct({productGroup:group.name})} size={15}/><span>{group.name}</span><small>{group.count.toLocaleString('en-US')}</small></a>)}
-          </nav>
+              {!productType && displayFacetGroups.map(group => <a key={group.name} href={path + '?group=' + encodeURIComponent(group.name)} className={selectedGroup === group.name ? 'is-active' : ''} aria-current={selectedGroup === group.name ? 'page' : undefined} onClick={event => { event.preventDefault(); changeFacet('group',group.name) }}><CategoryIcon kind={catalogIconForProduct({productGroup:group.name})} size={15}/><span>{group.name}</span><small>{group.count.toLocaleString('en-US')}</small></a>)}
+          </nav>}
           <div className="taxonomy-control-strip__trust"><StorefrontTrust compact /></div>
         </div>
       </section>
+      {team && <TeamProductTabs league={league} team={team} types={teamProductTabs} activeType={productType} selectedGroup={selectedGroup} total={hub.total} loading={loading} />}
       {!team && <section className="taxonomy-hub-teams" aria-labelledby="taxonomy-team-browser-title">
         <div className="taxonomy-hub-teams__head">
           <div><h2 id="taxonomy-team-browser-title">Find your {league.name} team.</h2><p>Choose a team to see its current jerseys, headwear and fan gear.</p></div>
@@ -1267,6 +1321,123 @@ function LeagueDiscovery({ products = [] }) {
   )
 }
 
+function HomeShopIndex({ navigationProducts = [], products = [], collections = [] }) {
+  const [activeTab, setActiveTab] = useState('products')
+  const rows = navigationProducts.length ? navigationProducts : products
+  const countForCategory = category => rows.reduce((total, row) => {
+    if (!productMatchesCatalogCategory(row, category)) return total
+    return total + Math.max(1, Number(row.count) || 1)
+  }, 0)
+  const productOrder = [
+    'football-jerseys', 'basketball-jerseys', 'baseball-jerseys', 'soccer-jerseys',
+    'hockey-jerseys', 'caps', 'knit-hats', 'fan-apparel', 'custom-jerseys'
+  ]
+  const productCategories = productOrder
+    .map(handle => ALL_CATALOG_CATEGORY_PAGES.find(category => category.handle === handle))
+    .filter(Boolean)
+    .map(category => ({ ...category, count: countForCategory(category) }))
+    .filter(category => category.count > 0 || !rows.length)
+  const leagueRows = ALL_LEAGUE_TAXONOMY
+    .map(league => ({
+      ...league,
+      count: rows.reduce((total, row) => productMatchesTaxonomy(row, { league: league.key })
+        ? total + Math.max(1, Number(row.count) || 1)
+        : total, 0)
+    }))
+    .filter(league => league.count > 0)
+  const leagueOrder = ['nfl', 'nba', 'mlb', 'nhl', 'mls', 'ncaa']
+  const leagues = [
+    ...leagueOrder.map(key => leagueRows.find(league => league.key === key)).filter(Boolean),
+    ...leagueRows.filter(league => !leagueOrder.includes(league.key))
+  ].slice(0, 8)
+  const collectionRows = (collections.length ? collections : adminCollections)
+    .filter(collection => String(collection?.status || 'PUBLISHED').toUpperCase() === 'PUBLISHED')
+    .filter(collection => collection?.handle || collection?.id)
+    .slice(0, 6)
+  const tabs = [
+    { id: 'products', label: 'Products', detail: 'Start with the piece' },
+    { id: 'leagues', label: 'Leagues', detail: 'Find your competition' },
+    { id: 'collections', label: 'Collections', detail: 'Follow the story' }
+  ]
+  const open = href => navigate(href)
+  return (
+    <section className="home-shop-index section" id="shop-by" aria-labelledby="home-shop-index-title">
+      <div className="home-shop-index__intro">
+        <span className="home-shop-index__eyebrow">SHOP BY / FIND YOUR ROUTE</span>
+        <h2 id="home-shop-index-title">START WITH<br /><em>THE PIECE.</em></h2>
+        <p>Begin with the jersey, cap or collection that belongs to your matchday. Switch routes without leaving the homepage.</p>
+        <div className="home-shop-index__intro-actions">
+          <button type="button" className="button-link" onClick={() => open('/shop')}>SHOP ALL GEAR <ArrowRight size={16}/></button>
+          <span>LIVE CATALOGUE</span>
+        </div>
+      </div>
+      <div className="home-shop-index__workspace">
+        <div className="home-shop-index__tabs" role="tablist" aria-label="Shop by product, league or collection">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`home-shop-panel-${tab.id}`}
+              id={`home-shop-tab-${tab.id}`}
+              className={activeTab === tab.id ? 'is-active' : ''}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span>{tab.label}</span><small>{tab.detail}</small><ArrowRight size={14}/>
+            </button>
+          ))}
+        </div>
+        {activeTab === 'products' && (
+          <nav className="home-shop-index__panel" id="home-shop-panel-products" role="tabpanel" aria-labelledby="home-shop-tab-products" aria-label="Shop by product">
+            {productCategories.map(category => (
+              <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); open(`/category/${category.handle}`) }}>
+                <span className="home-shop-index__icon"><CategoryIcon kind={category.icon} size={20}/></span>
+                <span className="home-shop-index__label"><strong>{category.label}</strong><small>{category.count.toLocaleString('en-US')} styles</small></span>
+                <ArrowRight size={16}/>
+              </a>
+            ))}
+            {!productCategories.length && <p className="home-shop-index__empty">Product routes are loading. <button type="button" onClick={() => open('/shop')}>Open the full shop <ArrowRight size={14}/></button></p>}
+          </nav>
+        )}
+        {activeTab === 'leagues' && (
+          <nav className="home-shop-index__panel home-shop-index__panel--leagues" id="home-shop-panel-leagues" role="tabpanel" aria-labelledby="home-shop-tab-leagues" aria-label="Shop by league">
+            {leagues.map(league => (
+              <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); open(leaguePath(league)) }}>
+                <span className="home-shop-index__league-mark">
+                  {league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <span>{league.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase()}</span>}
+                </span>
+                <span className="home-shop-index__label"><strong>{league.name}</strong><small>{league.count.toLocaleString('en-US')} styles</small></span>
+                <ArrowRight size={16}/>
+              </a>
+            ))}
+            {!leagues.length && <p className="home-shop-index__empty">League routes are loading. <button type="button" onClick={() => open('/sports')}>Browse sports <ArrowRight size={14}/></button></p>}
+          </nav>
+        )}
+        {activeTab === 'collections' && (
+          <nav className="home-shop-index__panel home-shop-index__panel--collections" id="home-shop-panel-collections" role="tabpanel" aria-labelledby="home-shop-tab-collections" aria-label="Shop by collection">
+            {collectionRows.map(collection => {
+              const artwork = resolveCollectionArtwork(collection, products)
+              const href = `/collection/${encodeURIComponent(collection.handle || collection.id)}`
+              return (
+                <a key={collection.id || collection.handle} href={href} onClick={event => { event.preventDefault(); open(href) }}>
+                  <span className="home-shop-index__collection-art">
+                    {artwork.src ? <img src={artwork.src} alt="" loading="lazy" decoding="async"/> : <CategoryIcon kind={artwork.icon || 'all'} size={21}/>}
+                  </span>
+                  <span className="home-shop-index__label"><strong>{collection.name || collection.title || collection.handle}</strong><small>{Number(collection.publishedCount ?? collection.count ?? 0) ? `${Number(collection.publishedCount ?? collection.count).toLocaleString('en-US')} pieces` : 'Explore the edit'}</small></span>
+                  <ArrowRight size={16}/>
+                </a>
+              )
+            })}
+            {!collectionRows.length && <p className="home-shop-index__empty">Collections are being curated. <button type="button" onClick={() => open('/collections')}>Browse all collections <ArrowRight size={14}/></button></p>}
+          </nav>
+        )}
+        <div className="home-shop-index__footer"><span>JERSEYS / HEADWEAR / STORIES</span><button type="button" onClick={() => open('/collections')}>VIEW ALL COLLECTIONS <ArrowRight size={14}/></button></div>
+      </div>
+    </section>
+  )
+}
+
 function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '', showMeta = true }) {
   const uid = useId().replace(/:/g, '')
   const patternId = `jersey-grid-${uid}`
@@ -1325,6 +1496,181 @@ function CustomOptions({ product, products = [], onAdd }) {
           <HomeJerseyPersonalizer onAdd={onAdd} product={product} products={products} />
         </Suspense>
       </div>
+    </section>
+  )
+}
+
+const HOME_PRODUCT_DISCOVERY_CATEGORIES = Object.freeze([
+  { handle:'football-jerseys', label:'Football', note:'Football jerseys' },
+  { handle:'basketball-jerseys', label:'Basketball', note:'Basketball jerseys' },
+  { handle:'baseball-jerseys', label:'Baseball', note:'Baseball jerseys' },
+  { handle:'soccer-jerseys', label:'Soccer', note:'Soccer jerseys' },
+  { handle:'hockey-jerseys', label:'Hockey', note:'Hockey jerseys' },
+  { handle:'caps', label:'Caps', note:'Caps & fitted hats' },
+  { handle:'knit-hats', label:'Knit hats', note:'Cold-weather headwear' },
+  { handle:'custom-jerseys', label:'Custom', note:'3D custom jerseys' },
+  { handle:'fan-apparel', label:'Fan apparel', note:'Everyday fan layers' }
+])
+
+function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickView }) {
+  const sectionRef = useRef(null)
+  const [activeHandle,setActiveHandle] = useState(HOME_PRODUCT_DISCOVERY_CATEGORIES[0].handle)
+  const [selectedId,setSelectedId] = useState('')
+  const [catalog,setCatalog] = useState({})
+  const [loadingHandle,setLoadingHandle] = useState('')
+  const [errors,setErrors] = useState({})
+  const [ready,setReady] = useState(false)
+  const activeRoute = HOME_PRODUCT_DISCOVERY_CATEGORIES.find(item => item.handle === activeHandle) || HOME_PRODUCT_DISCOVERY_CATEGORIES[0]
+  const activeCategory = catalogCategoryByHandle(activeHandle)
+  const navigationRows = navigationProducts.length ? navigationProducts : products
+  const countFor = handle => {
+    const category = catalogCategoryByHandle(handle)
+    return navigationRows.reduce((sum,row) => productMatchesCatalogCategory(row,category)
+      ? sum + Math.max(1,Number(row.count) || 1)
+      : sum,0)
+  }
+  const seededProducts = useMemo(() => products
+    .filter(product => productMatchesCatalogCategory(product,activeCategory))
+    .slice(0,12), [products,activeHandle])
+  const hasLoaded = Object.prototype.hasOwnProperty.call(catalog,activeHandle)
+  const activeProducts = hasLoaded ? catalog[activeHandle] : seededProducts
+  const productKey = activeProducts.map(product => product.id).join('|')
+
+  useEffect(() => {
+    if (!sectionRef.current || typeof IntersectionObserver === 'undefined') {
+      setReady(true)
+      return undefined
+    }
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return
+      setReady(true)
+      observer.disconnect()
+    }, { rootMargin:'700px 0px' })
+    observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!ready || hasLoaded) return undefined
+    let active = true
+    setLoadingHandle(activeHandle)
+    setErrors(current => ({ ...current, [activeHandle]:'' }))
+    fetchStorefrontCatalogPage({ page:1, pageSize:12, basePath:`/category/${activeHandle}` })
+      .then(result => {
+        if (!active) return
+        if (result.source === 'unavailable') throw new Error(result.error || 'Products are temporarily unavailable.')
+        setCatalog(current => ({ ...current, [activeHandle]:result.data || [] }))
+      })
+      .catch(error => {
+        if (!active) return
+        setErrors(current => ({ ...current, [activeHandle]:error instanceof Error ? error.message : 'Products are temporarily unavailable.' }))
+      })
+      .finally(() => { if (active) setLoadingHandle(current => current === activeHandle ? '' : current) })
+    return () => { active = false }
+  }, [activeHandle,ready,hasLoaded])
+
+  useEffect(() => {
+    if (activeProducts.some(product => product.id === selectedId)) return
+    setSelectedId(activeProducts[0]?.id || '')
+  }, [activeHandle,productKey])
+
+  const product = activeProducts.find(item => item.id === selectedId) || activeProducts[0] || null
+  const available = sellableVariants(product)
+  const price = Number(product?.price || available[0]?.price || 0)
+  const compareAt = Number(product?.compareAt || 0)
+  const sizeOption = (product?.options || []).find(option => /^(size|fit)$/i.test(option.name))
+  const sizes = sizeOption ? sortSizes(sizeOption.values || []).slice(0,10) : []
+  const taxonomy = productTaxonomyValues(product || {})
+  const league = findLeague(taxonomy.league)
+  const team = league ? findTeam(league.key,taxonomy.team) : null
+  const designerTarget = product ? listingDesignerTarget(product) : ''
+  const productHref = product ? `/product/${product.handle || product.id}` : activeRoute ? `/category/${activeRoute.handle}` : '/shop'
+  const summary = product ? seoDescription(product.subtitle || product.description || product.story, `${product.name || product.title} is available in the live Jersevo catalogue.`, 210) : ''
+  const loading = loadingHandle === activeHandle && !activeProducts.length
+
+  return (
+    <section ref={sectionRef} className="home-product-discovery section" id="product-discovery" aria-labelledby="home-product-discovery-title">
+      <div className="home-product-discovery__head">
+        <div>
+          <span>THE PRODUCT LOCKER</span>
+          <h2 id="home-product-discovery-title">EXPLORE THE<br /><em>ACTUAL PIECES.</em></h2>
+        </div>
+        <p>Move through jerseys, caps and fan layers, then inspect the product, price, available sizes and personalization before opening its full page.</p>
+      </div>
+
+      <div className="home-product-discovery__tabs" role="tablist" aria-label="Explore products by type">
+        {HOME_PRODUCT_DISCOVERY_CATEGORIES.map(route => {
+          const category = catalogCategoryByHandle(route.handle)
+          const count = countFor(route.handle)
+          return (
+            <button
+              key={route.handle}
+              type="button"
+              role="tab"
+              aria-selected={activeHandle === route.handle}
+              aria-controls="home-product-discovery-panel"
+              id={`home-product-discovery-tab-${route.handle}`}
+              className={activeHandle === route.handle ? 'is-active' : ''}
+              onClick={() => setActiveHandle(route.handle)}
+            >
+              <CategoryIcon kind={category?.icon || 'all'} size={18}/>
+              <span>{route.label}</span>
+              {count > 0 && <small>{count.toLocaleString('en-US')}</small>}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="home-product-discovery__panel" id="home-product-discovery-panel" role="tabpanel" aria-labelledby={`home-product-discovery-tab-${activeHandle}`} aria-live="polite">
+        {loading ? <div className="home-product-discovery__loading" role="status"><span/><span/><p>Loading {activeRoute.note.toLowerCase()}…</p></div> : product ? <>
+          <figure className="home-product-discovery__media">
+            <img src={product.image || '/assets/jersey-black.webp'} alt={product.alt || product.name || product.title} loading="lazy" decoding="async" />
+            <figcaption><span>{activeRoute.note}</span><strong>{activeProducts.length} live picks</strong></figcaption>
+          </figure>
+          <article className="home-product-discovery__detail">
+            <div className="home-product-discovery__identity">
+              <span className="home-product-discovery__marks"><ProductTaxonomyMarks product={product}/></span>
+              <span>{[league?.name,team?.name,product.productGroup].filter(Boolean).join(' / ') || activeRoute.note}</span>
+            </div>
+            <p className="home-product-discovery__status">{designerTarget ? '3D CUSTOM' : product.customFields?.length ? 'PERSONALIZABLE' : 'PUBLISHED PRODUCT'}</p>
+            <h3>{product.name || product.title}</h3>
+            <div className="home-product-discovery__price"><strong>{money(price)}</strong>{compareAt > price && <del>{money(compareAt)}</del>}</div>
+            <p className="home-product-discovery__summary">{summary}</p>
+
+            <dl className="home-product-discovery__facts">
+              <div><dt>Availability</dt><dd>{available.length ? 'Available to order' : 'Currently sold out'}</dd></div>
+              <div><dt>Variations</dt><dd>{available.length || 0} live options</dd></div>
+              <div><dt>Personalization</dt><dd>{designerTarget ? 'Full 3D builder' : product.customFields?.length ? 'Listing-approved fields' : 'Ready-made piece'}</dd></div>
+              <div><dt>Product type</dt><dd>{product.productGroup || product.type || activeRoute.note}</dd></div>
+            </dl>
+
+            <div className="home-product-discovery__sizes">
+              <span>{sizes.length ? 'Available sizes' : 'Fit'}</span>
+              <div>{sizes.length ? sizes.map(size => <small key={size}>{size}</small>) : <small>See product details</small>}</div>
+            </div>
+
+            <div className="home-product-discovery__actions">
+              <button type="button" className="button button--acid" onClick={() => navigate(productHref)}>VIEW PRODUCT <ArrowRight size={16}/></button>
+              <button type="button" className="home-product-discovery__quick" disabled={!available.length} onClick={() => available.length && onQuickView(product)}>QUICK VIEW <Plus size={15}/></button>
+              {designerTarget && <button type="button" className="home-product-discovery__designer" onClick={() => navigate(designerTarget)}><Sparkles size={14}/> EDIT IN 3D</button>}
+            </div>
+          </article>
+        </> : <div className="home-product-discovery__empty">
+          <Shirt size={28}/><h3>No live {activeRoute.note.toLowerCase()} found.</h3><p>{errors[activeHandle] || 'Open the complete catalogue to keep exploring.'}</p><button type="button" onClick={() => navigate(`/category/${activeHandle}`)}>OPEN THIS CATEGORY <ArrowRight size={15}/></button>
+        </div>}
+      </div>
+
+      {activeProducts.length > 0 && <div className="home-product-discovery__lineup">
+        <div className="home-product-discovery__lineup-head"><span>{activeRoute.note}</span><button type="button" onClick={() => navigate(`/category/${activeHandle}`)}>VIEW ALL <ArrowRight size={14}/></button></div>
+        <div className="home-product-discovery__lineup-track" aria-label={`Select a ${activeRoute.note.toLowerCase()} product`}>
+          {activeProducts.slice(0,8).map(item => (
+            <button key={item.id} type="button" aria-pressed={product?.id === item.id} className={product?.id === item.id ? 'is-active' : ''} onClick={() => setSelectedId(item.id)}>
+              <img src={item.image || '/assets/jersey-black.webp'} alt="" loading="lazy" decoding="async" />
+              <span><strong>{item.name || item.title}</strong><small>{money(item.price)}</small></span>
+            </button>
+          ))}
+        </div>
+      </div>}
     </section>
   )
 }
@@ -1563,15 +1909,35 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
     supporting: 'Made for fans. Personalized with the details that make it yours.',
     button: 'START CUSTOMIZING'
   })
-  const homeBlocks = resolvePageBlocks(theme, 'home', DEFAULT_HOME_LAYOUT)
+  const multiline = value => String(value || '').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{line}</React.Fragment>)
+  const categoryRows = navigationProducts.length ? navigationProducts : products
+  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
+  const resolvedHomeBlocks = resolvePageBlocks(theme, 'home', DEFAULT_HOME_LAYOUT)
+  // Older saved themes predate the unified homepage shop index. Preserve the
+  // editor's order while inserting the new discovery block after leagues so
+  // product, league and collection routes are available in one place.
+  const homeBlocks = (() => {
+    let blocks = [...resolvedHomeBlocks]
+    if (!blocks.some(block => block.id === 'shop-index')) {
+      const insertAt = blocks.findIndex(block => block.id === 'leagues')
+      const next = { id:'shop-index', type:'Shop by product / league / collection', enabled:true, order:0, settings:{} }
+      blocks = insertAt < 0 ? [...blocks,next] : [...blocks.slice(0,insertAt + 1),next,...blocks.slice(insertAt + 1)]
+    }
+    // Saved production themes may predate the detailed product explorer. It
+    // belongs directly after the Custom experience, regardless of whether the
+    // site uses the current `custom-options` block or the older `custom-cta`.
+    if (!blocks.some(block => block.id === 'product-discovery')) {
+      const customAt = Math.max(blocks.findIndex(block => block.id === 'custom-options'),blocks.findIndex(block => block.id === 'custom-cta'))
+      const next = { id:'product-discovery', type:'Detailed product discovery', enabled:true, order:0, settings:{} }
+      blocks = customAt < 0 ? [...blocks,next] : [...blocks.slice(0,customAt + 1),next,...blocks.slice(customAt + 1)]
+    }
+    return blocks
+  })()
   const blockById = new Map(homeBlocks.map(block => [block.id, block]))
   const blockCopy = id => resolveBlockContent(theme, 'home', id, blockById.get(id)?.settings || {})
   const featuredCollectionId = homeContent.featuredCollectionId || homePage?.featuredCollectionId || blockCopy('rail').featuredCollectionId
   const primaryCollection = collections.find(collection => collection.id === featuredCollectionId || collection.handle === featuredCollectionId) || collections[0]
   const merchandised = primaryCollection ? sortCollectionProducts(products,primaryCollection).slice(0,10) : products.slice(0,10)
-  const multiline = value => String(value || '').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{line}</React.Fragment>)
-  const categoryRows = navigationProducts.length ? navigationProducts : products
-  const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
   const renderBlock = block => ({
     hero:<Hero key="hero" content={{ ...homeContent, ...blockCopy('hero') }} customProduct={customProduct}/>,
     'home-trust':<StorefrontTrust key="home-trust" variant="home" content={blockCopy('home-trust')} />,
@@ -1581,8 +1947,10 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues" products={navigationProducts.length ? navigationProducts : products}/>,
+    'shop-index':<HomeShopIndex key="shop-index" navigationProducts={navigationProducts} products={products} collections={collections}/>,
     'custom-cta':<CustomTeaser key="custom-cta" product={customProduct} products={products} onAdd={onAdd}/>,
     'custom-options':<CustomOptions key="custom-options" product={customProduct} products={products} onAdd={onAdd}/>,
+    'product-discovery':<HomeProductDiscovery key="product-discovery" products={products} navigationProducts={navigationProducts} onQuickView={onQuickView}/>,
     quality:<QualityProof key="quality" product={featured}/>,
     community:<CommunityProof key="community"/>,
     faq:<HomeFaq key="faq"/>,
@@ -2192,6 +2560,53 @@ function ProductStorySignals({ product }) {
   return <section className="pdp-story-signals"><details><summary><ShieldCheck size={16}/><span><small>PRODUCT PROOF</small><strong>Value in the details</strong></span><Plus/></summary><div className="pdp-story-signals__groups">{valueProps.length > 0 && <div><span>VALUE / WHAT YOU RECEIVE</span>{valueProps.map((item, index) => <article key={`value-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}{differentiators.length > 0 && <div><span>DIFFERENCE / WHAT MAKES IT DISTINCT</span>{differentiators.map((item, index) => <article key={`difference-${index}`}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p></article>)}</div>}</div></details></section>
 }
 
+/**
+ * Product context is deliberately a small navigation rail, not another
+ * recommendation carousel. It lets a shopper move from a specific piece to
+ * the league or team catalogue while preserving the same taxonomy vocabulary
+ * used in breadcrumbs and SEO links.
+ */
+function PdpContextTabs({ product, league, team }) {
+  if (!league && !team) return null
+  const contexts = [
+    { id:'product', eyebrow:'Product', label:product?.name || 'Current piece', href:'#pdp-overview', active:true },
+    ...(league ? [{ id:'league', eyebrow:'League', label:league.name, href:leaguePath(league), media:league.media }] : []),
+    ...(team ? [{ id:'team', eyebrow:'Team', label:team.name, href:teamPath(league.key,team), media:team.media }] : [])
+  ]
+  return (
+    <nav className="pdp-context-tabs" role="tablist" aria-label="Explore this product by league or team">
+      <span className="pdp-context-tabs__label">Explore this piece</span>
+      <div className="pdp-context-tabs__track">
+        {contexts.map(context => (
+          <a
+            key={context.id}
+            href={context.href}
+            role="tab"
+            aria-selected={context.active}
+            aria-current={context.active ? 'page' : undefined}
+            className={`pdp-context-tabs__tab${context.active ? ' is-active' : ''}`}
+            onClick={event => {
+              if (context.active) return
+              event.preventDefault()
+              navigate(context.href)
+            }}
+          >
+            <span className="pdp-context-tabs__mark">
+              {context.media?.src && !context.media.fallback
+                ? <img src={context.media.src} alt="" loading="lazy" decoding="async" />
+                : context.active
+                  ? <Shirt size={16} aria-hidden="true" />
+                  : <span aria-hidden="true">{context.label.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase()}</span>}
+            </span>
+            <span className="pdp-context-tabs__copy"><small>{context.eyebrow}</small><strong>{context.label}</strong></span>
+            {!context.active && <ArrowRight size={14} aria-hidden="true" />}
+          </a>
+        ))}
+      </div>
+    </nav>
+  )
+}
+
 function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account, pageConfig = null }) {
   const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
   const savedAi = readSession('extra-time-ai-preview')
@@ -2275,6 +2690,8 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const currentCompare = displayVariant?.compareAt ?? product.compareAt
   const commerceConfig = productCommerceConfig(product)
   const bulkOffers = commerceConfig.bulkOffers || []
+  const designerProvider = String(product?.designerConfig?.provider || '').toLowerCase()
+  const designerLibraryLabel = designerProvider === 'owayo' ? 'matching cycling design library' : 'matching teamwear design library'
   const estimate = buildDeliveryEstimate(commerceConfig.delivery)
   const soldOut = selectedVariant ? Number(selectedVariant.inventory || 0) < 1 : false
   const selectionSummary = options.map(option => selections[option.name] ? (option.name === sizeName ? canonicalSize(selections[option.name]) : selections[option.name]) : '').filter(Boolean).join(' · ')
@@ -2421,7 +2838,8 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
   return <main className="pdp">
     <div className="pdp-breadcrumb-wrap"><Breadcrumbs items={[{ label:'Shop', href:'/shop' }, ...(productLeague ? [{ label:productLeague.name, href:leaguePath(productLeague) }] : []), ...(productTeam ? [{ label:productTeam.name, href:teamPath(productLeague.key,productTeam) }] : []), { label:product.name }]}/></div>
-    <div className="pdp__commerce">
+    <PdpContextTabs product={product} league={productLeague} team={productTeam} />
+    <div className="pdp__commerce" id="pdp-overview">
       <div className="pdp__gallery-wrapper">
         <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={15}/> BACK TO THE DROP</button>
         <div className="pdp__gallery-stage">
@@ -2513,7 +2931,7 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
         <div className="pdp__gallery-meta"><span>{String(galleryIndex+1).padStart(2,'0')} / {String(gallery.length).padStart(2,'0')}</span><span>SWIPE TO EXPLORE</span></div>
       </div>
       <aside className="pdp__info">
-        {product.badge && <p className="product-badge static">{product.badge}</p>}{pageCopy.eyebrow && !product.badge && <p className="product-badge static">{pageCopy.eyebrow}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story || pageCopy.supporting}</p>{designerTarget && <button type="button" className="pdp__designer-cta" onClick={() => navigate(designerTarget)}><Sparkles size={18}/><span><strong>EDIT THIS KIT IN 3D</strong><small>Open the matching teamwear design library for this listing.</small></span><ArrowRight size={17}/></button>}{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}        <div className="pdp__price">
+        {product.badge && <p className="product-badge static">{product.badge}</p>}{pageCopy.eyebrow && !product.badge && <p className="product-badge static">{pageCopy.eyebrow}</p>}<h1>{product.name}</h1><p className="pdp__story">{product.story || pageCopy.supporting}</p>{designerTarget && <button type="button" className="pdp__designer-cta" onClick={() => navigate(designerTarget)}><Sparkles size={18}/><span><strong>EDIT THIS KIT IN 3D</strong><small>Open the {designerLibraryLabel} for this listing.</small></span><ArrowRight size={17}/></button>}{product.rating > 0 && product.reviews > 0 && <Rating value={product.rating} reviews={product.reviews}/>}        <div className="pdp__price">
           <strong>{money(currentPrice)}</strong>
           {currentCompare > currentPrice && (
             <>

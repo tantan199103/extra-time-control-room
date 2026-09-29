@@ -140,6 +140,20 @@ test('homepage hero stays focused and trust ribbon keeps all four pillars readab
   assert.doesNotMatch(css, /\.storefront-trust__pill-title\s*\{[^}]*text-overflow:\s*ellipsis/)
 })
 
+test('homepage puts a detailed live product explorer directly after Custom', () => {
+  assert.match(source, /function HomeProductDiscovery\(/)
+  assert.match(source, /id="product-discovery"/)
+  assert.match(source, /VIEW PRODUCT/)
+  assert.match(source, /Available sizes/)
+  assert.match(source, /Full 3D builder/)
+  assert.match(source, /'product-discovery':<HomeProductDiscovery/)
+  assert.match(source, /const customAt = Math\.max\(/)
+  assert.match(source, /blocks = customAt < 0 \? \[\.\.\.blocks,next\] : \[\.\.\.blocks\.slice\(0,customAt \+ 1\),next/)
+  assert.match(css, /\.home-product-discovery\s*\{[^}]*border-top: 8px solid var\(--ink\)/)
+  assert.match(css, /\.home-product-discovery__panel\s*\{[^}]*grid-template-columns/)
+  assert.match(css, /@media \(max-width: 780px\) \{[\s\S]*\.home-product-discovery__panel/)
+})
+
 test('product page integrates inline estimated delivery with purchase options and highlights timeline', () => {
   assert.match(source, /className="pdp-delivery-badge"/)
   assert.match(source, /ESTIMATED ARRIVAL:/)

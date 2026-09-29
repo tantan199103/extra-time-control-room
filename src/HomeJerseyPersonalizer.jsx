@@ -15,6 +15,7 @@ import {
 import { apiFetch } from './lib/api-client'
 import { getCustomerSessionId } from './lib/supabase'
 import { trackCustomizeProduct } from './lib/meta-pixel'
+import { custom3DDesignerConfig } from './lib/custom-3d'
 
 export const MAX_NAME_LENGTH = 12
 export const MAX_NUMBER_LENGTH = 2
@@ -250,6 +251,16 @@ function navigate(path) {
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
+function exactDesignerTarget(product) {
+  const config = custom3DDesignerConfig(product)
+  const listing = product?.handle || product?.id
+  if (!config || !listing) return ''
+  const params = new URLSearchParams({ listing, provider:config.provider, product:config.productId })
+  if (config.defaultStyleCode) params.set('style', config.defaultStyleCode)
+  if (config.defaultDesignId) params.set('design', config.defaultDesignId)
+  return `/custom/design?${params.toString()}`
+}
+
 export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }) {
   const [leagueFilter, setLeagueFilter] = useState('ALL')
   const [activeIndex, setActiveIndex] = useState(0)
@@ -281,6 +292,9 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
     : CATALOGUE_LEAGUE_LISTINGS.filter(item => item.league === leagueFilter)
 
   const activeListing = filteredListings[activeIndex] || filteredListings[0] || CATALOGUE_LEAGUE_LISTINGS[0]
+  const activeProduct = (products || []).find(item => item.handle === activeListing.productHandle || item.id === activeListing.productId || item.id === activeListing.productHandle)
+    || (product && (product.handle === activeListing.productHandle || product.id === activeListing.productId || product.id === activeListing.productHandle) ? product : null)
+  const exactTarget = exactDesignerTarget(activeProduct)
 
   useEffect(() => {
     try {
@@ -335,6 +349,18 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
     const trimmedNumber = cleanNumber(number)
     if (!name.trim() && !number.trim()) {
       setAiNotice('Enter a name or number to render your jersey.')
+      return
+    }
+
+    // A synchronized 3D listing already has the exact garment UV and model.
+    // Opening that route preserves the selected pattern, seams and typography;
+    // the generic image service is only retained for legacy 2D catalogue rows.
+    if (exactTarget) {
+      try { window.sessionStorage.setItem('jersevo_home_custom', JSON.stringify({ name:trimmedName, number:trimmedNumber })) } catch {}
+      const url = new URL(exactTarget, window.location.origin)
+      url.searchParams.set('name', trimmedName)
+      url.searchParams.set('number', trimmedNumber)
+      navigate(`${url.pathname}${url.search}`)
       return
     }
 
@@ -671,7 +697,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
               ) : (
                 <>
                   <Sparkles size={15} />
-                  <span>RENDER JERSEY</span>
+                  <span>{exactTarget ? 'OPEN EXACT 3D STUDIO' : 'RENDER JERSEY'}</span>
                 </>
               )}
             </button>

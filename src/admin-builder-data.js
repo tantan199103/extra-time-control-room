@@ -13,7 +13,7 @@ export const adminTheme = {
     radius: '0px'
   },
   pages: [
-    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 7, updatedAt: 'Today, 10:12', layout: [{ id: 'hero', type: 'Custom jersey hero', enabled: true }, { id: 'home-trust', type: 'Home trust strip', enabled: true }, { id: 'leagues', type: 'League discovery', enabled: true }, { id: 'rail', type: 'Starting lineup', enabled: true }, { id: 'custom-options', type: 'Customization options', enabled: true }, { id: 'faq', type: 'Homepage FAQ', enabled: true }, { id: 'category-index', type: 'Category index', enabled: true }], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Jersevo custom jersey storefront hero' },
+    { id: 'home', name: 'Home', path: '/', status: 'PUBLISHED', sections: 9, updatedAt: 'Today, 10:12', layout: [{ id: 'hero', type: 'Custom jersey hero', enabled: true }, { id: 'home-trust', type: 'Home trust strip', enabled: true }, { id: 'leagues', type: 'League discovery', enabled: true }, { id: 'shop-index', type: 'Shop by product / league / collection', enabled: true }, { id: 'rail', type: 'Starting lineup', enabled: true }, { id: 'custom-options', type: 'Customization options', enabled: true }, { id: 'product-discovery', type: 'Detailed product discovery', enabled: true }, { id: 'faq', type: 'Homepage FAQ', enabled: true }, { id: 'category-index', type: 'Category index', enabled: true }], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'Jersevo custom jersey storefront hero' },
     { id: 'collection', name: 'Collection', path: '/collection', status: 'PUBLISHED', sections: 4, updatedAt: 'Yesterday, 18:42', layout: [{ id: 'collection-hero', enabled: true }, { id: 'filters', enabled: true }, { id: 'product-grid', enabled: true }, { id: 'collection-trust', enabled: true }], representativeImage: '/assets/hero-tunnel.webp', representativeAlt: 'The 90+ drop' },
     { id: 'product', name: 'Product detail', path: '/product/:handle', status: 'PUBLISHED', sections: 6, updatedAt: 'Yesterday, 16:20', layout: [{ id: 'product-gallery', enabled: true }, { id: 'product-buybox', enabled: true }, { id: 'product-highlights', enabled: true }, { id: 'product-story', enabled: true }, { id: 'product-proof', enabled: true }, { id: 'related-products', enabled: true }], representativeImage: '/assets/jersey-black.webp', representativeAlt: 'Product detail preview' },
     { id: 'custom', name: 'Custom Lab', path: '/custom', status: 'PUBLISHED', sections: 4, updatedAt: 'Sep 12, 2026', layout: [{ id: 'custom-hero', enabled: true }, { id: 'custom-steps', enabled: true }, { id: 'custom-catalog', enabled: true }, { id: 'custom-trust', enabled: true }], representativeImage: '/assets/jersey-white.webp', representativeAlt: 'Custom jersey preview' },
@@ -109,9 +109,11 @@ export const themeBlocks = [
   { id: 'hero', type: 'Custom jersey hero', note: 'Your name, number and primary CTA', enabled: true },
   { id: 'home-trust', type: 'Home trust strip', note: 'Made to order, custom, secure and tracked', enabled: true },
   { id: 'leagues', type: 'League discovery', note: 'Choose a league and shop the route', enabled: true },
+  { id: 'shop-index', type: 'Shop by product / league / collection', note: 'Unified homepage discovery with product-first tabs', enabled: true },
   { id: 'rail', type: 'Starting lineup', note: 'Fan favorites near the top of home', enabled: true },
   { id: 'home-path', type: 'Make it yours', note: 'Pick, personalize, preview and order', enabled: true },
   { id: 'custom-options', type: 'Customization options', note: 'Show the listing-approved personal fields', enabled: true },
+  { id: 'product-discovery', type: 'Detailed product discovery', note: 'Explore live products, pricing, sizes and personalization after Custom', enabled: true },
   { id: 'quality', type: 'Detail proof', note: 'Surface, print, trim and fit guidance', enabled: true },
   { id: 'drop', type: 'Drop feature', note: 'Featured current listing', enabled: true },
   { id: 'players', type: 'Shop by intent', note: 'For you, two, family and squad', enabled: true },

@@ -9,6 +9,8 @@ import { matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
 import { STOREFRONT_STATIC_ROUTES } from '../src/lib/storefront-model.js'
 import { normalizeDesignerSpec } from '../api/customization-order.js'
 import { brandColorIndices } from '../scripts/strip-owayo-branding.mjs'
+import { normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, resolveOwayoPreviewText, resolveOwayoSizeValue } from '../src/lib/owayo-personalization.js'
+import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const publicRoot = resolve(root, 'public')
@@ -142,4 +144,74 @@ test('3D design handoff is bounded and keeps the production roster server-side',
   assert.equal(spec.roster[0].number, '0')
   assert.equal(spec.manifest, '/designer/owayo/cycling-c3/manifest.json')
   assert.throws(() => normalizeDesignerSpec({ source:'external' }), /not supported/)
+})
+
+test('Owayo personalization preview is deterministic and roster-backed', () => {
+  const roster = [{ name:'  Ada Lovelace  ', number:'9x0', size:'M' }]
+  const preview = resolveOwayoPreviewText({ team:'JERSEVO', name:'Draft', number:'12' }, roster)
+  assert.deepEqual(preview, { team:'JERSEVO', name:'Ada Lovelace', number:'90' })
+  const normalized = normalizeOwayoPersonalization({ ...preview, font:'not-allowed', rotation:99, outlineWidth:99 }, roster)
+  assert.equal(normalized.font, 'Barlow Condensed')
+  assert.equal(normalized.rotation, 30)
+  assert.equal(normalized.outlineWidth, 24)
+  assert.deepEqual(Object.keys(owayoBackTextLayout()), ['team','name','number'])
+})
+
+test('Owayo roster keeps display sizes and source variant codes aligned', () => {
+  const sizes = [
+    { name:'Choose your size', size:'Choose your size' },
+    { name:'5 (M)', size:'5' },
+    { name:'6 (M)', size:'6' },
+    { name:'7 (L)', size:'7' }
+  ]
+  assert.deepEqual(normalizeOwayoSizeOptions(sizes), [
+    { value:'5', label:'5 (M)' },
+    { value:'6', label:'6 (M)' },
+    { value:'7', label:'7 (L)' }
+  ])
+  assert.equal(resolveOwayoSizeValue('M', sizes), '5')
+  assert.equal(resolveOwayoSizeValue('7 (L)', sizes), '7')
+  assert.deepEqual(normalizeOwayoRoster([{ id:'p1', name:'Ada', number:'9x0', size:'M' }], sizes), [{ id:'p1', name:'Ada', number:'90', size:'5' }])
+})
+
+test('Owayo text panel exposes a real same-on-all contract', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /enablingSameText = patch\.sameOnAll === true/)
+  assert.match(source, /current\.text\?\.sameOnAll/)
+  assert.match(source, /syncText = Boolean\(current\.text\?\.sameOnAll/)
+  assert.match(source, /normalizeOwayoRoster\(state\.roster, manifest\?\.product\?\.sizes/)
+})
+
+test('3D stage binds Owayo text to the Back UV shader instead of a floating text plane', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /personalizationMap/)
+  assert.match(source, /personalizationEnabled/)
+  assert.match(source, /applyOwayoPersonalization\(runtime, textMap\)/)
+  assert.match(source, /isBack = \/\^back\(\?:\[\\s_-\]\*1\)\?\$\/i/)
+})
+
+test('Owayo family catalogue keeps unsupported cuts from masquerading as C3 assets', async () => {
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8'))
+  assert.equal(catalog.products.length, OWAYO_CATALOG_V1.length)
+  const live = catalog.products.filter(row => row.assetsReady && row.manifest).length
+  assert.equal(catalog.summary.live, live)
+  assert.equal(owayoCatalogSummary(catalog.products).pending, catalog.products.length - live)
+  assert.ok(catalog.products.filter(row => row.assetsReady).every(row => row.manifest))
+  assert.ok(catalog.products.filter(row => !row.assetsReady).every(row => !row.manifest))
+})
+
+test('every live Owayo family resolves its own model and design archive', async () => {
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8'))
+  for (const family of catalog.products.filter(row => row.assetsReady)) {
+    const manifest = JSON.parse(await readFile(resolve(publicRoot, family.manifest.slice(1)), 'utf8'))
+    assert.equal(manifest.provider, 'owayo')
+    assert.equal(manifest.syncStatus, 'READY', family.id)
+    assert.equal(manifest.missingDesigns?.length || 0, 0, family.id)
+    assert.ok(manifest.product?.model, `${family.id} has no model`)
+    assert.equal(manifest.designs.length, family.designCount, `${family.id} design count drift`)
+    assert.ok(manifest.designs.every(design => design.textures && Object.keys(design.textures).length > 0), `${family.id} has an empty design`)
+  }
+  const c7 = catalog.products.find(row => row.id === 'cycling-c7')
+  assert.equal(c7.assetsReady, false)
+  assert.deepEqual(c7.missingDesigns, ['Route'])
 })

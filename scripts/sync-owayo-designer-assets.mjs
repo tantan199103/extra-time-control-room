@@ -5,6 +5,7 @@ import { gunzipSync, inflateRawSync } from 'node:zlib'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { OWAYO_BRAND_COLOR_CODES, brandColorIndices, stripOwayoBranding } from './strip-owayo-branding.mjs'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outputRoot = resolve(root, 'public', 'designer', 'owayo', 'cycling-c3')
@@ -37,11 +38,7 @@ function sha256(buffer) {
 async function fetchBuffer(url, init = {}) {
   const response = await fetch(url, {
     ...init,
-    headers: {
-      accept: '*/*',
-      'user-agent': 'JersevoAssetSync/1.0',
-      ...init.headers
-    }
+    headers: catalogRequestHeaders({ accept: '*/*', ...init.headers })
   })
   if (!response.ok) throw new Error(`Asset request failed (${response.status}) ${url}`)
   return Buffer.from(await response.arrayBuffer())

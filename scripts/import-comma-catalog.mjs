@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import sharp from 'sharp'
 import { buildListingInput, validateListing } from '../src/lib/catalog-model.js'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 import { downloadCleanImage } from './fanatics-import-lib.mjs'
 import { hasProtectedImageProvenance } from './taass-media-lib.mjs'
 import {
@@ -110,7 +111,7 @@ async function fetchJson(path, query = {}) {
     try {
       const response = await fetch(url, {
         signal: controller.signal,
-        headers:{ accept:'application/json', 'accept-language':'en-US,en;q=0.9', 'user-agent':'Jersevo-authorized-catalog-sync/1.0' }
+        headers:catalogRequestHeaders({ accept:'application/json', 'accept-language':'en-US,en;q=0.9' })
       })
       const text = await response.text()
       if (response.ok) return JSON.parse(text)

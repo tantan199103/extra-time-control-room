@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { LEAGUE_TAXONOMY } from '../src/lib/league-taxonomy.js'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 
 /**
  * Fetches only the team marks that are missing from the curated taxonomy.
@@ -78,13 +79,13 @@ function comparable(value) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, { headers: { 'User-Agent': 'Jersevo team asset audit/1.0' } })
+  const response = await fetch(url, { headers: catalogRequestHeaders() })
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
   return response.json()
 }
 
 async function fetchImage(url) {
-  const response = await fetch(url, { headers: { 'User-Agent': 'Jersevo team asset fetch/1.0' } })
+  const response = await fetch(url, { headers: catalogRequestHeaders() })
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
   const contentType = response.headers.get('content-type') || ''
   if (!/^image\//i.test(contentType)) throw new Error(`unexpected content type ${contentType || 'unknown'}`)

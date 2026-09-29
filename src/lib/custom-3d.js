@@ -80,8 +80,13 @@ function tagConfig(product = {}) {
  * personalized/2D listing.
  */
 export function custom3DDesignerConfig(product = {}) {
-  const raw = product.designerConfig || product.aiMetadata?.designer || product.ai_metadata?.designer
-  return normalizeConfig(raw) || tagConfig(product)
+  // Storefront data is hydrated asynchronously. Callers may briefly pass
+  // `null` while the live catalogue is loading; treat that as a normal
+  // non-designer listing instead of letting the homepage crash during the
+  // first render.
+  const safeProduct = product && typeof product === 'object' ? product : {}
+  const raw = safeProduct.designerConfig || safeProduct.aiMetadata?.designer || safeProduct.ai_metadata?.designer
+  return normalizeConfig(raw) || tagConfig(safeProduct)
 }
 
 export function hasCustom3DDesigner(product = {}) {

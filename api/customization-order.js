@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 import { assertCustomerAsset } from './_logo-request.js'
+import { normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
@@ -33,13 +34,6 @@ export function normalizeDesignerSpec(value) {
   const colorsSource = value.colors && typeof value.colors === 'object' && !Array.isArray(value.colors) ? value.colors : {}
   const colors = Object.fromEntries(Object.entries(colorsSource).slice(0, 12).map(([key, raw]) => [safeText(key, 20), /^#[0-9a-f]{6}$/i.test(String(raw || '')) ? String(raw).toUpperCase() : '']).filter(([key, raw]) => key && raw))
   const textSource = value.text && typeof value.text === 'object' && !Array.isArray(value.text) ? value.text : {}
-  const text = {
-    team:safeText(textSource.team, 80),
-    name:safeText(textSource.name, 80),
-    number:safeText(textSource.number, 6).replace(/\D/g, '').slice(0, 3),
-    scale:clamp(textSource.scale, .5, 1.5, 1),
-    color:/^#[0-9a-f]{6}$/i.test(String(textSource.color || '')) ? String(textSource.color).toUpperCase() : '#F8F8F4'
-  }
   const logoSource = value.logo && typeof value.logo === 'object' && !Array.isArray(value.logo) ? value.logo : {}
   const patternSource = value.pattern && typeof value.pattern === 'object' && !Array.isArray(value.pattern) ? value.pattern : {}
   const rosterSource = Array.isArray(value.roster) ? value.roster : []
@@ -49,6 +43,7 @@ export function normalizeDesignerSpec(value) {
     size:safeText(player?.size, 32)
   }))
   if (!roster.length) throw Object.assign(new Error('The 3D design needs at least one player.'), { status:422 })
+  const text = normalizeOwayoPersonalization(textSource, roster)
   return {
     source:'JERSEVO_3D_DESIGNER',
     version:Math.max(1, Math.min(2, Number(value.version) || 1)),

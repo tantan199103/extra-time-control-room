@@ -7,6 +7,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { buildListingInput } from '../src/lib/catalog-model.js'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 import { RETIRED_LEAGUE_KEYS } from '../src/lib/league-taxonomy.js'
 import { prepareTaassImage, taassThumbnailUrl, uploadPreparedTaassImage } from './taass-media-lib.mjs'
 import { isTaassJerseyListing, isTaassJerseyUrl, routeTaassListings, withTaassCatalogCategory } from './taass-catalog-routing.mjs'
@@ -150,7 +151,7 @@ async function request(url, { accept = 'text/html,application/xhtml+xml', binary
         headers: {
           accept,
           'accept-language': locale === 'de' ? 'de-DE,de;q=0.9,en;q=0.5' : 'en-GB,en;q=0.9,de;q=0.5',
-          'user-agent': 'Jersevo-authorized-catalog-sync/1.0'
+          ...catalogRequestHeaders()
         }
       })
       if (response.ok) return binary ? new Uint8Array(await response.arrayBuffer()) : await response.text()

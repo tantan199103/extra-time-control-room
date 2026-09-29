@@ -30,9 +30,13 @@ import { isBoombahBrandingName, isBoombahLogoPartName, stripBoombahBrandingText 
 import { createCustomizationOrder, fetchStorefrontProduct, getCustomerSessionId, uploadCustomerReference } from './lib/storefront-api'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, quantityDiscountForQty } from './lib/quantity-pricing'
 import { findActiveVariant } from './lib/variant-selection'
+import { custom3DDesignerConfig } from './lib/custom-3d'
+import { normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PERSONALIZATION_FONTS } from './lib/owayo-personalization'
+import { owayoFamilyByProductId, resolveOwayoManifestRequest } from './lib/owayo-designer-routing'
 import './custom-designer.css'
 
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
+const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
 const ASSET_CACHE_BUSTER = '1'
 const DRAFT_KEY = 'jersevo-3d-designer-draft-v1'
@@ -103,18 +107,20 @@ function id() {
 }
 
 function initialDesignerState() {
+  const firstPlayerId = id()
   return {
     provider:'owayo',
     listingId:'',
     listingHandle:'',
-    productId:'FASTPITCH3D',
+    productId:'cycling-c3',
     styleCode:'SS',
     design:'',
     colors:{ A:'#111311', B:'#F3ED45', C:'#2876FF', K:'#111311' },
     pattern:{ id:'', slug:'', colorCode:'A', scale:1, opacity:.82 },
-    text:{ team:'JERSEVO', name:'YOUR NAME', number:'90', scale:1, color:'#F8F8F4' },
+    text:{ team:'JERSEVO', name:'YOUR NAME', number:'90', scale:1, color:'#F8F8F4', font:'Barlow Condensed', outlineColor:'#111311', outlineWidth:8, rotation:0, placement:'back', sameOnAll:false, layer:0 },
     logo:{ dataUrl:'', name:'', x:0, y:0, scale:1, rotation:0, consent:false },
-    roster:[{ id:id(), name:'Your name', number:'90', size:'M' }]
+    previewPlayerId:firstPlayerId,
+    roster:[{ id:firstPlayerId, name:'Your name', number:'90', size:'M' }]
   }
 }
 
@@ -191,7 +197,7 @@ function disposeObject(object) {
   })
 }
 
-function maskMaterial(maskMap, paletteMap, patternFallback) {
+function maskMaterial(maskMap, paletteMap, patternFallback, personalizationFallback) {
   maskMap.minFilter = THREE.NearestFilter
   maskMap.magFilter = THREE.NearestFilter
   maskMap.generateMipmaps = false
@@ -204,7 +210,9 @@ function maskMaterial(maskMap, paletteMap, patternFallback) {
       patternEnabled:{ value:0 },
       patternIndex:{ value:-1 },
       patternOpacity:{ value:0 },
-      patternScale:{ value:1 }
+      patternScale:{ value:1 },
+      personalizationMap:{ value:personalizationFallback || patternFallback },
+      personalizationEnabled:{ value:0 }
     },
     vertexShader:`
       varying vec2 vUv;
@@ -226,6 +234,8 @@ function maskMaterial(maskMap, paletteMap, patternFallback) {
       uniform float patternIndex;
       uniform float patternOpacity;
       uniform float patternScale;
+      uniform sampler2D personalizationMap;
+      uniform float personalizationEnabled;
       varying vec2 vUv;
       varying vec3 vNormalView;
       varying vec3 vViewPosition;
@@ -238,7 +248,9 @@ function maskMaterial(maskMap, paletteMap, patternFallback) {
         float keyLight = max(dot(normal, normalize(vec3(-0.35, 0.65, 0.85))), 0.0);
         float fillLight = max(dot(normal, normalize(vec3(0.75, -0.15, 0.45))), 0.0);
         float rim = pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 2.0);
-        vec3 color = base * (0.52 + keyLight * 0.48 + fillLight * 0.14) + rim * 0.055;
+        vec4 personalization = texture2D(personalizationMap, vUv);
+        vec3 garmentBase = mix(base, personalization.rgb, personalization.a * personalizationEnabled);
+        vec3 color = garmentBase * (0.52 + keyLight * 0.48 + fillLight * 0.14) + rim * 0.055;
         float target = 1.0 - step(0.5, abs(paletteIndex - patternIndex));
         vec4 motif = texture2D(patternMap, fract(vUv * max(patternScale, 0.05)));
         color = mix(color, motif.rgb * (0.78 + keyLight * 0.22), target * patternEnabled * patternOpacity * motif.a);
@@ -257,24 +269,42 @@ function maskMaterial(maskMap, paletteMap, patternFallback) {
 
 function textTexture(text) {
   const canvas = document.createElement('canvas')
-  canvas.width = 1024
-  canvas.height = 1024
+  canvas.width = 2048
+  canvas.height = 2048
   const context = canvas.getContext('2d')
-  context.clearRect(0, 0, 1024, 1024)
+  context.clearRect(0, 0, canvas.width, canvas.height)
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   context.lineJoin = 'round'
-  const draw = (value, y, font, lineWidth) => {
-    context.font = font
-    context.lineWidth = lineWidth
-    context.strokeStyle = contrastColor(text.color)
-    context.fillStyle = text.color
-    context.strokeText(String(value || '').toUpperCase(), 512, y)
-    context.fillText(String(value || '').toUpperCase(), 512, y)
+  const layout = owayoBackTextLayout()
+  const normalized = normalizeOwayoPersonalization(text)
+  const rotation = THREE.MathUtils.degToRad(Number(normalized.rotation || 0))
+  const fontFamily = OWAYO_PERSONALIZATION_FONTS.includes(normalized.font) ? normalized.font : 'Barlow Condensed'
+  const draw = (value, slot) => {
+    const content = String(value || '').toUpperCase()
+    if (!content) return
+    const maxWidth = canvas.width * slot.width
+    let size = Math.round(canvas.width * slot.size * Number(normalized.scale || 1))
+    context.font = `${slot.weight} ${size}px "${fontFamily}", sans-serif`
+    while (size > 18 && context.measureText(content).width > maxWidth) {
+      size -= 2
+      context.font = `${slot.weight} ${size}px "${fontFamily}", sans-serif`
+    }
+    const x = canvas.width * slot.x
+    const y = canvas.height * slot.y
+    context.save()
+    context.translate(x, y)
+    context.rotate(rotation)
+    context.lineWidth = Math.max(0, Number(normalized.outlineWidth || 0)) * Number(normalized.scale || 1)
+    context.strokeStyle = normalized.outlineColor
+    context.fillStyle = normalized.color
+    if (context.lineWidth > 0) context.strokeText(content, 0, 0)
+    context.fillText(content, 0, 0)
+    context.restore()
   }
-  draw(text.team, 170, '700 92px Manrope, sans-serif', 18)
-  draw(text.name, 360, '800 118px Manrope, sans-serif', 22)
-  draw(text.number, 690, '800 430px Barlow Condensed, sans-serif', 34)
+  draw(normalized.team, layout.team)
+  draw(normalized.name, layout.name)
+  draw(normalized.number, layout.number)
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
   texture.anisotropy = 4
@@ -287,6 +317,24 @@ function averageZ(part) {
   let sum = 0
   for (let index = 2; index < part.positions.length; index += 3) sum += part.positions[index]
   return sum / (part.positions.length / 3)
+}
+
+function applyOwayoPersonalization(runtime, texture) {
+  if (!runtime || runtime.boombah) return
+  const previous = runtime.personalizationTexture
+  runtime.personalizationTexture = texture || null
+  for (const mesh of runtime.partMeshes.values()) {
+    const material = mesh.material
+    if (!material?.uniforms?.personalizationMap) continue
+    // Most cuts expose a single `Back` UV island. The C7 cut splits the rear
+    // into Back1/Back2/Back3; Back1 is the main name/number panel while the
+    // lower pocket panels must not receive a duplicated print.
+    const isBack = /^back(?:[\s_-]*1)?$/i.test(String(mesh.name || ''))
+    material.uniforms.personalizationMap.value = isBack && texture ? texture : runtime.personalizationFallback
+    material.uniforms.personalizationEnabled.value = isBack && texture ? 1 : 0
+    material.needsUpdate = true
+  }
+  if (previous && previous !== texture) previous.dispose?.()
 }
 
 function patternTargetCodes(selectedPattern, targetCode = 'A') {
@@ -505,6 +553,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     palette.colorSpace = THREE.NoColorSpace
     palette.needsUpdate = true
     const patternFallback = emptyPatternTexture()
+    const personalizationFallback = emptyPatternTexture()
     const render = () => renderer.render(scene, camera)
     renderRef.current = render
     controls.addEventListener('change', render)
@@ -595,7 +644,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
         floor.rotation.x = -Math.PI / 2
         floor.position.set(0, -dimensions[1] / 2 - .08, 0)
         scene.add(floor)
-        runtimeRef.current = { scene, camera, renderer, controls, model, decoration, palette, patternFallback, patternTexture:null, parsed, dimensions, partMeshes, frontDirection, cameraDistance, floor, boombah:manifestIsBoombah(manifest) }
+        runtimeRef.current = { scene, camera, renderer, controls, model, decoration, palette, patternFallback, personalizationFallback, patternTexture:null, personalizationTexture:null, parsed, dimensions, partMeshes, frontDirection, cameraDistance, floor, boombah:manifestIsBoombah(manifest) }
         setReadyRevision(value => value + 1)
         onStatus?.('ready')
         render()
@@ -615,7 +664,9 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
       disposeObject(scene)
       palette.dispose()
       runtimeRef.current?.patternTexture?.dispose?.()
+      runtimeRef.current?.personalizationTexture?.dispose?.()
       patternFallback.dispose()
+      personalizationFallback.dispose()
       renderer.dispose()
       renderer.domElement.remove()
       runtimeRef.current = null
@@ -664,10 +715,16 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
       const mask = await loader.loadAsync(assetUrl(uri, manifest))
       if (cancelled) { mask.dispose(); return }
       const previous = mesh.material
-      mesh.material = maskMaterial(mask, runtime.palette, runtime.patternFallback)
+       mesh.material = maskMaterial(mask, runtime.palette, runtime.patternFallback, runtime.personalizationFallback)
       previous?.userData?.maskMap?.dispose?.()
       previous?.dispose?.()
-    })).then(() => !cancelled && renderRef.current()).catch(error => console.error('Design texture load failed', error))
+    })).then(() => {
+      if (cancelled) return
+      // Material replacement is asynchronous; re-bind the already-created
+      // personalization map after every design/palette update.
+      applyOwayoPersonalization(runtime, runtime.personalizationTexture)
+      renderRef.current()
+    }).catch(error => console.error('Design texture load failed', error))
     return () => { cancelled = true }
   }, [manifest, design, colors, readyRevision])
 
@@ -714,19 +771,29 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     const selected = manifest?.designs?.find(item => item.slug === design || item.id === design)
     const showGarmentPersonalization = supportsBoombahGarmentPersonalization(manifest, selected)
     if (!showGarmentPersonalization) {
+      applyOwayoPersonalization(runtime, null)
       renderRef.current()
       return undefined
     }
     const frontZ = frontDirection > 0 ? dimensions[2] / 2 + .08 : -dimensions[2] / 2 - .08
     const backZ = -frontZ
     const textMap = textTexture(text)
-    const textPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.1 * Number(text.scale || 1), 3.1 * Number(text.scale || 1)),
-      new THREE.MeshBasicMaterial({ map:textMap, transparent:true, depthWrite:false, side:THREE.DoubleSide })
-    )
-    textPlane.position.set(0, height * .05, backZ)
-    textPlane.rotation.y = frontDirection > 0 ? Math.PI : 0
-    decoration.add(textPlane)
+    if (runtime.boombah) {
+      // Legacy teamwear models do not expose a validated garment UV contract;
+      // keep their bounded world-space fallback until a per-product map exists.
+      const textPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.1 * Number(text.scale || 1), 3.1 * Number(text.scale || 1)),
+        new THREE.MeshBasicMaterial({ map:textMap, transparent:true, depthWrite:false, side:THREE.DoubleSide })
+      )
+      textPlane.position.set(0, height * .05, backZ)
+      textPlane.rotation.y = frontDirection > 0 ? Math.PI : 0
+      decoration.add(textPlane)
+    } else {
+      // The C3 Back mesh carries the same UVs as the synchronized artwork.
+      // Blending this map in the garment shader makes the text follow folds,
+      // seams and rotation instead of drifting as a floating plane.
+      applyOwayoPersonalization(runtime, textMap)
+    }
 
     if (logo.dataUrl) {
       const loader = new THREE.TextureLoader()
@@ -746,13 +813,13 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
       }).catch(error => console.error('Logo preview load failed', error))
     }
     renderRef.current()
-    return () => { cancelled = true }
+    return () => { cancelled = true; if (!runtime.boombah) applyOwayoPersonalization(runtime, null) }
   }, [text, logo, readyRevision])
 
   return <div className="designer-stage__canvas" ref={hostRef} role="img" aria-label="Interactive 3D preview of the custom jersey" />
 })
 
-function DesignPanel({ manifest, catalog, owayoAvailable, state, update, onProviderChange, onProductChange }) {
+function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange }) {
   const [showAll, setShowAll] = useState(false)
   const filteredDesigns = manifestIsBoombah(manifest) && state.styleCode
     ? manifest.designs.filter(item => item.styleCode === state.styleCode)
@@ -771,6 +838,12 @@ function DesignPanel({ manifest, catalog, owayoAvailable, state, update, onProvi
         <label className="designer-library-switch__field"><span>Sport {state.listingId && <small>· listing locked</small>}</span><select disabled={Boolean(state.listingId)} value={state.productId} onChange={event => onProductChange?.(event.target.value)}>{catalog.products.map(product => <option key={product.id} value={product.id}>{product.sport} · {stripBoombahBrandingText(product.name)}</option>)}</select></label>
         {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => item.styleCode === event.target.value)?.id || current.design }))}>{styles.map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select></label>}
       </>}
+      {!manifestIsBoombah(manifest) && owayoCatalog?.products?.length > 0 && <div className="designer-owayo-families" aria-label="Cycling garment families">
+        <span className="designer-library-switch__field-label">Garment family</span>
+        <div className="designer-owayo-families__list">
+          {owayoCatalog.products.map(product => <button type="button" key={product.id} disabled={!product.assetsReady || Boolean(state.listingId)} className={`${product.assetsReady ? 'is-live' : ''}${state.productId === product.id ? ' is-active' : ''}`} title={product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Exact model assets are being synchronized'} onClick={() => product.assetsReady && onOwayoProductChange?.(product.id)}><span>{product.title.replace(/^Jersevo\s+Custom\s+/i, '')}</span><small>{product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Model sync pending'}</small></button>)}
+        </div>
+      </div>}
       {currentProduct && <p className="designer-library-switch__note">{currentProduct.designs} mirrored templates · model loads on selection</p>}
     </div>
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
@@ -786,7 +859,7 @@ function DesignPanel({ manifest, catalog, owayoAvailable, state, update, onProvi
 }
 
 function ColorPanel({ manifest, state, update }) {
-  const active = manifest.designs.find(item => item.slug === state.design)
+  const active = manifest.designs.find(item => item.slug === state.design || item.id === state.design)
   const codes = (manifestIsBoombah(manifest)
     ? (active?.colorZones || []).filter(zone => zone.editable !== false).map(zone => zone.code)
     : (active?.baseColors?.length ? active.baseColors : ['A','B','C'])
@@ -837,16 +910,45 @@ function PatternPanel({ manifest, state, update, onProviderChange, onOpenDesign 
 }
 
 function TextPanel({ state, update }) {
-  const setText = patch => update(current => ({ ...current, text:{ ...current.text, ...patch } }))
+  const preview = resolveOwayoPreviewText(state.text, state.roster)
+  const setText = patch => update(current => {
+    const text = { ...current.text, ...patch }
+    const first = current.roster?.[0]
+    const changesName = Object.prototype.hasOwnProperty.call(patch, 'name')
+    const changesNumber = Object.prototype.hasOwnProperty.call(patch, 'number')
+    const enablingSameText = patch.sameOnAll === true
+    const roster = first && (changesName || changesNumber || enablingSameText)
+      ? current.roster.map((player, index) => {
+          const source = index === 0 ? { ...first, ...patch } : player
+          if (!text.sameOnAll && index !== 0) return player
+          return {
+            ...player,
+            ...(changesName || enablingSameText ? { name:source.name || '' } : {}),
+            ...(changesNumber || enablingSameText ? { number:source.number || '' } : {})
+          }
+        })
+      : current.roster
+    return { ...current, text, roster }
+  })
   return <div className="designer-panel designer-panel--text">
-    <div className="designer-panel__intro"><h2>Add names and numbers</h2><p>The shared text appears on the back. Individual roster values remain attached to each player.</p></div>
+    <div className="designer-panel__intro"><h2>Add names and numbers</h2><p>The preview always uses player 1 from the roster, so the editor and production handoff cannot drift.</p></div>
     <label className="designer-field"><span>Team name</span><input value={state.text.team} maxLength={24} onChange={event => setText({ team:event.target.value })}/></label>
-    <label className="designer-field"><span>Player name</span><input value={state.text.name} maxLength={24} onChange={event => setText({ name:event.target.value })}/></label>
+    <label className="designer-field"><span>Player name <small>Previewing player 1</small></span><input value={preview.name} maxLength={24} onChange={event => setText({ name:event.target.value })}/></label>
     <div className="designer-field-row">
-      <label className="designer-field"><span>Number</span><input value={state.text.number} inputMode="numeric" maxLength={3} onChange={event => setText({ number:event.target.value.replace(/[^0-9]/g, '') })}/></label>
+      <label className="designer-field"><span>Number <small>Previewing player 1</small></span><input value={preview.number} inputMode="numeric" maxLength={3} onChange={event => setText({ number:event.target.value.replace(/[^0-9]/g, '') })}/></label>
       <label className="designer-field designer-field--color"><span>Print color</span><input type="color" value={state.text.color} onChange={event => setText({ color:event.target.value })}/><strong>{state.text.color}</strong></label>
     </div>
+    <div className="designer-field-row">
+      <label className="designer-field"><span>Font</span><select value={state.text.font || 'Barlow Condensed'} onChange={event => setText({ font:event.target.value })}>{OWAYO_PERSONALIZATION_FONTS.map(font => <option key={font} value={font}>{font}</option>)}</select></label>
+      <label className="designer-field designer-field--color"><span>Outline</span><input type="color" value={state.text.outlineColor || '#111311'} onChange={event => setText({ outlineColor:event.target.value })}/><strong>{state.text.outlineColor || '#111311'}</strong></label>
+    </div>
+    <div className="designer-field-row">
+      <div className="designer-field designer-field--static"><span>Print side</span><strong>Back panel · UV mapped</strong></div>
+      <label className="designer-field designer-field--checkbox"><input type="checkbox" checked={Boolean(state.text.sameOnAll)} onChange={event => setText({ sameOnAll:event.target.checked })}/><span>Same on all items</span></label>
+    </div>
     <label className="designer-range"><span>Print scale <strong>{Math.round(state.text.scale * 100)}%</strong></span><input type="range" min="0.7" max="1.3" step="0.05" value={state.text.scale} onChange={event => setText({ scale:Number(event.target.value) })}/></label>
+    <label className="designer-range"><span>Text rotation <strong>{Number(state.text.rotation || 0)}°</strong></span><input type="range" min="-30" max="30" step="1" value={state.text.rotation || 0} onChange={event => setText({ rotation:Number(event.target.value) })}/></label>
+    <label className="designer-range"><span>Layer <strong>{Number(state.text.layer || 0)}</strong></span><input type="range" min="0" max="20" step="1" value={state.text.layer || 0} onChange={event => setText({ layer:Number(event.target.value) })}/></label>
     <div className="designer-print-note"><CheckCircle2 size={17}/><p>Names and numbers are checked for spelling and safe print placement before production.</p></div>
   </div>
 }
@@ -879,15 +981,23 @@ function LogoPanel({ state, update }) {
 }
 
 function Roster({ state, update, sizes }) {
-  const visibleSizes = sizes.map(item => {
-    if (typeof item === 'string') return { value:item, label:item }
-    const value = String(item.code || item.size || item.name || '').trim()
-    const label = String(item.name || item.size || item.code || '').trim()
-    return { value, label:label || value }
-  }).filter(item => item.value && !/choose/i.test(item.label))
-  const change = (playerId, patch) => update(current => ({ ...current, roster:current.roster.map(player => player.id === playerId ? { ...player, ...patch } : player) }))
+  const visibleSizes = normalizeOwayoSizeOptions(sizes)
+  const change = (playerId, patch) => update(current => {
+    const textPatch = Object.fromEntries(['name', 'number'].filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, patch[key]]))
+    const syncText = Boolean(current.text?.sameOnAll && Object.keys(textPatch).length)
+    const roster = current.roster.map((player, index) => {
+      const next = player.id === playerId ? { ...player, ...patch } : player
+      if (!syncText || player.id === playerId) return next
+      return { ...next, ...textPatch }
+    })
+    const first = roster[0]
+    const updateSharedPreview = Boolean(first && (first.id === playerId || syncText) && Object.keys(textPatch).length)
+    return updateSharedPreview
+      ? { ...current, roster, text:{ ...current.text, ...textPatch } }
+      : { ...current, roster }
+  })
   const remove = playerId => update(current => ({ ...current, roster:current.roster.filter(player => player.id !== playerId) }))
-  const add = () => update(current => current.roster.length >= 99 ? current : ({ ...current, roster:[...current.roster, { id:id(), name:'', number:'', size:visibleSizes[4]?.value || visibleSizes[0]?.value || 'M' }] }))
+  const add = () => update(current => current.roster.length >= 99 ? current : ({ ...current, roster:[...current.roster, { id:id(), name:'', number:'', size:visibleSizes.find(size => /\(M\)|\bM\b/i.test(size.label))?.value || visibleSizes[4]?.value || visibleSizes[0]?.value || 'M' }] }))
   return <details className="designer-roster">
     <summary><span><UsersRound size={17}/><strong>Team roster</strong><small>{state.roster.length} {state.roster.length === 1 ? 'player' : 'players'}</small></span><Plus size={16}/></summary>
     <div className="designer-roster__body">
@@ -895,7 +1005,7 @@ function Roster({ state, update, sizes }) {
         <b>{String(index + 1).padStart(2, '0')}</b>
         <input aria-label={`Player ${index + 1} name`} placeholder="Player name" value={player.name} onChange={event => change(player.id,{ name:event.target.value })}/>
         <input aria-label={`Player ${index + 1} number`} placeholder="No." value={player.number} inputMode="numeric" maxLength={3} onChange={event => change(player.id,{ number:event.target.value.replace(/[^0-9]/g, '') })}/>
-        <select aria-label={`Player ${index + 1} size`} value={visibleSizes.some(size => size.value === player.size) ? player.size : (visibleSizes[0]?.value || '')} onChange={event => change(player.id,{ size:event.target.value })}>{visibleSizes.map(size => <option key={size.value} value={size.value}>{size.label}</option>)}</select>
+        <select aria-label={`Player ${index + 1} size`} value={resolveOwayoSizeValue(player.size, visibleSizes)} onChange={event => change(player.id,{ size:event.target.value })}>{visibleSizes.map(size => <option key={size.value} value={size.value}>{size.label}</option>)}</select>
         <button type="button" disabled={state.roster.length === 1} aria-label={`Remove player ${index + 1}`} onClick={() => remove(player.id)}><Trash2 size={14}/></button>
       </div>)}
       <button type="button" className="designer-roster__add" disabled={state.roster.length >= 99} onClick={add}><Plus size={15}/> {state.roster.length >= 99 ? 'Roster limit reached' : 'Add player'}</button>
@@ -938,17 +1048,22 @@ function designerNote(state, selectedDesign, manifest) {
   return `3D kit · ${design} · ${model} · ${team} · ${state.roster.length} player${state.roster.length === 1 ? '' : 's'} · ${colors}${pattern}`.slice(0, 500)
 }
 
-function designerPayload(state, selectedDesign, manifest, listing = null) {
+function designerPayload(state, selectedDesign, manifest, listing = null, manifestUrl = '') {
+  const roster = normalizeOwayoRoster(state.roster, manifest?.product?.sizes || [])
   return {
     source:'JERSEVO_3D_DESIGNER',
     version:2,
     provider:manifest?.provider || 'owayo',
     listingId:listing?.id || state.listingId || '',
     listingHandle:listing?.handle || state.listingHandle || '',
-    manifest:manifest?.provider === 'boombah' ? `/designer/boombah/products/${String(manifest.product?.id || '').toLowerCase()}.json` : OWAYO_MANIFEST_URL,
+    manifest:manifestUrl || (manifest?.provider === 'boombah' ? `/designer/boombah/products/${String(manifest.product?.id || '').toLowerCase()}.json` : OWAYO_MANIFEST_URL),
     model:selectedDesign?.modelId || manifest?.product?.model || '253m_KA',
     product:manifest?.product?.name || 'Cycling Jersey C3 Basic Short Sleeve',
-    productId:manifest?.product?.id || '',
+    // Some mirrored Owayo manifests intentionally keep the product identity
+    // in the route/catalog (the upstream model only exposes a display name).
+    // Keep that family id in the order handoff so the server can verify the
+    // selected model instead of receiving an empty product id.
+    productId:manifest?.product?.id || state.productId || '',
     styleCode:selectedDesign?.styleCode || state.styleCode || '',
     garment:selectedDesign?.garment || '',
     designSlug:state.design,
@@ -961,9 +1076,9 @@ function designerPayload(state, selectedDesign, manifest, listing = null) {
       scale:Number(state.pattern.scale || 1),
       opacity:Number(state.pattern.opacity ?? .82)
     } : null,
-    text:state.text,
+    text:normalizeOwayoPersonalization(state.text, roster),
     logo:{ name:state.logo.name, x:state.logo.x, y:state.logo.y, scale:state.logo.scale, rotation:state.logo.rotation },
-    roster:state.roster.map(player => ({ name:player.name, number:player.number, size:player.size }))
+    roster:roster.map(player => ({ name:player.name, number:player.number, size:player.size }))
   }
 }
 
@@ -981,7 +1096,10 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       provider: params.get('provider') || '',
       product: params.get('product') || '',
       style: params.get('style') || '',
-      design: params.get('design') || ''
+      design: params.get('design') || '',
+      team: params.get('team') || '',
+      name: params.get('name') || '',
+      number: params.get('number') || ''
     }
   }, [])
   const draftKey = useMemo(() => {
@@ -992,7 +1110,9 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const [listingLoading, setListingLoading] = useState(Boolean(routeParams.listing))
   const [listingError, setListingError] = useState('')
   const [manifest, setManifest] = useState(null)
+  const [manifestUrl, setManifestUrl] = useState(OWAYO_MANIFEST_URL)
   const [owayoManifest, setOwayoManifest] = useState(null)
+  const [owayoCatalog, setOwayoCatalog] = useState(null)
   const [catalog, setCatalog] = useState(null)
   const [manifestError, setManifestError] = useState('')
   const [stageStatus, setStageStatus] = useState('loading')
@@ -1008,8 +1128,9 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
 
   useEffect(() => {
     let cancelled = false
-    const readJson = async url => {
-      const response = await fetch(`${url}?v=${Date.now()}`, { cache:'no-store' })
+    const readJson = async (url, version = '') => {
+      const suffix = version ? `${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}` : ''
+      const response = await fetch(`${url}${suffix}`, { cache:'force-cache' })
       if (!response.ok) throw new Error(`Designer assets returned ${response.status}.`)
       return response.json()
     }
@@ -1029,18 +1150,41 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       if (routeParams.listing && (!designer?.provider || !designer?.productId)) {
         throw new Error('This listing is not connected to a supported 3D designer yet.')
       }
-      const [owayoResult, boombahResult] = await Promise.allSettled([readJson(OWAYO_MANIFEST_URL), readJson(BOOMBAH_CATALOG_URL)])
-      if (cancelled) return
-      const owayo = owayoResult.status === 'fulfilled' ? owayoResult.value : null
-      const boombahCatalog = boombahResult.status === 'fulfilled' ? boombahResult.value : null
-      if (owayo) setOwayoManifest(owayo)
-      if (boombahCatalog) setCatalog(boombahCatalog)
-      if (!owayo && !boombahCatalog) throw new Error('Cycling and teamwear designer assets are temporarily unavailable.')
       let draft = null
       try { draft = JSON.parse(localStorage.getItem(draftKey) || 'null') } catch {}
-      const requestedProvider = String(designer?.provider || routeParams.provider || draft?.provider || '').toLowerCase()
+
+      // Resolve the family before loading the garment. The old bootstrap always
+      // fetched C3, so a plain `?product=cycling-c5` silently rendered a C3
+      // mesh even though the C5 listing had its own synchronized manifest.
+      const [boombahResult, owayoCatalogResult] = await Promise.allSettled([
+        readJson(BOOMBAH_CATALOG_URL),
+        readJson(OWAYO_CATALOG_URL)
+      ])
+      if (cancelled) return
+      const boombahCatalog = boombahResult.status === 'fulfilled' ? boombahResult.value : null
+      const catalogFamilies = owayoCatalogResult.status === 'fulfilled' ? owayoCatalogResult.value : null
+      const requestedFamilyId = designer?.provider === 'owayo'
+        ? designer.productId
+        : routeParams.product || draft?.productId || ''
+      const requestedFamily = owayoFamilyByProductId(catalogFamilies, requestedFamilyId)
+      const requestedOwayoManifest = resolveOwayoManifestRequest({ catalog:catalogFamilies, listingDesigner:designer, routeProduct:routeParams.product, draftProduct:requestedFamily?.id || requestedFamilyId, fallback:OWAYO_MANIFEST_URL })
+      const owayoManifestVersion = catalogFamilies?.generatedAt || catalogFamilies?.summary?.generatedAt || ''
+      const owayoResult = await Promise.allSettled([readJson(requestedOwayoManifest, owayoManifestVersion)])
+      if (cancelled) return
+      const owayo = owayoResult[0].status === 'fulfilled' ? owayoResult[0].value : null
+      if (owayo) setOwayoManifest(owayo)
+      if (boombahCatalog) setCatalog(boombahCatalog)
+      if (catalogFamilies) setOwayoCatalog(catalogFamilies)
+      if (!owayo && !boombahCatalog) throw new Error('Cycling and teamwear designer assets are temporarily unavailable.')
+      const requestedProvider = String(
+        designer?.provider
+          || routeParams.provider
+          || (routeParams.product && /^cycling-/i.test(routeParams.product) ? 'owayo' : '')
+          || draft?.provider
+          || ''
+      ).toLowerCase()
       const provider = requestedProvider === 'boombah' && boombahCatalog ? 'boombah' : requestedProvider === 'owayo' && owayo ? 'owayo' : (owayo ? 'owayo' : 'boombah')
-      const productId = designer?.productId || routeParams.product || draft?.productId || boombahCatalog?.defaultProductId || boombahCatalog?.products?.[0]?.id || ''
+      const productId = designer?.productId || routeParams.product || draft?.productId || (provider === 'owayo' ? (requestedFamily?.id || 'cycling-c3') : boombahCatalog?.defaultProductId || boombahCatalog?.products?.[0]?.id || '')
       const seed = {
         ...initialDesignerState(),
         ...(draft || {}),
@@ -1051,11 +1195,38 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         styleCode:designer?.defaultStyleCode || routeParams.style || draft?.styleCode || '',
         design:designer?.defaultDesignId || routeParams.design || draft?.design || ''
       }
+      // Normalize saved display labels (for example `M`) to the exact Owayo
+      // source codes (for example `5`) before the first preview or checkout
+      // payload is built. This keeps the selected variant and the roster UI in
+      // lockstep after a reload or a family switch.
+      if (provider === 'owayo' && owayo?.product?.sizes) {
+        seed.roster = normalizeOwayoRoster(seed.roster, owayo.product.sizes)
+      }
+      if (routeParams.team) seed.text = { ...seed.text, team:routeParams.team.slice(0, 24) }
+      if (routeParams.name) seed.text = { ...seed.text, name:routeParams.name.slice(0, 24) }
+      if (routeParams.number) seed.text = { ...seed.text, number:routeParams.number.replace(/\D/g, '').slice(0, 3) }
+      if (routeParams.name || routeParams.number) {
+        const first = seed.roster?.[0]
+        if (first) seed.roster = seed.roster.map((player, index) => index === 0 ? {
+          ...player,
+          ...(routeParams.name ? { name:routeParams.name.slice(0, 24) } : {}),
+          ...(routeParams.number ? { number:routeParams.number.replace(/\D/g, '').slice(0, 3) } : {})
+        } : player)
+      }
+      const seedPreview = resolveOwayoPreviewText(seed.text, seed.roster)
+      seed.text = { ...seed.text, name:seedPreview.name, number:seedPreview.number }
       history.replace(seed)
       if (provider === 'owayo') {
+        if (!owayo) throw new Error(`The synchronized Owayo garment ${productId} could not be loaded.`)
         setManifest(owayo)
+        setManifestUrl(requestedOwayoManifest)
         const first = owayo.designs?.[0]?.slug || 'etape'
-        history.update(current => ({ ...current, provider:'owayo', productId:'', styleCode:'', design:owayo.designs?.some(item => item.slug === current.design) ? current.design : first }))
+        const familyId = owayoFamilyByProductId(catalogFamilies, productId)?.id || productId || 'cycling-c3'
+        history.update(current => {
+          const roster = normalizeOwayoRoster(current.roster, owayo.product?.sizes || [])
+          const preview = resolveOwayoPreviewText(current.text, roster)
+          return { ...current, provider:'owayo', productId:familyId, styleCode:'', design:owayo.designs?.some(item => item.slug === current.design) ? current.design : first, roster, text:{ ...current.text, name:preview.name, number:preview.number } }
+        })
         return
       }
       const product = boombahCatalog.products?.find(item => item.id === productId)
@@ -1067,12 +1238,14 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       } catch (error) {
         if (!owayo) throw error
         setManifest(owayo)
+        setManifestUrl(OWAYO_MANIFEST_URL)
         const first = owayo.designs?.[0]?.slug || 'etape'
-        history.update(current => ({ ...current, provider:'owayo', productId:'', styleCode:'', design:first }))
+        history.update(current => ({ ...current, provider:'owayo', productId:'cycling-c3', styleCode:'', design:first }))
         return
       }
       if (cancelled) return
-      setManifest(productResponse)
+       setManifest(productResponse)
+       setManifestUrl(product.manifest)
       const allowedDesigns = designer?.allowedDesignIds?.length ? productResponse.designs?.filter(item => designer.allowedDesignIds.includes(item.id) || designer.allowedDesignIds.includes(item.slug)) : productResponse.designs
       const first = allowedDesigns?.[0] || productResponse.designs?.[0]
       const designMatch = allowedDesigns?.find(item => item.id === seed.design || item.slug === seed.design)
@@ -1095,10 +1268,11 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     setStageStatus('loading')
     setManifestError('')
     try {
-      const response = await fetch(`${product.manifest}?v=${Date.now()}`, { cache:'no-store' })
+      const response = await fetch(`${product.manifest}${catalog?.generatedAt ? `?v=${encodeURIComponent(catalog.generatedAt)}` : ''}`, { cache:'force-cache' })
       if (!response.ok) throw new Error(`Boombah product assets returned ${response.status}.`)
       const next = await response.json()
-      setManifest(next)
+       setManifest(next)
+       setManifestUrl(product.manifest)
       const first = next.designs?.[0]
       history.update(current => ({ ...current, provider:'boombah', productId, styleCode:first?.styleCode || '', design:first?.id || first?.slug || '' , colors:{ ...current.colors, ...(first?.defaultColors || {}) } }))
     } catch (error) {
@@ -1106,17 +1280,50 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     }
   }, [catalog, history.update, routeParams.listing, routeParams.product])
 
+  const loadOwayoProduct = useCallback(async productId => {
+    if (routeParams.listing) return
+    const family = owayoFamilyByProductId(owayoCatalog, productId)
+    if (!family?.assetsReady || !family.manifest) return
+    setStageStatus('loading')
+    setManifestError('')
+    try {
+      const version = owayoCatalog?.generatedAt || owayoCatalog?.summary?.generatedAt || ''
+      const response = await fetch(`${family.manifest}${version ? `?v=${encodeURIComponent(version)}` : ''}`, { cache:'force-cache' })
+      if (!response.ok) throw new Error(`Owayo product assets returned ${response.status}.`)
+      const next = await response.json()
+      const first = next.designs?.[0]
+      setManifest(next)
+      setManifestUrl(family.manifest)
+      setOwayoManifest(next)
+      history.update(current => {
+        const roster = normalizeOwayoRoster(current.roster, next.product?.sizes || [])
+        const preview = resolveOwayoPreviewText(current.text, roster)
+        return {
+          ...current,
+          provider:'owayo',
+          productId:family.id,
+          styleCode:'',
+          design:first?.slug || first?.id || '',
+          pattern:{ ...current.pattern, id:'', slug:'' },
+          colors:{ ...current.colors, ...(next.product?.defaultColors || {}) },
+          roster,
+          text:{ ...current.text, name:preview.name, number:preview.number }
+        }
+      })
+    } catch (error) {
+      setManifestError(error.message || 'Owayo product assets could not be loaded.')
+    }
+  }, [history.update, owayoCatalog, routeParams.listing])
+
   const changeProvider = useCallback(provider => {
     if (routeParams.listing) return
     if (provider === 'owayo' && owayoManifest) {
-      setManifest(owayoManifest)
-      const first = owayoManifest.designs?.[0]?.slug || 'etape'
-      history.update(current => ({ ...current, provider:'owayo', productId:'', styleCode:'', design:first }))
+      loadOwayoProduct('cycling-c3')
       return
     }
     const productId = catalog?.defaultProductId || catalog?.products?.[0]?.id
     if (provider === 'boombah' && productId) loadBoombahProduct(productId)
-  }, [catalog, history.update, loadBoombahProduct, owayoManifest, routeParams.listing])
+  }, [catalog, loadOwayoProduct, loadBoombahProduct, owayoManifest, routeParams.listing])
 
   useEffect(() => {
     setSaved(false)
@@ -1132,14 +1339,22 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     const searchText = [product?.name, product?.title, product?.type, product?.productGroup, product?.taxonomy?.category].filter(Boolean).join(' ')
     return product?.customFields?.length && /jersey|shirt|kit/i.test(searchText) && activeVariant(product,history.state)
     })
-    return candidates.find(product => product.customFields.some(field => field.type === 'logo')) || candidates[0]
-  }, [listingProduct, products, routeParams.listing, history.state.roster])
+    // Direct family links (for example `?product=cycling-c5`) should price and
+    // submit against that same published listing, not whichever customizable
+    // jersey happens to appear first in the catalogue.
+    const exact = candidates.find(product => {
+      const config = custom3DDesignerConfig(product)
+      return config?.provider === history.state.provider && config?.productId === history.state.productId
+    })
+    return exact || candidates.find(product => product.customFields.some(field => field.type === 'logo')) || candidates[0]
+  }, [listingProduct, products, routeParams.listing, history.state.provider, history.state.productId, history.state.roster])
   const variant = activeVariant(customProduct, history.state)
   const unitPrice = Number(variant?.price ?? customProduct?.price ?? 79)
   const quantity = Math.max(1, history.state.roster.length)
   const discount = quantityDiscountForQty(quantity, DEFAULT_QUANTITY_DISCOUNT_POLICY).discountPercent / 100
   const total = unitPrice * quantity * (1 - discount)
   const selectedDesign = manifest?.designs?.find(item => item.slug === history.state.design || item.id === history.state.design)
+  const previewText = useMemo(() => normalizeOwayoPersonalization(history.state.text, history.state.roster), [history.state.text, history.state.roster])
   const saveNow = () => {
     try { localStorage.setItem(draftKey, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
   }
@@ -1179,7 +1394,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         assetRefs,
         note,
         logoConsent:Boolean(history.state.logo.dataUrl && history.state.logo.consent),
-        designer:designerPayload(history.state, selectedDesign, manifest, customProduct)
+         designer:designerPayload(history.state, selectedDesign, manifest, customProduct, manifestUrl)
       })
       const requestId = result?.data?.id
       if (!requestId) throw new Error('The design request was not created. Please retry.')
@@ -1187,7 +1402,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         variant,
         options:variant.values || {},
         quantity,
-        customization:{ requestId, fields, note, hasLogo:Boolean(history.state.logo.dataUrl), logoConsent:Boolean(history.state.logo.consent), designer:designerPayload(history.state, selectedDesign, manifest, customProduct) }
+         customization:{ requestId, fields, note, hasLogo:Boolean(history.state.logo.dataUrl), logoConsent:Boolean(history.state.logo.consent), designer:designerPayload(history.state, selectedDesign, manifest, customProduct, manifestUrl) }
       })
       setAdded(true)
       setRequestKey(`request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
@@ -1211,7 +1426,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     <div className="custom-designer__workspace">
       <section className="designer-stage" aria-label="3D jersey workspace">
         <div className="designer-stage__meta"><span>{selectedDesign?.name || 'Custom design'}</span><strong>{history.state.text.team || 'Your team'}</strong></div>
-        <JerseyStage ref={stageRef} manifest={manifest} design={history.state.design} colors={history.state.colors} pattern={history.state.pattern} text={history.state.text} logo={history.state.logo} onStatus={setStageStatus}/>
+         <JerseyStage ref={stageRef} manifest={manifest} design={history.state.design} colors={history.state.colors} pattern={history.state.pattern} text={previewText} logo={history.state.logo} onStatus={setStageStatus}/>
         {stageStatus === 'loading' && <div className="designer-stage__loading"><span>90+</span><p>Stitching the 3D preview…</p></div>}
         {stageStatus === 'error' && <div className="designer-stage__loading is-error"><span>!</span><p>The design is saved. Reload to restore the 3D preview.</p></div>}
         <div className="designer-stage__tools" aria-label="3D view controls">
@@ -1228,7 +1443,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       </section>
       <aside className="designer-controls">
         <nav className="designer-tabs" aria-label="Design tools">{TABS.map(tab => { const Icon = tab.icon; return <button type="button" key={tab.id} className={activeTab === tab.id ? 'is-active' : ''} onClick={() => setActiveTab(tab.id)}><Icon size={17}/><span>{tab.label}</span></button> })}</nav>
-        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct}/></div>
+        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoCatalog={owayoCatalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct} onOwayoProductChange={loadOwayoProduct}/></div>
         <Roster state={history.state} update={history.update} sizes={selectedDesign?.sizes || manifest.product.sizes || []}/>
         <footer className="designer-order">
           <div className="designer-order__price"><span>{quantity} {quantity === 1 ? 'piece' : 'pieces'}{discount ? ` · ${Math.round(discount * 100)}% team saving` : ''}</span><strong>${total.toFixed(2)}</strong><small>{discount ? `$${unitPrice.toFixed(2)} each before team pricing` : 'Artwork review included'}</small></div>

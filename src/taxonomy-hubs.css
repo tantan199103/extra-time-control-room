@@ -425,6 +425,37 @@
 .taxonomy-hub-teams__tabs button { min-height: 30px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: 700 9px var(--body); }
 .taxonomy-hub-teams__tabs button.is-active { border-color: var(--ink); background: var(--ink); color: var(--chalk); }
 
+/* A team page starts with the same question as a physical shop floor:
+   jerseys, headwear or something for the rest of the day? Keep that choice
+   visible as a horizontal tab rail before refinements and the product grid. */
+.team-product-tabs {
+  display: grid;
+  grid-template-columns: minmax(190px, .34fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  padding: 18px 32px 19px;
+  border-bottom: 1px solid var(--line);
+  background: #f5f6f7;
+}
+.team-product-tabs__intro { min-width: 0; }
+.team-product-tabs__intro > span { color: var(--signal); font: 700 9px var(--body); letter-spacing: .1em; }
+.team-product-tabs__intro h2 { margin: 5px 0 4px; font: 800 clamp(25px, 2.8vw, 37px)/.9 var(--headline); letter-spacing: -.03em; }
+.team-product-tabs__intro p { margin: 0; color: var(--muted); font: 500 9px/1.35 var(--body); }
+.team-product-tabs__nav { min-width: 0; display: flex; align-items: stretch; gap: 7px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 4px; }
+.team-product-tabs__nav::-webkit-scrollbar { display: none; }
+.team-product-tabs__tab { min-width: 142px; min-height: 60px; display: grid; grid-template-columns: 29px minmax(0, 1fr) 14px; align-items: center; gap: 8px; flex: 0 0 auto; padding: 7px 10px 7px 8px; border-top: 2px solid transparent; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.62); color: var(--ink); text-decoration: none; transition: border-color 150ms ease, background 150ms ease, color 150ms ease; }
+.team-product-tabs__tab:hover, .team-product-tabs__tab:focus-visible { border-top-color: var(--signal); background: var(--chalk); }
+.team-product-tabs__tab.is-active { border-top-color: var(--signal); border-bottom-color: var(--ink); background: var(--ink); color: var(--chalk); }
+.team-product-tabs__icon { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--signal); }
+.team-product-tabs__tab.is-active .team-product-tabs__icon { border-color: #4b4b46; color: var(--acid); }
+.team-product-tabs__label { min-width: 0; display: grid; gap: 3px; }
+.team-product-tabs__label strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 16px/.9 var(--headline); }
+.team-product-tabs__label small { color: var(--muted); font: 600 8px var(--body); letter-spacing: .02em; }
+.team-product-tabs__tab.is-active .team-product-tabs__label small { color: #bdbeb8; }
+.team-product-tabs__tab > svg { color: var(--muted); }
+.team-product-tabs__tab.is-active > svg { color: var(--acid); }
+.team-product-tabs__empty { align-self: center; color: var(--muted); font: 500 9px/1.4 var(--body); }
+
 @media (max-width: 1000px) and (min-width: 781px) {
   .taxonomy-hub-hero--unified .taxonomy-hub-hero__layout {
     grid-template-columns: minmax(0, 1fr) minmax(180px, .5fr);
@@ -881,4 +912,18 @@
 @media (prefers-reduced-motion: reduce) {
   .product-skeleton__media,
   .product-skeleton__line { animation: none; }
+}
+
+@media (max-width: 780px) {
+  .team-product-tabs { display: block; padding: 13px 16px 12px; }
+  .team-product-tabs__intro { display: flex; align-items: baseline; gap: 8px; }
+  .team-product-tabs__intro > span { font-size: 8px; white-space: nowrap; }
+  .team-product-tabs__intro h2 { margin: 0; font-size: 25px; }
+  .team-product-tabs__intro p { display: none; }
+  .team-product-tabs__nav { margin-top: 9px; gap: 5px; padding: 1px 0 3px; }
+  .team-product-tabs__tab { min-width: 128px; min-height: 49px; grid-template-columns: 24px minmax(0,1fr) 12px; gap: 6px; padding: 5px 8px 5px 6px; }
+  .team-product-tabs__icon { width: 24px; height: 24px; }
+  .team-product-tabs__label strong { font-size: 14px; }
+  .team-product-tabs__label small { font-size: 7px; }
+  .team-product-tabs__empty { min-width: 190px; font-size: 8px; }
 }

@@ -7,6 +7,11 @@ import { owayoFamilyByProductId, resolveOwayoManifestRequest } from '../src/lib/
 
 const customCategory = catalogCategoryByHandle('custom-jerseys')
 
+test('catalogue hydration can pass a missing product without crashing the storefront', () => {
+  assert.equal(custom3DDesignerConfig(null), null)
+  assert.equal(hasCustom3DDesigner(null), false)
+})
+
 test('Comma-style 2D personalization never qualifies for the 3D Custom Lab', () => {
   const comma = {
     title: 'Comma Football personalized jersey',

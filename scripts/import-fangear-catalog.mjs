@@ -4,6 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { buildListingInput } from '../src/lib/catalog-model.js'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 import { sanitizeImagePrivacyMetadata } from '../src/lib/image-privacy.js'
 import {
   SOURCE_HOST,
@@ -59,7 +60,7 @@ async function fetchJson(path, query = {}) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), requestTimeoutMs)
   try {
-    const response = await fetch(url, { signal: controller.signal, headers: { accept: 'application/json', 'user-agent': 'Extra-Time-catalog-import/1.0' } })
+    const response = await fetch(url, { signal: controller.signal, headers: catalogRequestHeaders({ accept: 'application/json' }) })
     const text = await response.text()
     if (!response.ok) throw new Error(`Source request ${response.status} for ${url.pathname}: ${text.slice(0, 240)}`)
     return { data: JSON.parse(text), headers: response.headers }
@@ -120,7 +121,7 @@ async function downloadCleanImage(sourceUrl) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), requestTimeoutMs)
   try {
-    const response = await fetch(sourceUrl, { signal: controller.signal, headers: { accept: 'image/avif,image/webp,image/png,image/jpeg', 'user-agent': 'Extra-Time-catalog-import/1.0' } })
+    const response = await fetch(sourceUrl, { signal: controller.signal, headers: catalogRequestHeaders({ accept: 'image/avif,image/webp,image/png,image/jpeg' }) })
     if (!response.ok) throw new Error(`Image request ${response.status}`)
     const mime = mediaTypeFrom(response, sourceUrl)
     if (!mime) throw new Error('Unsupported image type')

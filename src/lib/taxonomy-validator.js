@@ -171,12 +171,22 @@ export function validateCatalogTaxonomy(product = {}) {
   const haystack = productText(product, source)
   const leagueTerms = detectedTerms(haystack, LEAGUE_ALIASES)
   const sportTerms = detectedTerms(haystack, SPORT_ALIASES)
+  // Product model codes such as Owayo's "F1 Kids MTB" are not Formula 1
+  // league claims. Keep the retired-league guard strict for an explicit
+  // `taxonomy.league: formula1` or genuine racing copy, while avoiding a
+  // false positive on a cycling garment code.
+  const effectiveLeagueTerms = leagueTerms.filter(term => {
+    if (term !== 'formula1' || declaredLeague) return true
+    const modelContext = /\b(?:kids?|mtb|dirt|cycling|jersey)\b/i.test(haystack)
+    const racingContext = /\b(?:formula|racing|motorsport|grand\s+prix|race\s+car)\b/i.test(haystack)
+    return !(modelContext && !racingContext)
+  })
   const blockers = []
   const warnings = []
 
   if (rawLeague && !declaredLeague) blockers.push('TAXONOMY_UNKNOWN_LEAGUE')
   if (!rawLeague) warnings.push('TAXONOMY_LEAGUE_REQUIRED')
-  if (RETIRED_LEAGUES.has(declaredLeague) || leagueTerms.some(term => RETIRED_LEAGUES.has(term))) blockers.push('TAXONOMY_RETIRED_LEAGUE')
+  if (RETIRED_LEAGUES.has(declaredLeague) || effectiveLeagueTerms.some(term => RETIRED_LEAGUES.has(term))) blockers.push('TAXONOMY_RETIRED_LEAGUE')
 
   const league = declaredLeague || ''
   const team = declaredTeam || ''
@@ -202,9 +212,9 @@ export function validateCatalogTaxonomy(product = {}) {
     blockers.push('TAXONOMY_SPORT_MISMATCH')
   }
 
-  const incompatibleLeagueTerm = leagueTerms.find(term => !compatibleLeagueText(league, term))
+  const incompatibleLeagueTerm = effectiveLeagueTerms.find(term => !compatibleLeagueText(league, term))
   if (incompatibleLeagueTerm && league) blockers.push('TAXONOMY_LEAGUE_TEXT_MISMATCH')
-  if (!league && leagueTerms.length > 1) warnings.push('TAXONOMY_LEAGUE_REQUIRED')
+  if (!league && effectiveLeagueTerms.length > 1) warnings.push('TAXONOMY_LEAGUE_REQUIRED')
 
   const groupSports = GROUP_SPORT[group]
   if (groupSports && expectedSport && !groupSports.includes(expectedSport)) blockers.push('TAXONOMY_PRODUCT_GROUP_MISMATCH')
@@ -228,7 +238,7 @@ export function validateCatalogTaxonomy(product = {}) {
     blockers: cleanBlockers,
     warnings: cleanWarnings,
     normalized: canonicalTaxonomy,
-    detected: { leagueTerms, sportTerms, league, team, sport: declaredSport || expectedSport, productGroup: group }
+    detected: { leagueTerms:effectiveLeagueTerms, sportTerms, league, team, sport: declaredSport || expectedSport, productGroup: group }
   }
 }
 

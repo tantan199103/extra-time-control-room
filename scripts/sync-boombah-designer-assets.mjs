@@ -6,6 +6,7 @@ import { dirname, extname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createClient } from '@supabase/supabase-js'
 import { isBoombahBrandingName, stripBoombahBrandingText } from '../src/lib/boombah-branding.js'
+import { catalogRequestHeaders } from './http-user-agent.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_ROOT = resolve(ROOT, 'public', 'designer', 'boombah')
@@ -86,7 +87,7 @@ async function fetchBuffer(url, { optional = false, attempts = 4 } = {}) {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       const response = await fetch(url, {
-        headers: { accept:'*/*', 'user-agent':'JersevoAssetSync/2.0' },
+        headers: catalogRequestHeaders({ accept:'*/*' }),
         signal:AbortSignal.timeout(60_000)
       })
       if (optional && response.status === 404) return null
