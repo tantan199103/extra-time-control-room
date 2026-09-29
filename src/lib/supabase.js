@@ -1056,8 +1056,13 @@ export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, sea
     if (category && category !== 'ALL') request = request.eq('taxonomy->>category', category)
     if (accessoryFamily && accessoryFamily !== 'ALL') request = request.eq('taxonomy->>accessoryCategory', accessoryFamily)
     if (accessoryType && accessoryType !== 'ALL') request = request.eq('taxonomy->>accessoryType', accessoryType)
+    // Sorting a 30k+ row relation by the unindexed title column makes
+    // PostgREST scan and sort the entire catalogue before it can return the
+    // first page (and routinely hits statement_timeout on /sports). The
+    // listing table is indexed for updated_at/id, which keeps every Admin
+    // catalogue page bounded. Search/filter semantics are unchanged.
     const { data, count, error } = await request
-      .order('title', { ascending:true })
+      .order('updated_at', { ascending:false })
       .order('id', { ascending:true })
       .range(from, from + safePageSize - 1)
     if (error) return { data:[], total:0, page:safePage, pageSize:safePageSize, source:'error', error:error.message }
