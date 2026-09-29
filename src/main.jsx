@@ -1330,123 +1330,6 @@ function LeagueDiscovery({ products = [] }) {
   )
 }
 
-function HomeShopIndex({ navigationProducts = [], products = [], collections = [] }) {
-  const [activeTab, setActiveTab] = useState('products')
-  const rows = navigationProducts.length ? navigationProducts : products
-  const countForCategory = category => rows.reduce((total, row) => {
-    if (!productMatchesCatalogCategory(row, category)) return total
-    return total + Math.max(1, Number(row.count) || 1)
-  }, 0)
-  const productOrder = [
-    'football-jerseys', 'basketball-jerseys', 'baseball-jerseys', 'soccer-jerseys',
-    'hockey-jerseys', 'caps', 'knit-hats', 'fan-apparel', 'custom-jerseys'
-  ]
-  const productCategories = productOrder
-    .map(handle => ALL_CATALOG_CATEGORY_PAGES.find(category => category.handle === handle))
-    .filter(Boolean)
-    .map(category => ({ ...category, count: countForCategory(category) }))
-    .filter(category => category.count > 0 || !rows.length)
-  const leagueRows = ALL_LEAGUE_TAXONOMY
-    .map(league => ({
-      ...league,
-      count: rows.reduce((total, row) => productMatchesTaxonomy(row, { league: league.key })
-        ? total + Math.max(1, Number(row.count) || 1)
-        : total, 0)
-    }))
-    .filter(league => league.count > 0)
-  const leagueOrder = ['nfl', 'nba', 'mlb', 'nhl', 'mls', 'ncaa']
-  const leagues = [
-    ...leagueOrder.map(key => leagueRows.find(league => league.key === key)).filter(Boolean),
-    ...leagueRows.filter(league => !leagueOrder.includes(league.key))
-  ].slice(0, 8)
-  const collectionRows = (collections.length ? collections : adminCollections)
-    .filter(collection => String(collection?.status || 'PUBLISHED').toUpperCase() === 'PUBLISHED')
-    .filter(collection => collection?.handle || collection?.id)
-    .slice(0, 6)
-  const tabs = [
-    { id: 'products', label: 'Products', detail: 'Start with the piece' },
-    { id: 'leagues', label: 'Leagues', detail: 'Find your competition' },
-    { id: 'collections', label: 'Collections', detail: 'Follow the story' }
-  ]
-  const open = href => navigate(href)
-  return (
-    <section className="home-shop-index section" id="shop-by" aria-labelledby="home-shop-index-title">
-      <div className="home-shop-index__intro">
-        <span className="home-shop-index__eyebrow">SHOP BY / FIND YOUR ROUTE</span>
-        <h2 id="home-shop-index-title">START WITH<br /><em>THE PIECE.</em></h2>
-        <p>Begin with the jersey, cap or collection that belongs to your matchday. Switch routes without leaving the homepage.</p>
-        <div className="home-shop-index__intro-actions">
-          <button type="button" className="button-link" onClick={() => open('/shop')}>SHOP ALL GEAR <ArrowRight size={16}/></button>
-          <span>LIVE CATALOGUE</span>
-        </div>
-      </div>
-      <div className="home-shop-index__workspace">
-        <div className="home-shop-index__tabs" role="tablist" aria-label="Shop by product, league or collection">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              aria-controls={`home-shop-panel-${tab.id}`}
-              id={`home-shop-tab-${tab.id}`}
-              className={activeTab === tab.id ? 'is-active' : ''}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <span>{tab.label}</span><small>{tab.detail}</small><ArrowRight size={14}/>
-            </button>
-          ))}
-        </div>
-        {activeTab === 'products' && (
-          <nav className="home-shop-index__panel" id="home-shop-panel-products" role="tabpanel" aria-labelledby="home-shop-tab-products" aria-label="Shop by product">
-            {productCategories.map(category => (
-              <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); open(`/category/${category.handle}`) }}>
-                <span className="home-shop-index__icon"><CategoryIcon kind={category.icon} size={20}/></span>
-                <span className="home-shop-index__label"><strong>{category.label}</strong><small>{category.count.toLocaleString('en-US')} styles</small></span>
-                <ArrowRight size={16}/>
-              </a>
-            ))}
-            {!productCategories.length && <p className="home-shop-index__empty">Product routes are loading. <button type="button" onClick={() => open('/shop')}>Open the full shop <ArrowRight size={14}/></button></p>}
-          </nav>
-        )}
-        {activeTab === 'leagues' && (
-          <nav className="home-shop-index__panel home-shop-index__panel--leagues" id="home-shop-panel-leagues" role="tabpanel" aria-labelledby="home-shop-tab-leagues" aria-label="Shop by league">
-            {leagues.map(league => (
-              <a key={league.key} href={leaguePath(league)} onClick={event => { event.preventDefault(); open(leaguePath(league)) }}>
-                <span className="home-shop-index__league-mark">
-                  {league.media?.src ? <img src={league.media.src} alt="" loading="lazy" decoding="async"/> : <span>{league.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase()}</span>}
-                </span>
-                <span className="home-shop-index__label"><strong>{league.name}</strong><small>{league.count.toLocaleString('en-US')} styles</small></span>
-                <ArrowRight size={16}/>
-              </a>
-            ))}
-            {!leagues.length && <p className="home-shop-index__empty">League routes are loading. <button type="button" onClick={() => open('/sports')}>Browse sports <ArrowRight size={14}/></button></p>}
-          </nav>
-        )}
-        {activeTab === 'collections' && (
-          <nav className="home-shop-index__panel home-shop-index__panel--collections" id="home-shop-panel-collections" role="tabpanel" aria-labelledby="home-shop-tab-collections" aria-label="Shop by collection">
-            {collectionRows.map(collection => {
-              const artwork = resolveCollectionArtwork(collection, products)
-              const href = `/collection/${encodeURIComponent(collection.handle || collection.id)}`
-              return (
-                <a key={collection.id || collection.handle} href={href} onClick={event => { event.preventDefault(); open(href) }}>
-                  <span className="home-shop-index__collection-art">
-                    {artwork.src ? <img src={artwork.src} alt="" loading="lazy" decoding="async"/> : <CategoryIcon kind={artwork.icon || 'all'} size={21}/>}
-                  </span>
-                  <span className="home-shop-index__label"><strong>{collection.name || collection.title || collection.handle}</strong><small>{Number(collection.publishedCount ?? collection.count ?? 0) ? `${Number(collection.publishedCount ?? collection.count).toLocaleString('en-US')} pieces` : 'Explore the edit'}</small></span>
-                  <ArrowRight size={16}/>
-                </a>
-              )
-            })}
-            {!collectionRows.length && <p className="home-shop-index__empty">Collections are being curated. <button type="button" onClick={() => open('/collections')}>Browse all collections <ArrowRight size={14}/></button></p>}
-          </nav>
-        )}
-        <div className="home-shop-index__footer"><span>JERSEYS / HEADWEAR / STORIES</span><button type="button" onClick={() => open('/collections')}>VIEW ALL COLLECTIONS <ArrowRight size={14}/></button></div>
-      </div>
-    </section>
-  )
-}
-
 function JerseySvg({ name = 'TAN', number = '07', teamCity = 'SAIGON', year = '2026', base = '#131313', accent = '#f8f04a', view = 'back', patch = true, photoUrl = '', showMeta = true }) {
   const uid = useId().replace(/:/g, '')
   const patternId = `jersey-grid-${uid}`
@@ -1509,41 +1392,51 @@ function CustomOptions({ product, products = [], onAdd }) {
   )
 }
 
-const HOME_PRODUCT_DISCOVERY_CATEGORIES = Object.freeze([
-  { handle:'football-jerseys', label:'Football', note:'Football jerseys' },
-  { handle:'basketball-jerseys', label:'Basketball', note:'Basketball jerseys' },
-  { handle:'baseball-jerseys', label:'Baseball', note:'Baseball jerseys' },
-  { handle:'soccer-jerseys', label:'Soccer', note:'Soccer jerseys' },
-  { handle:'hockey-jerseys', label:'Hockey', note:'Hockey jerseys' },
-  { handle:'caps', label:'Caps', note:'Caps & fitted hats' },
-  { handle:'knit-hats', label:'Knit hats', note:'Cold-weather headwear' },
-  { handle:'custom-jerseys', label:'Custom', note:'3D custom jerseys' },
-  { handle:'fan-apparel', label:'Fan apparel', note:'Everyday fan layers' }
+const HOME_PRODUCT_DISCOVERY_LEAGUE_ORDER = Object.freeze([
+  'nfl', 'nba', 'mlb', 'nhl', 'mls', 'ncaa', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'wrestling', 'motorsports'
 ])
+
+const HOME_PRODUCT_DISCOVERY_LEAGUES = Object.freeze(
+  HOME_PRODUCT_DISCOVERY_LEAGUE_ORDER
+    .map(key => ALL_LEAGUE_TAXONOMY.find(league => league.key === key))
+    .filter(Boolean)
+    .map(league => ({ ...league, handle: league.key, label: league.name, note: `${league.name} newest products` }))
+)
 
 function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickView }) {
   const sectionRef = useRef(null)
-  const [activeHandle,setActiveHandle] = useState(HOME_PRODUCT_DISCOVERY_CATEGORIES[0].handle)
+  const [activeHandle,setActiveHandle] = useState('nfl')
   const [selectedId,setSelectedId] = useState('')
   const [catalog,setCatalog] = useState({})
   const [loadingHandle,setLoadingHandle] = useState('')
   const [errors,setErrors] = useState({})
   const [ready,setReady] = useState(false)
-  const activeRoute = HOME_PRODUCT_DISCOVERY_CATEGORIES.find(item => item.handle === activeHandle) || HOME_PRODUCT_DISCOVERY_CATEGORIES[0]
-  const activeCategory = catalogCategoryByHandle(activeHandle)
   const navigationRows = navigationProducts.length ? navigationProducts : products
-  const countFor = handle => {
-    const category = catalogCategoryByHandle(handle)
-    return navigationRows.reduce((sum,row) => productMatchesCatalogCategory(row,category)
-      ? sum + Math.max(1,Number(row.count) || 1)
-      : sum,0)
-  }
+  const leagueRoutes = useMemo(() => {
+    const rows = HOME_PRODUCT_DISCOVERY_LEAGUES.map(league => ({
+      ...league,
+      count: navigationRows.reduce((total,row) => productMatchesTaxonomy(row,{ league:league.key })
+        ? total + Math.max(1, Number(row.count) || 1)
+        : total, 0)
+    }))
+    // Keep the league rail stable while the compact navigation index hydrates.
+    // Empty leagues remain useful tabs: selecting one performs the live query
+    // and gives the shopper an explicit empty state instead of removing the
+    // route from the homepage.
+    return rows
+  }, [navigationRows])
+  const activeRoute = leagueRoutes.find(item => item.key === activeHandle) || leagueRoutes[0] || HOME_PRODUCT_DISCOVERY_LEAGUES[0]
   const seededProducts = useMemo(() => products
-    .filter(product => productMatchesCatalogCategory(product,activeCategory))
-    .slice(0,12), [products,activeHandle])
+    .filter(product => activeRoute?.key && productMatchesTaxonomy(product,{ league:activeRoute.key }))
+    .slice(0,20), [products,activeRoute?.key])
   const hasLoaded = Object.prototype.hasOwnProperty.call(catalog,activeHandle)
   const activeProducts = hasLoaded ? catalog[activeHandle] : seededProducts
   const productKey = activeProducts.map(product => product.id).join('|')
+
+  useEffect(() => {
+    if (leagueRoutes.some(route => route.key === activeHandle)) return
+    setActiveHandle(leagueRoutes[0]?.key || 'nfl')
+  }, [leagueRoutes,activeHandle])
 
   useEffect(() => {
     if (!sectionRef.current || typeof IntersectionObserver === 'undefined') {
@@ -1560,15 +1453,15 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
   }, [])
 
   useEffect(() => {
-    if (!ready || hasLoaded) return undefined
+    if (!ready || hasLoaded || !activeRoute?.key) return undefined
     let active = true
     setLoadingHandle(activeHandle)
     setErrors(current => ({ ...current, [activeHandle]:'' }))
-    fetchStorefrontCatalogPage({ page:1, pageSize:12, basePath:`/category/${activeHandle}` })
+    fetchStorefrontCatalogPage({ page:1, pageSize:20, basePath:leaguePath(activeRoute), search:'?sort=NEWEST' })
       .then(result => {
         if (!active) return
         if (result.source === 'unavailable') throw new Error(result.error || 'Products are temporarily unavailable.')
-        setCatalog(current => ({ ...current, [activeHandle]:result.data || [] }))
+        setCatalog(current => ({ ...current, [activeHandle]:(result.data || []).slice(0,20) }))
       })
       .catch(error => {
         if (!active) return
@@ -1576,7 +1469,7 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
       })
       .finally(() => { if (active) setLoadingHandle(current => current === activeHandle ? '' : current) })
     return () => { active = false }
-  }, [activeHandle,ready,hasLoaded])
+  }, [activeHandle,activeRoute?.key,ready,hasLoaded])
 
   useEffect(() => {
     if (activeProducts.some(product => product.id === selectedId)) return
@@ -1590,10 +1483,10 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
   const sizeOption = (product?.options || []).find(option => /^(size|fit)$/i.test(option.name))
   const sizes = sizeOption ? sortSizes(sizeOption.values || []).slice(0,10) : []
   const taxonomy = productTaxonomyValues(product || {})
-  const league = findLeague(taxonomy.league)
+  const league = findLeague(taxonomy.league) || (activeRoute?.key ? findLeague(activeRoute.key) : null)
   const team = league ? findTeam(league.key,taxonomy.team) : null
   const designerTarget = product ? listingDesignerTarget(product) : ''
-  const productHref = product ? `/product/${product.handle || product.id}` : activeRoute ? `/category/${activeRoute.handle}` : '/shop'
+  const productHref = product ? `/product/${product.handle || product.id}` : activeRoute ? leaguePath(activeRoute) : '/shop'
   const summary = product ? seoDescription(product.subtitle || product.description || product.story, `${product.name || product.title} is available in the live Jersevo catalogue.`, 210) : ''
   const loading = loadingHandle === activeHandle && !activeProducts.length
 
@@ -1601,48 +1494,48 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
     <section ref={sectionRef} className="home-product-discovery section" id="product-discovery" aria-labelledby="home-product-discovery-title">
       <div className="home-product-discovery__head">
         <div>
-          <span>THE PRODUCT LOCKER</span>
-          <h2 id="home-product-discovery-title">EXPLORE THE<br /><em>ACTUAL PIECES.</em></h2>
+          <span>LEAGUE EDIT / LIVE NOW</span>
+          <h2 id="home-product-discovery-title">THE LATEST<br /><em>FROM THE LEAGUES.</em></h2>
         </div>
-        <p>Move through jerseys, caps and fan layers, then inspect the product, price, available sizes and personalization before opening its full page.</p>
+        <p>Pick a league to see its 20 newest published pieces. Open a card for the product, price, fit and personalization details that matter before matchday.</p>
       </div>
 
-      <div className="home-product-discovery__tabs" role="tablist" aria-label="Explore products by type">
-        {HOME_PRODUCT_DISCOVERY_CATEGORIES.map(route => {
-          const category = catalogCategoryByHandle(route.handle)
-          const count = countFor(route.handle)
-          return (
+      <div className="home-product-discovery__tabs" role="tablist" aria-label="Explore the newest products by league">
+        {leagueRoutes.map(route => (
             <button
-              key={route.handle}
+              key={route.key}
               type="button"
               role="tab"
               aria-label={route.label}
-              aria-selected={activeHandle === route.handle}
+              aria-selected={activeHandle === route.key}
               aria-controls="home-product-discovery-panel"
-              id={`home-product-discovery-tab-${route.handle}`}
-              className={activeHandle === route.handle ? 'is-active' : ''}
-              onClick={() => setActiveHandle(route.handle)}
+              id={`home-product-discovery-tab-${route.key}`}
+              className={activeHandle === route.key ? 'is-active' : ''}
+              onClick={() => setActiveHandle(route.key)}
             >
-              <CategoryIcon kind={category?.icon || 'all'} size={18}/>
-              <span>{route.label}</span>
-              {count > 0 && <small>{count.toLocaleString('en-US')}</small>}
+              <span className="home-product-discovery__tab-mark" aria-hidden="true">
+                {route.media?.src
+                  ? <img src={route.media.src} alt="" loading="lazy" decoding="async"/>
+                  : <Trophy size={18}/>}
+              </span>
+              <span className="home-product-discovery__tab-label">{route.label}</span>
+              <small>20 NEWEST</small>
             </button>
-          )
-        })}
+        ))}
       </div>
 
       <div className="home-product-discovery__panel" id="home-product-discovery-panel" role="tabpanel" aria-labelledby={`home-product-discovery-tab-${activeHandle}`} aria-live="polite">
-        {loading ? <div className="home-product-discovery__loading" role="status"><span/><span/><p>Loading {activeRoute.note.toLowerCase()}…</p></div> : product ? <>
+        {loading ? <div className="home-product-discovery__loading" role="status"><span/><span/><p>Loading {activeRoute.label} newest products…</p></div> : product ? <>
           <figure className="home-product-discovery__media">
             <a className="home-product-discovery__media-link" href={productHref} aria-label={`View ${product.name || product.title || 'product'}`} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(productHref) } }}>
               <img src={product.image || '/assets/jersey-black.webp'} alt={product.alt || product.name || product.title} loading="lazy" decoding="async" />
             </a>
-            <figcaption><span>{activeRoute.note}</span><strong>{activeProducts.length} live picks</strong></figcaption>
+            <figcaption><span>{activeRoute.label}</span><strong>{activeProducts.length} newest picks</strong></figcaption>
           </figure>
           <article className="home-product-discovery__detail">
             <div className="home-product-discovery__identity">
               <span className="home-product-discovery__marks"><ProductTaxonomyMarks product={product}/></span>
-              <span>{[league?.name,team?.name,product.productGroup].filter(Boolean).join(' / ') || activeRoute.note}</span>
+              <span>{[league?.name,team?.name,product.productGroup].filter(Boolean).join(' / ') || activeRoute.label}</span>
             </div>
             <p className="home-product-discovery__status">{designerTarget ? '3D CUSTOM' : product.customFields?.length ? 'PERSONALIZABLE' : 'PUBLISHED PRODUCT'}</p>
             <h3>{product.name || product.title}</h3>
@@ -1653,7 +1546,7 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
               <div><dt>Availability</dt><dd>{available.length ? 'Available to order' : 'Currently sold out'}</dd></div>
               <div><dt>Variations</dt><dd>{available.length || 0} live options</dd></div>
               <div><dt>Personalization</dt><dd>{designerTarget ? 'Full 3D builder' : product.customFields?.length ? 'Listing-approved fields' : 'Ready-made piece'}</dd></div>
-              <div><dt>Product type</dt><dd>{product.productGroup || product.type || activeRoute.note}</dd></div>
+              <div><dt>League edit</dt><dd>{activeRoute.label} / newest 20</dd></div>
             </dl>
 
             <div className="home-product-discovery__sizes">
@@ -1668,21 +1561,76 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
             </div>
           </article>
         </> : <div className="home-product-discovery__empty">
-          <Shirt size={28}/><h3>No live {activeRoute.note.toLowerCase()} found.</h3><p>{errors[activeHandle] || 'Open the complete catalogue to keep exploring.'}</p><button type="button" onClick={() => navigate(`/category/${activeHandle}`)}>OPEN THIS CATEGORY <ArrowRight size={15}/></button>
+          <Shirt size={28}/><h3>No live {activeRoute.label} products found.</h3><p>{errors[activeHandle] || 'Open the complete league catalogue to keep exploring.'}</p><button type="button" onClick={() => navigate(leaguePath(activeRoute))}>OPEN {activeRoute.label.toUpperCase()} <ArrowRight size={15}/></button>
         </div>}
       </div>
 
       {activeProducts.length > 0 && <div className="home-product-discovery__lineup">
-        <div className="home-product-discovery__lineup-head"><span>{activeRoute.note}</span><button type="button" onClick={() => navigate(`/category/${activeHandle}`)}>VIEW ALL <ArrowRight size={14}/></button></div>
-        <div className="home-product-discovery__lineup-track" aria-label={`Select a ${activeRoute.note.toLowerCase()} product`}>
-          {activeProducts.slice(0,8).map(item => (
+        <div className="home-product-discovery__lineup-head"><span>{activeRoute.label} / NEWEST 20</span><button type="button" onClick={() => navigate(leaguePath(activeRoute))}>VIEW ALL <ArrowRight size={14}/></button></div>
+        <div className="home-product-discovery__lineup-track" aria-label={`Select a ${activeRoute.label.toLowerCase()} product`}>
+          {activeProducts.slice(0,20).map(item => (
             <button key={item.id} type="button" aria-label={`View ${item.name || item.title || 'product'}`} aria-pressed={product?.id === item.id} className={product?.id === item.id ? 'is-active' : ''} onClick={() => setSelectedId(item.id)}>
-              <img src={item.image || '/assets/jersey-black.webp'} alt="" loading="lazy" decoding="async" />
+              <div className="home-product-discovery__lineup-thumb"><img src={item.image || '/assets/jersey-black.webp'} alt="" loading="lazy" decoding="async" /></div>
               <span><strong>{item.name || item.title}</strong><small>{money(item.price)}</small></span>
             </button>
           ))}
         </div>
       </div>}
+    </section>
+  )
+}
+
+function HomeCustomerVoices({ products = [] }) {
+  const liveRatedProducts = useMemo(() => [...products]
+    .filter(product => Number(product.rating) > 0 && Number(product.reviews) > 0)
+    .sort((a,b) => Number(b.reviews || 0) - Number(a.reviews || 0))
+    .slice(0,3), [products])
+  const usingFallbackRatings = liveRatedProducts.length === 0
+  const ratedProducts = useMemo(() => {
+    const source = usingFallbackRatings ? fallbackProducts : liveRatedProducts
+    return [...source].sort((a,b) => Number(b.reviews || 0) - Number(a.reviews || 0)).slice(0,3)
+  }, [liveRatedProducts,usingFallbackRatings])
+  const totalReviews = ratedProducts.reduce((sum, product) => sum + Number(product.reviews || 0), 0)
+  const average = totalReviews
+    ? ratedProducts.reduce((sum, product) => sum + Number(product.rating || 0) * Number(product.reviews || 0), 0) / totalReviews
+    : 0
+  const stars = value => [...Array(5)].map((_, index) => <Star key={index} size={13} fill={index < Math.round(value) ? 'currentColor' : 'none'} stroke="currentColor" />)
+  return (
+    <section className="home-customer-voices section" id="customer-voices" aria-labelledby="home-customer-voices-title">
+      <div className="home-customer-voices__head">
+        <div>
+          <span>SHOPPER SIGNALS / AFTER THE ORDER</span>
+          <h2 id="home-customer-voices-title">THE PIECES<br /><em>PEOPLE COME BACK TO.</em></h2>
+        </div>
+        <div className="home-customer-voices__summary">
+          <p>Rating snapshots from published listing data. Open a product to see its full fit, finish and personalization details.</p>
+          <div className="home-customer-voices__score" aria-label={average ? `${average.toFixed(1)} out of 5 across ${totalReviews} ratings` : 'Ratings are being collected'}>
+            <strong>{average ? average.toFixed(1) : '—'}</strong>
+            <span>{average ? '/ 5 catalogue rating' : 'Ratings coming in'}</span>
+            {average > 0 && <span className="home-customer-voices__stars" aria-hidden="true">{stars(average)}</span>}
+          </div>
+        </div>
+      </div>
+      <div className="home-customer-voices__grid">
+        {ratedProducts.length ? ratedProducts.map(product => {
+          const rating = Number(product.rating || 0)
+          const reviews = Number(product.reviews || 0)
+          const href = usingFallbackRatings ? '/shop' : `/product/${product.handle || product.id}`
+          const reviewText = String(product.reviewQuote || product.review || '').trim()
+          return (
+            <article className="home-customer-voices__card" key={product.id}>
+              <a className="home-customer-voices__media" href={href} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(href) } }}>
+                <img src={product.image || '/assets/jersey-black.webp'} alt={product.alt || product.name || product.title || 'Rated product'} loading="lazy" decoding="async" />
+              </a>
+              <div className="home-customer-voices__card-body">
+                <div className="home-customer-voices__card-top"><span className="home-customer-voices__stars" aria-label={`${rating.toFixed(1)} out of 5 stars`}>{stars(rating)}</span><span>{usingFallbackRatings ? 'RATING PREVIEW' : 'CATALOGUE RATING'}</span></div>
+                {reviewText ? <blockquote>“{reviewText}”</blockquote> : <p className="home-customer-voices__rating-copy">Rated {rating.toFixed(1)} / 5 across {reviews.toLocaleString('en-US')} published shopper ratings. View the listing for the full product context.</p>}
+                <a className="home-customer-voices__product" href={href} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(href) } }}><strong>{product.name || product.title}</strong><small>{reviews.toLocaleString('en-US')} ratings · {product.meta || 'Published product'}</small><ArrowRight size={15}/></a>
+              </div>
+            </article>
+          )
+        }) : <p className="home-customer-voices__empty">Ratings will appear here as shoppers share their experience with the live catalogue.</p>}
+      </div>
     </section>
   )
 }
@@ -1925,23 +1873,24 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
   const categoryRows = navigationProducts.length ? navigationProducts : products
   const visibleCategories = CATALOG_CATEGORY_PAGES.filter(category => categoryRows.some(product => productMatchesCatalogCategory(product,category)))
   const resolvedHomeBlocks = resolvePageBlocks(theme, 'home', DEFAULT_HOME_LAYOUT)
-  // Older saved themes predate the unified homepage shop index. Preserve the
-  // editor's order while inserting the new discovery block after leagues so
-  // product, league and collection routes are available in one place.
+  // Retire the old "Start with the piece" region even when a saved theme still
+  // contains the legacy block. The product explorer now owns league discovery.
   const homeBlocks = (() => {
-    let blocks = [...resolvedHomeBlocks]
-    if (!blocks.some(block => block.id === 'shop-index')) {
-      const insertAt = blocks.findIndex(block => block.id === 'leagues')
-      const next = { id:'shop-index', type:'Shop by product / league / collection', enabled:true, order:0, settings:{} }
-      blocks = insertAt < 0 ? [...blocks,next] : [...blocks.slice(0,insertAt + 1),next,...blocks.slice(insertAt + 1)]
-    }
+    let blocks = [...resolvedHomeBlocks].filter(block => block.id !== 'shop-index')
     // Saved production themes may predate the detailed product explorer. It
     // belongs directly after the Custom experience, regardless of whether the
     // site uses the current `custom-options` block or the older `custom-cta`.
-    if (!blocks.some(block => block.id === 'product-discovery')) {
+    if (!blocks.some(block => block.id === 'product-discovery' && block.enabled !== false)) {
+      blocks = blocks.filter(block => block.id !== 'product-discovery')
       const customAt = Math.max(blocks.findIndex(block => block.id === 'custom-options'),blocks.findIndex(block => block.id === 'custom-cta'))
       const next = { id:'product-discovery', type:'Detailed product discovery', enabled:true, order:0, settings:{} }
       blocks = customAt < 0 ? [...blocks,next] : [...blocks.slice(0,customAt + 1),next,...blocks.slice(customAt + 1)]
+    }
+    if (!blocks.some(block => block.id === 'customer-voices' && block.enabled !== false)) {
+      blocks = blocks.filter(block => block.id !== 'customer-voices')
+      const discoveryAt = blocks.findIndex(block => block.id === 'product-discovery')
+      const next = { id:'customer-voices', type:'Customer experience ratings', enabled:true, order:0, settings:{} }
+      blocks = discoveryAt < 0 ? [...blocks,next] : [...blocks.slice(0,discoveryAt + 1),next,...blocks.slice(discoveryAt + 1)]
     }
     return blocks
   })()
@@ -1959,10 +1908,10 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
     story:<StoryExplorer key="story" product={featured}/>,
     players:<PlayerDiscovery key="players" customProduct={customProduct}/>,
     leagues:<LeagueDiscovery key="leagues" products={navigationProducts.length ? navigationProducts : products}/>,
-    'shop-index':<HomeShopIndex key="shop-index" navigationProducts={navigationProducts} products={products} collections={collections}/>,
     'custom-cta':<CustomTeaser key="custom-cta" product={customProduct} products={products} onAdd={onAdd}/>,
     'custom-options':<CustomOptions key="custom-options" product={customProduct} products={products} onAdd={onAdd}/>,
     'product-discovery':<HomeProductDiscovery key="product-discovery" products={products} navigationProducts={navigationProducts} onQuickView={onQuickView}/>,
+    'customer-voices':<HomeCustomerVoices key="customer-voices" products={products}/>,
     quality:<QualityProof key="quality" product={featured}/>,
     community:<CommunityProof key="community"/>,
     faq:<HomeFaq key="faq"/>,
@@ -1976,7 +1925,17 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
   // Keep the public homepage focused on discovery, personalization and trust.
   // The richer editorial modules remain available in the codebase/admin, but
   // they no longer delay the primary shopping path with duplicate imagery.
-  const visibleBlocks = rawBlocks
+  // These two homepage modules are part of the current storefront contract,
+  // so a stale remote theme cannot disable or move them below the main shop.
+  const discoveryBlocks = rawBlocks.filter(block => !['product-discovery','customer-voices'].includes(block.id))
+  const customIndex = Math.max(discoveryBlocks.findIndex(block => block.id === 'custom-options'), discoveryBlocks.findIndex(block => block.id === 'custom-cta'))
+  const discoveryInsertAt = customIndex < 0 ? discoveryBlocks.length : customIndex + 1
+  const visibleBlocks = [
+    ...discoveryBlocks.slice(0, discoveryInsertAt),
+    { id:'product-discovery', enabled:true },
+    { id:'customer-voices', enabled:true },
+    ...discoveryBlocks.slice(discoveryInsertAt)
+  ]
   if (!visibleBlocks.some(block => block.id === 'hero')) {
     visibleBlocks.unshift({ id: 'hero', enabled: true })
   }
