@@ -541,7 +541,11 @@ const ADMIN_PRODUCT_LEGACY_FIELDS = [
 ].join(',')
 
 const ADMIN_PRODUCT_PAGE_SIZE = 200
-const ADMIN_PRODUCT_MAX_PAGES = 100
+// Keep the progressive Admin catalogue bounded, but do not stop below the
+// current live catalogue (31k+ listings).  The previous 100-page cap silently
+// truncated every catalogue over 20,000 rows and made the control room report
+// a transport/timeout error even when Supabase was healthy.
+const ADMIN_PRODUCT_MAX_PAGES = 200
 
 async function fetchAdminProductPages(fields, includeVariantCount = false, { onPage, onError, progressive = false } = {}) {
   const select = includeVariantCount

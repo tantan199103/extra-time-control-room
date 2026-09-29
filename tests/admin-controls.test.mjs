@@ -86,6 +86,7 @@ test('save and upload failures are visible and never described as success', () =
 
 test('large admin catalogues use paginated summaries and hydrate one listing on demand', () => {
   assert.match(adapter, /ADMIN_PRODUCT_PAGE_SIZE = 200/)
+  assert.match(adapter, /ADMIN_PRODUCT_MAX_PAGES = 200/)
   assert.match(adapter, /\.range\(from, from \+ ADMIN_PRODUCT_PAGE_SIZE - 1\)/)
   assert.match(adapter, /active_variants:pod_product_variants\(count\)/)
   assert.match(adapter, /draft_variants:pod_product_variants\(count\)/)
