@@ -272,6 +272,22 @@ function extensionForMime(mime) {
   return ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif' })[mime] || 'webp'
 }
 
+// CDNs often negotiate AVIF/WebP even when the product URL ends in `.jpg` and
+// may occasionally leave the response Content-Type as the legacy extension.
+// Sanitize according to the bytes, not only the header, otherwise a perfectly
+// valid negotiated image is rejected as "Invalid JPEG/PNG".
+function sniffImageMime(bytes, hintedMime) {
+  const data = new Uint8Array(bytes || [])
+  if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) return 'image/jpeg'
+  if (data.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => data[index] === value)) return 'image/png'
+  if (data.length >= 12 && String.fromCharCode(...data.slice(0, 4)) === 'RIFF' && String.fromCharCode(...data.slice(8, 12)) === 'WEBP') return 'image/webp'
+  if (data.length >= 12 && String.fromCharCode(...data.slice(4, 8)) === 'ftyp') {
+    const brands = String.fromCharCode(...data.slice(8, Math.min(data.length, 64)))
+    if (/\b(?:avif|avis|mif1|msf1)\b/.test(brands)) return 'image/avif'
+  }
+  return hintedMime
+}
+
 export async function downloadCleanImage(sourceUrl, { timeoutMs = 30000, fetchFn = fetch } = {}) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
@@ -284,8 +300,9 @@ export async function downloadCleanImage(sourceUrl, { timeoutMs = 30000, fetchFn
       }
     })
     if (!response.ok) throw new Error(`Failed to fetch image: status ${response.status}`)
-    const mime = mediaTypeFromResponse(response, sourceUrl)
     const arrayBuffer = await response.arrayBuffer()
+    const hintedMime = mediaTypeFromResponse(response, sourceUrl)
+    const mime = sniffImageMime(arrayBuffer, hintedMime)
     const rawBlob = new Blob([arrayBuffer], { type: mime })
     // Strip EXIF, XMP, IPTC and tracking metadata
     const cleanBlob = await sanitizeImagePrivacyMetadata(rawBlob)

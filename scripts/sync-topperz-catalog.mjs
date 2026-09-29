@@ -62,6 +62,7 @@ const mediaLimitParsed = Number(mediaLimitInput)
 const mediaLimit = Number.isFinite(mediaLimitParsed) ? Math.min(20, Math.max(0, Math.trunc(mediaLimitParsed))) : 2
 const offset = Math.max(0, Number(argValue('--offset', process.env.TOPPERZ_PRODUCT_OFFSET || 0)) || 0)
 const limit = Math.max(0, Number(argValue('--limit', process.env.TOPPERZ_PRODUCT_LIMIT || 0)) || 0)
+const explicitUrls = argValues('--url', process.env.TOPPERZ_PRODUCT_URL || '')
 const pageConcurrency = Math.min(24, Math.max(1, Number(argValue('--concurrency', process.env.TOPPERZ_CONCURRENCY || 12)) || 12))
 const mediaConcurrency = Math.min(24, Math.max(1, Number(argValue('--media-concurrency', process.env.TOPPERZ_MEDIA_CONCURRENCY || 8)) || 8))
 const saveConcurrency = Math.min(20, Math.max(1, Number(argValue('--save-concurrency', process.env.TOPPERZ_SAVE_CONCURRENCY || 12)) || 12))
@@ -82,9 +83,19 @@ function argValue(name, fallback = '') {
   return index >= 0 && process.argv[index + 1] ? process.argv[index + 1] : fallback
 }
 
+function argValues(name, fallback = '') {
+  const values = []
+  for (let index = 0; index < process.argv.length; index += 1) {
+    if (process.argv[index] !== name || !process.argv[index + 1]) continue
+    values.push(process.argv[index + 1])
+  }
+  if (!values.length && fallback) values.push(fallback)
+  return [...new Set(values.flatMap(value => String(value).split(',')).map(value => value.trim()).filter(Boolean))]
+}
+
 function usage() {
   console.log(`Topperzstore catalogue synchronizer\n\n` +
-    `  node scripts/sync-topperz-catalog.mjs [--limit N] [--offset N] [--concurrency N]\n` +
+    `  node scripts/sync-topperz-catalog.mjs [--limit N] [--offset N] [--url URL ...] [--concurrency N]\n` +
     `       [--write] [--media] [--media-limit N|0] [--stock 1000]\n` +
     `       [--batch-size N] [--refresh-existing]\n\n` +
     `Default is a read-only dry run. --write requires TOPPERZ_SOURCE_AUTHORIZED=true,\n` +
@@ -404,10 +415,12 @@ export async function run() {
   if (!dryRun) assertWriteConfig()
   console.log(`${dryRun ? 'Dry run' : 'Write run'} · ${SOURCE_BASE} · offset ${offset} · limit ${limit || 'all'} · media ${includeMedia ? (includeAllMedia ? 'all' : `first ${mediaLimit}`) : 'off'} · stock ${defaultStock}/variant · listings stay DRAFT`)
   const discovery = await discoverTopperzProducts()
-  const selected = discovery.rows.slice(offset, limit ? offset + limit : undefined)
+  const selected = explicitUrls.length
+    ? explicitUrls.map(url => discovery.rows.find(row => row.url === url) || { url, lastmod: '' })
+    : discovery.rows.slice(offset, limit ? offset + limit : undefined)
   if (!selected.length) throw new Error('No Topperzstore product URLs were selected.')
   console.log(`Discovered ${discovery.rows.length} product URLs across ${discovery.sitemapCount} sitemap documents; selected ${selected.length}.`)
-  const identity = `${TOPPERZ_IMPORT_VERSION}:${offset}:${limit || 0}:${defaultStock}:${includeMedia}:${mediaLimit}`
+  const identity = `${TOPPERZ_IMPORT_VERSION}:${explicitUrls.join('|') || `${offset}:${limit || 0}`}:${defaultStock}:${includeMedia}:${mediaLimit}`
   const previous = dryRun ? null : await loadCheckpoint(identity)
   const completed = new Set(previous?.completed || [])
   const report = previous?.report || topperzImportReport({ sitemap: { url: TOPPERZ_SITEMAP_URL, documents: discovery.sitemapCount, productUrls: discovery.rows.length, selected: selected.length, offset, limit: limit || null } })

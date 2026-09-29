@@ -195,3 +195,19 @@ test('image pipeline strips privacy metadata and hydrates Supabase product-media
   assert.equal(publicListingHasSourceReferences(hydrated.listing), false)
   assert.equal(JSON.stringify(hydrated.listing).includes('fanatics.frgimages.com'), false)
 })
+
+test('image pipeline sniffs negotiated AVIF when a CDN keeps a .jpg content type', async () => {
+  const ftyp = new Uint8Array([
+    0, 0, 0, 24, 102, 116, 121, 112, 97, 118, 105, 102,
+    0, 0, 0, 0, 109, 105, 102, 49, 0, 0, 0, 0
+  ])
+  const mockFetch = async () => ({
+    ok: true,
+    status: 200,
+    headers: new Headers({ 'content-type': 'image/jpeg' }),
+    arrayBuffer: async () => ftyp.buffer
+  })
+  const downloaded = await downloadCleanImage('https://cdn.example.test/hat.jpg', { fetchFn: mockFetch })
+  assert.equal(downloaded.mime, 'image/avif')
+  assert.equal(new Uint8Array(await downloaded.blob.arrayBuffer())[4], 102)
+})
