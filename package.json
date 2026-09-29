@@ -40,6 +40,8 @@
     "sync:fanatics": "node scripts/auto-sync-fanatics.mjs",
     "import:lidshd": "node scripts/import-lidshd-catalog.mjs",
     "sync:lidshd": "node scripts/import-lidshd-catalog.mjs --write --media --media-limit 0 --activate --force-stock --stock 1000 --batch-size 250 --concurrency 48 --save-concurrency 20",
+    "import:topperz": "node scripts/sync-topperz-catalog.mjs",
+    "sync:topperz": "node scripts/sync-topperz-catalog.mjs --write --media --stock 1000",
     "audit:lidshd": "node scripts/audit-lidshd-sync.mjs",
     "dev:extension": "vite build --config extension/vite.config.js --mode development --watch",
     "build:extension": "vite build --config extension/vite.config.js",
