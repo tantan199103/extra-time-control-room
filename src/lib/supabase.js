@@ -1041,6 +1041,42 @@ export async function fetchAdminCollectionCatalog({ page = 1, pageSize = 50, sea
   const from = (safePage - 1) * safePageSize
   const term = safeCollectionSearch(search)
   try {
+    // Collection assignment reads run through a server endpoint first.  The
+    // browser's anon/RLS join can scan the whole membership relation and hit
+    // statement_timeout even when the requested page is only 50 products.
+    // The endpoint uses the service role strictly on the server and returns
+    // the same lean card projection; keep the direct query below as a safe
+    // compatibility fallback for local/preview environments.
+    if (collectionId) {
+      try {
+        const params = new URLSearchParams({
+          mode:'catalog',
+          collectionId:String(collectionId),
+          page:String(safePage),
+          pageSize:String(safePageSize),
+          search:String(search || ''),
+          status:String(status || 'ALL'),
+          seoStatus:String(seoStatus || 'ALL'),
+          productGroup:String(productGroup || 'ALL'),
+          productType:String(productType || 'ALL'),
+          category:String(category || 'ALL'),
+          accessoryFamily:String(accessoryFamily || 'ALL'),
+          accessoryType:String(accessoryType || 'ALL')
+        })
+        const result = await adminApi(`/api/admin-collections?${params.toString()}`)
+        if (Array.isArray(result?.products)) {
+          return {
+            data:result.products.map(row => normalizeProduct({ ...row, pod_product_variants:[], _catalogSummary:true })),
+            total:Number.isInteger(result.total) ? result.total : result.products.length,
+            page:Number(result.page) || safePage,
+            pageSize:Number(result.pageSize) || safePageSize,
+            source:'supabase', error:null
+          }
+        }
+      } catch (serverError) {
+        console.warn('Admin collection catalogue server route unavailable; using client fallback:', serverError.message)
+      }
+    }
     const assignedCollectionId = String(collectionId || '').trim()
     const projection = assignedCollectionId
       ? `${ADMIN_COLLECTION_CATALOG_FIELDS},collection_membership:pod_collection_products!inner(collection_id)`
@@ -1199,6 +1235,21 @@ export async function fetchAdminCollectionMembership(collectionId) {
   if (!id) return { data:null, source:'error', error:'Collection ID is required.' }
   if (!supabase) return { data:null, source:'error', error:'Supabase is not configured.' }
   try {
+    // Hydrate one collection at a time through the authenticated server route.
+    // This avoids the public RLS policy's nested product join and gives the
+    // editor a deterministic completion signal even for large collections.
+    try {
+      const result = await adminApi(`/api/admin-collections?mode=membership&collectionId=${encodeURIComponent(id)}`)
+      if (Array.isArray(result?.links)) {
+        const links = result.links.slice().sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.product_id).localeCompare(String(b.product_id)))
+        return {
+          data:{ products:links.map(item => item.product_id), productLinks:links.map(item => ({productId:item.product_id,sortOrder:Number(item.sort_order || 0),featured:Boolean(item.featured)})), count:links.length, publishedCount:links.length, membershipLoaded:true },
+          source:'supabase', error:null
+        }
+      }
+    } catch (serverError) {
+      console.warn('Admin collection membership server route unavailable; using client fallback:', serverError.message)
+    }
     // Assignment editing only needs the link table.  Asking PostgREST to
     // join every linked product just to derive a live count is slow under the
     // public RLS policy and can leave the editor spinner running. Hydrate the
@@ -1221,6 +1272,25 @@ export async function fetchAdminCollectionMembership(collectionId) {
 export async function fetchAdminCollections({ includeMembership = false } = {}) {
   if (!supabase) return previewResult(adminCollections)
   try {
+    if (!includeMembership) {
+      try {
+        const result = await adminApi('/api/admin-collections?mode=metadata')
+        if (Array.isArray(result?.collections)) {
+          return {
+            data:result.collections.map(collection => {
+              const rawCount = Array.isArray(collection?.pod_collection_products)
+                ? collection.pod_collection_products[0]?.count
+                : collection?.pod_collection_products?.count
+              const count = rawCount == null ? null : Number(rawCount)
+              return normalizeAdminCollection(collection, [], { count:Number.isFinite(count) ? count : null })
+            }),
+            source:'supabase', error:null
+          }
+        }
+      } catch (serverError) {
+        console.warn('Admin collections server route unavailable; using client fallback:', serverError.message)
+      }
+    }
     // Keep this request small. The previous select('*') plus a second full
     // catalogue scan made Collections exceed the Admin 12 second deadline.
     // Relation counts are computed by PostgREST in one indexed request. Full
