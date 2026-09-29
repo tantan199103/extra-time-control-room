@@ -419,6 +419,11 @@ export function AdminCollections({
       if (result?.error) {
         membershipRequests.current.delete(selected.id)
         setNotice(`Collection assignments unavailable: ${result.error}`)
+      } else {
+        // The membership request also marks empty collections as loaded. Clear
+        // the transient loading notice on every successful response so an
+        // empty collection is not mistaken for a hung request.
+        setNotice('')
       }
     }).catch(error => {
       membershipRequests.current.delete(selected.id)
