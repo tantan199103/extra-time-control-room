@@ -1915,7 +1915,7 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
     quality:<QualityProof key="quality" product={featured}/>,
     community:<CommunityProof key="community"/>,
     faq:<HomeFaq key="faq"/>,
-    'category-index':<nav key="category-index" className="home-category-index section" aria-label="Browse jersey and fan gear categories"><div><span>FIND YOUR PIECE</span><h2>SHOP BY<br />CATEGORY.</h2></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><span className="home-category-index__icon"><CategoryIcon kind={category.icon} size={22}/></span><span className="home-category-index__label">{category.label}</span><ArrowRight size={16}/></a>)}</div></nav>,
+    'category-index':<nav key="category-index" className="home-category-index section" aria-labelledby="home-category-index-title"><div className="home-category-index__intro"><span>EXPLORE MORE / FIND YOUR NEXT PIECE</span><h2 id="home-category-index-title">SHOP THE<br /><em>WHOLE GAME.</em></h2><p>From jerseys to caps, jump straight to the gear that fits your day.</p></div><div>{visibleCategories.map(category => <a key={category.handle} href={`/category/${category.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${category.handle}`) }}><span className="home-category-index__icon"><CategoryIcon kind={category.icon} size={22}/></span><span className="home-category-index__label">{category.label}</span><ArrowRight size={16}/></a>)}</div></nav>,
     vault:<VaultTeaser key="vault"/>,
     manifesto:<Manifesto key="manifesto"/>,
     newsletter:<Newsletter key="newsletter"/>
