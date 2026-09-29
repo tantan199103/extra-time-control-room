@@ -1083,6 +1083,16 @@ export async function applyAdminCollectionAutomation(collectionId, rules) {
 const ADMIN_COLLECTION_FIELDS = 'id,handle,name,description,status,hero_image,sort_mode,seo,automation,created_at,updated_at'
 const ADMIN_COLLECTION_LINK_FIELDS = 'collection_id,product_id,sort_order,featured,pod_products(status)'
 const ADMIN_COLLECTION_LINK_FIELDS_LEGACY = 'collection_id,product_id,sort_order,featured'
+// Do not request a nested relation count from the browser on the initial
+// Collections load.  The public/anon RLS policy has to evaluate every row in
+// pod_collection_products for that relation and Supabase can cancel the
+// statement before the Admin shell deadline.  Metadata is enough to render
+// the tree; membership (and the exact count) is hydrated when a collection is
+// opened or a bulk operation explicitly needs it.
+const ADMIN_COLLECTION_METADATA_FIELDS = ADMIN_COLLECTION_FIELDS
+// Kept as a named projection for callers/tests that still need an explicit
+// count query in a trusted/server context.  It is intentionally not used by
+// the default browser load above.
 const ADMIN_COLLECTION_COUNT_FIELDS = `${ADMIN_COLLECTION_FIELDS},pod_collection_products(count)`
 
 function collectionStatusFromLink(row) {
@@ -1142,7 +1152,11 @@ function normalizeAdminCollection(collection, members = [], { membershipLoaded =
   const byStatus = hasProductStatus ? links.filter(item => collectionStatusFromLink(item) === 'PUBLISHED').length : null
   const seo = collection.seo && typeof collection.seo === 'object' ? collection.seo : {}
   const parentId = String(seo.parentId || seo.parent_id || '').trim()
-  const memberCount = membershipLoaded ? links.length : Number.isFinite(Number(count)) ? Number(count) : 0
+  const memberCount = membershipLoaded
+    ? links.length
+    : count == null
+      ? null
+      : Number.isFinite(Number(count)) ? Number(count) : null
   return {
     ...collection,
     seo,
@@ -1187,12 +1201,17 @@ export async function fetchAdminCollections({ includeMembership = false } = {}) 
     // membership rows are intentionally opt-in; loading every link for every
     // collection blocks the control room even though the tree only needs
     // metadata until a collection is opened.
-    const { data, error } = await supabase.from('pod_collections').select(includeMembership ? ADMIN_COLLECTION_FIELDS : ADMIN_COLLECTION_COUNT_FIELDS).order('updated_at', { ascending: false })
+    // The relation-count projection is expensive under the public RLS policy
+    // and is the source of the recurring "Collections timed out" banner.  A
+    // metadata-only request is fast and deterministic; exact membership is
+    // loaded per collection by fetchAdminCollectionMembership().
+    const fields = includeMembership ? ADMIN_COLLECTION_FIELDS : ADMIN_COLLECTION_METADATA_FIELDS
+    const { data, error } = await supabase.from('pod_collections').select(fields).order('updated_at', { ascending: false })
     if (error) return { data:[], source:'error', error:error.message }
 
     if (!includeMembership) {
       return {
-        data:(data || []).map(collection => normalizeAdminCollection(collection, [], { count:collection.pod_collection_products?.[0]?.count })),
+        data:(data || []).map(collection => normalizeAdminCollection(collection, [], { count:null })),
         source:'supabase', error:null
       }
     }
