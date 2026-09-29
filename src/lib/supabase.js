@@ -1083,6 +1083,7 @@ export async function applyAdminCollectionAutomation(collectionId, rules) {
 const ADMIN_COLLECTION_FIELDS = 'id,handle,name,description,status,hero_image,sort_mode,seo,automation,created_at,updated_at'
 const ADMIN_COLLECTION_LINK_FIELDS = 'collection_id,product_id,sort_order,featured,pod_products(status)'
 const ADMIN_COLLECTION_LINK_FIELDS_LEGACY = 'collection_id,product_id,sort_order,featured'
+const ADMIN_COLLECTION_COUNT_FIELDS = `${ADMIN_COLLECTION_FIELDS},pod_collection_products(count)`
 
 function collectionStatusFromLink(row) {
   const relation = Array.isArray(row?.pod_products) ? row.pod_products[0] : row?.pod_products
@@ -1136,16 +1137,68 @@ async function fetchCollectionLinks(fields, collectionIds = []) {
   return { links, total:links.length }
 }
 
-export async function fetchAdminCollections() {
+function normalizeAdminCollection(collection, members = [], { membershipLoaded = false, hasProductStatus = false, count = null } = {}) {
+  const links = Array.isArray(members) ? members : []
+  const byStatus = hasProductStatus ? links.filter(item => collectionStatusFromLink(item) === 'PUBLISHED').length : null
+  const seo = collection.seo && typeof collection.seo === 'object' ? collection.seo : {}
+  const parentId = String(seo.parentId || seo.parent_id || '').trim()
+  const memberCount = membershipLoaded ? links.length : Number.isFinite(Number(count)) ? Number(count) : 0
+  return {
+    ...collection,
+    seo,
+    parentId:parentId && parentId !== collection.id ? parentId : '',
+    hero:collection.hero_image,
+    sort:collection.sort_mode,
+    automation:normalizeCollectionAutomation(collection.automation),
+    products:membershipLoaded ? links.map(item => item.product_id) : null,
+    productLinks:membershipLoaded ? links.map(item => ({productId:item.product_id,sortOrder:Number(item.sort_order || 0),featured:Boolean(item.featured)})) : [],
+    count:memberCount,
+    publishedCount:membershipLoaded ? (hasProductStatus ? byStatus : memberCount) : null,
+    membershipLoaded,
+    updatedAt:collection.updated_at
+  }
+}
+
+export async function fetchAdminCollectionMembership(collectionId) {
+  const id = String(collectionId || '').trim()
+  if (!id) return { data:null, source:'error', error:'Collection ID is required.' }
+  if (!supabase) return { data:null, source:'error', error:'Supabase is not configured.' }
+  try {
+    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, [id])
+    let hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
+    if (linkResult.error) {
+      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY, [id])
+      hasProductStatus = false
+    }
+    if (linkResult.error) return { data:null, source:'error', error:linkResult.error.message }
+    const links = (linkResult.links || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.product_id).localeCompare(String(b.product_id)))
+    return { data:{ products:links.map(item => item.product_id), productLinks:links.map(item => ({productId:item.product_id,sortOrder:Number(item.sort_order || 0),featured:Boolean(item.featured)})), count:links.length, publishedCount:hasProductStatus ? links.filter(item => collectionStatusFromLink(item) === 'PUBLISHED').length : links.length, membershipLoaded:true }, source:'supabase', error:null }
+  } catch (err) {
+    return { data:null, source:'error', error:err instanceof Error ? err.message : 'Collection membership query failed.' }
+  }
+}
+
+export async function fetchAdminCollections({ includeMembership = false } = {}) {
   if (!supabase) return previewResult(adminCollections)
   try {
     // Keep this request small. The previous select('*') plus a second full
     // catalogue scan made Collections exceed the Admin 12 second deadline.
-    const { data, error } = await supabase.from('pod_collections').select(ADMIN_COLLECTION_FIELDS).order('updated_at', { ascending: false })
+    // Relation counts are computed by PostgREST in one indexed request. Full
+    // membership rows are intentionally opt-in; loading every link for every
+    // collection blocks the control room even though the tree only needs
+    // metadata until a collection is opened.
+    const { data, error } = await supabase.from('pod_collections').select(includeMembership ? ADMIN_COLLECTION_FIELDS : ADMIN_COLLECTION_COUNT_FIELDS).order('updated_at', { ascending: false })
     if (error) return { data:[], source:'error', error:error.message }
 
+    if (!includeMembership) {
+      return {
+        data:(data || []).map(collection => normalizeAdminCollection(collection, [], { count:collection.pod_collection_products?.[0]?.count })),
+        source:'supabase', error:null
+      }
+    }
+
     // Read product status through the existing foreign key in the membership
-    // pages. This removes the old sequential scan of every pod_products row.
+    // pages. This path is retained for explicit refreshes and bulk operations.
     const collectionIds = (data || []).map(collection => collection.id)
     let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, collectionIds)
     let hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
@@ -1160,27 +1213,7 @@ export async function fetchAdminCollections() {
     const byCollection = new Map()
     ;(linkResult.links || []).forEach(link => byCollection.set(link.collection_id,[...(byCollection.get(link.collection_id) || []),link]))
     return {
-      data: (data || []).map(collection => {
-        const members = (byCollection.get(collection.id) || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.product_id).localeCompare(String(b.product_id)))
-        const publishedCount = hasProductStatus
-          ? members.filter(item => collectionStatusFromLink(item) === 'PUBLISHED').length
-          : members.length
-        const seo = collection.seo && typeof collection.seo === 'object' ? collection.seo : {}
-        const parentId = String(seo.parentId || seo.parent_id || '').trim()
-        return {
-          ...collection,
-          seo,
-          parentId:parentId && parentId !== collection.id ? parentId : '',
-          hero:collection.hero_image,
-          sort:collection.sort_mode,
-          automation:normalizeCollectionAutomation(collection.automation),
-          products:members.map(item => item.product_id),
-          productLinks:members.map(item => ({productId:item.product_id,sortOrder:Number(item.sort_order || 0),featured:Boolean(item.featured)})),
-          count:members.length,
-          publishedCount,
-          updatedAt:collection.updated_at
-        }
-      }),
+      data: (data || []).map(collection => normalizeAdminCollection(collection, byCollection.get(collection.id) || [], { membershipLoaded:true, hasProductStatus })),
       source: 'supabase', error: null
     }
   } catch (err) {

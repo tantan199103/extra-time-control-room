@@ -38,7 +38,7 @@ import {
 import { adminProducts } from './admin-data'
 import { adminCollections, adminMenus, adminTheme } from './admin-builder-data'
 import { AdminCollections, AdminMenus, AdminThemeStudio } from './admin-builder'
-import { applyAdminCollectionAutomation, deleteAdminCatalogPageProducts, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, fetchStorefrontNavigationIndex, inspectAdminCatalogPageDeletion, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
+import { applyAdminCollectionAutomation, deleteAdminCatalogPageProducts, deleteAdminCollection, deleteAdminProduct, fetchAdminCollectionCatalog, fetchAdminCollectionMembership, fetchAdminCollections, fetchAdminCustomizations, fetchAdminMembership, fetchAdminMenus, fetchAdminOrders, fetchAdminPaymentSettings, fetchAdminProduct, fetchAdminProducts, fetchAdminTheme, fetchStorefrontNavigationIndex, inspectAdminCatalogPageDeletion, previewAdminCollectionAutomation, saveAdminCollections, saveAdminMenus, saveAdminPaymentSettings, saveAdminProduct, saveAdminTheme, supabaseConfigured, uploadCollectionImage } from './lib/supabase'
 import { DEFAULT_PAYMENT_SETTINGS, PAYMENT_CURRENCIES } from './lib/payment-config'
 import { getMetaPixelId, setMetaPixelId } from './lib/meta-pixel'
 import { resolveMenuImages } from './lib/storefront-model'
@@ -565,6 +565,15 @@ function AdminWorkspace() {
     return deleted
   }
   const persistMenus = async menus => { setMenuRows(menus); return saveAdminMenus(menus) }
+  const loadCollectionMembership = async collectionId => {
+    const id = String(collectionId || '').trim()
+    if (!id) return { source:'error', error:'Collection ID is required.' }
+    const result = await fetchAdminCollectionMembership(id)
+    if (result.source === 'supabase' && result.data) {
+      setCollectionRows(current => current.map(row => row.id === id ? { ...row, ...result.data } : row))
+    }
+    return result
+  }
   const persistCollections = async collections => {
     if (collectionSource !== 'supabase') return { source:'error', error:'Wait for live collections to load before saving.' }
     const result = await saveAdminCollections(collections, collectionRows)
@@ -599,11 +608,25 @@ function AdminWorkspace() {
   }
   const bulkCollectionAction = async (ids, action, collectionId) => {
     if (collectionSource !== 'supabase' || !catalogLoad.complete) return { error:'Wait for live collections and the full catalogue before changing membership.' }
+    let workingRows = collectionRows
+    // Metadata-only collection loading keeps Admin fast. Hydrate the rows
+    // needed by an explicit bulk membership operation before diffing, so a
+    // remove/move can never treat an unloaded collection as empty.
+    const requiredIds = action === 'MOVE_COLLECTION' ? workingRows.map(row => row.id) : [collectionId]
+    for (const id of requiredIds) {
+      const row = workingRows.find(item => item.id === id)
+      if (row?.membershipLoaded) continue
+      const loaded = await fetchAdminCollectionMembership(id)
+      if (loaded.error || !loaded.data) return { error:loaded.error || `Collection ${id} membership could not be loaded.` }
+      workingRows = workingRows.map(item => item.id === id ? { ...item, ...loaded.data } : item)
+    }
+    setCollectionRows(workingRows)
     let changed
-    try { changed = applyCollectionMembership(collectionRows, ids, action, collectionId) }
+    try { changed = applyCollectionMembership(workingRows, ids, action, collectionId) }
     catch (error) { return { error:error.message } }
     if (!changed.changedIds.length) return { updated:0, skipped:ids.length, failures:[] }
-    const result = await persistCollections(changed.collections.filter(row => changed.changedIds.includes(row.id)))
+    const result = await saveAdminCollections(changed.collections.filter(row => changed.changedIds.includes(row.id)), workingRows)
+    if (result.source === 'supabase' && !result.error) setCollectionRows(changed.collections)
     return result.error ? { error:result.error } : { updated:ids.length, failures:[], skipped:0 }
   }
   if (loading && !productRows.length) return <main className="admin-access"><p role="status">Loading store data…</p></main>
@@ -618,7 +641,7 @@ function AdminWorkspace() {
   else if (path.startsWith('/admin/customizations')) page = <AdminCustomizations/>
   else if (path === '/admin/theme') page = <AdminThemeStudio theme={themeDraft} source={themeSource} sourceError={themeError} onSave={persistTheme}/>
   else if (path === '/admin/theme/menus') page = <AdminMenus menus={menuRows} collections={collectionRows} onSave={persistMenus}/>
-  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} navigationRows={catalogNavigationRows} catalogLoad={catalogLoad} catalogPageOverrides={normalizeCatalogPageOverrides(themeDraft.content?.catalogPages)} onSave={persistCollections} onDelete={removeCollection} onSaveCatalogPage={persistCatalogPage} onInspectCatalogPageDeletion={inspectCatalogPageDeletion} onDeleteCatalogPage={removeCatalogPage} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'} canEditCatalogPages={themeSource === 'supabase'}/>
+  else if (path === '/admin/collections') page = <AdminCollections collections={collectionRows} products={productRows} navigationRows={catalogNavigationRows} catalogLoad={catalogLoad} catalogPageOverrides={normalizeCatalogPageOverrides(themeDraft.content?.catalogPages)} onSave={persistCollections} onLoadMembership={loadCollectionMembership} onDelete={removeCollection} onSaveCatalogPage={persistCatalogPage} onInspectCatalogPageDeletion={inspectCatalogPageDeletion} onDeleteCatalogPage={removeCatalogPage} loadCatalog={fetchAdminCollectionCatalog} onPreviewAutomation={previewAdminCollectionAutomation} onApplyAutomation={applyCollectionAutomation} onUploadImage={uploadCollectionImage} canEdit={collectionSource === 'supabase'} canEditCatalogPages={themeSource === 'supabase'}/>
   else if (path === '/admin/settings') page = <AdminSettings/>
   const displaySource = catalogLoad.source === 'partial' ? 'partial' : catalogLoad.source === 'error' ? 'preview' : source
   return <AdminShell active={active} source={displaySource} notice={loadNotice} onRefresh={load} badges={badges}>{page}</AdminShell>
