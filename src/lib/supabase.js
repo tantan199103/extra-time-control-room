@@ -540,7 +540,7 @@ const ADMIN_PRODUCT_LEGACY_FIELDS = [
   'personalization', 'inventory', 'seo', 'created_at', 'updated_at'
 ].join(',')
 
-const ADMIN_PRODUCT_PAGE_SIZE = 200
+const ADMIN_PRODUCT_PAGE_SIZE = 1000
 // Keep the progressive Admin catalogue bounded, but do not stop below the
 // current live catalogue (31k+ listings).  The previous 100-page cap silently
 // truncated every catalogue over 20,000 rows and made the control room report
@@ -551,16 +551,32 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
   const select = includeVariantCount
     ? `${fields},active_variants:pod_product_variants(count),draft_variants:pod_product_variants(count)`
     : fields
-  const readPage = async page => {
-    const from = page * ADMIN_PRODUCT_PAGE_SIZE
+  // Offset pagination becomes progressively slower on the imported catalogue
+  // and starts hitting PostgREST's statement timeout around row 20k. Use a
+  // stable keyset cursor instead: each page starts after the last
+  // `updated_at,id` pair that was returned by the previous page.
+  const readPage = async (page, cursor = null) => {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       let query = supabase.from('pod_products').select(select, page === 0 ? { count: 'exact' } : undefined)
       if (includeVariantCount) query = query.eq('active_variants.status', 'ACTIVE').eq('draft_variants.status', 'DRAFT')
+      if (cursor?.updatedAt && cursor?.id) {
+        const updatedAt = String(cursor.updatedAt).replace(/[(),]/g, '')
+        const id = String(cursor.id).replace(/[(),]/g, '')
+        query = query.or(`updated_at.lt.${updatedAt},and(updated_at.eq.${updatedAt},id.gt.${id})`)
+      }
       const { data, error, count } = await query
         .order('updated_at', { ascending: false })
         .order('id', { ascending: true })
-        .range(from, from + ADMIN_PRODUCT_PAGE_SIZE - 1)
-      if (!error) return { rows: Array.isArray(data) ? data : [], total: Number.isInteger(count) ? count : null }
+        .range(0, ADMIN_PRODUCT_PAGE_SIZE - 1)
+      if (!error) {
+        const rows = Array.isArray(data) ? data : []
+        const last = rows[rows.length - 1]
+        return {
+          rows,
+          total: Number.isInteger(count) ? count : null,
+          cursor: last?.updated_at && last?.id ? { updatedAt:last.updated_at, id:last.id } : null
+        }
+      }
       if (attempt === 2) throw new Error(`Catalogue page ${page + 1}: ${error.message}`)
       await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)))
     }
@@ -580,8 +596,8 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
 
   // Read in small windows. A single `select('*', deep joins)` over a large
   // imported catalogue routinely exceeds PostgREST's statement/response
-  // budget. Four concurrent windows keep the first paint quick without
-  // opening an unbounded number of database requests.
+  // budget. The cursor keeps each request bounded while the 1,000-row page
+  // keeps the full 30k+ catalogue load to a few dozen requests.
   const first = await readPage(0)
   const firstPage = normalizeSummaryPage(first.rows)
   const total = first.total
@@ -592,37 +608,27 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
   const loadRemaining = async () => {
     const rows = []
     let page = 1
-    while (page < ADMIN_PRODUCT_MAX_PAGES) {
-      const remainingPages = total == null ? ADMIN_PRODUCT_MAX_PAGES - page : Math.ceil(total / ADMIN_PRODUCT_PAGE_SIZE) - page
-      if (remainingPages <= 0) return rows
-      const pageCount = Math.min(4, remainingPages, ADMIN_PRODUCT_MAX_PAGES - page)
-      const results = await Promise.allSettled(
-        Array.from({ length: pageCount }, (_, index) => page + index).map(readPage)
-      )
-      const failures = results.filter(result => result.status === 'rejected')
-      let reachedEnd = false
-      results.forEach((result, index) => {
-        if (result.status !== 'fulfilled') return
-        const chunk = normalizeSummaryPage(result.value.rows)
-        rows.push(...chunk)
-        if (chunk.length < ADMIN_PRODUCT_PAGE_SIZE) reachedEnd = true
-        onPage?.(chunk, {
-          page: page + index,
-          loaded: firstPage.length + rows.length,
-          total,
-          done: !failures.length && (total != null ? firstPage.length + rows.length >= total : reachedEnd)
-        })
-      })
-      if (failures.length) throw new Error(failures.map(result => result.reason?.message || 'A catalogue page failed.').join(' '))
-      if (reachedEnd) break
-      page += results.length
+    let cursor = first.cursor
+    while (page < ADMIN_PRODUCT_MAX_PAGES && cursor) {
+      const result = await readPage(page, cursor)
+      const chunk = normalizeSummaryPage(result.rows)
+      rows.push(...chunk)
+      const loaded = firstPage.length + rows.length
+      const reachedEnd = chunk.length < ADMIN_PRODUCT_PAGE_SIZE || total != null && loaded >= total
+      onPage?.(chunk, { page, loaded, total, done:reachedEnd })
+      if (reachedEnd) return rows
+      if (!result.cursor || result.cursor.id === cursor.id && result.cursor.updatedAt === cursor.updatedAt) {
+        throw new Error(`Catalogue cursor did not advance after page ${page + 1}.`)
+      }
+      cursor = result.cursor
+      page += 1
     }
     if (total != null && firstPage.length + rows.length < total) throw new Error(`Catalogue stopped at ${firstPage.length + rows.length} of ${total} products.`)
     if (page >= ADMIN_PRODUCT_MAX_PAGES) throw new Error(`Catalogue exceeded ${ADMIN_PRODUCT_MAX_PAGES * ADMIN_PRODUCT_PAGE_SIZE} products.`)
     return rows
   }
 
-  // Once the first 200 rows are available, continue in bounded windows.  In
+  // Once the first 1,000 rows are available, continue in bounded windows. In
   // progressive mode the caller receives the first page now and the rest is
   // intentionally detached from the initial Admin render.
   if (progressive) {
@@ -1083,21 +1089,48 @@ function collectionStatusFromLink(row) {
   return String(relation?.status || row?.product_status || '').toUpperCase()
 }
 
-async function fetchCollectionLinks(fields) {
+async function fetchCollectionLinks(fields, collectionIds = []) {
   const pageSize = 1000
-  const first = await supabase.from('pod_collection_products').select(fields,{count:'exact'}).order('collection_id').order('product_id').range(0,pageSize - 1)
-  if (first.error) return { error:first.error }
-  const links = [...(first.data || [])]
-  const total = Number(first.count || links.length)
-  for (let from = pageSize; from < total; from += pageSize * 6) {
-    const offsets = Array.from({length:Math.min(6,Math.ceil((total - from) / pageSize))},(_,index) => from + index * pageSize)
-    const pages = await Promise.all(offsets.map(offset => supabase.from('pod_collection_products').select(fields).order('collection_id').order('product_id').range(offset,offset + pageSize - 1)))
-    const failed = pages.find(page => page.error)
-    if (failed) return { error:failed.error }
-    pages.forEach(page => links.push(...(page.data || [])))
+  const ids = [...new Set(collectionIds.map(value => String(value || '').trim()).filter(Boolean))]
+  if (!ids.length) return { links:[], total:0 }
+
+  // The membership table is large and an unscoped offset query starts timing
+  // out after roughly 20k rows. Load each collection independently with a
+  // product-id cursor, then merge the bounded result sets. Eight workers keep
+  // the Admin load fast without opening an unbounded number of requests.
+  const loadCollection = async collectionId => {
+    const rows = []
+    let cursor = ''
+    let page = 0
+    for (;;) {
+      let request = supabase.from('pod_collection_products').select(fields, page === 0 ? { count:'exact' } : undefined).eq('collection_id', collectionId)
+      if (cursor) request = request.gt('product_id', cursor)
+      const result = await request.order('product_id').range(0, pageSize - 1)
+      if (result.error) throw result.error
+      const chunk = Array.isArray(result.data) ? result.data : []
+      rows.push(...chunk)
+      const expected = page === 0 && Number.isInteger(result.count) ? result.count : null
+      if (!chunk.length || chunk.length < pageSize || expected != null && rows.length >= expected) break
+      const next = String(chunk[chunk.length - 1]?.product_id || '').trim()
+      if (!next || next === cursor) throw new Error(`Collection ${collectionId} membership cursor did not advance.`)
+      cursor = next
+      page += 1
+    }
+    return rows
   }
-  if (links.length !== total) return { error:new Error(`Collection membership loaded partially (${links.length}/${total}). Refresh Admin before editing.`) }
-  return { links, total }
+
+  const links = []
+  let nextIndex = 0
+  const worker = async () => {
+    for (;;) {
+      const index = nextIndex++
+      if (index >= ids.length) return
+      links.push(...await loadCollection(ids[index]))
+    }
+  }
+  await Promise.all(Array.from({ length:Math.min(8, ids.length) }, () => worker()))
+  links.sort((a,b) => String(a.collection_id).localeCompare(String(b.collection_id)) || String(a.product_id).localeCompare(String(b.product_id)))
+  return { links, total:links.length }
 }
 
 export async function fetchAdminCollections() {
@@ -1110,12 +1143,13 @@ export async function fetchAdminCollections() {
 
     // Read product status through the existing foreign key in the membership
     // pages. This removes the old sequential scan of every pod_products row.
-    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS)
+    const collectionIds = (data || []).map(collection => collection.id)
+    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, collectionIds)
     let hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
     if (linkResult.error) {
       // Older projects may not expose the relationship in PostgREST yet. The
       // membership editor still works with the lean legacy projection.
-      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY)
+      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY, collectionIds)
       hasProductStatus = false
     }
     if (linkResult.error) return { data:[], source:'error', error:linkResult.error.message }
