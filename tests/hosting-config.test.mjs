@@ -26,6 +26,18 @@ test('Vercel functions use a bounded US primary without unsupported failover', a
   assert.ok(config.rewrites.some(rule => rule.source === '/api/customization-order' && rule.destination === '/api/customization-order.js'))
 })
 
+test('SPA entry routes resolve to the built root document', async () => {
+  const rewrites = new Map(config.rewrites.map(rule => [rule.source, rule.destination]))
+  assert.equal(rewrites.get('/admin'), '/index.html')
+  assert.equal(rewrites.get('/admin/:path*'), '/index.html')
+  assert.equal(rewrites.get('/account'), '/index.html')
+  assert.equal(rewrites.get('/account/:path*'), '/index.html')
+  assert.equal(rewrites.get('/order/:path*'), '/index.html')
+  for (const destination of rewrites.values()) {
+    if (destination === '/index.html') await access(new URL('../index.html', import.meta.url))
+  }
+})
+
 test('static assets are cacheable while API responses remain no-store', async () => {
   const assetPolicy = config.headers.find(rule => rule.source === '/assets/(.*)')
   assert.match(assetPolicy.headers.find(header => header.key === 'Cache-Control').value, /stale-while-revalidate/)

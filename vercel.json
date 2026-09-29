@@ -7,6 +7,7 @@
   "redirects": [
     { "source": "/collection", "destination": "/shop", "permanent": true },
     { "source": "/collections/:handle", "destination": "/collection/:handle", "permanent": true },
+    { "source": "/favicon.ico", "destination": "/icons/icon.svg", "permanent": false },
     { "source": "/moments", "destination": "/#story", "permanent": true },
     { "source": "/players", "destination": "/#players", "permanent": true }
   ],
@@ -41,6 +42,22 @@
     {
       "source": "/studio",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/custom",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
+    },
+    {
+      "source": "/custom/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
+    },
+    {
+      "source": "/category/custom-jerseys",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
+    },
+    {
+      "source": "/category/custom-jerseys/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
     },
     {
       "source": "/checkout",
@@ -121,9 +138,26 @@
     { "source": "/api/ai-listing-media", "destination": "/api/ai-listing-media.js" },
     { "source": "/api/admin-import-fanatics", "destination": "/api/admin-import-fanatics.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
+    { "source": "/custom", "destination": "/index.html" },
+    { "source": "/custom/:path*", "destination": "/index.html" },
+    { "source": "/shop", "destination": "/index.html" },
+    { "source": "/shop/:path*", "destination": "/index.html" },
+    { "source": "/product/:path*", "destination": "/index.html" },
+    { "source": "/league/:path*", "destination": "/index.html" },
+    { "source": "/team/:path*", "destination": "/index.html" },
+    { "source": "/category/:path*", "destination": "/index.html" },
+    { "source": "/collections/:path*", "destination": "/index.html" },
+    { "source": "/about", "destination": "/index.html" },
+    { "source": "/shipping", "destination": "/index.html" },
+    { "source": "/returns", "destination": "/index.html" },
+    { "source": "/journal", "destination": "/index.html" },
+    { "source": "/membership", "destination": "/index.html" },
+    { "source": "/track-order", "destination": "/index.html" },
     { "source": "/collection/:path*", "destination": "/index.html" },
-    { "source": "/admin/:path*", "destination": "/admin/index.html" },
-    { "source": "/account/:path*", "destination": "/account/index.html" },
-    { "source": "/order/:path*", "destination": "/track-order/index.html" }
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "/index.html" },
+    { "source": "/account", "destination": "/index.html" },
+    { "source": "/account/:path*", "destination": "/index.html" },
+    { "source": "/order/:path*", "destination": "/index.html" }
   ]
 }
