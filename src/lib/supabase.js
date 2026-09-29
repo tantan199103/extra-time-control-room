@@ -271,6 +271,17 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
   if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
   const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
+  // Once the last 3D listing is removed, do not issue a broad JSONB tags
+  // predicate against the live catalogue just to discover an empty page.
+  // PostgREST can spend the full statement timeout proving there are no
+  // matches, which otherwise leaves the Custom Lab on an infinite spinner.
+  const normalizedBasePath = String(basePath || '').replace(/\/+$/, '') || '/'
+  if (import.meta.env.PROD && normalizedBasePath === '/category/custom-jerseys') {
+    const navigation = await fetchStorefrontNavigationIndex()
+    if (!navigation.some(row => row?.designerConfig?.provider && row?.designerConfig?.productId)) {
+      return { data:[], total:0, page:safePage, pageSize:safeSize, source:'supabase', error:null }
+    }
+  }
   const cacheKey = `${safePage}|${safeSize}|${basePath}|${search}`
   const cached = readStorefrontPageCache(cacheKey)
   if (cached) return cached.value

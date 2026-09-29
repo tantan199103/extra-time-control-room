@@ -1201,6 +1201,15 @@ function CustomHub({ products = [], onQuickView, pageConfig = null }) {
   )
 }
 
+function CustomUnavailable() {
+  return <main className="route-loading custom-unavailable" role="status">
+    <span>90+</span>
+    <h1>3D custom kits are paused.</h1>
+    <p>There are no published 3D kits available right now. Browse the live catalog while the next studio release is prepared.</p>
+    <button type="button" className="button button--dark" onClick={() => navigate('/shop')}>SHOP LIVE PRODUCTS <ArrowRight size={15}/></button>
+  </main>
+}
+
 function QuickView({ product, onClose, onAdd }) {
   const panelRef = useRef(null)
   const open = Boolean(product)
@@ -3633,7 +3642,9 @@ function App() {
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/sports' || path === '/teams' || path === '/collections') page = <DiscoveryLanding key={`${path}:${search}`} kind={path.slice(1)} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} collections={collections} products={products} onSearch={() => setSearchOpen(true)}/>
   else if (path === '/custom') page = <CustomHub products={products} onQuickView={setQuickViewProduct} pageConfig={pageConfig('custom')}/>
-  else if (path === '/custom/design') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the 3D kit builder…</p></div>}><CustomDesignerPage products={products} onAdd={addToCart} onNavigate={navigate}/></Suspense>
+  else if (path === '/custom/design') page = customProduct
+    ? <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the 3D kit builder…</p></div>}><CustomDesignerPage products={products} onAdd={addToCart} onNavigate={navigate}/></Suspense>
+    : <CustomUnavailable/>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')}/>
   else if (path.startsWith('/category/')) page = routeCategory && !catalogPageHidden ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')} pageOverride={catalogPageOverride}/> : <NotFound/>
   else if (path.startsWith('/league/')) page = routeLeague && !catalogPageHidden ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct} pageOverride={catalogPageOverride}/> : <NotFound/>
