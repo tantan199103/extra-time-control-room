@@ -431,10 +431,16 @@ function AdminWorkspace() {
       // Each workspace data source has its own deadline and can fall back
       // independently while the rest of Admin remains usable.
       const [productResult, themeResult, menuResult, collectionResult] = await Promise.all([
-        loadPart(fetchAdminProducts({ onPage: mergeCatalogPage, onError: catalogError }), [], 'Catalog'),
+        // Large live catalogues need more than the generic 12-second shell
+        // deadline for their counted first page. Later pages still stream into
+        // the table progressively, so this does not block the first render.
+        loadPart(fetchAdminProducts({ onPage: mergeCatalogPage, onError: catalogError }), [], 'Catalog', 120000),
         loadPart(fetchAdminTheme(), adminTheme, 'Theme'),
         loadPart(fetchAdminMenus(), adminMenus, 'Menus'),
-        loadPart(fetchAdminCollections(), adminCollections, 'Collections', 30000)
+        // Collection memberships cover 50k+ links. Partitioned cursor queries
+        // finish reliably, but need a wider orchestration budget than a small
+        // theme/menu read to avoid replacing 65 live collections with fallback.
+        loadPart(fetchAdminCollections(), adminCollections, 'Collections', 60000)
       ])
       if (sequence !== loadSequence.current) return
       const products = productResult.data || []

@@ -1103,14 +1103,17 @@ async function fetchCollectionLinks(fields, collectionIds = []) {
     let cursor = ''
     let page = 0
     for (;;) {
-      let request = supabase.from('pod_collection_products').select(fields, page === 0 ? { count:'exact' } : undefined).eq('collection_id', collectionId)
+      // Do not request an exact count for every collection. Sixty-five count
+      // plans add enough database work to push the otherwise bounded loader
+      // beyond Admin's UI deadline. A short final page is the cursor's natural
+      // completion signal and also works for collections over 1,000 members.
+      let request = supabase.from('pod_collection_products').select(fields).eq('collection_id', collectionId)
       if (cursor) request = request.gt('product_id', cursor)
       const result = await request.order('product_id').range(0, pageSize - 1)
       if (result.error) throw result.error
       const chunk = Array.isArray(result.data) ? result.data : []
       rows.push(...chunk)
-      const expected = page === 0 && Number.isInteger(result.count) ? result.count : null
-      if (!chunk.length || chunk.length < pageSize || expected != null && rows.length >= expected) break
+      if (!chunk.length || chunk.length < pageSize) break
       const next = String(chunk[chunk.length - 1]?.product_id || '').trim()
       if (!next || next === cursor) throw new Error(`Collection ${collectionId} membership cursor did not advance.`)
       cursor = next
