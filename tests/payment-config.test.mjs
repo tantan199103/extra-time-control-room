@@ -15,6 +15,14 @@ test('payment settings fail closed until server secrets exist', () => {
   assert.deepEqual(paymentServerReadiness(settings, { PAYPAL_CLIENT_SECRET:'secret', PAYPAL_WEBHOOK_ID:'webhook' }), { ready:true, missing:[] })
 })
 
+test('Stripe hosted Checkout needs only server secrets and exposes no key', () => {
+  const settings = normalizePaymentSettings({ enabled:true, provider:'STRIPE', environment:'sandbox', currency:'USD' })
+  assert.equal(settings.provider, 'STRIPE')
+  assert.deepEqual(paymentServerReadiness(settings, {}), { ready:false, missing:['STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET'] })
+  assert.deepEqual(paymentServerReadiness(settings, { STRIPE_SECRET_KEY:'sk_test_secret', STRIPE_WEBHOOK_SECRET:'whsec_secret' }), { ready:true, missing:[] })
+  assert.deepEqual(paymentPublicConfig(settings), { enabled:true, provider:'STRIPE', environment:'sandbox', currency:'USD', publicKey:'', priceMap:{} })
+})
+
 test('public payment config exposes only browser-safe values', () => {
   const config = paymentPublicConfig({ enabled:true, provider:'PADDLE', environment:'live', paddle:{ clientToken:'live_token', priceMap:{'v':'pri_1'} } })
   assert.deepEqual(config, { enabled:true, provider:'PADDLE', environment:'live', currency:'USD', publicKey:'live_token', priceMap:{v:'pri_1'} })

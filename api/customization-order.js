@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 import { assertCustomerAsset } from './_logo-request.js'
-import { normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
+import { normalizeOwayoLogo, normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
@@ -67,7 +67,7 @@ export function normalizeDesignerSpec(value) {
       opacity:clamp(patternSource.opacity, .2, 1, .82)
     } : null,
     text,
-    logo:{ name:safeText(logoSource.name, 160), x:clamp(logoSource.x, -1, 1, 0), y:clamp(logoSource.y, -1, 1, 0), scale:clamp(logoSource.scale, .25, 2, 1), rotation:clamp(logoSource.rotation, -180, 180, 0) },
+    logo:normalizeOwayoLogo(logoSource),
     roster
   }
 }

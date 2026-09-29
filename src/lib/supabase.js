@@ -1195,7 +1195,7 @@ export async function fetchAdminPaymentSettings() {
       }
     }
     // Direct Supabase fallback
-    const { data, error } = await supabase.from('pod_store_settings').select('value').eq('key', 'payment_provider_settings').maybeSingle()
+    const { data, error } = await supabase.from('pod_store_settings').select('value').eq('key', 'payment').maybeSingle()
     if (!error && data?.value) {
       return { data: normalizePaymentSettings(data.value), readiness: { ready: false, missing: [] }, source: 'supabase', error: null }
     }
@@ -1379,7 +1379,7 @@ export async function createCheckout({ cart, shipping, customer, quoteToken, ide
   return result
 }
 
-export async function capturePayPalPayment({ publicId, token, providerOrderId }) {
+export async function confirmPayment({ publicId, token, providerOrderId }) {
   const response = await apiFetch('/api/payment-capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicId, token, providerOrderId }) })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) {
@@ -1389,6 +1389,12 @@ export async function capturePayPalPayment({ publicId, token, providerOrderId })
     throw error
   }
   return result
+}
+
+// Backwards-compatible name used by older checkout integrations. The server
+// now confirms PayPal and Stripe sessions through the same authoritative route.
+export async function capturePayPalPayment(args) {
+  return confirmPayment(args)
 }
 
 export async function cancelPendingPayment({ publicId, token, providerOrderId = '' }) {

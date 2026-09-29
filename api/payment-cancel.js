@@ -1,4 +1,4 @@
-import { finalizePayment, hashToken } from './_checkout.js'
+import { expireStripeCheckoutSession, finalizePayment, getPaymentContext, hashToken } from './_checkout.js'
 import { consumeQuota, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 
 // PayPal sends the shopper back to the cancel URL without a payment capture.
@@ -16,7 +16,7 @@ export default async function handler(request, response) {
     const providerOrderId = safeText(body.providerOrderId, 240)
     if (!publicId || !token) throw Object.assign(new Error('The payment cancellation is missing its secure order token.'), { status: 422 })
     const { data: order, error: orderError } = await client.from('pod_orders')
-      .select('id,order_number,tracking_token_hash,payment_provider,provider_order_id,status,payment_status')
+      .select('id,order_number,tracking_token_hash,payment_provider,provider_order_id,status,payment_status,metadata')
       .eq('order_number', publicId)
       .maybeSingle()
     if (orderError) throw orderError
@@ -28,6 +28,18 @@ export default async function handler(request, response) {
     }
     if (order.status !== 'PENDING_PAYMENT') {
       return sendJson(response, 200, { cancelled: order.status === 'CANCELLED', paid: false, order: { publicId: order.order_number, status: order.status, paymentStatus: order.payment_status } })
+    }
+    if (order.payment_provider === 'STRIPE' && order.provider_order_id) {
+      try {
+        const { settings } = await getPaymentContext(client, { requireReady: false })
+        const session = await expireStripeCheckoutSession({ settings: { ...settings, provider: 'STRIPE', environment: order.metadata?.paymentEnvironment || settings.environment }, providerSessionId: order.provider_order_id })
+        if (session.payment_status === 'paid') return sendJson(response, 200, { cancelled: false, paid: true, order: { publicId: order.order_number, status: order.status, paymentStatus: order.payment_status } })
+        if (session.status === 'complete') return sendJson(response, 202, { cancelled: false, pending: true, order: { publicId: order.order_number, status: order.status, paymentStatus: order.payment_status } })
+      } catch (providerError) {
+        // Do not release a reservation when Stripe could not tell us whether
+        // the session was paid. Webhook reconciliation remains authoritative.
+        return sendJson(response, 502, { error: 'Stripe could not confirm cancellation safely. Do not pay again; the order will be reconciled automatically.' })
+      }
     }
     const finalized = await finalizePayment(client, order.id, 'CANCELLED', null, providerOrderId ? `cancel-${providerOrderId}` : `cancel-${order.id}`, { stage: 'SHOPPER_CANCELLED', provider: order.payment_provider })
     return sendJson(response, 200, { cancelled: true, paid: false, order: { publicId: finalized.order_number, status: finalized.status, paymentStatus: finalized.payment_status } })

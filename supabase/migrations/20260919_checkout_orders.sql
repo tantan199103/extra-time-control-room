@@ -60,7 +60,7 @@ create table if not exists public.pod_orders (
   status text not null default 'PENDING_PAYMENT' check (status in ('PENDING_PAYMENT','PAID','CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED','REFUNDED','PAYMENT_FAILED','EXPIRED')),
   payment_status text not null default 'PENDING' check (payment_status in ('PENDING','AUTHORIZED','PAID','FAILED','REFUNDED')),
   fulfillment_status text not null default 'UNFULFILLED' check (fulfillment_status in ('UNFULFILLED','IN_PROGRESS','SHIPPED','DELIVERED','CANCELLED')),
-  payment_provider text not null default 'NONE' check (payment_provider in ('NONE','PAYPAL','PADDLE')),
+  payment_provider text not null default 'NONE' check (payment_provider in ('NONE','PAYPAL','STRIPE','PADDLE')),
   provider_order_id text,
   provider_payment_id text,
   provider_event_id text,

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CircleAlert, Lock, PackageCheck, ShieldCheck, ShoppingBag, Sparkles } from 'lucide-react'
-import { cancelPendingPayment, capturePayPalPayment, createCheckout, requestCheckoutQuote } from './lib/supabase'
+import { cancelPendingPayment, confirmPayment, createCheckout, requestCheckoutQuote } from './lib/supabase'
 import { trackAddPaymentInfo, trackPurchase } from './lib/meta-pixel'
 
 const money = (value, currency = 'USD') => {
@@ -78,7 +78,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     if (paymentState === 'cancelled') {
       const publicId = params.get('order')
       const returnedTrackingToken = params.get('tracking')
-      const providerOrderId = params.get('token') || ''
+      const providerOrderId = params.get('token') || params.get('session_id') || ''
       if (!publicId || !returnedTrackingToken) {
         setCancelled(true)
         return undefined
@@ -101,7 +101,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
       }).catch(error => active && setCheckoutError(customerFacingCheckoutError(error, 'Payment cancellation could not be recorded.'))).finally(() => active && setCancelSyncing(false))
       return () => { active = false }
     }
-    const providerOrderId = params.get('token')
+    const providerOrderId = params.get('token') || params.get('session_id')
     const publicId = params.get('order')
     const trackingToken = params.get('tracking')
     if (paymentState !== 'return') return undefined
@@ -111,7 +111,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     }
     let active = true
     setReturning(true)
-    capturePayPalPayment({ publicId, token: trackingToken, providerOrderId }).then(result => {
+    confirmPayment({ publicId, token: trackingToken, providerOrderId }).then(result => {
       if (!active) return
       if (result.paid) {
         let pending = null
@@ -120,7 +120,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
         trackPurchase({
           order_id: publicId,
           value: result.total || pending?.total || quote?.total || 0,
-          currency: 'USD',
+          currency: result.currency || pending?.currency || quote?.currency || 'USD',
           contents: cart
         })
         onPaymentConfirmed?.(pending?.publicId === publicId ? (pending.lineKeys || fallbackLineKeys) : fallbackLineKeys)
@@ -153,7 +153,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     if (regionOptions) {
       const enteredRegion = String(shipping.state || '').trim().toUpperCase()
       const matchedRegion = regionOptions.find(([code, label]) => code === enteredRegion || label.toUpperCase() === enteredRegion)
-      if (!matchedRegion) { setCheckoutError(`Enter a valid ${shipping.country === 'US' ? 'US state' : 'Canadian province'} name or two-letter code before continuing to PayPal.`); return }
+      if (!matchedRegion) { setCheckoutError(`Enter a valid ${shipping.country === 'US' ? 'US state' : 'Canadian province'} name or two-letter code before continuing to payment.`); return }
       checkoutShipping = { ...shipping, state: matchedRegion[0] }
     }
     if (quote.paymentAvailable === false) { setCheckoutError(quote.paymentMessage || 'Online payment is temporarily unavailable.'); return }
@@ -162,10 +162,12 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     try {
       const lineKeys = cart.map(item => item.key || `${item.product.id}:${item.variantId}`)
       const result = await createCheckout({ cart, shipping: checkoutShipping, customer, quoteToken: quote.quoteToken, idempotencyKey: checkoutAttempt.idempotencyKey, trackingToken: checkoutAttempt.trackingToken })
-      if (result.approvalUrl) {
+      const redirectUrl = result.redirectUrl || result.checkoutUrl || result.approvalUrl
+      if (redirectUrl) {
         let approval
-        try { approval = new URL(result.approvalUrl, window.location.origin) } catch { approval = null }
-        if (!approval || approval.protocol !== 'https:' || !/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) throw new Error('The payment provider returned an invalid approval link. Your bag is still available; try again shortly.')
+        try { approval = new URL(redirectUrl, window.location.origin) } catch { approval = null }
+        const secureProviderHost = approval && ((/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) || /(^|\.)stripe\.com$/i.test(approval.hostname))
+        if (!approval || approval.protocol !== 'https:' || !secureProviderHost) throw new Error('The payment provider returned an invalid secure checkout link. Your bag is still available; try again shortly.')
         trackAddPaymentInfo()
         sessionStorage.setItem('extra-time-pending-checkout', JSON.stringify({ publicId: result.order.publicId, token: result.order.token, provider: result.provider, lineKeys, customerEmail: customer.email, country: checkoutShipping.country }))
         window.location.assign(approval.href)
@@ -195,7 +197,7 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
     onNavigate('/checkout')
   }
 
-  const paymentReturn = params.get('payment') === 'return' && params.get('token') && params.get('order') && params.get('tracking')
+  const paymentReturn = params.get('payment') === 'return' && (params.get('token') || params.get('session_id')) && params.get('order') && params.get('tracking')
 
   if (returning) return <main className="checkout-page checkout-page--return"><div className="checkout-spinner"/><p>CONFIRMING PAYMENT</p><h1>Checking the final whistle.</h1><span>We are waiting for the payment provider’s server confirmation. Keep this window open.</span></main>
   if (paymentReturn && !paymentFailure) return <main className="checkout-page checkout-page--return"><div className="checkout-spinner"/><p>CONFIRMING PAYMENT</p><h1>Checking the final whistle.</h1><span>We are waiting for the payment provider’s server confirmation. Keep this window open.</span></main>

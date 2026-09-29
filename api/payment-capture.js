@@ -1,4 +1,4 @@
-import { capturePayPalOrder, finalizePayment, getPaymentContext, hashToken, markPaymentPending } from './_checkout.js'
+import { capturePayPalOrder, finalizePayment, getPaymentContext, hashToken, markPaymentPending, retrieveStripeCheckoutSession } from './_checkout.js'
 import { bestEffort, consumeQuota, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 
 export default async function handler(request, response) {
@@ -17,9 +17,38 @@ export default async function handler(request, response) {
     if (orderError) throw orderError
     if (!order || order.tracking_token_hash !== hashToken(token) || order.provider_order_id !== providerOrderId) throw Object.assign(new Error('That payment return cannot be matched to the order.'), { status: 403 })
     if (order.payment_status === 'PAID') return sendJson(response, 200, { paid: true, order: { publicId: order.order_number, token, status: order.status, paymentStatus: order.payment_status } })
-    if (order.status !== 'PENDING_PAYMENT') throw Object.assign(new Error('This checkout reservation is closed. PayPal was not captured; start a new checkout from your bag.'), { status: 409 })
+    if (order.status !== 'PENDING_PAYMENT') throw Object.assign(new Error('This checkout reservation is closed; start a new checkout from your bag.'), { status: 409 })
     const { settings } = await getPaymentContext(client, { requireReady: false })
-    if (order.payment_provider !== 'PAYPAL') throw Object.assign(new Error('This order uses a different payment provider.'), { status: 409 })
+    if (!['PAYPAL', 'STRIPE'].includes(order.payment_provider)) throw Object.assign(new Error('This order uses a different payment provider.'), { status: 409 })
+
+    if (order.payment_provider === 'STRIPE') {
+      let session
+      try {
+        session = await retrieveStripeCheckoutSession({ settings: { ...settings, provider: 'STRIPE', environment: order.metadata?.paymentEnvironment || settings.environment }, providerSessionId: providerOrderId })
+      } catch (retrieveError) {
+        await bestEffort(client.from('pod_order_events').insert({ order_id: order.id, event_type: 'PAYMENT_REVIEW_REQUIRED', status: order.status, message: 'The Stripe response was inconclusive. Support will reconcile the checkout session before fulfillment.', metadata: { provider: 'STRIPE', stage: 'SESSION_RETRIEVE', reason: safeText(retrieveError?.message, 240) }, visible_to_customer: true }))
+        return sendJson(response, 502, { paid: false, reviewRequired: true, error: 'The payment provider response is inconclusive. Do not pay again; your order will be reconciled from Stripe.' })
+      }
+      if (session.id !== order.provider_order_id || session.metadata?.order_public_id !== order.order_number) throw Object.assign(new Error('That Stripe payment session cannot be matched to the order.'), { status: 403 })
+      const sessionAmount = session.amount_total == null ? null : Number(session.amount_total) / 100
+      const sessionCurrency = String(session.currency || '').toUpperCase()
+      if (session.payment_status === 'paid') {
+        if (sessionAmount == null || sessionCurrency !== String(order.currency || '').toUpperCase() || Math.abs(sessionAmount - Number(order.grand_total)) > 0.01) {
+          await bestEffort(client.from('pod_order_events').insert({ order_id: order.id, event_type: 'PAYMENT_REVIEW_REQUIRED', status: order.status, message: 'The Stripe Checkout amount or currency did not match the order total. Fulfillment is blocked pending review.', metadata: { provider: 'STRIPE', stage: 'SESSION_AMOUNT_MISMATCH', sessionAmount, sessionCurrency, orderAmount: Number(order.grand_total), orderCurrency: order.currency }, visible_to_customer: true }))
+          return sendJson(response, 409, { paid: false, reviewRequired: true, error: 'The captured payment does not match the order total. Contact support with your order number before trying again.' })
+        }
+        const finalized = await finalizePayment(client, order.id, 'PAID', session.payment_intent || session.id, `capture-${session.id}`, { provider: 'STRIPE', status: session.payment_status, sessionStatus: session.status })
+        if (finalized.payment_status !== 'PAID') return sendJson(response, 409, { paid: false, reviewRequired: true, error: 'Payment was captured, but the reservation could not be confirmed. Contact support with your order number.' })
+        return sendJson(response, 200, { paid: true, total: Number(finalized.grand_total), currency: finalized.currency, order: { publicId: finalized.order_number, token, status: finalized.status, paymentStatus: finalized.payment_status } })
+      }
+      if (session.status === 'expired') {
+        const failed = await finalizePayment(client, order.id, 'CANCELLED', session.id, `cancel-${session.id}`, { provider: 'STRIPE', status: session.status })
+        return sendJson(response, 402, { paid: false, order: { publicId: failed.order_number, token, status: failed.status, paymentStatus: failed.payment_status }, error: 'The Stripe checkout session expired before payment was completed.' })
+      }
+      if (session.status !== 'complete') return sendJson(response, 202, { paid: false, pending: true, order: { publicId: order.order_number, token, status: order.status, paymentStatus: order.payment_status } })
+      const pending = await markPaymentPending(client, order.id, session.payment_intent || session.id, `capture-pending-${session.id}`, { provider: 'STRIPE', status: session.payment_status || 'unpaid', sessionStatus: session.status })
+      return sendJson(response, 202, { paid: false, pending: true, order: { publicId: pending.order_number, token, status: pending.status, paymentStatus: pending.payment_status } })
+    }
     const orderSettings = { ...settings, provider: 'PAYPAL', environment: order.metadata?.paymentEnvironment || settings.environment }
     let capture
     try {

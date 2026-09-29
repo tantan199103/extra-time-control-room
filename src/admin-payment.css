@@ -31,3 +31,7 @@
   .admin-pixel-feed-box{flex-direction:column;align-items:flex-start}
   .admin-pixel-grid{grid-template-columns:1fr}
 }
+.admin-settings-legacy .admin-payment-panel { display: none; }
+.admin-settings-legacy { display: contents; }
+.admin-payment-panel--stripe { max-width: 1500px; width: calc(100% - 76px); margin: 24px auto 84px; }
+@media(max-width:760px){.admin-payment-panel--stripe{width:calc(100% - 32px);margin:16px auto 65px}}

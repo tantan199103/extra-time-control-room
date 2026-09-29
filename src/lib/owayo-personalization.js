@@ -15,12 +15,43 @@ const FONT_ALLOWLIST = new Set([
 
 const PLACEMENTS = new Set(['back', 'front', 'left-sleeve', 'right-sleeve'])
 
+// Owayo stores a logo as an object attached to a garment part. Keep the
+// public handoff deliberately small, but retain the part/placement so the
+// renderer can put the uploaded mark on the same UV surface the shopper saw.
+const LOGO_PLACEMENTS = new Set(['front', 'back', 'left-sleeve', 'right-sleeve'])
+
+const PLACEMENT_PART_PRIORITIES = Object.freeze({
+  back: [['back1'], ['back']],
+  front: [['frontrightpart'], ['front']],
+  'left-sleeve': [['leftarm'], ['aermelbandlinks'], ['leftcuff'], ['keillinks']],
+  'right-sleeve': [['rightarm'], ['aermelbandrechts'], ['rightcuff'], ['keilrechts']]
+})
+
 const clamp = (value, min, max, fallback) => {
   const number = Number(value)
   return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback
 }
 
 const clean = (value, max) => String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, max)
+
+const compactPartName = value => String(value || '').replace(/[^a-z0-9]/gi, '').toLowerCase()
+
+/**
+ * Resolve one deterministic garment mesh for a print placement. Several
+ * Owayo cuts expose a primary sleeve plus a secondary side/keil mesh; using
+ * every matching name would duplicate a customer's text or logo. The first
+ * available priority is therefore the only active UV island.
+ */
+export function owayoPlacementPartNames(partNames = [], placement = 'front') {
+  const names = (Array.isArray(partNames) ? partNames : []).map(value => String(value || '')).filter(Boolean)
+  const priorities = PLACEMENT_PART_PRIORITIES[placement] || PLACEMENT_PART_PRIORITIES.front
+  for (const group of priorities) {
+    const matches = names.filter(name => group.includes(compactPartName(name)))
+    if (matches.length) return [matches[0]]
+  }
+  const prefix = placement === 'back' ? 'back' : placement === 'front' ? 'front' : placement === 'left-sleeve' ? 'left' : 'right'
+  return names.filter(name => compactPartName(name).startsWith(prefix)).slice(0, 1)
+}
 
 function sizeTokens(value) {
   const text = clean(value, 40).toUpperCase()
@@ -120,11 +151,31 @@ export function normalizeOwayoPersonalization(input = {}, roster = []) {
   }
 }
 
+export function normalizeOwayoLogo(input = {}) {
+  const placementCandidate = clean(input?.placement, 24).toLowerCase()
+  return {
+    name: clean(input?.name, 160),
+    x: clamp(input?.x, -1, 1, 0),
+    y: clamp(input?.y, -1, 1, 0),
+    scale: clamp(input?.scale, .25, 2, 1),
+    rotation: clamp(input?.rotation, -180, 180, 0),
+    placement: LOGO_PLACEMENTS.has(placementCandidate) ? placementCandidate : 'front'
+  }
+}
+
 /**
- * Normalized canvas coordinates (top-left origin). These align with the
- * garment's Back UV island and leave room for the collar, pocket and hem.
+ * Normalized canvas coordinates (top-left origin). The renderer binds the
+ * resulting map to the selected garment panel's UV island and leaves the
+ * collar, pocket and hem clear where those regions exist.
  */
-export function owayoBackTextLayout() {
+export function owayoBackTextLayout(placement = 'back') {
+  if (placement === 'left-sleeve' || placement === 'right-sleeve') {
+    return {
+      team: { x: .5, y: .28, width: .72, size: .048, weight: 700 },
+      name: { x: .5, y: .46, width: .76, size: .06, weight: 800 },
+      number: { x: .5, y: .67, width: .58, size: .16, weight: 800 }
+    }
+  }
   return {
     team: { x: .5, y: .255, width: .58, size: .055, weight: 700 },
     name: { x: .5, y: .405, width: .62, size: .072, weight: 800 },

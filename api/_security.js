@@ -8,9 +8,9 @@ export function sendJson(response, status, body) {
 }
 
 export function readBody(request, maxBytes = 24000) {
-  const raw = typeof request.body === 'string' ? request.body : JSON.stringify(request.body || {})
+  const raw = Buffer.isBuffer(request?.body) ? request.body.toString('utf8') : typeof request.body === 'string' ? request.body : JSON.stringify(request.body || {})
   if (Buffer.byteLength(raw, 'utf8') > maxBytes) throw Object.assign(new Error('Request is too large.'), { status:413 })
-  try { return typeof request.body === 'string' ? JSON.parse(request.body) : request.body || {} }
+  try { return typeof request.body === 'string' || Buffer.isBuffer(request?.body) ? JSON.parse(raw) : request.body || {} }
   catch { throw Object.assign(new Error('Request body must be valid JSON.'), { status:400 }) }
 }
 
@@ -19,6 +19,33 @@ export function rawRequestBody(request) {
   if (Buffer.isBuffer(raw)) return raw.toString('utf8')
   if (typeof raw === 'string') return raw
   return null
+}
+
+export async function readRawRequestBody(request, maxBytes = 90000) {
+  const existing = rawRequestBody(request)
+  if (existing != null) return existing
+  if (!request || typeof request.on !== 'function') return null
+  return new Promise((resolve, reject) => {
+    let received = 0
+    const chunks = []
+    request.on('data', chunk => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk))
+      received += buffer.length
+      if (received > maxBytes) {
+        reject(Object.assign(new Error('Request is too large.'), { status: 413 }))
+        try { request.destroy() } catch {}
+        return
+      }
+      chunks.push(buffer)
+    })
+    request.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8')
+      request.rawBody = body
+      request.body = body
+      resolve(body)
+    })
+    request.on('error', reject)
+  })
 }
 
 export function enforceSameOrigin(request) {

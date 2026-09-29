@@ -28,7 +28,7 @@ APIs. The deploy script enables them automatically.
 Create these Secret Manager secrets once, without putting values in Git:
 
 ```powershell
-$names = 'SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','CHECKOUT_SIGNING_SECRET','AI_IMAGE_API_KEY','AI_TEXT_API_KEY','PAYPAL_CLIENT_SECRET','PAYPAL_WEBHOOK_ID','PADDLE_API_KEY','PADDLE_WEBHOOK_SECRET'
+$names = 'SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','CHECKOUT_SIGNING_SECRET','AI_IMAGE_API_KEY','AI_TEXT_API_KEY','PAYPAL_CLIENT_SECRET','PAYPAL_WEBHOOK_ID','STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET','PADDLE_API_KEY','PADDLE_WEBHOOK_SECRET'
 foreach ($name in $names) { gcloud secrets create $name --replication-policy=automatic }
 ```
 
@@ -88,7 +88,7 @@ VITE_SUPABASE_FUNCTIONS_URL=https://YOUR_PROJECT.supabase.co/functions/v1
 VITE_BACKEND_URL=https://api.jersevo.com
 ```
 
-Set the PayPal/Paddle webhook URL to:
+Set the PayPal/Paddle/Stripe webhook URL to:
 
 ```text
 https://api.jersevo.com/api/payment-webhook
@@ -102,7 +102,9 @@ https://api.jersevo.com/ready
 ```
 
 `/ready` must return HTTP 200 before enabling live payment settings. Test a
-PayPal sandbox create → approve → capture → duplicate webhook sequence first.
+PayPal or Stripe sandbox create → hosted checkout → verified webhook → duplicate
+webhook sequence first. Stripe uses `STRIPE_SECRET_KEY` and the endpoint signing
+secret `STRIPE_WEBHOOK_SECRET`; no Stripe key belongs in the frontend.
 
 Production smoke test (2026-09-19): `/health` and `/ready` return HTTP 200 on
 both the Cloud Run URL and `https://api.jersevo.com`; the custom-domain

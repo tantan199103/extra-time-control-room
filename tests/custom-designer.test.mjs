@@ -9,7 +9,7 @@ import { matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
 import { STOREFRONT_STATIC_ROUTES } from '../src/lib/storefront-model.js'
 import { normalizeDesignerSpec } from '../api/customization-order.js'
 import { brandColorIndices } from '../scripts/strip-owayo-branding.mjs'
-import { normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, resolveOwayoPreviewText, resolveOwayoSizeValue } from '../src/lib/owayo-personalization.js'
+import { normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, resolveOwayoPreviewText, resolveOwayoSizeValue } from '../src/lib/owayo-personalization.js'
 import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -134,13 +134,14 @@ test('3D design handoff is bounded and keeps the production roster server-side',
     designName:'Etape',
     colors:{ A:'#111311', B:'#F3ED45' },
     text:{ team:'JERSEVO', name:'RIDER', number:'90', scale:1, color:'#F8F8F4' },
-    logo:{ name:'crest.png', x:4, y:-4, scale:4, rotation:400 },
+    logo:{ name:'crest.png', x:4, y:-4, scale:4, rotation:400, placement:'right-sleeve' },
     roster:Array.from({ length:120 }, (_, index) => ({ name:`Player ${index}`, number:`${index}x`, size:'M' }))
   })
   assert.equal(spec.source, 'JERSEVO_3D_DESIGNER')
   assert.equal(spec.roster.length, 99)
   assert.equal(spec.logo.x, 1)
   assert.equal(spec.logo.rotation, 180)
+  assert.equal(spec.logo.placement, 'right-sleeve')
   assert.equal(spec.roster[0].number, '0')
   assert.equal(spec.manifest, '/designer/owayo/cycling-c3/manifest.json')
   assert.throws(() => normalizeDesignerSpec({ source:'external' }), /not supported/)
@@ -155,6 +156,7 @@ test('Owayo personalization preview is deterministic and roster-backed', () => {
   assert.equal(normalized.rotation, 30)
   assert.equal(normalized.outlineWidth, 24)
   assert.deepEqual(Object.keys(owayoBackTextLayout()), ['team','name','number'])
+  assert.deepEqual(normalizeOwayoLogo({ name:' crest.svg ', placement:'unknown', x:9, scale:0 }), { name:'crest.svg', x:1, y:0, scale:.25, rotation:0, placement:'front' })
 })
 
 test('Owayo roster keeps display sizes and source variant codes aligned', () => {
@@ -186,8 +188,22 @@ test('3D stage binds Owayo text to the Back UV shader instead of a floating text
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
   assert.match(source, /personalizationMap/)
   assert.match(source, /personalizationEnabled/)
-  assert.match(source, /applyOwayoPersonalization\(runtime, textMap\)/)
-  assert.match(source, /isBack = \/\^back\(\?:\[\\s_-\]\*1\)\?\$\/i/)
+  assert.match(source, /applyOwayoPersonalization\(runtime, textMap, normalizedText\.placement\)/)
+  assert.match(source, /owayoPlacementPartNames\(\[\.\.\.runtime\.partMeshes\.keys\(\)\], placement\)/)
+})
+
+test('Owayo logos and alternate text sides bind to garment UV materials', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /uniform sampler2D logoMap/)
+  assert.match(source, /applyOwayoLogo\(runtime, texture, normalizedLogo\.placement\)/)
+  assert.match(source, /owayoPlacementPartNames/)
+  assert.match(source, /Place on garment/)
+  assert.match(source, /productId:manifest\?\.product\?\.id \|\| state\.productId/)
+  assert.deepEqual(owayoPlacementPartNames(['LeftArm', 'Keillinks'], 'left-sleeve'), ['LeftArm'])
+  assert.deepEqual(owayoPlacementPartNames(['LeftCuff', 'LeftArm'], 'left-sleeve'), ['LeftArm'])
+  assert.deepEqual(owayoPlacementPartNames(['Aermelbandlinks', 'Passelinks'], 'left-sleeve'), ['Aermelbandlinks'])
+  assert.deepEqual(owayoPlacementPartNames(['FrontLeftPart', 'FrontRightPart'], 'front'), ['FrontRightPart'])
+  assert.deepEqual(owayoPlacementPartNames(['Back1', 'Back2', 'Back3'], 'back'), ['Back1'])
 })
 
 test('Owayo family catalogue keeps unsupported cuts from masquerading as C3 assets', async () => {

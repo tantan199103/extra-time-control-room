@@ -1,4 +1,4 @@
-import { hashToken, buildCheckoutQuote, createPayPalOrder, getPaymentContext, normalizeCheckoutLines, normalizeCustomer, normalizeShipping, orderNumber, quoteFingerprint, verifyQuoteToken } from './_checkout.js'
+import { hashToken, buildCheckoutQuote, createPayPalOrder, createStripeCheckoutSession, getPaymentContext, normalizeCheckoutLines, normalizeCustomer, normalizeShipping, orderNumber, quoteFingerprint, verifyQuoteToken } from './_checkout.js'
 import { bestEffort, consumeQuota, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 
 function siteOrigin(request) {
@@ -100,15 +100,18 @@ export default async function handler(request, response) {
       }
       if (['PAYMENT_FAILED', 'CANCELLED', 'EXPIRED', 'REFUNDED'].includes(order.status)) throw Object.assign(new Error('This checkout attempt is closed. Start checkout again for a fresh stock reservation.'), { status: 409 })
       if (order.payment_provider === settings.provider && order.provider_order_id) {
-        return sendJson(response, 200, { order: { publicId: order.order_number, token: rawTrackingToken, status: order.status, paymentStatus: order.payment_status, total: Number(order.grand_total), currency: order.currency }, provider: settings.provider, providerOrderId: order.provider_order_id, approvalUrl: order.metadata?.approvalUrl || null, replayed: true })
+        const replayUrl = order.metadata?.approvalUrl || order.metadata?.checkoutUrl || null
+        return sendJson(response, 200, { order: { publicId: order.order_number, token: rawTrackingToken, status: order.status, paymentStatus: order.payment_status, total: Number(order.grand_total), currency: order.currency }, provider: settings.provider, providerOrderId: order.provider_order_id, approvalUrl: replayUrl, checkoutUrl: replayUrl, redirectUrl: replayUrl, replayed: true })
       }
     }
     let provider = { id: '', approvalUrl: '', checkoutUrl: '' }
     try {
       if (settings.provider === 'PAYPAL') {
         provider = await createPayPalOrder({ settings, total: quote.total, currency: quote.currency, orderNumber: orderNo, returnUrl: `${siteOrigin(request)}/checkout?payment=return&order=${encodeURIComponent(orderNo)}&tracking=${encodeURIComponent(rawTrackingToken)}`, cancelUrl: `${siteOrigin(request)}/checkout?payment=cancelled&order=${encodeURIComponent(orderNo)}&tracking=${encodeURIComponent(rawTrackingToken)}`, customer, shipping, lines: quote.lines })
+      } else if (settings.provider === 'STRIPE') {
+        provider = await createStripeCheckoutSession({ settings, total: quote.total, currency: quote.currency, orderNumber: orderNo, returnUrl: `${siteOrigin(request)}/checkout?payment=return&order=${encodeURIComponent(orderNo)}&tracking=${encodeURIComponent(rawTrackingToken)}&session_id={CHECKOUT_SESSION_ID}`, cancelUrl: `${siteOrigin(request)}/checkout?payment=cancelled&order=${encodeURIComponent(orderNo)}&tracking=${encodeURIComponent(rawTrackingToken)}`, customer, shipping, lines: quote.lines, shippingAmount: quote.shipping.amount, taxAmount: quote.tax })
       } else if (settings.provider === 'PADDLE') {
-        throw Object.assign(new Error('Paddle checkout is unavailable for these physical products. Select PayPal in payment settings.'), { status: 501 })
+        throw Object.assign(new Error('Paddle checkout is unavailable for these physical products. Select PayPal or Stripe in payment settings.'), { status: 501 })
       }
     } catch (providerError) {
       await bestEffort(client.rpc('pod_finalize_order_payment', { p_order_id: order.id, p_payment_state: 'FAILED', p_provider_payment_id: null, p_provider_event_id: `provider-create-${order.id}`, p_event_payload: { stage: 'PROVIDER_CREATE' } }))
@@ -119,7 +122,7 @@ export default async function handler(request, response) {
       await bestEffort(client.rpc('pod_finalize_order_payment', { p_order_id: order.id, p_payment_state: 'FAILED', p_provider_payment_id: null, p_provider_event_id: `provider-link-${order.id}`, p_event_payload: { stage: 'PROVIDER_LINK' } }))
       throw updateError
     }
-    return sendJson(response, 201, { order: { publicId: order.order_number, token: rawTrackingToken, status: order.status, paymentStatus: order.payment_status, total: Number(order.grand_total), currency: order.currency }, provider: settings.provider, providerOrderId: provider.id, approvalUrl: provider.approvalUrl || provider.checkoutUrl || null, replayed: false })
+    return sendJson(response, 201, { order: { publicId: order.order_number, token: rawTrackingToken, status: order.status, paymentStatus: order.payment_status, total: Number(order.grand_total), currency: order.currency }, provider: settings.provider, providerOrderId: provider.id, approvalUrl: provider.approvalUrl || provider.checkoutUrl || null, checkoutUrl: provider.checkoutUrl || provider.approvalUrl || null, redirectUrl: provider.checkoutUrl || provider.approvalUrl || null, replayed: false })
   } catch (error) {
     return handleApiError(response, error, 'Checkout could not be started.')
   }

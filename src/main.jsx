@@ -1607,6 +1607,7 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
               key={route.handle}
               type="button"
               role="tab"
+              aria-label={route.label}
               aria-selected={activeHandle === route.handle}
               aria-controls="home-product-discovery-panel"
               id={`home-product-discovery-tab-${route.handle}`}
@@ -1624,7 +1625,9 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
       <div className="home-product-discovery__panel" id="home-product-discovery-panel" role="tabpanel" aria-labelledby={`home-product-discovery-tab-${activeHandle}`} aria-live="polite">
         {loading ? <div className="home-product-discovery__loading" role="status"><span/><span/><p>Loading {activeRoute.note.toLowerCase()}…</p></div> : product ? <>
           <figure className="home-product-discovery__media">
-            <img src={product.image || '/assets/jersey-black.webp'} alt={product.alt || product.name || product.title} loading="lazy" decoding="async" />
+            <a className="home-product-discovery__media-link" href={productHref} aria-label={`View ${product.name || product.title || 'product'}`} onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); navigate(productHref) } }}>
+              <img src={product.image || '/assets/jersey-black.webp'} alt={product.alt || product.name || product.title} loading="lazy" decoding="async" />
+            </a>
             <figcaption><span>{activeRoute.note}</span><strong>{activeProducts.length} live picks</strong></figcaption>
           </figure>
           <article className="home-product-discovery__detail">
@@ -1664,7 +1667,7 @@ function HomeProductDiscovery({ products = [], navigationProducts = [], onQuickV
         <div className="home-product-discovery__lineup-head"><span>{activeRoute.note}</span><button type="button" onClick={() => navigate(`/category/${activeHandle}`)}>VIEW ALL <ArrowRight size={14}/></button></div>
         <div className="home-product-discovery__lineup-track" aria-label={`Select a ${activeRoute.note.toLowerCase()} product`}>
           {activeProducts.slice(0,8).map(item => (
-            <button key={item.id} type="button" aria-pressed={product?.id === item.id} className={product?.id === item.id ? 'is-active' : ''} onClick={() => setSelectedId(item.id)}>
+            <button key={item.id} type="button" aria-label={`View ${item.name || item.title || 'product'}`} aria-pressed={product?.id === item.id} className={product?.id === item.id ? 'is-active' : ''} onClick={() => setSelectedId(item.id)}>
               <img src={item.image || '/assets/jersey-black.webp'} alt="" loading="lazy" decoding="async" />
               <span><strong>{item.name || item.title}</strong><small>{money(item.price)}</small></span>
             </button>

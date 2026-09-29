@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
+import Stripe from 'stripe'
 import { safeText, serverSupabase } from './_security.js'
 import { normalizePaymentSettings, paymentServerReadiness } from '../src/lib/payment-config.js'
 import { quoteCart } from './_membership.js'
@@ -23,7 +24,7 @@ function normalizeSubdivision(country, value) {
   const code = (country === 'US' ? US_SUBDIVISIONS : CA_SUBDIVISIONS).get(normalized)
   if (!code) {
     const label = country === 'US' ? 'US state or territory' : 'Canadian province or territory'
-    throw Object.assign(new Error(`Choose a valid ${label} before continuing to PayPal.`), { status: 422, code: 'INVALID_SHIPPING_REGION' })
+    throw Object.assign(new Error(`Choose a valid ${label} before continuing to payment.`), { status: 422, code: 'INVALID_SHIPPING_REGION' })
   }
   return code
 }
@@ -122,7 +123,7 @@ export function normalizeShipping(input = {}, { requireAddress = true } = {}) {
   const postalCode = safeText(input.postalCode, 40)
   if (!country) throw Object.assign(new Error('Choose a delivery country.'), { status: 422 })
   if (requireAddress && (!address1 || !city || !postalCode)) throw Object.assign(new Error('Complete your country, address, city and postal code.'), { status: 422 })
-  if (requireAddress && ['US', 'CA'].includes(country) && !state) throw Object.assign(new Error(`Choose a valid ${country === 'US' ? 'US state or territory' : 'Canadian province or territory'} before continuing to PayPal.`), { status: 422, code:'INVALID_SHIPPING_REGION' })
+  if (requireAddress && ['US', 'CA'].includes(country) && !state) throw Object.assign(new Error(`Choose a valid ${country === 'US' ? 'US state or territory' : 'Canadian province or territory'} before continuing to payment.`), { status: 422, code:'INVALID_SHIPPING_REGION' })
   return { method, country, address1, address2, city, state, postalCode }
 }
 
@@ -202,7 +203,7 @@ export async function buildCheckoutQuote(request, body, client = serverSupabase(
   const taxRate = Math.min(0.25, Math.max(0, Number(process.env.CHECKOUT_TAX_RATE || 0)))
   const taxTotal = money((memberQuote.subtotal + shippingTotal) * taxRate)
   const grandTotal = money(memberQuote.subtotal + shippingTotal + taxTotal)
-  const paymentAvailable = Boolean(storePayment.settings.enabled && storePayment.readiness.ready && storePayment.settings.provider === 'PAYPAL')
+  const paymentAvailable = Boolean(storePayment.settings.enabled && storePayment.readiness.ready && ['PAYPAL', 'STRIPE'].includes(storePayment.settings.provider))
   const snapshot = {
     version: 1,
     lines: memberQuote.lines.map(line => ({ lineKey: line.lineKey, productId: line.productId, variantId: line.variantId, qty: line.qty, publicUnit: line.publicUnit, finalUnit: line.finalUnit, discount: line.discount })),
@@ -224,7 +225,7 @@ export async function buildCheckoutQuote(request, body, client = serverSupabase(
     shipping: { ...shipping, amount: shippingTotal, label: SHIPPING_METHODS[shipping.method].label, eta: SHIPPING_METHODS[shipping.method].eta, free: standardFree, reason: standardFree ? (shippingPolicyFree ? '90+ Club benefit' : `Free shipping over $${freeThreshold}`) : memberShippingSubsidy > 0 ? `90+ Club covers $${memberShippingSubsidy}` : 'Standard delivery rate' },
     taxRate,
     paymentAvailable,
-    paymentMessage: paymentAvailable ? '' : 'Online payment is temporarily unavailable while the studio finishes payment setup.',
+    paymentMessage: paymentAvailable ? '' : storePayment.settings.provider === 'PADDLE' ? 'Paddle checkout is not available for physical goods yet.' : 'Online payment is temporarily unavailable while the studio finishes payment setup.',
     quoteToken,
     expiresAt: new Date(Date.now() + QUOTE_TTL_MS).toISOString(),
     lines: memberQuote.lines.map(line => ({ ...line, productTitle: hydrated.find(item => item.lineKey === line.lineKey)?.productTitle, productHandle: hydrated.find(item => item.lineKey === line.lineKey)?.productHandle, productImage: hydrated.find(item => item.lineKey === line.lineKey)?.productImage, options: hydrated.find(item => item.lineKey === line.lineKey)?.options, customization: lines.find(item => item.lineKey === line.lineKey)?.customization || null }))
@@ -235,7 +236,7 @@ export async function getPaymentContext(client = serverSupabase(), { requireRead
   const context = await paymentSettings(client)
   if (requireReady && (!context.settings.enabled || context.settings.provider === 'NONE')) throw Object.assign(new Error('Online payment is not enabled yet. Please try again when the studio has connected a payment provider.'), { status: 503, code: 'PAYMENT_NOT_ENABLED' })
   if (requireReady && !context.readiness.ready) throw Object.assign(new Error('Online payment is temporarily unavailable while the payment provider is being configured.'), { status: 503, code: 'PAYMENT_NOT_READY', missing: context.readiness.missing })
-  if (requireReady && context.settings.provider === 'PADDLE') throw Object.assign(new Error('Paddle checkout is not available for physical goods yet. Select PayPal after the shipping adapter is configured.'), { status: 501, code: 'PAYMENT_PROVIDER_UNSUPPORTED' })
+  if (requireReady && context.settings.provider === 'PADDLE') throw Object.assign(new Error('Paddle checkout is not available for physical goods yet. Select PayPal or Stripe.'), { status: 501, code: 'PAYMENT_PROVIDER_UNSUPPORTED' })
   return context
 }
 
@@ -340,6 +341,119 @@ export async function createPayPalOrder({ settings, total, currency, orderNumber
   try { approval = new URL(approvalUrl) } catch { approval = null }
   if (!approval || approval.protocol !== 'https:' || !/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) throw Object.assign(new Error('PayPal returned an invalid approval link.'), { status: 502 })
   return { id: result.id, approvalUrl, raw: result }
+}
+
+function stripeSecretKey() {
+  const secret = String(process.env.STRIPE_SECRET_KEY || '').trim()
+  if (!secret) throw Object.assign(new Error('Stripe server credentials are missing.'), { status: 503, code: 'STRIPE_NOT_CONFIGURED' })
+  return secret
+}
+
+function stripeClient() {
+  return new Stripe(stripeSecretKey(), { maxNetworkRetries: 0, timeout: 10000 })
+}
+
+function stripeCents(value, label = 'amount') {
+  const number = Number(value)
+  const cents = Math.round((number + Number.EPSILON) * 100)
+  if (!Number.isFinite(number) || !Number.isSafeInteger(cents) || cents < 0) throw Object.assign(new Error(`Stripe ${label} is invalid.`), { status: 422, code: 'STRIPE_INVALID_AMOUNT' })
+  return cents
+}
+
+function stripeCurrency(value) {
+  const currency = String(value || '').trim().toLowerCase()
+  if (!/^[a-z]{3}$/.test(currency)) throw Object.assign(new Error('Stripe currency is invalid.'), { status: 422, code: 'STRIPE_INVALID_CURRENCY' })
+  return currency
+}
+
+function safeStripeRedirectUrl(value, label) {
+  let url
+  try { url = new URL(value) } catch { throw Object.assign(new Error(`Stripe ${label} URL is invalid.`), { status: 503, code: 'STRIPE_INVALID_REDIRECT' }) }
+  if (url.protocol !== 'https:' && !/^localhost$|^127\.0\.0\.1$/.test(url.hostname)) return null
+  return url.toString()
+}
+
+function safeStripeCheckoutUrl(value) {
+  let url
+  try { url = new URL(value) } catch { return null }
+  return url.protocol === 'https:' && /(^|\.)stripe\.com$/i.test(url.hostname) ? url.toString() : null
+}
+
+/**
+ * Build the hosted Checkout payload from the server-side order snapshot.
+ * Prices are represented as one-time price_data values rather than Stripe
+ * catalogue prices because the storefront supports per-order member and
+ * quantity discounts. The snapshot has already been quoted and reserved by
+ * Supabase before this function is called.
+ */
+export function buildStripeCheckoutSessionParams({ total, currency, orderNumber: reference, returnUrl, cancelUrl, customer, shipping, lines = [], shippingAmount = 0, taxAmount = 0 }) {
+  const normalizedCurrency = stripeCurrency(currency)
+  const items = []
+  for (const line of Array.isArray(lines) ? lines.slice(0, 100) : []) {
+    const quantity = Math.max(1, Math.min(99, Math.trunc(Number(line.qty || 1))))
+    const unitAmount = stripeCents(line.finalUnit ?? line.price, 'line amount')
+    if (!unitAmount) continue
+    const name = String(line.productTitle || line.title || 'Extra Time piece').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 120) || 'Extra Time piece'
+    const sku = String(line.sku || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 80)
+    items.push({ price_data: { currency: normalizedCurrency, unit_amount: unitAmount, product_data: { name, ...(sku ? { description: `SKU ${sku}` } : {}) } }, quantity })
+  }
+  const shippingCents = stripeCents(shippingAmount, 'shipping amount')
+  const taxCents = stripeCents(taxAmount, 'tax amount')
+  if (shippingCents) items.push({ price_data: { currency: normalizedCurrency, unit_amount: shippingCents, product_data: { name: 'Tracked delivery' } }, quantity: 1 })
+  if (taxCents) items.push({ price_data: { currency: normalizedCurrency, unit_amount: taxCents, product_data: { name: 'Sales tax' } }, quantity: 1 })
+  const expectedTotal = stripeCents(total, 'total')
+  const calculatedTotal = items.reduce((sum, item) => sum + item.price_data.unit_amount * item.quantity, 0)
+  if (!items.length || expectedTotal <= 0 || calculatedTotal !== expectedTotal) throw Object.assign(new Error('The Stripe checkout total no longer matches the order quote. Refresh checkout and try again.'), { status: 409, code: 'STRIPE_TOTAL_MISMATCH' })
+  const success = safeStripeRedirectUrl(returnUrl, 'success')
+  const cancel = safeStripeRedirectUrl(cancelUrl, 'cancel')
+  if (!success || !cancel) throw Object.assign(new Error('Stripe returned an invalid secure redirect origin.'), { status: 503, code: 'STRIPE_INVALID_REDIRECT' })
+  return {
+    mode: 'payment',
+    line_items: items,
+    success_url: success,
+    cancel_url: cancel,
+    client_reference_id: reference,
+    customer_email: String(customer?.email || '').trim().toLowerCase() || undefined,
+    // Delivery was already normalized and stored in the pending order. Do
+    // not ask Stripe Checkout to replace it with a second address.
+    billing_address_collection: 'auto',
+    metadata: { order_public_id: reference },
+    payment_intent_data: { metadata: { order_public_id: reference } },
+    submit_type: 'pay'
+  }
+}
+
+export async function createStripeCheckoutSession({ settings, total, currency, orderNumber: reference, returnUrl, cancelUrl, customer, shipping, lines = [], shippingAmount = 0, taxAmount = 0 }) {
+  // `settings` is accepted for symmetry with the PayPal adapter and to make
+  // environment selection explicit. Stripe test/live mode is selected by the
+  // secret key configured on the server; no key is ever sent to the browser.
+  void settings
+  const params = buildStripeCheckoutSessionParams({ total, currency, orderNumber: reference, returnUrl, cancelUrl, customer, shipping, lines, shippingAmount, taxAmount })
+  const session = await stripeClient().checkout.sessions.create(params, { idempotencyKey: `checkout-${reference}` })
+  const checkoutUrl = safeStripeCheckoutUrl(session?.url)
+  if (!session?.id || !checkoutUrl) throw Object.assign(new Error('Stripe did not return a secure Checkout URL.'), { status: 502, code: 'STRIPE_SESSION_CREATE_FAILED' })
+  return { id: session.id, approvalUrl: checkoutUrl, checkoutUrl, raw: session }
+}
+
+export async function retrieveStripeCheckoutSession({ settings, providerSessionId }) {
+  void settings
+  const id = safeText(providerSessionId, 240)
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) throw Object.assign(new Error('Stripe Checkout session is invalid.'), { status: 422, code: 'STRIPE_INVALID_SESSION' })
+  return stripeClient().checkout.sessions.retrieve(id)
+}
+
+export async function expireStripeCheckoutSession({ settings, providerSessionId }) {
+  const session = await retrieveStripeCheckoutSession({ settings, providerSessionId })
+  if (session.payment_status === 'paid') return session
+  if (session.status === 'open') return stripeClient().checkout.sessions.expire(session.id)
+  return session
+}
+
+export function verifyStripeWebhook(rawBody, signature) {
+  const secret = String(process.env.STRIPE_WEBHOOK_SECRET || '').trim()
+  if (!secret || !rawBody || !signature) return null
+  try { return stripeClient().webhooks.constructEvent(rawBody, signature, secret) }
+  catch { return null }
 }
 
 export async function capturePayPalOrder({ settings, providerOrderId }) {

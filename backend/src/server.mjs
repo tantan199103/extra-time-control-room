@@ -107,7 +107,8 @@ function readiness() {
     capabilities:{
       aiImage:Boolean(String(process.env.AI_IMAGE_API_KEY || process.env.OPENAI_API_KEY || '').trim()),
       aiText:Boolean(String(process.env.AI_TEXT_API_KEY || '').trim()),
-      paypal:Boolean(String(process.env.PAYPAL_CLIENT_SECRET || '').trim())
+      paypal:Boolean(String(process.env.PAYPAL_CLIENT_SECRET || '').trim()),
+      stripe:Boolean(String(process.env.STRIPE_SECRET_KEY || '').trim() && String(process.env.STRIPE_WEBHOOK_SECRET || '').trim())
     }
   }
 }

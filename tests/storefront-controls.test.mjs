@@ -154,6 +154,16 @@ test('homepage puts a detailed live product explorer directly after Custom', () 
   assert.match(css, /@media \(max-width: 780px\) \{[\s\S]*\.home-product-discovery__panel/)
 })
 
+test('mobile product explorer keeps the artwork and removes nonessential copy', () => {
+  assert.match(source, /className="home-product-discovery__media-link"/)
+  assert.match(source, /aria-label=\{route\.label\}/)
+  assert.match(source, /aria-label=\{`View \$\{item\.name \|\| item\.title/)
+  assert.match(css, /\.home-product-discovery__detail \{ display: none; \}/)
+  assert.match(css, /\.home-product-discovery__media figcaption \{ display: none; \}/)
+  assert.match(css, /\.home-product-discovery__lineup-track button > span \{ display: none; \}/)
+  assert.match(css, /\.home-product-discovery__tabs button span,[\s\S]*?clip: rect\(0,0,0,0\)/)
+})
+
 test('product page integrates inline estimated delivery with purchase options and highlights timeline', () => {
   assert.match(source, /className="pdp-delivery-badge"/)
   assert.match(source, /ESTIMATED ARRIVAL:/)

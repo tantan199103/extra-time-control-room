@@ -13,6 +13,7 @@ values (
     'environment', 'sandbox',
     'currency', 'USD',
     'paypal', jsonb_build_object('clientId', ''),
+    'stripe', jsonb_build_object('publishableKey', ''),
     'paddle', jsonb_build_object('clientToken', '', 'priceMap', '{}'::jsonb)
   ),
   now()

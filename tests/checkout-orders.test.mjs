@@ -33,7 +33,7 @@ test('checkout migration creates isolated commerce order tables and guarded RPCs
       create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
       create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
     `)
-    for (const file of ['supabase/schema.sql','supabase/migrations/20260916_listing_foundation.sql','supabase/migrations/202609160002_scoped_admin.sql','supabase/migrations/202609160001_listing_workspace.sql','supabase/migrations/202609160003_storefront_runtime.sql','supabase/migrations/202609180001_cart_validation_quota.sql','supabase/migrations/202609180004_storefront_alignment.sql','supabase/migrations/202609180002_customization_assets.sql','supabase/migrations/202609180003_payment_settings.sql','supabase/migrations/20260919_checkout_orders.sql']) await db.exec(await readFile(file, 'utf8'))
+    for (const file of ['supabase/schema.sql','supabase/migrations/20260916_listing_foundation.sql','supabase/migrations/202609160002_scoped_admin.sql','supabase/migrations/202609160001_listing_workspace.sql','supabase/migrations/202609160003_storefront_runtime.sql','supabase/migrations/202609180001_cart_validation_quota.sql','supabase/migrations/202609180004_storefront_alignment.sql','supabase/migrations/202609180002_customization_assets.sql','supabase/migrations/202609180003_payment_settings.sql','supabase/migrations/20260919_checkout_orders.sql','supabase/migrations/202609290001_stripe_payment.sql']) await db.exec(await readFile(file, 'utf8'))
     const tables = (await db.query("select table_name from information_schema.tables where table_name in ('pod_orders','pod_order_lines','pod_order_events') order by table_name")).rows.map(row => row.table_name)
     assert.deepEqual(tables, ['pod_order_events','pod_order_lines','pod_orders'])
     const functions = (await db.query("select routine_name from information_schema.routines where routine_name in ('pod_admin_update_order_fulfillment','pod_create_pending_order','pod_finalize_order_payment','pod_expire_pending_orders','pod_mark_order_payment_pending') order by routine_name")).rows.map(row => row.routine_name)
@@ -64,6 +64,10 @@ test('checkout migration creates isolated commerce order tables and guarded RPCs
     assert.equal(marked.payment_status, 'AUTHORIZED')
     const paidPending = (await db.query('select public.pod_finalize_order_payment($1::uuid,$2,$3,$4,$5::jsonb) order_json', [pending.id, 'PAID', 'pending_pay', 'pending_complete', '{}'])).rows[0].order_json
     assert.equal(paidPending.payment_status, 'PAID')
+    const stripePayload = { ...payload, orderNumber:'ET-TEST-STRIPE', idempotencyKey:'checkout_stripe_123456', paymentProvider:'STRIPE' }
+    const stripeOrder = (await db.query('select public.pod_create_pending_order($1::jsonb) order_json', [JSON.stringify(stripePayload)])).rows[0].order_json
+    assert.equal(stripeOrder.payment_provider, 'STRIPE')
+    await db.query('select public.pod_finalize_order_payment($1::uuid,$2,$3,$4,$5::jsonb)', [stripeOrder.id, 'CANCELLED', null, 'stripe_cancel_test', '{}'])
     const expiredPayload = { ...payload, orderNumber:'ET-TEST-003', idempotencyKey:'checkout_test_334567' }
     const expired = (await db.query('select public.pod_create_pending_order($1::jsonb) order_json', [JSON.stringify(expiredPayload)])).rows[0].order_json
     await db.query("update public.pod_orders set expires_at=now()-interval '1 minute' where id=$1", [expired.id])

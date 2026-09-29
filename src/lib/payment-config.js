@@ -1,4 +1,4 @@
-export const PAYMENT_PROVIDERS = ['NONE', 'PAYPAL', 'PADDLE']
+export const PAYMENT_PROVIDERS = ['NONE', 'PAYPAL', 'STRIPE', 'PADDLE']
 export const PAYMENT_ENVIRONMENTS = ['sandbox', 'live']
 export const PAYMENT_CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'SGD']
 
@@ -11,6 +11,10 @@ export const DEFAULT_PAYMENT_SETTINGS = Object.freeze({
   environment: 'sandbox',
   currency: 'USD',
   paypal: { clientId: '' },
+  // Hosted Stripe Checkout does not need a publishable key in the browser.
+  // Keep the slot in the normalized contract so a future Elements flow can
+  // be added without changing the settings shape.
+  stripe: { publishableKey: '' },
   paddle: { clientToken: '', priceMap: {} }
 })
 
@@ -28,6 +32,7 @@ export function normalizePaymentSettings(input = {}) {
     environment,
     currency,
     paypal: { clientId: text(source.paypal?.clientId, 240) },
+    stripe: { publishableKey: text(source.stripe?.publishableKey, 240) },
     paddle: { clientToken: text(source.paddle?.clientToken, 240), priceMap }
   }
 }
@@ -35,10 +40,12 @@ export function normalizePaymentSettings(input = {}) {
 export function validatePaymentSettings(input = {}) {
   const settings = normalizePaymentSettings(input)
   const errors = []
-  if (!PAYMENT_PROVIDERS.includes(settings.provider)) errors.push('Choose PayPal, Paddle or disabled.')
+  if (!PAYMENT_PROVIDERS.includes(settings.provider)) errors.push('Choose PayPal, Stripe, Paddle or disabled.')
   if (!PAYMENT_ENVIRONMENTS.includes(settings.environment)) errors.push('Choose sandbox or live mode.')
   if (!PAYMENT_CURRENCIES.includes(settings.currency)) errors.push('Choose a supported store currency.')
   if (settings.provider === 'PAYPAL' && settings.enabled && !settings.paypal.clientId) errors.push('PayPal client ID is required when PayPal is enabled.')
+  // Stripe Checkout is hosted, so no browser key is required. The secret and
+  // webhook signing secret are intentionally checked only on the server.
   if (settings.provider === 'PADDLE' && settings.enabled && !settings.paddle.clientToken) errors.push('Paddle client token is required when Paddle is enabled.')
   if (settings.provider === 'PADDLE' && settings.enabled && !Object.keys(settings.paddle.priceMap).length) errors.push('Paddle needs at least one price ID mapping before checkout can be enabled.')
   return { settings, errors, ok: errors.length === 0 }
@@ -49,6 +56,10 @@ export function paymentServerReadiness(settings, env = {}) {
   if (!normalized.enabled || normalized.provider === 'NONE') return { ready: false, missing: ['Enable a payment provider.'] }
   if (normalized.provider === 'PAYPAL') {
     const missing = ['PAYPAL_CLIENT_SECRET', 'PAYPAL_WEBHOOK_ID'].filter(key => !text(env[key], 500))
+    return { ready: missing.length === 0, missing }
+  }
+  if (normalized.provider === 'STRIPE') {
+    const missing = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'].filter(key => !text(env[key], 500))
     return { ready: missing.length === 0, missing }
   }
   const missing = ['PADDLE_API_KEY', 'PADDLE_WEBHOOK_SECRET'].filter(key => !text(env[key], 500))

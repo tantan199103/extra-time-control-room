@@ -3921,6 +3921,14 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
   mix-blend-mode: multiply;
   transition: transform 280ms ease;
 }
+.home-product-discovery__media-link {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 1;
+}
 .home-product-discovery__panel:hover .home-product-discovery__media img { transform: scale(1.018); }
 .home-product-discovery__media figcaption {
   min-height: 49px;
@@ -4593,54 +4601,112 @@ footer { padding: 64px 32px 24px; background: var(--ink); color: var(--chalk); o
 
 @media (max-width: 780px) {
   .home-product-discovery {
-    padding: 48px 16px 56px;
-    border-top-width: 5px;
-    contain-intrinsic-size: auto 1180px;
+    padding: 20px 0 28px;
+    border-top-width: 4px;
+    contain-intrinsic-size: auto 540px;
   }
-  .home-product-discovery__head { display: block; margin-bottom: 25px; }
-  .home-product-discovery__head h2 { margin-top: 12px; font-size: clamp(38px, 12.2vw, 54px); line-height: .8; }
-  .home-product-discovery__head > p { max-width: 350px; margin-top: 20px; padding: 0; font-size: 11px; line-height: 1.6; }
-  .home-product-discovery__tabs { display: flex; margin: 0 -16px; border-left: 0; border-right: 0; }
-  .home-product-discovery__tabs button { flex: 0 0 126px; min-height: 60px; padding: 9px 10px; }
-  .home-product-discovery__tabs button:first-child { padding-left: 16px; }
-  .home-product-discovery__tabs button span { font-size: 15px; }
+  /* On a phone this is an image shelf, not another block of copy. Keep the
+     heading in the accessibility tree, but let the artwork carry the page. */
+  .home-product-discovery__head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .home-product-discovery__tabs {
+    display: flex;
+    gap: 7px;
+    margin: 0;
+    padding: 0 12px 10px;
+    border: 0;
+    background: transparent;
+  }
+  .home-product-discovery__tabs button {
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    height: 40px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid #8b8a83;
+    border-radius: 50%;
+    background: #ecebe5;
+  }
+  .home-product-discovery__tabs button > svg { grid-row: auto; }
+  .home-product-discovery__tabs button span,
+  .home-product-discovery__tabs button small {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .home-product-discovery__tabs button.is-active { border-color: var(--ink); }
   .home-product-discovery__panel {
     min-height: 0;
-    margin: 0 -16px;
-    display: flex;
-    flex-direction: column;
+    margin: 0;
+    display: block;
     border-left: 0;
     border-right: 0;
   }
-  .home-product-discovery__detail { order: 1; padding: 27px 16px 30px; }
+  .home-product-discovery__detail { display: none; }
   .home-product-discovery__media {
-    order: 2;
-    min-height: 330px;
-    height: 330px;
-    border-top: 1px solid #383834;
+    min-height: 0;
+    height: min(108vw, 430px);
+    border-top: 0;
     border-right: 0;
   }
-  .home-product-discovery__media img { max-height: 330px; }
-  .home-product-discovery__media figcaption { min-height: 42px; inset: auto 10px 10px; padding: 0 11px; }
-  .home-product-discovery__identity { font-size: 8px; }
-  .home-product-discovery__status { margin-top: 17px; }
-  .home-product-discovery__detail h3 { margin-top: 15px; font-size: clamp(35px, 10.7vw, 50px); line-height: .84; }
-  .home-product-discovery__price strong { font-size: 26px; }
-  .home-product-discovery__summary { min-height: 0; margin: 16px 0 20px; font-size: 10px; }
-  .home-product-discovery__facts > div { min-height: 58px; padding: 9px; }
-  .home-product-discovery__facts dd { font-size: 11px; }
-  .home-product-discovery__sizes { margin-top: 18px; }
-  .home-product-discovery__sizes > div { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-  .home-product-discovery__sizes > div::-webkit-scrollbar { display: none; }
-  .home-product-discovery__sizes small { flex: 0 0 auto; }
-  .home-product-discovery__actions { display: grid; grid-template-columns: 1fr 1fr; }
-  .home-product-discovery__actions .button { grid-column: 1 / -1; width: 100%; }
-  .home-product-discovery__designer:last-child { grid-column: 1 / -1; }
+  .home-product-discovery__media img { max-height: none; }
+  .home-product-discovery__media figcaption { display: none; }
   .home-product-discovery__loading,
-  .home-product-discovery__empty { min-height: 520px; }
-  .home-product-discovery__lineup { margin: 0 -16px; border-left: 0; border-right: 0; }
-  .home-product-discovery__lineup-track > button { flex-basis: 232px; min-height: 104px; grid-template-columns: 62px minmax(0, 1fr); }
-  .home-product-discovery__lineup-track img { width: 62px; height: 82px; }
+  .home-product-discovery__empty { min-height: 320px; }
+  .home-product-discovery__lineup {
+    margin: 8px 0 0;
+    border: 0;
+    background: transparent;
+  }
+  .home-product-discovery__lineup-head { display: none; }
+  .home-product-discovery__lineup-track {
+    display: flex;
+    gap: 8px;
+    padding: 0 8px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .home-product-discovery__lineup-track::-webkit-scrollbar { display: none; }
+  .home-product-discovery__lineup-track > button {
+    flex: 0 0 calc((100vw - 40px) / 3);
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+    padding: 0;
+    display: block;
+    border: 0;
+    background: #ecebe5;
+    scroll-snap-align: start;
+  }
+  .home-product-discovery__lineup-track > button.is-active {
+    outline: 2px solid var(--signal);
+    outline-offset: -2px;
+  }
+  .home-product-discovery__lineup-track img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #eeede7;
+  }
+  .home-product-discovery__lineup-track button > span { display: none; }
 }
 
 @media (max-width: 780px) {
