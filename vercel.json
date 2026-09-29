@@ -20,7 +20,8 @@
     "api/newsletter-subscribe.js": { "maxDuration": 15 },
     "api/ai-preview.js": { "maxDuration": 60 },
     "api/customization-order.js": { "maxDuration": 30 },
-    "api/admin-import-fanatics.js": { "maxDuration": 60 }
+    "api/admin-import-fanatics.js": { "maxDuration": 60 },
+    "api/admin-collections.js": { "maxDuration": 60 }
   },
   "headers": [
     {
@@ -137,6 +138,7 @@
     { "source": "/api/ai-listing-copy", "destination": "/api/ai-listing-copy.js" },
     { "source": "/api/ai-listing-media", "destination": "/api/ai-listing-media.js" },
     { "source": "/api/admin-import-fanatics", "destination": "/api/admin-import-fanatics.js" },
+    { "source": "/api/admin-collections", "destination": "/api/admin-collections.js" },
     { "source": "/api/(.*)", "destination": "https://api.jersevo.com/api/$1" },
     { "source": "/custom", "destination": "/index.html" },
     { "source": "/custom/:path*", "destination": "/index.html" },
