@@ -447,9 +447,16 @@ export async function run() {
       .filter(({ value }) => value?.error)
       .map(({ value, row }) => ({ kind: 'page', url: row.url, error: value.error }))
     const items = []
+    const parsedOkUrls = new Set()
+    const pageUrlBySourceId = new Map()
     for (const result of parsedRows) {
       if (result?.error) continue
-      try { items.push(normalizeTopperzProduct(result.parsed, { usedHandles, usedSkus, defaultStock })) }
+      try {
+        const normalized = normalizeTopperzProduct(result.parsed, { usedHandles, usedSkus, defaultStock })
+        items.push(normalized)
+        parsedOkUrls.add(result.row.url)
+        pageUrlBySourceId.set(String(normalized.sourceId || ''), result.row.url)
+      }
       catch (error) { errors.push({ kind: 'normalize', url: result.row.url, error: error instanceof Error ? error.message : String(error) }) }
     }
     let savedItems = []
@@ -495,10 +502,10 @@ export async function run() {
     report.errors.push(...errors)
     const failedUrls = new Set(errors.map(error => error.url).filter(Boolean))
     const failedSourceIds = new Set(errors.map(error => String(error.sourceId || '')).filter(Boolean))
-    const itemBySourceUrl = new Map(items.map(item => [item.sourceUrl, item]))
     for (const row of batch) {
-      const item = itemBySourceUrl.get(row.url)
-      if (item && !failedUrls.has(row.url) && !failedSourceIds.has(String(item.sourceId || ''))) completed.add(row.url)
+      const item = items.find(candidate => pageUrlBySourceId.get(String(candidate.sourceId || '')) === row.url)
+      const parsedSuccessfully = parsedOkUrls.has(row.url)
+      if (parsedSuccessfully && !failedUrls.has(row.url) && !failedSourceIds.has(String(item?.sourceId || ''))) completed.add(row.url)
     }
     if (!dryRun) await persistCheckpoint(identity, completed, report)
     if (typeof global.gc === 'function') global.gc()
