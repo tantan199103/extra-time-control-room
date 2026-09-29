@@ -15,7 +15,7 @@ Stripe is the recommended card checkout for physical products. The browser never
    SITE_URL=https://www.jersevo.com
    ```
 
-3. Register `https://www.jersevo.com/api/payment-webhook` as a Stripe webhook endpoint. Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `payment_intent.succeeded`, `payment_intent.processing` and `payment_intent.payment_failed`.
+3. Register `https://www.jersevo.com/api/payment-webhook` as a Stripe webhook endpoint. Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_processing`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `payment_intent.succeeded`, `payment_intent.processing`, `payment_intent.payment_failed`, `payment_intent.canceled` and `charge.refunded`.
 4. Select **Stripe** in **Admin → Settings → Payment provider**, choose the matching environment/currency, save, and run a Stripe test-mode checkout. Use the Stripe test cards from the Dashboard; do not use a real card during verification.
 
 Stripe signs the raw webhook body with `Stripe-Signature`. The endpoint rejects missing/invalid signatures, checks the event amount/currency against the stored order, and records duplicate event IDs idempotently. Delayed payment methods remain pending until `checkout.session.async_payment_succeeded` arrives.

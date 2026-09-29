@@ -399,6 +399,7 @@ export function buildStripeCheckoutSessionParams({ total, currency, orderNumber:
   }
   const shippingCents = stripeCents(shippingAmount, 'shipping amount')
   const taxCents = stripeCents(taxAmount, 'tax amount')
+  if (items.length + (shippingCents ? 1 : 0) + (taxCents ? 1 : 0) > 100) throw Object.assign(new Error('Stripe Checkout supports up to 100 order lines. Reduce the number of cart lines and try again.'), { status: 422, code: 'STRIPE_TOO_MANY_LINES' })
   if (shippingCents) items.push({ price_data: { currency: normalizedCurrency, unit_amount: shippingCents, product_data: { name: 'Tracked delivery' } }, quantity: 1 })
   if (taxCents) items.push({ price_data: { currency: normalizedCurrency, unit_amount: taxCents, product_data: { name: 'Sales tax' } }, quantity: 1 })
   const expectedTotal = stripeCents(total, 'total')
@@ -428,6 +429,16 @@ export async function createStripeCheckoutSession({ settings, total, currency, o
   // environment selection explicit. Stripe test/live mode is selected by the
   // secret key configured on the server; no key is ever sent to the browser.
   void settings
+  const configuredOrigin = process.env.SITE_URL || process.env.VITE_SITE_URL
+  if (configuredOrigin) {
+    try {
+      const expectedOrigin = new URL(configuredOrigin).origin
+      if (new URL(returnUrl).origin !== expectedOrigin || new URL(cancelUrl).origin !== expectedOrigin) throw Object.assign(new Error('Stripe redirect URLs must use the configured storefront origin.'), { status: 503, code: 'STRIPE_INVALID_REDIRECT' })
+    } catch (error) {
+      if (error?.code === 'STRIPE_INVALID_REDIRECT') throw error
+      throw Object.assign(new Error('SITE_URL must be a valid storefront origin for Stripe Checkout.'), { status: 503, code: 'STRIPE_INVALID_REDIRECT' })
+    }
+  }
   const params = buildStripeCheckoutSessionParams({ total, currency, orderNumber: reference, returnUrl, cancelUrl, customer, shipping, lines, shippingAmount, taxAmount })
   const session = await stripeClient().checkout.sessions.create(params, { idempotencyKey: `checkout-${reference}` })
   const checkoutUrl = safeStripeCheckoutUrl(session?.url)
