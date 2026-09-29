@@ -1,4 +1,5 @@
 # Designer manifests and geometry metadata are byte-checksummed in the local
 # Owayo asset manifest. Keep them LF-stable across Windows and Linux deploys.
 public/designer/owayo/**/*.json text eol=lf
+public/designer/owayo/**/*.svg text eol=lf
 public/designer/owayo/**/*.mirl.bin binary

@@ -4,13 +4,11 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  Bell,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleUserRound,
-  Flame,
   Download,
   Grid2X2,
   Heart,
@@ -523,139 +521,6 @@ function Hero({ content = {}, customProduct }) {
 
 function HomePath() {
   return null
-}
-
-function DropRadar({ onQuickView, products = [] }) {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const now = new Date()
-    const target = new Date()
-    target.setUTCDate(target.getUTCDate() + ((5 - target.getUTCDay() + 7) % 7 || 7))
-    target.setUTCHours(23, 0, 0, 0)
-    const diff = Math.max(0, target.getTime() - now.getTime())
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / 1000 / 60) % 60),
-      seconds: Math.floor((diff / 1000) % 60)
-    }
-  })
-  const [notified, setNotified] = useState(false)
-  const [emailInput, setEmailInput] = useState('')
-  const [showInput, setShowInput] = useState(false)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date()
-      const target = new Date()
-      target.setUTCDate(target.getUTCDate() + ((5 - target.getUTCDay() + 7) % 7 || 7))
-      target.setUTCHours(23, 0, 0, 0)
-      const diff = Math.max(0, target.getTime() - now.getTime())
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-        seconds: Math.floor((diff / 1000) % 60)
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const handleNotify = e => {
-    e.preventDefault()
-    if (!emailInput || !emailInput.includes('@')) return
-    setNotified(true)
-    setShowInput(false)
-  }
-
-  const pad = n => String(n).padStart(2, '0')
-
-  return (
-    <section className="drop-radar" id="drop-radar" aria-labelledby="drop-radar-heading">
-      <div className="drop-radar__inner">
-        <div className="drop-radar__left">
-          <div className="drop-radar__badge-row">
-            <span className="drop-radar__live-pulse"><span className="pulse-dot" aria-hidden="true" /> LIVE DROP 01 ACTIVE</span>
-            <span className="drop-radar__scarcity">LIMITED RUN · 150 PER CLUSTER</span>
-          </div>
-          <h2 id="drop-radar-heading" className="drop-radar__title">
-            NEXT DROP: <em>VINTAGE GOLD.</em>
-          </h2>
-          <p className="drop-radar__desc">
-            Limited batch jerseys, caps, and collector matchday pins. Hand-numbered edition tags and official embroidery details.
-          </p>
-          <div className="drop-radar__clock" aria-label="Countdown to next drop">
-            <div className="drop-radar__unit">
-              <strong>{pad(timeLeft.days)}</strong>
-              <small>DAYS</small>
-            </div>
-            <span className="drop-radar__sep">:</span>
-            <div className="drop-radar__unit">
-              <strong>{pad(timeLeft.hours)}</strong>
-              <small>HRS</small>
-            </div>
-            <span className="drop-radar__sep">:</span>
-            <div className="drop-radar__unit">
-              <strong>{pad(timeLeft.minutes)}</strong>
-              <small>MIN</small>
-            </div>
-            <span className="drop-radar__sep">:</span>
-            <div className="drop-radar__unit">
-              <strong>{pad(timeLeft.seconds)}</strong>
-              <small>SEC</small>
-            </div>
-          </div>
-        </div>
-
-        <div className="drop-radar__right">
-          <div className="drop-radar__card">
-            <div className="drop-radar__card-head">
-              <span className="drop-radar__card-tag"><Flame size={13} aria-hidden="true" /> FRIDAY 7 PM ET</span>
-              <span className="drop-radar__card-status">SCHEDULED</span>
-            </div>
-            <h3 className="drop-radar__card-title">MLB & NFL HERITAGE DROP</h3>
-            <p className="drop-radar__card-p">Dallas, New York, Green Bay & Los Angeles retro cutaways with metallic thread details.</p>
-            
-            <div className="drop-radar__actions">
-              <button 
-                type="button" 
-                className="button button--acid" 
-                onClick={() => navigate('/shop?sort=NEWEST')}
-              >
-                EXPLORE CURRENT DROPS <ArrowRight size={15}/>
-              </button>
-              
-              {!notified ? (
-                !showInput ? (
-                  <button 
-                    type="button" 
-                    className="drop-radar__notify-btn" 
-                    onClick={() => setShowInput(true)}
-                  >
-                    <Bell size={14} aria-hidden="true" /> NOTIFY ME FOR DROP 02
-                  </button>
-                ) : (
-                  <form className="drop-radar__form" onSubmit={handleNotify}>
-                    <input 
-                      type="email" 
-                      placeholder="Enter email for drop alert" 
-                      value={emailInput} 
-                      onChange={e => setEmailInput(e.target.value)} 
-                      required 
-                    />
-                    <button type="submit" className="button button--dark">GET ALERT</button>
-                  </form>
-                )
-              ) : (
-                <div className="drop-radar__success">
-                  <Check size={14} aria-hidden="true" /> You are locked in for Drop 02 alerts (15m before launch).
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
 }
 
 function DropFeature({ product }) {
@@ -1181,16 +1046,6 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
                 <h1 id="taxonomy-products-title">{pageOverride?.title || (productType ? `${team.name} ${productType.label.toLowerCase()} for game day.` : `${team.name} gear for game day.`)}</h1>
                 <strong className="taxonomy-hub-hero__slogan">Wear the team. Make it yours.</strong>
                 <p>{pageDescription}</p>
-                <div className="team-hero__actions">
-                  <button 
-                    type="button" 
-                    className="button button--acid team-hero__custom-btn" 
-                    onClick={() => navigate('/product/touchline?custom=1&team=' + encodeURIComponent(team.name))}
-                  >
-                    <Sparkles size={14} aria-hidden="true" /> CUSTOMIZE {team.name.toUpperCase()} GEAR
-                  </button>
-                  <span className="team-hero__drop-badge"><Flame size={12} aria-hidden="true" /> OFFICIAL ROSTER COLORS</span>
-                </div>
               </div>
               <div className="taxonomy-hub-hero__visual" aria-hidden="true">
                 <img className="taxonomy-hub-hero__action" src={heroImage} alt="" loading="eager" decoding="async" />
@@ -2066,11 +1921,6 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
   // product, league and collection routes are available in one place.
   const homeBlocks = (() => {
     let blocks = [...resolvedHomeBlocks]
-    if (!blocks.some(block => block.id === 'drop-radar')) {
-      const trustAt = blocks.findIndex(block => block.id === 'home-trust')
-      const next = { id:'drop-radar', type:'Live drop radar & schedule', enabled:true, order:0, settings:{} }
-      blocks = trustAt < 0 ? [next,...blocks] : [...blocks.slice(0,trustAt + 1),next,...blocks.slice(trustAt + 1)]
-    }
     if (!blocks.some(block => block.id === 'shop-index')) {
       const insertAt = blocks.findIndex(block => block.id === 'leagues')
       const next = { id:'shop-index', type:'Shop by product / league / collection', enabled:true, order:0, settings:{} }
@@ -2094,7 +1944,6 @@ function Home({ onQuickView, products, navigationProducts = [], theme, collectio
   const renderBlock = block => ({
     hero:<Hero key="hero" content={{ ...homeContent, ...blockCopy('hero') }} customProduct={customProduct}/>,
     'home-trust':<StorefrontTrust key="home-trust" variant="home" content={blockCopy('home-trust')} />,
-    'drop-radar':<DropRadar key="drop-radar" onQuickView={onQuickView} products={products} />,
     'home-path':<HomePath key="home-path" customProduct={customProduct}/>,
     drop:<DropFeature key="drop" product={featured}/>,
     rail:<ProductRail key="rail" title={multiline(blockCopy('rail').title || 'BEST SELLERS.\nYOUR WAY.')} subtitle={blockCopy('rail').subtitle || 'Fan favorites, ready to personalize.'} onQuickView={onQuickView} items={merchandised} products={products} className="product-section--starting"/>,
@@ -2379,18 +2228,6 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
     <div className="filter-bar">
       <div className="desktop-filters">
         <button type="button" className="shop-all-filters" onClick={() => setFilterOpen(true)}><SlidersHorizontal size={14}/> ALL FILTERS{activeCount ? ` · ${activeCount}` : ''}</button>
-        <div className="shop-quick-leagues">
-          {['MLB', 'NFL', 'NBA', 'NCAA', 'SOCCER'].map(code => (
-            <button
-              key={code}
-              type="button"
-              className={`shop-league-chip ${leagueFilter.toUpperCase() === code ? 'is-active' : ''}`}
-              onClick={() => setDiscoveryFacet('league', leagueFilter.toUpperCase() === code ? '' : code)}
-            >
-              {code}
-            </button>
-          ))}
-        </div>
         <label className="catalog-select">SPORT<select value={sportFilter} onChange={event => setDiscoveryFacet('sport',event.target.value)}><option value="">ALL SPORTS</option>{sports.map(item => <option key={item} value={item}>{item}</option>)}</select><ChevronDown size={13}/></label>
         <label className="catalog-select">LEAGUE<select value={leagueFilter} onChange={event => setDiscoveryFacet('league',event.target.value)}><option value="">ALL LEAGUES</option>{availableLeagues.map(item => <option key={item.key} value={item.key}>{item.name}</option>)}</select><ChevronDown size={13}/></label>
         {teamOptions.length > 0 && <label className="catalog-select">TEAM<select value={teamFilter} onChange={event => setTeamFilter(event.target.value)}><option value="ALL">ALL TEAMS</option>{teamOptions.map(t => <option key={t.slug} value={t.slug}>{t.label}</option>)}</select><ChevronDown size={13}/></label>}
@@ -2462,7 +2299,6 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
           </div>
         </div>
         <div className="catalog-compact-bar__side">
-          <span className="catalog-compact-bar__scarcity"><Flame size={12} aria-hidden="true" /> MATCHDAY CAPSULE</span>
           <span className="catalog-compact-bar__badge">{loading && !products.length ? 'Loading products…' : `${resultCount} ${resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}`}</span>
         </div>
       </section>}
