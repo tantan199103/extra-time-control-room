@@ -136,7 +136,7 @@ export function discoveryMenu(index, collections = [], products = []) {
       { label:'Browse by league', links:leagues.map(league => ({ label:`${league.name} teams`, href:leaguePath(league), image:league.media?.src || '' })) }
     ] },
     { id:'custom', label:'Custom', href:'/category/custom-jerseys', sections:[
-      { label:'Create yours', links:[{ label:'Custom jerseys', href:'/custom' },{ label:'Personalized gear', href:'/category/custom-jerseys' }] },
+      { label:'Create yours', links:[{ label:'Custom jerseys', href:'/custom' },{ label:'3D custom kits', href:'/category/custom-jerseys' }] },
       { label:'By sport', links:leagues.slice(0,6).map(league => ({ label:league.name, href:`${leaguePath(league)}?custom=1` })) }
     ] },
     { id:'collections', label:'Collections', href:'/collections', sections:[
@@ -145,7 +145,7 @@ export function discoveryMenu(index, collections = [], products = []) {
     ] },
     { id:'new', label:'New & trending', href:'/shop?sort=NEWEST', sections:[
       { label:'Fresh finds', links:[{ label:'New arrivals', href:'/shop?sort=NEWEST' },{ label:'Fan favorites', href:'/shop' }] },
-      { label:'Shop by interest', links:[{ label:'Custom jerseys', href:'/category/custom-jerseys' },{ label:'Headwear', href:'/category/caps' },{ label:'Collectibles', href:'/category/collectibles' }] }
+      { label:'Shop by interest', links:[{ label:'3D custom kits', href:'/category/custom-jerseys' },{ label:'Headwear', href:'/category/caps' },{ label:'Collectibles', href:'/category/collectibles' }] }
     ] }
   ]
 }

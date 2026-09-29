@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import { products as fallbackProducts, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, initialSelections, isHeadwearProduct, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, resolveVariant, sellableVariants, sortCollectionProducts } from './lib/storefront-model'
+import { custom3DDesignerConfig, hasCustom3DDesigner } from './lib/custom-3d'
 import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, normalizeTeamSlug, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { SHOP_COVER, leagueCover } from './lib/league-covers'
 import { ACCESSORY_CATEGORY_PAGES, ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
@@ -131,7 +132,7 @@ const productBootstrap = readProductBootstrap()
 function readFeaturedCustomProduct() {
   try {
     const product = JSON.parse(document.getElementById('jersevo-custom-product')?.textContent || 'null')
-    return /^[a-z0-9-]+$/i.test(product?.handle || '') ? product : null
+    return product?.custom3d === true && /^[a-z0-9-]+$/i.test(product?.handle || '') ? product : null
   } catch { return null }
 }
 const featuredCustomProduct = readFeaturedCustomProduct()
@@ -183,6 +184,7 @@ function Announcement() {
 }
 
 function customProductTarget(product) {
+  if (!hasCustom3DDesigner(product)) return '/category/custom-jerseys'
   const handle = product?.handle || product?.id
   return handle ? `/product/${encodeURIComponent(handle)}?custom=1` : '/shop'
 }
@@ -191,13 +193,7 @@ function customProductTarget(product) {
 // a small, generic tag contract; private provider/source metadata never needs
 // to be shipped to the browser to build the deep link.
 function listingDesignerConfig(product) {
-  if (product?.designerConfig?.provider && product?.designerConfig?.productId) return product.designerConfig
-  const tags = Array.isArray(product?.tags) ? product.tags.map(value => String(value || '').toLowerCase()) : []
-  const productTag = tags.find(value => value.startsWith('designer-product-'))
-  if (!productTag || !tags.includes('3d-designer')) return null
-  const productId = productTag.slice('designer-product-'.length).toUpperCase()
-  if (!productId) return null
-  return { provider:tags.includes('designer-provider-owayo') ? 'owayo' : 'boombah', productId }
+  return custom3DDesignerConfig(product)
 }
 
 function listingDesignerTarget(product) {
@@ -1100,11 +1096,11 @@ function TaxonomyLanding({ league, team, productType = null, products, discovery
 function CustomHub({ products = [], onQuickView, pageConfig = null }) {
   const [activeLeague, setActiveLeague] = useState('ALL')
   const customProducts = useMemo(() => products
-    .filter(product => product?.customFields?.length && product.status !== 'ARCHIVED')
+    .filter(product => hasCustom3DDesigner(product) && product.status !== 'ARCHIVED')
     .filter(product => activeLeague === 'ALL' || String(product.taxonomy?.league || '').toLowerCase() === activeLeague)
     .slice(0, 8), [products, activeLeague])
   const availableLeagues = useMemo(() => [...new Set(products
-    .filter(product => product?.customFields?.length)
+    .filter(product => hasCustom3DDesigner(product))
     .map(product => String(product.taxonomy?.league || '').toLowerCase())
     .filter(Boolean))].map(key => findLeague(key)).filter(Boolean), [products])
   const featured = customProducts[0]
@@ -1143,7 +1139,7 @@ function CustomHub({ products = [], onQuickView, pageConfig = null }) {
       {show('custom-catalog') && <section className="custom-hub__catalog" aria-labelledby="custom-catalog-title">
         <div className="custom-hub__catalog-head"><div><p>LIVE CUSTOM CATALOG</p><h2 id="custom-catalog-title">Make it yours,<br /><em>your way.</em></h2></div><a href="/category/custom-jerseys" onClick={event => { event.preventDefault(); go('/category/custom-jerseys') }}>VIEW ALL CUSTOM JERSEYS <ArrowRight size={15}/></a></div>
         {availableLeagues.length > 0 && <div className="custom-hub__league-tabs" role="tablist" aria-label="Filter custom jerseys by league"><button type="button" className={activeLeague === 'ALL' ? 'is-active' : ''} onClick={() => setActiveLeague('ALL')}>All</button>{availableLeagues.slice(0, 6).map(league => <button type="button" role="tab" aria-selected={activeLeague === league.key} className={activeLeague === league.key ? 'is-active' : ''} key={league.key} onClick={() => setActiveLeague(league.key)}>{league.name}</button>)}</div>}
-        {customProducts.length ? <div className="custom-hub__product-grid">{customProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView} className="custom-hub__product-card" />)}</div> : <div className="custom-hub__empty"><Sparkles size={20}/><p>Custom pieces are being prepared. Browse the full jersey catalog and look for the <strong>Customizable</strong> badge.</p><button className="button button--dark" onClick={() => go('/category/custom-jerseys')}>BROWSE JERSEYS</button></div>}
+        {customProducts.length ? <div className="custom-hub__product-grid">{customProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView} className="custom-hub__product-card" />)}</div> : <div className="custom-hub__empty"><Sparkles size={20}/><p>Only listings with a connected <strong>3D designer</strong> appear here. More production-ready kits are being prepared.</p><button className="button button--dark" onClick={() => go('/category/custom-jerseys')}>BROWSE 3D KITS</button></div>}
       </section>}
 
       {show('custom-trust') && <section className="custom-hub__trust"><StorefrontTrust compact /></section>}
@@ -1559,7 +1555,7 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
 
 function Home({ onQuickView, products, navigationProducts = [], theme, collections = [], onAdd }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
-  const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct || featured
+  const customProduct = products.find(product => hasCustom3DDesigner(product)) || featuredCustomProduct || featured
   const homePage = resolveThemePage(theme, 'home')
   const homeContent = resolvePageContent(theme, 'home', {
     eyebrow: 'CUSTOM JERSEYS',
@@ -2200,7 +2196,11 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
   const savedAi = readSession('extra-time-ai-preview')
   const initialPreview = savedAi?.productId === product.id && (!savedAi.expiresAt || savedAi.expiresAt > Date.now()) ? savedAi : null
-  const customFields = product.customFields || []
+  const designerTarget = listingDesignerTarget(product)
+  // Exact 3D listings use the designer route as their single personalization
+  // surface. Keep the legacy PDP form for ordinary 2D custom products, but do
+  // not render a second AI form that could produce a mismatched mockup.
+  const customFields = designerTarget ? [] : (product.customFields || [])
   const options = product.options || []
   const sizeName = optionNameLike(product,['size'])
   const headwear = isHeadwearProduct(product)
@@ -2251,7 +2251,11 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const [added,setAdded] = useState(false)
   const [logoConsent,setLogoConsent] = useState(Boolean(savedDraft?.logoConsent))
   const previewReadiness = productPreviewReadiness(customFields)
-  const hasStructuredPreview = previewReadiness.enabled
+  // A synchronized 3D listing must never fall back to the generic AI image
+  // editor: that path can redraw the garment and make name/number placement
+  // drift from the production model. Its only customization entry point is
+  // the exact designer route above.
+  const hasStructuredPreview = !designerTarget && previewReadiness.enabled
   const pageCopy = pageConfig?.content || {}
   const configuredProductBlocks = pageConfig?.blocks || []
   const productEditorialBlocks = (configuredProductBlocks.length ? configuredProductBlocks : [
@@ -2270,7 +2274,6 @@ function ProductPage({ product, products, onAdd, onQuickView, startPersonalized 
   const currentPrice = Number(displayVariant?.price ?? product.price)
   const currentCompare = displayVariant?.compareAt ?? product.compareAt
   const commerceConfig = productCommerceConfig(product)
-  const designerTarget = listingDesignerTarget(product)
   const bulkOffers = commerceConfig.bulkOffers || []
   const estimate = buildDeliveryEstimate(commerceConfig.delivery)
   const soldOut = selectedVariant ? Number(selectedVariant.inventory || 0) < 1 : false
@@ -2861,7 +2864,7 @@ function App() {
   const [installPrompt, setInstallPrompt] = useState(null)
   const [appInstalled, setAppInstalled] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const lastScrollY = useRef(window.scrollY)
-  const customProduct = products.find(product => product.customFields?.length) || featuredCustomProduct
+  const customProduct = products.find(product => hasCustom3DDesigner(product)) || featuredCustomProduct
   const productSlug = path.startsWith('/product/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : ''
   const routeProduct = productSlug ? findStorefrontProduct(products,productSlug) : null
   const collectionHandle = path.startsWith('/collection/') || path.startsWith('/collections/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : new URLSearchParams(search).get('collection')

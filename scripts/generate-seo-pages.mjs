@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/storefront-model.js'
+import { hasCustom3DDesigner } from '../src/lib/custom-3d.js'
 import { ALL_LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
 import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, normalizeAccessoryTaxonomy, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
@@ -220,7 +221,7 @@ function pageHtml(shell, { path, title, description, image, noindex = false, fal
   html = html.replace(/<link\s+rel=["']alternate["'][^>]*hreflang=["'](?:en-US|x-default)["'][^>]*>\s*/gi, '')
   const structured = schema ? `    <script type="application/ld+json" id="route-structured-data">${safeJson(schema)}</script>\n` : ''
   html = html.replace('</head>', `    <link rel="alternate" hreflang="en-US" href="${escapeHtml(canonical)}" />\n    <link rel="alternate" hreflang="x-default" href="${escapeHtml(canonical)}" />\n${structured}  </head>`)
-  if (featuredCustomProduct && !html.includes('id="jersevo-custom-product"')) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:featuredCustomProduct.image })}</script>\n  </head>`)
+  if (featuredCustomProduct && !html.includes('id="jersevo-custom-product"')) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:featuredCustomProduct.image, custom3d:true })}</script>\n  </head>`)
   if (fallback) {
     const marked = `<!-- SEO_FALLBACK_START -->${fallback}<!-- SEO_FALLBACK_END -->`
     html = html.includes('<!-- SEO_FALLBACK_START -->')
@@ -299,9 +300,9 @@ for (const [key, rows] of teamProductsByKey) {
   const [league,team] = key.split('/')
   for (const type of teamProductTypeCounts(rows,{league,team})) teamProductTypeRouteSet.add(type.path)
 }
-featuredCustomProduct = products.find(product => product.customFields?.length && product.inventory > 0 && /jersey/i.test(product.title || ''))
-  || products.find(product => product.customFields?.length && product.inventory > 0)
-const customProducts = products.filter(product => product.customFields?.length).slice(0, 12)
+featuredCustomProduct = products.find(product => hasCustom3DDesigner(product) && product.inventory > 0 && /jersey/i.test(product.title || ''))
+  || products.find(product => hasCustom3DDesigner(product) && product.inventory > 0)
+const customProducts = products.filter(product => hasCustom3DDesigner(product)).slice(0, 12)
 const blockedProducts = [...(await loadBlockedProducts()), ...taxonomyBlockedProducts]
 const collections = await loadCollections()
 const catalogPageOverrides = await loadCatalogPageOverrides()
@@ -320,7 +321,10 @@ for (const product of products) {
   // dropping these fields makes the Admin under-count accessory pages even
   // though the same products are correctly present in the public sitemap.
   const taxonomy = normalizeAccessoryTaxonomy(product.taxonomy ? { ...product, taxonomy:product.taxonomy } : product)
-  const row = { taxonomy:{league:taxonomy.league || '',team:taxonomy.team || '',category:taxonomy.category || '',...(taxonomy.accessoryCategory ? { accessoryCategory:taxonomy.accessoryCategory } : {}),...(taxonomy.accessoryType ? { accessoryType:taxonomy.accessoryType } : {})},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [], ...(product.taxonomy?.brand ? { brands:[product.taxonomy.brand] } : {}) }
+  const designer = hasCustom3DDesigner(product) && product.designerConfig
+    ? { provider:product.designerConfig.provider, productId:product.designerConfig.productId, manifest:product.designerConfig.manifest }
+    : null
+  const row = { taxonomy:{league:taxonomy.league || '',team:taxonomy.team || '',category:taxonomy.category || '',...(taxonomy.accessoryCategory ? { accessoryCategory:taxonomy.accessoryCategory } : {}),...(taxonomy.accessoryType ? { accessoryType:taxonomy.accessoryType } : {})},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [], ...(designer ? { designerConfig:designer } : {}), ...(product.taxonomy?.brand ? { brands:[product.taxonomy.brand] } : {}) }
   const key = JSON.stringify({ ...row, brands:[] })
   const previous = navigationRows.get(key)
   const brands = [...new Set([...(previous?.brands || []), ...(row.brands || [])])]
@@ -385,7 +389,7 @@ await writePage('/shop', pageHtml(shell, {
 }))
 await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute(SHOP_COVER.src))
 
-const customFallbackProducts = customProducts.map(product => `<li><a href="/product/${slug(product.handle)}?custom=1">${escapeHtml(product.title)}</a><span>Personalizable listing</span></li>`).join('')
+const customFallbackProducts = customProducts.map(product => `<li><a href="/product/${slug(product.handle)}?custom=1">${escapeHtml(product.title)}</a><span>3D designer listing</span></li>`).join('')
 await writePage('/custom', pageHtml(shell, {
   path:'/custom',
   title:'Custom jerseys and personalized fan gear | Jersevo',

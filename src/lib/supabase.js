@@ -157,7 +157,9 @@ const STOREFRONT_PAGE_CACHE_TTL = 10 * 60 * 1000
 const STOREFRONT_STALE_CACHE_TTL = 6 * 60 * 60 * 1000
 
 function storefrontSessionCacheKey(cacheKey) {
-  return `jersevo:catalog:v2:${encodeURIComponent(cacheKey)}`
+  // v3 invalidates pages cached before the Custom Lab switched from the
+  // broad custom_fields predicate to the explicit 3D designer contract.
+  return `jersevo:catalog:v3:${encodeURIComponent(cacheKey)}`
 }
 
 function readStorefrontPageCache(cacheKey, { allowStale = false } = {}) {
@@ -222,7 +224,10 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
     }
     else if (groups?.length === 1) query = query.eq('product_group',groups[0])
     else if (groups?.length) query = query.in('product_group',groups)
-    if (parts[1] === 'custom-jerseys') query = query.ilike('product_group','%jersey%').not('custom_fields','eq','[]')
+    // The Custom Lab is a 3D designer catalogue, not a broad
+    // personalization catalogue. Comma and other 2D listings may still have
+    // custom_fields, but only the public 3D marker can enter this route.
+    if (parts[1] === 'custom-jerseys') query = query.contains('tags',['3d-designer'])
   }
   const group = params.get('group')
   const sport = params.get('sport')
@@ -371,7 +376,7 @@ export async function fetchStorefrontNavigationIndex() {
     // TTL.  Let the browser/CDN reuse it instead of downloading hundreds of
     // KB again on every hard refresh; a new deployment naturally changes the
     // URL's representation and revalidates after the TTL.
-    const response = await fetch('/catalog-navigation.json',{cache:'default'})
+    const response = await fetch('/catalog-navigation.json?v=3d-custom-v1',{cache:'default'})
     if (!response.ok) throw new Error(`Navigation index returned ${response.status}`)
     const rows = await response.json()
     return Array.isArray(rows) ? rows : []

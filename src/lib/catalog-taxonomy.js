@@ -1,3 +1,5 @@
+import { hasCustom3DDesigner } from './custom-3d.js'
+
 /**
  * Controlled catalogue values used by the admin listing workspace.
  *
@@ -40,7 +42,7 @@ export const CATALOG_CATEGORY_PAGES = Object.freeze([
   { value:'National Team Jerseys', handle:'national-team-jerseys', label:'National team jerseys', icon:'jersey', intent:'national-teams', description:'Shop national team jerseys and international football stories.' },
   { value:'Football Legends', handle:'football-legends', label:'Football legends', icon:'jersey', intent:'football-legends', description:'Explore football jerseys inspired by legendary players and defining eras.' },
   { value:'Fan Apparel', handle:'fan-apparel', label:'Fan apparel', icon:'apparel', description:'Explore fan apparel, layers and match-day pieces from Jersevo.' },
-  { value:'Custom Jerseys', handle:'custom-jerseys', label:'Custom jerseys', icon:'custom', description:'Choose a fixed jersey design and add the name and number that make it yours.' },
+  { value:'Custom Jerseys', handle:'custom-jerseys', label:'Custom jerseys', icon:'custom', description:'Choose a production-ready 3D kit, change the approved design options and add your roster details.' },
   { value:'Accessories', handle:'accessories', label:'All accessories', icon:'accessories', description:'Shop headwear, bags, cold-weather layers, matchday details, drinkware and giftable fan accessories.' },
   { value:'Collectibles', handle:'collectibles', label:'Collectibles', icon:'collectibles', description:'Browse sports collectibles and keepsakes selected for the archive.' },
   { value:'Fan Gear', handle:'fan-gear', label:'Fan gear', icon:'gear', description:'Browse Jersevo fan gear across leagues, teams and match-day moments.' }
@@ -205,9 +207,7 @@ export function productMatchesCatalogCategory(product = {}, category = {}) {
     return true
   }
   if (target === 'custom jerseys') {
-    const fields = product.customFields || product.custom_fields
-    const jersey = /\bjerseys?\b/i.test(`${taxonomy.category || ''} ${taxonomy.productGroup || ''} ${product.productGroup || product.product_group || ''}`)
-    return Array.isArray(fields) && fields.length > 0 && jersey
+    return hasCustom3DDesigner(product)
   }
   const aliases = {
     caps:['caps','cap','snapback caps','fitted caps','adjustable caps'],

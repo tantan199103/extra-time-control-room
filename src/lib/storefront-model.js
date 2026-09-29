@@ -2,6 +2,7 @@ import { normalizeProduct } from './catalog-model.js'
 
 import { normalizeCatalogTaxonomy } from './league-taxonomy.js'
 import { resolveCollectionArtwork } from './collection-artwork.js'
+import { custom3DDesignerConfig } from './custom-3d.js'
 
 const FALLBACK_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -21,22 +22,7 @@ export function prepareStorefrontProduct(input, persisted = true) {
   // contract is safe to expose to the PDP. It lets a listing open its own 3D
   // editor without leaking source/catalog audit data or falling back to an
   // unrelated "first customizable product".
-  const rawDesigner = product.aiMetadata?.designer || product.ai_metadata?.designer
-  const tagDesigner = (Array.isArray(product.tags) ? product.tags : []).map(value => String(value || '').toLowerCase()).find(value => value.startsWith('designer-product-'))
-  const tagDesignerProduct = tagDesigner ? tagDesigner.slice('designer-product-'.length).toUpperCase() : ''
-  const designerConfig = rawDesigner && typeof rawDesigner === 'object' && !Array.isArray(rawDesigner)
-    ? {
-        provider: String(rawDesigner.provider || '').toLowerCase(),
-        productId: String(rawDesigner.productId || '').trim(),
-        manifest: String(rawDesigner.manifest || '').trim(),
-        defaultDesignId: String(rawDesigner.defaultDesignId || '').trim(),
-        defaultStyleCode: String(rawDesigner.defaultStyleCode || '').trim(),
-        allowedStyleCodes: Array.isArray(rawDesigner.allowedStyleCodes) ? rawDesigner.allowedStyleCodes.map(value => String(value).trim()).filter(Boolean).slice(0, 200) : [],
-        allowedDesignIds: Array.isArray(rawDesigner.allowedDesignIds) ? rawDesigner.allowedDesignIds.map(value => String(value).trim()).filter(Boolean).slice(0, 5000) : []
-      }
-    : tagDesignerProduct
-      ? { provider:'boombah', productId:tagDesignerProduct, manifest:`/designer/boombah/products/${optionSlug(tagDesignerProduct)}.json`, defaultDesignId:'', defaultStyleCode:'', allowedStyleCodes:[], allowedDesignIds:[] }
-      : null
+  const designerConfig = custom3DDesignerConfig(product)
   const { aiMetadata: _privateAiMetadata, ai_metadata: _privateAiMetadataRow, ...publicProduct } = product
   const publicMedia = (product.media || []).map(item => {
     const { bridge: _privateBridgeMetadata, ...media } = item || {}
