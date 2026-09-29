@@ -441,8 +441,15 @@ function AdminWorkspace() {
       // The first page callback may already have received later pages while
       // Theme/Menu/Collections were loading. Do not replace it with page 1.
       if (productResult.source !== 'supabase') {
-        setProductRows([])
-        setCatalogLoad({ source:'error', loaded:0, total:null, complete:false })
+        // A timeout is a transport problem, not proof that the catalogue is
+        // empty. The progressive loader can already have delivered one or
+        // more pages through mergeCatalogPage; keep those rows visible while
+        // the user retries instead of replacing them with the six-row demo
+        // fallback (or a blank table).
+        setProductRows(current => current)
+        setCatalogLoad(current => current.loaded > 0
+          ? { ...current, source:'partial', complete:false }
+          : { source:'error', loaded:0, total:null, complete:false })
       }
       if (themeResult.data) setThemeDraft(themeResult.data)
       setThemeSource(themeResult.source || 'preview')

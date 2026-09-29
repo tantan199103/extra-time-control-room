@@ -2147,6 +2147,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
   const pagedProducts = serverPaginated ? shown : shown.slice((currentPage - 1) * pageSize, currentPage * pageSize)
   const clientFiltered = sizeFilter !== 'ALL' || inStock
   const resultCount = clientFiltered ? shown.length : serverPaginated ? Number(pagination?.total || shown.length) : shown.length
+  const resultCountSuffix = !clientFiltered && serverPaginated && pagination?.total == null ? '+' : ''
 
   useEffect(() => {
     const next = new URL(window.location.href)
@@ -2267,7 +2268,7 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
           </div>
         </div>
         <div className="catalog-compact-bar__side">
-          <span className="catalog-compact-bar__badge">{loading && !products.length ? 'Loading products…' : `${resultCount} ${resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}`}</span>
+          <span className="catalog-compact-bar__badge">{loading && !products.length ? 'Loading products…' : `${resultCount}${resultCountSuffix} ${resultCount === 1 ? 'PRODUCT' : 'PRODUCTS'}`}</span>
         </div>
       </section>}
        {!isRootShop && category && <section className={`category-intro section${accessoryBrowseLinks.length ? ' category-intro--accessories' : ''}`}><p>{pageOverride?.description || category.description || pageCopy.supporting}</p>{accessoryBrowseLinks.length ? <div className="category-intro__browse"><span>{accessoryBrowseLabel}</span><nav aria-label={accessoryBrowseLabel}>{accessoryBrowseLinks.map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav></div> : <nav aria-label="Related product categories">{CATALOG_CATEGORY_PAGES.filter(item => item.handle !== category.handle && products.some(product => productMatchesCatalogCategory(product,item))).slice(0,5).map(item => <a key={item.handle} href={`/category/${item.handle}`} onClick={event => { event.preventDefault(); navigate(`/category/${item.handle}`) }}><CategoryIcon kind={item.icon} size={15}/>{item.label}<ArrowRight size={13}/></a>)}</nav>}</section>}

@@ -267,7 +267,7 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   return query
 }
 
-export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, basePath = '/shop', search = '' } = {}) {
+export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, basePath = '/shop', search = '', includeCount = false } = {}) {
   if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
   const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
@@ -282,11 +282,33 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
       return { data:[], total:0, page:safePage, pageSize:safeSize, source:'supabase', error:null }
     }
   }
-  const cacheKey = `${safePage}|${safeSize}|${basePath}|${search}`
+  // A home-page request intentionally skips the count so it can paint its
+  // twelve featured cards immediately.  Keep counted and uncounted pages in
+  // separate caches; otherwise a later Shop request could reuse the home
+  // snapshot and incorrectly report only the first page (for example 26/36)
+  // as the size of the catalogue.
+  const cacheKey = `${safePage}|${safeSize}|${basePath}|${search}|${includeCount ? 'count' : 'page'}`
   const cached = readStorefrontPageCache(cacheKey)
   if (cached) return cached.value
   const sort = new URLSearchParams(search).get('sort') || 'FEATURED'
   const from = (safePage - 1) * safeSize
+  const countPromise = includeCount && safePage === 1
+    ? (async () => {
+      const controller = new AbortController()
+      const timer = globalThis.setTimeout(() => controller.abort(), 4500)
+      try {
+        let countQuery = supabase.from('pod_products').select('id', { count:'exact', head:true }).eq('status','PUBLISHED')
+        countQuery = applyStorefrontRouteFilters(countQuery,{basePath,search})
+        if (typeof countQuery.abortSignal === 'function') countQuery = countQuery.abortSignal(controller.signal)
+        const result = await countQuery
+        return result.error ? null : Number.isFinite(Number(result.count)) ? Number(result.count) : null
+      } catch {
+        return null
+      } finally {
+        globalThis.clearTimeout(timer)
+      }
+    })()
+    : Promise.resolve(null)
   const fetchPage = async () => {
     // Counting the full catalogue is deliberately kept out of the card query.
     // Even a planned count can badly underestimate JSON taxonomy filters (for
@@ -314,7 +336,8 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
     if (stale) return { ...stale.value, source:'cache', stale:true, error:error.message || 'The live catalogue could not be refreshed.' }
     return { data:[],total:null,page:safePage,pageSize:safeSize,source:'unavailable',error:error.message || 'Published catalogue could not be loaded.' }
   }
-  const value = { data:(data || []).map(row => prepareStorefrontProduct(row)), total:null, page:safePage, pageSize:safeSize, source:'supabase', error:null }
+  const total = await countPromise
+  const value = { data:(data || []).map(row => prepareStorefrontProduct(row)), total, page:safePage, pageSize:safeSize, source:'supabase', error:null }
   writeStorefrontPageCache(cacheKey,value)
   return value
 }
