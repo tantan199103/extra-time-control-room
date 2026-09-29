@@ -98,6 +98,23 @@ export default async function handler(request, response) {
       const page = positiveInt(params.page, 1, 100000)
       const pageSize = positiveInt(params.pageSize, 50, 100)
       const from = (page - 1) * pageSize
+      // An empty editorial collection should resolve immediately.  Starting a
+      // counted inner join from pod_products can make PostgREST scan the full
+      // catalogue even when the membership relation has no rows, which ends
+      // in a statement timeout and leaves the Admin editor looking stuck.
+      // The collection_id/product_id primary key makes this bounded probe
+      // index-backed; populated collections continue through the normal join
+      // so existing filtering and pagination semantics stay unchanged.
+      if (collectionId) {
+        const probe = await client.from('pod_collection_products')
+          .select('product_id')
+          .eq('collection_id', collectionId)
+          .limit(1)
+        if (probe.error) throw probe.error
+        if (!Array.isArray(probe.data) || probe.data.length === 0) {
+          return sendJson(response, 200, { products: [], total: 0, page, pageSize })
+        }
+      }
       const projection = collectionId
         ? `${catalogFields},collection_membership:pod_collection_products!inner(collection_id)`
         : catalogFields
