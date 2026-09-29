@@ -555,10 +555,13 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
   // and starts hitting PostgREST's statement timeout around row 20k. Use a
   // stable keyset cursor instead: each page starts after the last
   // `updated_at,id` pair that was returned by the previous page.
-  const readPage = async (page, cursor = null) => {
+  const readPage = async (page, cursor = null, { withVariantCounts = includeVariantCount } = {}) => {
+    const projection = withVariantCounts
+      ? select
+      : fields
     for (let attempt = 0; attempt < 3; attempt += 1) {
-      let query = supabase.from('pod_products').select(select, page === 0 ? { count: 'exact' } : undefined)
-      if (includeVariantCount) query = query.eq('active_variants.status', 'ACTIVE').eq('draft_variants.status', 'DRAFT')
+      let query = supabase.from('pod_products').select(projection, page === 0 ? { count: 'exact' } : undefined)
+      if (withVariantCounts) query = query.eq('active_variants.status', 'ACTIVE').eq('draft_variants.status', 'DRAFT')
       if (cursor?.updatedAt && cursor?.id) {
         const updatedAt = String(cursor.updatedAt).replace(/[(),]/g, '')
         const id = String(cursor.id).replace(/[(),]/g, '')
@@ -582,8 +585,8 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
     }
   }
 
-  const normalizeSummaryPage = rows => rows.map(row => {
-    const countOf = key => Array.isArray(row[key]) && row[key][0]?.count != null ? Number(row[key][0].count) : null
+  const normalizeSummaryPage = (rows, withVariantCounts = includeVariantCount) => rows.map(row => {
+    const countOf = key => withVariantCounts && Array.isArray(row[key]) && row[key][0]?.count != null ? Number(row[key][0].count) : null
     const normalized = normalizeProduct({
       ...row,
       pod_product_variants: [],
@@ -599,7 +602,7 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
   // budget. The cursor keeps each request bounded while the 1,000-row page
   // keeps the full 30k+ catalogue load to a few dozen requests.
   const first = await readPage(0)
-  const firstPage = normalizeSummaryPage(first.rows)
+  const firstPage = normalizeSummaryPage(first.rows, includeVariantCount)
   const total = first.total
   const firstDone = firstPage.length < ADMIN_PRODUCT_PAGE_SIZE || total != null && firstPage.length >= total
   onPage?.(firstPage, { page: 0, loaded: firstPage.length, total, done: firstDone })
@@ -609,9 +612,22 @@ async function fetchAdminProductPages(fields, includeVariantCount = false, { onP
     const rows = []
     let page = 1
     let cursor = first.cursor
+    let withVariantCounts = includeVariantCount
     while (page < ADMIN_PRODUCT_MAX_PAGES && cursor) {
-      const result = await readPage(page, cursor)
-      const chunk = normalizeSummaryPage(result.rows)
+      let result
+      try {
+        result = await readPage(page, cursor, { withVariantCounts })
+      } catch (error) {
+        // Variant relation counts are useful for the first catalogue page but
+        // become too expensive deep in a large imported catalogue. Retry the
+        // same cursor with the lean listing projection and keep the rest of
+        // the stream in that mode instead of turning one slow page into a
+        // global Admin timeout/banner.
+        if (!withVariantCounts) throw error
+        withVariantCounts = false
+        result = await readPage(page, cursor, { withVariantCounts:false })
+      }
+      const chunk = normalizeSummaryPage(result.rows, withVariantCounts)
       rows.push(...chunk)
       const loaded = firstPage.length + rows.length
       const reachedEnd = chunk.length < ADMIN_PRODUCT_PAGE_SIZE || total != null && loaded >= total
@@ -1178,11 +1194,16 @@ export async function fetchAdminCollectionMembership(collectionId) {
   if (!id) return { data:null, source:'error', error:'Collection ID is required.' }
   if (!supabase) return { data:null, source:'error', error:'Supabase is not configured.' }
   try {
-    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, [id])
-    let hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
+    // Assignment editing only needs the link table.  Asking PostgREST to
+    // join every linked product just to derive a live count is slow under the
+    // public RLS policy and can leave the editor spinner running. Hydrate the
+    // lean link projection first; the joined status projection remains a
+    // compatibility fallback for projects that require it.
+    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY, [id])
+    let hasProductStatus = false
     if (linkResult.error) {
-      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY, [id])
-      hasProductStatus = false
+      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, [id])
+      hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
     }
     if (linkResult.error) return { data:null, source:'error', error:linkResult.error.message }
     const links = (linkResult.links || []).sort((a,b) => Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.product_id).localeCompare(String(b.product_id)))
@@ -1219,13 +1240,13 @@ export async function fetchAdminCollections({ includeMembership = false } = {}) 
     // Read product status through the existing foreign key in the membership
     // pages. This path is retained for explicit refreshes and bulk operations.
     const collectionIds = (data || []).map(collection => collection.id)
-    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, collectionIds)
-    let hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
+    let linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY, collectionIds)
+    let hasProductStatus = false
     if (linkResult.error) {
       // Older projects may not expose the relationship in PostgREST yet. The
       // membership editor still works with the lean legacy projection.
-      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS_LEGACY, collectionIds)
-      hasProductStatus = false
+      linkResult = await fetchCollectionLinks(ADMIN_COLLECTION_LINK_FIELDS, collectionIds)
+      hasProductStatus = !linkResult.error && (linkResult.links || []).some(link => collectionStatusFromLink(link) !== '')
     }
     if (linkResult.error) return { data:[], source:'error', error:linkResult.error.message }
 
