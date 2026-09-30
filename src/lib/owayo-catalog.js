@@ -80,5 +80,8 @@ export function owayoCatalogSummary(rows = OWAYO_CATALOG_V1) {
 }
 
 export function owayoFamilyById(id, rows = OWAYO_CATALOG_V1) {
-  return rows.find(row => row.id === id || row.key === id) || null
+  const exact = rows.find(row => row.id === id)
+  if (exact) return exact
+  const matches = rows.filter(row => row.key === id)
+  return matches.length === 1 ? matches[0] : null
 }

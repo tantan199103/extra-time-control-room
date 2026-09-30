@@ -1837,7 +1837,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     <header className="custom-designer__header">
       <button type="button" className="custom-designer__back" onClick={() => onNavigate?.('/custom')}><ArrowLeft size={17}/> Custom lab</button>
       <div><span>Jersevo 3D kit builder</span><strong>{stripBoombahBrandingText(manifest.product.name)}</strong></div>
-      <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${manifestIsBoombah(manifest) ? 'Teamwear' : 'Cycling'} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
+      <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${manifestIsBoombah(manifest) ? 'Teamwear' : (manifest?.product?.sportLabel || manifest?.product?.catalogGroupLabel || 'Sportswear')} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
     </header>
     <div className="custom-designer__workspace">
       <section className="designer-stage" aria-label="3D jersey workspace">
