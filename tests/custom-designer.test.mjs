@@ -7,9 +7,9 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
 import { STOREFRONT_STATIC_ROUTES } from '../src/lib/storefront-model.js'
-import { normalizeDesignerSpec } from '../api/customization-order.js'
+import { normalizeDesignerSpec, validateDesignerAssetRefs } from '../api/customization-order.js'
 import { brandColorIndices } from '../scripts/strip-owayo-branding.mjs'
-import { normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, owayoPlacementUvTransform, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PRINT_AREA_GROUPS } from '../src/lib/owayo-personalization.js'
+import { normalizeOwayoLayer, normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, owayoPlacementUvTransform, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PRINT_AREA_GROUPS } from '../src/lib/owayo-personalization.js'
 import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -135,6 +135,12 @@ test('3D design handoff is bounded and keeps the production roster server-side',
     colors:{ A:'#111311', B:'#F3ED45' },
     text:{ team:'JERSEVO', name:'RIDER', number:'90', scale:1, color:'#F8F8F4' },
     logo:{ name:'crest.png', x:4, y:-4, scale:4, rotation:400, placement:'right-sleeve' },
+    version:3,
+    layers:[
+      { id:'name-back', kind:'name', placement:'back-upper', x:-4, scale:9 },
+      { id:'number-back', kind:'number', placement:'back-center', rotation:90 },
+      { id:'crest-chest', kind:'logo', placement:'front-left-chest', assetIndex:1 }
+    ],
     roster:Array.from({ length:120 }, (_, index) => ({ name:`Player ${index}`, number:`${index}x`, size:'M' }))
   })
   assert.equal(spec.source, 'JERSEVO_3D_DESIGNER')
@@ -142,9 +148,21 @@ test('3D design handoff is bounded and keeps the production roster server-side',
   assert.equal(spec.logo.x, 1)
   assert.equal(spec.logo.rotation, 180)
   assert.equal(spec.logo.placement, 'right-sleeve')
+  assert.equal(spec.version, 3)
+  assert.deepEqual(spec.layers.map(layer => layer.kind), ['name','number','logo'])
+  assert.equal(spec.layers[0].x, -1)
+  assert.equal(spec.layers[0].scale, 1.8)
+  assert.equal(spec.layers[2].assetIndex, 1)
   assert.equal(spec.roster[0].number, '0')
   assert.equal(spec.manifest, '/designer/owayo/cycling-c3/manifest.json')
   assert.throws(() => normalizeDesignerSpec({ source:'external' }), /not supported/)
+  assert.throws(() => normalizeDesignerSpec({ ...spec, layers:Array.from({ length:9 }, (_, index) => ({ id:`logo-${index}`, kind:'logo', assetIndex:index })) }), /up to eight logo layers/)
+  assert.throws(() => normalizeDesignerSpec({ ...spec, layers:[{ id:'logo-a', kind:'logo', assetIndex:0 }, { id:'logo-b', kind:'logo', assetIndex:0 }] }), /distinct uploaded asset/)
+  const securedSpec = { ...spec, layers:spec.layers.map(layer => layer.kind === 'logo' ? { ...layer, assetIndex:0 } : layer) }
+  assert.equal(validateDesignerAssetRefs(securedSpec, [{ bucket:'customer-references' }]).length, 1)
+  assert.throws(() => validateDesignerAssetRefs(spec, [{ bucket:'customer-references' }]), /Every 3D logo layer/)
+  assert.throws(() => validateDesignerAssetRefs({ ...spec, layers:[] }, [{ bucket:'customer-references' }]), /not attached/)
+  assert.throws(() => validateDesignerAssetRefs(securedSpec, [{}, {}]), /Every uploaded 3D logo asset/)
 })
 
 test('Owayo personalization preview is deterministic and roster-backed', () => {
@@ -164,6 +182,20 @@ test('Owayo personalization preview is deterministic and roster-backed', () => {
   assert.equal(normalizeOwayoPersonalization({ placement:'back' }).placement, 'back-center')
   assert.equal(normalizeOwayoPersonalization({ placement:'front' }).placement, 'front-center')
   assert.deepEqual(normalizeOwayoLogo({ name:' crest.svg ', placement:'unknown', x:9, scale:0 }), { name:'crest.svg', x:1, y:0, scale:.25, rotation:0, placement:'front-center' })
+})
+
+test('Owayo independent layers are bounded, typed and assigned unique IDs', () => {
+  assert.deepEqual(normalizeOwayoLayer({ id:' crest ', kind:'logo', placement:'right-sleeve', x:9, y:-9, scale:8, rotation:900, assetIndex:99 }), {
+    id:'crest', kind:'logo', placement:'right-sleeve', x:1, y:-1, scale:2, rotation:180, name:'', assetIndex:7
+  })
+  const layers = normalizeOwayoLayers([
+    { id:'repeat', kind:'name', placement:'back-upper' },
+    { id:'repeat', kind:'number', placement:'back-center' },
+    { id:'mark', kind:'logo', placement:'front-left-chest', assetIndex:2 }
+  ])
+  assert.equal(layers.length, 3)
+  assert.equal(new Set(layers.map(layer => layer.id)).size, 3)
+  assert.deepEqual(layers.map(layer => layer.kind), ['name','number','logo'])
 })
 
 test('Owayo roster keeps display sizes and source variant codes aligned', () => {
@@ -191,20 +223,25 @@ test('Owayo text panel exposes a real same-on-all contract', async () => {
   assert.match(source, /normalizeOwayoRoster\(state\.roster, manifest\?\.product\?\.sizes/)
 })
 
-test('3D stage binds Owayo text to the Back UV shader instead of a floating text plane', async () => {
+test('3D stage composites independent Owayo layers into garment UV shaders', async () => {
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
   assert.match(source, /personalizationMap/)
   assert.match(source, /personalizationEnabled/)
-  assert.match(source, /applyOwayoPersonalization\(runtime, textMap, normalizedText\.placement\)/)
-  assert.match(source, /owayoPlacementPartNames\(\[\.\.\.runtime\.partMeshes\.keys\(\)\], placement\)/)
+  assert.match(source, /buildOwayoLayerTextures\(text, normalizedLayers\)/)
+  assert.match(source, /applyOwayoLayers\(runtime, textures\)/)
+  assert.match(source, /layerTextures:new Map\(\)/)
 })
 
-test('Owayo logos and alternate text sides bind to garment UV materials', async () => {
+test('Owayo logos and text layers bind to independent garment areas', async () => {
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
   assert.match(source, /uniform sampler2D logoMap/)
-  assert.match(source, /applyOwayoLogo\(runtime, texture, normalizedLogo\.placement\)/)
+  assert.match(source, /owayoPlacementSurface\(layer\.placement\)/)
   assert.match(source, /owayoPlacementPartNames/)
   assert.match(source, /Print area/)
+  assert.match(source, /Add name/)
+  assert.match(source, /Add number/)
+  assert.match(source, /Add logo/)
+  assert.match(source, /migrateDesignerLayers/)
   assert.match(source, /productId:manifest\?\.product\?\.id \|\| state\.productId/)
   assert.deepEqual(owayoPlacementPartNames(['LeftArm', 'Keillinks'], 'left-sleeve'), ['LeftArm'])
   assert.deepEqual(owayoPlacementPartNames(['LeftCuff', 'LeftArm'], 'left-sleeve'), ['LeftArm'])
@@ -227,13 +264,13 @@ test('Owayo print areas cover the torso, back and sleeves without duplicating ce
   assert.deepEqual(owayoPlacementUvTransform('FrontLeftPart', 'front-left-chest', { minX:.08, maxX:.94 }), { scaleX:1, scaleY:1, offsetX:0, offsetY:0 })
 })
 
-test('placement editor exposes a shared drag pad for text and logos', async () => {
+test('placement editor exposes a drag pad for every selected text and logo layer', async () => {
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
   assert.match(source, /function PlacementPad\(/)
   assert.match(source, /Drag to position/)
   assert.match(source, /Arrow keys make fine adjustments/)
-  assert.match(source, /<PlacementPad value=\{state\.text\}/)
-  assert.match(source, /<PlacementPad value=\{state\.logo\}/)
+  assert.match(source, /<PlacementPad value=\{activeLayer\} onChange=\{setLayer\}/)
+  assert.match(source, /<PlacementPad value=\{activeLayer\} onChange=\{patch => setLayer\(activeLayer\.id, patch\)\}/)
 })
 
 test('custom hub template rail uses complete 3D garment captures', async () => {

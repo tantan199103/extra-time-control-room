@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 import { assertCustomerAsset } from './_logo-request.js'
-import { normalizeOwayoLogo, normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
+import { normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
@@ -44,9 +44,13 @@ export function normalizeDesignerSpec(value) {
   }))
   if (!roster.length) throw Object.assign(new Error('The 3D design needs at least one player.'), { status:422 })
   const text = normalizeOwayoPersonalization(textSource, roster)
+  const layers = normalizeOwayoLayers(value.layers)
+  if (layers.filter(layer => layer.kind === 'logo').length > 8) throw Object.assign(new Error('A 3D design can contain up to eight logo layers.'), { status:422 })
+  const logoAssetIndexes = layers.filter(layer => layer.kind === 'logo').map(layer => layer.assetIndex)
+  if (new Set(logoAssetIndexes).size !== logoAssetIndexes.length) throw Object.assign(new Error('Every 3D logo layer needs a distinct uploaded asset reference.'), { status:422 })
   return {
     source:'JERSEVO_3D_DESIGNER',
-    version:Math.max(1, Math.min(2, Number(value.version) || 1)),
+    version:Math.max(1, Math.min(3, Number(value.version) || 1)),
     provider,
     listingId:safeText(value.listingId, 160),
     listingHandle:safeText(value.listingHandle, 160),
@@ -68,8 +72,26 @@ export function normalizeDesignerSpec(value) {
     } : null,
     text,
     logo:normalizeOwayoLogo(logoSource),
+    layerVersion:layers.length ? 1 : 0,
+    layers,
     roster
   }
+}
+
+export function validateDesignerAssetRefs(designer, designerAssetRefs = []) {
+  const refs = Array.isArray(designerAssetRefs) ? designerAssetRefs : []
+  const logoLayers = designer?.layers?.filter(layer => layer.kind === 'logo') || []
+  if (logoLayers.some(layer => !refs[layer.assetIndex])) {
+    throw Object.assign(new Error('Every 3D logo layer must reference its securely uploaded logo asset.'), { status:422 })
+  }
+  if (refs.length && !logoLayers.length) {
+    throw Object.assign(new Error('The uploaded 3D logo assets are not attached to a logo layer.'), { status:422 })
+  }
+  const referencedIndexes = new Set(logoLayers.map(layer => layer.assetIndex))
+  if (refs.some((_, index) => !referencedIndexes.has(index))) {
+    throw Object.assign(new Error('Every uploaded 3D logo asset must be attached to a logo layer.'), { status:422 })
+  }
+  return logoLayers
 }
 
 async function publishedListing(client, productId) {
@@ -140,6 +162,17 @@ export default async function handler(request, response) {
         throw Object.assign(new Error('A customer reference does not belong to this request.'), { status:422 })
       }
     }
+    const incomingDesignerAssetRefs = Array.isArray(body.designerAssetRefs) ? body.designerAssetRefs : []
+    if (incomingDesignerAssetRefs.length > 8) throw Object.assign(new Error('A design can contain up to eight uploaded logos.'), { status:422 })
+    if (incomingDesignerAssetRefs.length && !schema.some(field => field.type === 'logo')) throw Object.assign(new Error('This listing does not accept logo layers.'), { status:422 })
+    const designerAssetRefs = incomingDesignerAssetRefs.map(raw => {
+      try {
+        return assertCustomerAsset(product.id, identityHash, raw, { kind:'logo' })
+      } catch (error) {
+        if (error?.status) throw error
+        throw Object.assign(new Error('A 3D logo layer does not belong to this request.'), { status:422 })
+      }
+    })
     const aiPreviewId = safeText(body.aiPreviewId,180)
     const aiPreviewUrl = safeText(body.aiPreviewUrl, 1600)
     if (aiPreviewUrl && !/^https:\/\//i.test(aiPreviewUrl)) throw Object.assign(new Error('AI preview must be a secure stored URL.'), { status:422 })
@@ -168,7 +201,13 @@ export default async function handler(request, response) {
     }
     if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
     const designer = normalizeDesignerSpec(body.designer)
+    validateDesignerAssetRefs(designer, designerAssetRefs)
     validateListingDesigner(product, designer)
+
+    const storedAssetRefs = {
+      ...assetRefs,
+      ...Object.fromEntries(designerAssetRefs.map((asset, index) => [`designer-logo-${index + 1}`, asset]))
+    }
 
     const payload = {
       listingId:product.id,
@@ -180,6 +219,7 @@ export default async function handler(request, response) {
       unitPrice:Number(variant.price),
       fields,
       assetRefs,
+      designerAssetRefs,
       note,
       aiPreviewUrl:aiPreviewUrl || null,
       aiPreviewStorage,
@@ -196,7 +236,7 @@ export default async function handler(request, response) {
       template_version:null,
       listing_revision:product.updated_at,
       custom_schema:schema,
-      asset_refs:assetRefs,
+      asset_refs:storedAssetRefs,
       ai_preview_id:aiPreviewId || null,
       idempotency_key:idempotencyKey,
       session_hash:identityHash,

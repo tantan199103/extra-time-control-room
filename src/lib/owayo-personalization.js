@@ -20,8 +20,11 @@ const PLACEMENT_ALIASES = Object.freeze({
 
 const PLACEMENT_PRESETS = Object.freeze({
   'front-center': Object.freeze({ surface:'front', spanFront:true, centerX:.5, centerY:.46, logoHeight:.2, logoWidth:.66 }),
-  'front-left-chest': Object.freeze({ surface:'front', centerX:.5, centerY:.28, logoHeight:.16, logoWidth:.58 }),
-  'front-right-chest': Object.freeze({ surface:'front', centerX:.5, centerY:.28, logoHeight:.16, logoWidth:.58 }),
+  // The front canvas represents the complete torso. Each chest therefore
+  // owns one quarter-center so multiple independent layers can share a single
+  // composited UV map without being duplicated across the zip.
+  'front-left-chest': Object.freeze({ surface:'front', centerX:.75, centerY:.28, logoHeight:.16, logoWidth:.29 }),
+  'front-right-chest': Object.freeze({ surface:'front', centerX:.25, centerY:.28, logoHeight:.16, logoWidth:.29 }),
   'front-lower': Object.freeze({ surface:'front', spanFront:true, centerX:.5, centerY:.67, logoHeight:.2, logoWidth:.66 }),
   'back-upper': Object.freeze({ surface:'back', centerX:.5, centerY:.25, logoHeight:.2, logoWidth:.62 }),
   'back-center': Object.freeze({ surface:'back', centerX:.5, centerY:.46, logoHeight:.22, logoWidth:.66 }),
@@ -31,6 +34,7 @@ const PLACEMENT_PRESETS = Object.freeze({
 })
 
 const PLACEMENTS = new Set(Object.keys(PLACEMENT_PRESETS))
+const LAYER_KINDS = new Set(['team', 'name', 'number', 'logo'])
 
 export const OWAYO_PRINT_AREA_GROUPS = Object.freeze([
   Object.freeze({ label:'Front', options:Object.freeze([
@@ -238,6 +242,40 @@ export function normalizeOwayoLogo(input = {}) {
     rotation: clamp(input?.rotation, -180, 180, 0),
     placement
   }
+}
+
+/**
+ * Normalize one independently movable personalization layer. Image bytes stay
+ * browser-side; the order contract carries only the bounded placement plus an
+ * index into separately verified private logo assets.
+ */
+export function normalizeOwayoLayer(input = {}, index = 0) {
+  const kindCandidate = clean(input?.kind, 16).toLowerCase()
+  const kind = LAYER_KINDS.has(kindCandidate) ? kindCandidate : 'name'
+  const isLogo = kind === 'logo'
+  return {
+    id:clean(input?.id, 80) || `${kind}-${index + 1}`,
+    kind,
+    placement:normalizeOwayoPlacement(input?.placement, isLogo ? 'front-left-chest' : 'back-center'),
+    x:clamp(input?.x, -1, 1, 0),
+    y:clamp(input?.y, -1, 1, 0),
+    scale:clamp(input?.scale, isLogo ? .25 : .55, isLogo ? 2 : 1.8, 1),
+    rotation:clamp(input?.rotation, isLogo ? -180 : -30, isLogo ? 180 : 30, 0),
+    name:isLogo ? clean(input?.name, 160) : '',
+    assetIndex:isLogo ? Math.round(clamp(input?.assetIndex, 0, 7, 0)) : null
+  }
+}
+
+export function normalizeOwayoLayers(layers = []) {
+  const seen = new Set()
+  return (Array.isArray(layers) ? layers : []).slice(0, 24).flatMap((layer, index) => {
+    const normalized = normalizeOwayoLayer(layer, index)
+    let layerId = normalized.id
+    if (seen.has(layerId)) layerId = `${normalized.kind}-${index + 1}`
+    while (seen.has(layerId)) layerId = `${layerId}-${seen.size + 1}`
+    seen.add(layerId)
+    return [{ ...normalized, id:layerId }]
+  })
 }
 
 /**
