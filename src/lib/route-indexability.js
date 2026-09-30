@@ -11,6 +11,21 @@ const TRACKING_PARAM = /^(?:utm_[a-z0-9_]+|gclid|dclid|fbclid|msclkid|mc_[a-z0-9
 const CATALOG_BASE = /^(?:\/shop|\/category\/[^/]+|\/league\/[^/]+|\/team\/[^/]+\/[^/]+(?:\/[^/]+)?|\/(?:collection|collections)\/[^/]+)$/
 const PRODUCT_ROUTE = /^\/product\/[^/]+$/
 
+// The Custom Studio remains reachable by direct links while its provider
+// catalogue is in a controlled preview. Keep the temporary publishing state
+// in the same URL contract used by runtime metadata and the SEO generator.
+export const STAGED_CUSTOM_PATHS = Object.freeze(new Set([
+  '/custom',
+  '/custom/design',
+  '/category/custom-jerseys'
+]))
+
+function isStagedCustomPath(path) {
+  return STAGED_CUSTOM_PATHS.has(path)
+    || path.startsWith('/custom/')
+    || path.startsWith('/category/custom-jerseys/')
+}
+
 function cleanPath(value) {
   const path = String(value || '/').split(/[?#]/, 1)[0].replace(/\/{2,}/g, '/').replace(/\/$/, '')
   return path || '/'
@@ -83,6 +98,7 @@ export function routeIndexability({ pathname = '/', search = '' } = {}) {
     if (unknown.length) reasons.push('UNKNOWN_PRODUCT_QUERY')
   }
 
+  if (isStagedCustomPath(path)) reasons.push('CUSTOM_STAGED')
   const cleanReasons = [...new Set(reasons)]
   return {
     pathname: path,

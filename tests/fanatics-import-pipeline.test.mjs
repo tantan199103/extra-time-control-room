@@ -8,8 +8,10 @@ import {
 } from '../scripts/import-fanatics-catalog.mjs'
 import {
   normalizeFanaticsProduct,
+  isFanaticsTargetProduct,
   hydrateListingMedia
 } from '../scripts/fanatics-import-lib.mjs'
+import { runAutoSync } from '../scripts/auto-sync-fanatics.mjs'
 import { publicListingHasSourceReferences } from '../scripts/fangear-import-lib.mjs'
 
 test('loadSourcePayloads parses array and object payloads accurately', async () => {
@@ -43,6 +45,8 @@ test('full import pipeline normalizes, sanitizes, and prepares draft listings', 
   // 1. Normalize
   const normalized = normalizeFanaticsProduct(mockPayload)
   assert.equal(normalized.listing.status, 'DRAFT')
+  assert.equal(normalized.listing.seoStatus, 'BLOCKED')
+  assert.equal(normalized.listing.aiMetadata.catalogImport.rightsStatus, 'UNVERIFIED')
   assert.equal(normalized.listing.artworkLock, 70)
   assert.equal(normalized.listing.title, 'Philadelphia Eagles Jalen Hurts Midnight Green Game Jersey')
   assert.equal(normalized.listing.price, 129.99)
@@ -114,4 +118,18 @@ test('full import pipeline normalizes, sanitizes, and prepares draft listings', 
   assert.equal(auditUpserts.length, 1)
   assert.equal(auditUpserts[0].source, 'fanatics.com')
   assert.equal(auditUpserts[0].source_entity_id, '5192837')
+})
+
+test('Fanatics adapter narrows the feed to jerseys and headwear', () => {
+  assert.equal(isFanaticsTargetProduct({ name:'Team snapback cap' }), true)
+  assert.equal(isFanaticsTargetProduct({ name:'Knit beanie' }), true)
+  assert.equal(isFanaticsTargetProduct({ name:'Team game jersey' }), true)
+  assert.equal(isFanaticsTargetProduct({ name:'Team collectible figurine' }), false)
+})
+
+test('Fanatics compatibility runner refuses remote URLs', async () => {
+  await assert.rejects(
+    runAutoSync({ url:'https://www.fanatics.com/jerseys', isDryRun:true }),
+    /Remote Fanatics URLs are not accepted/
+  )
 })

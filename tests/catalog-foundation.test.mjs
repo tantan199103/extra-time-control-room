@@ -103,6 +103,25 @@ test('SEO review gate stays blocked until content, alt text and a sellable varia
   assert.deepEqual(validateListing(product).filter(error => error.startsWith('SEO review gate')), [])
 })
 
+test('third-party feed rows remain blocked from SEO until rights are approved', () => {
+  const product = createProductDraft()
+  product.status = 'PUBLISHED'
+  product.title = 'A complete product title'
+  product.description = 'A '.repeat(90)
+  product.image = 'https://cdn.test/primary.webp'
+  product.media = [{ id:'m1', type:'IMAGE', url:product.image, alt:'Product image' }]
+  product.seo = { title:'A long enough SEO title for this product page', description:'A '.repeat(65) }
+  product.variants = [{ id:'v1', sku:'LIVE', values:{}, price:89, inventory:2, status:'ACTIVE' }]
+  product.aiMetadata = { catalogImport:{ sourceKey:'licensed-third-party-feed', rightsStatus:'UNVERIFIED' } }
+  const gate = seoReviewGate(product)
+  assert.equal(gate.ready, false)
+  assert.ok(gate.blockers.includes('SOURCE_RIGHTS_REVIEW_REQUIRED'))
+  product.aiMetadata.catalogImport.rightsStatus = 'APPROVED'
+  product.aiMetadata.catalogImport.mediaRightsStatus = 'NOT_PROVIDED'
+  product.aiMetadata.catalogReview = { status:'APPROVED' }
+  assert.equal(seoReviewGate(product).ready, true)
+})
+
 test('duplicating a listing creates independent IDs, SKUs and a unique draft handle', () => {
   const product=createProductDraft(); product.handle='after-90'; product.title='After 90'; product.status='PUBLISHED'
   product.media=[{id:'old-media',type:'IMAGE',url:'https://cdn.test/a.webp'}]

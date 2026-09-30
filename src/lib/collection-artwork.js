@@ -21,7 +21,10 @@ function collectionProductRows(collection = {}, products = []) {
     ...(Array.isArray(collection?.products) ? collection.products : []),
     ...(Array.isArray(collection?.productLinks) ? collection.productLinks.map(link => link?.productId || link?.product_id) : [])
   ].map(value => textValue(value)).filter(Boolean))
-  if (!ids.size) return rows
+  // Without an explicit membership relation any catalogue row could become
+  // the cover. That is misleading editorially, so fall back to the controlled
+  // collection identity instead of borrowing unrelated product photography.
+  if (!ids.size) return []
   return rows.filter(row => ids.has(textValue(row?.id)) || ids.has(textValue(row?.handle)))
 }
 
@@ -74,7 +77,8 @@ function inferredIcon(text, product = null) {
 /**
  * Resolve a collection's visual identity without copying an unrelated listing
  * image. Explicit editorial art wins; then a checked-in team/league mark;
- * then a controlled category icon; finally the first linked product image.
+ * then the first linked product image; a controlled category icon is the
+ * final text-navigation fallback and is never presented as a photo cover.
  * The result is usable by both the storefront and admin menu previews.
  */
 export function resolveCollectionArtwork(collection = {}, products = [], { ignoreExplicit = false } = {}) {
@@ -98,11 +102,11 @@ export function resolveCollectionArtwork(collection = {}, products = [], { ignor
   const league = leagueForValue(taxonomy.league || '') || leagueForValue(handle) || leagueForValue(name)
   if (league?.media?.src) return { src:league.media.src, icon:'', alt:`${league.name} league mark`, source:'LEAGUE_LOGO' }
 
-  const category = categoryForValue(taxonomy.category || handle) || categoryForValue(name)
-  if (category) return { src:'', icon:category.icon || 'all', alt:`${category.label} icon`, source:'CATEGORY_ICON' }
-
   const productImage = firstImage(firstLinkedProduct || {})
   if (productImage) return { src:productImage, icon:'', alt:`${name} collection`, source:'PRODUCT_IMAGE' }
+
+  const category = categoryForValue(taxonomy.category || handle) || categoryForValue(name)
+  if (category) return { src:'', icon:category.icon || 'all', alt:`${category.label} icon`, source:'CATEGORY_ICON' }
 
   const icon = inferredIcon(searchable, firstLinkedProduct)
   return { src:'', icon, alt:seo.title ? textValue(seo.title) : `${name} collection`, source:'CATEGORY_ICON' }

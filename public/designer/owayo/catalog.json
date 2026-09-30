@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "provider": "owayo",
-  "generatedAt": "2026-09-29T01:12:08.857Z",
+  "generatedAt": "2026-09-29T16:45:46.937Z",
   "generatedFrom": "verified-product-family-contract",
   "source": "https://www.owayo.com/cycling/products-us.htm",
   "publicBrand": "Jersevo",
@@ -28,6 +28,8 @@
       "manifest": "/designer/owayo/cycling-c3/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys-us.htm",
+      "preview": "/designer/owayo/cycling-c3/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -47,6 +49,8 @@
       "manifest": "/designer/owayo/cycling-c5/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro-us.htm",
+      "preview": "/designer/owayo/cycling-c5/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -66,6 +70,8 @@
       "manifest": "",
       "assetsReady": false,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_epic-us.htm",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/etape.webp",
+      "previewDesign": "etape",
       "syncStatus": "PARTIAL",
       "missingDesigns": [
         "Route"
@@ -87,6 +93,8 @@
       "manifest": "/designer/owayo/cycling-cl3/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_longsleeve-us.htm",
+      "preview": "/designer/owayo/cycling-cl3/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -106,6 +114,8 @@
       "manifest": "/designer/owayo/cycling-cl5/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_longsleeves-us.htm",
+      "preview": "/designer/owayo/cycling-cl5/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -125,6 +135,8 @@
       "manifest": "/designer/owayo/cycling-cw5/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_winter-us.htm",
+      "preview": "/designer/owayo/cycling-cw5/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -144,6 +156,8 @@
       "manifest": "/designer/owayo/cycling-ct5/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_sleeveless-us.htm",
+      "preview": "/designer/owayo/cycling-ct5/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -163,6 +177,8 @@
       "manifest": "/designer/owayo/cycling-c5w/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies-us.htm",
+      "preview": "/designer/owayo/cycling-c5w/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -182,6 +198,8 @@
       "manifest": "/designer/owayo/cycling-cl5w/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies_longsleeves-us.htm",
+      "preview": "/designer/owayo/cycling-cl5w/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -201,6 +219,8 @@
       "manifest": "/designer/owayo/cycling-cw5w/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies_winter-us.htm",
+      "preview": "/designer/owayo/cycling-cw5w/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -220,6 +240,8 @@
       "manifest": "/designer/owayo/cycling-ct5w/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies_sleeveless-us.htm",
+      "preview": "/designer/owayo/cycling-ct5w/previews/garment-render.webp",
+      "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -239,6 +261,8 @@
       "manifest": "/designer/owayo/cycling-m6/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys-us.htm",
+      "preview": "/designer/owayo/cycling-m6/previews/garment-render.webp",
+      "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -258,6 +282,8 @@
       "manifest": "/designer/owayo/cycling-ml6/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys_longsleeves-us.htm",
+      "preview": "/designer/owayo/cycling-ml6/previews/garment-render.webp",
+      "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -277,6 +303,8 @@
       "manifest": "/designer/owayo/cycling-m5/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys_m5-us.htm",
+      "preview": "/designer/owayo/cycling-m5/previews/garment-render.webp",
+      "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -296,6 +324,8 @@
       "manifest": "/designer/owayo/cycling-ml5/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys_ml5-us.htm",
+      "preview": "/designer/owayo/cycling-ml5/previews/garment-render.webp",
+      "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -315,6 +345,8 @@
       "manifest": "/designer/owayo/cycling-f1/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-shirts_f1-us.htm",
+      "preview": "/designer/owayo/cycling-f1/previews/garment-render.webp",
+      "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
     },
@@ -334,6 +366,8 @@
       "manifest": "/designer/owayo/cycling-fl1/manifest.json",
       "assetsReady": true,
       "sourceUrl": "https://www.owayo.com/cycling-shirts_fl1_long_sleeve-us.htm",
+      "preview": "/designer/owayo/cycling-fl1/previews/garment-render.webp",
+      "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
     }

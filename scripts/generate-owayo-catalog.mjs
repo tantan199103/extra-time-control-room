@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
@@ -22,6 +23,26 @@ const products = await Promise.all(OWAYO_CATALOG_V1.map(async product => {
     const assetsReady = synchronizedDesigns > 0
       && manifest.syncStatus !== 'PARTIAL'
       && missingDesigns.length === 0
+    const manifestPreview = manifest.designs?.find(item => item?.preview)?.preview || ''
+    // Prefer a same-origin checked-in cover when available. Remote Supabase
+    // previews are useful during syncing, but a local URL avoids browser
+    // privacy/network blockers and keeps the picker reliable after a cache.
+    const previewName = manifestPreview ? String(manifestPreview).split('/').pop() : ''
+    // Product-family cards need a garment render, not the raw UV texture used
+    // by the 3D material loader. Capture output is generated from the exact
+    // synchronized model/design and is intentionally preferred when present.
+    const renderPreviewName = 'garment-render.webp'
+    const localRenderPath = resolve(root, 'public', `designer/owayo/${product.id}/previews/${renderPreviewName}`)
+    const localPreviewPath = previewName ? resolve(root, 'public', `designer/owayo/${product.id}/previews/${previewName}`) : ''
+    let preview = manifestPreview
+    if (existsSync(localRenderPath)) {
+      preview = `/designer/owayo/${product.id}/previews/${renderPreviewName}`
+    } else if (localPreviewPath) {
+      try {
+        await access(localPreviewPath)
+        preview = `/designer/owayo/${product.id}/previews/${previewName}`
+      } catch {}
+    }
     return {
       ...product,
       // A partial source archive is kept for audit/retry, but it must not be
@@ -31,6 +52,12 @@ const products = await Promise.all(OWAYO_CATALOG_V1.map(async product => {
       designCount:synchronizedDesigns || product.designCount,
       sizeCount:manifest.product?.sizes?.filter(item => !/choose/i.test(String(item?.name || ''))).length || product.sizeCount,
       model:manifest.product?.model || product.model,
+      // The first verified design preview is the family card cover. Keeping
+      // this in the discovery manifest avoids guessing a filename (road
+      // families use Etape while MTB families use Derny) and prevents every
+      // card from falling back to the same generic jersey image.
+      preview,
+      previewDesign:manifest.designs?.find(item => item?.preview)?.slug || '',
       syncStatus:manifest.syncStatus || 'READY',
       missingDesigns
     }

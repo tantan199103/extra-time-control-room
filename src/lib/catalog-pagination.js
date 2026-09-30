@@ -1,4 +1,8 @@
 export const CATALOG_PAGE_SIZE = 36
+// The storefront card grid is deliberately smaller than the static SEO page
+// size.  Twenty-four cards is enough to make Shop useful while keeping the
+// first mobile response bounded; the sentinel loads later pages on demand.
+export const SHOP_PAGE_SIZE = 24
 
 export function parseCatalogPagePath(pathname = '') {
   const path = String(pathname || '').replace(/\/+$/, '') || '/'

@@ -15,6 +15,7 @@ import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } 
 import { TRUST_PAGES } from '../src/lib/trust-pages.js'
 import { catalogPageOverrideFor, normalizeCatalogPageOverrides } from '../src/lib/catalog-page-overrides.js'
 import { productBootstrap, renderProductContent, renderSitemap, renderSitemapIndex } from './seo-render.mjs'
+import { fetchPublishedProductRows, fetchSeoRows } from './seo-catalog-snapshot.mjs'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
@@ -37,79 +38,64 @@ function normalizeProduct(row) {
 
 const storefrontOrder = (a,b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) || String(a.id || '').localeCompare(String(b.id || ''))
 
-async function fetchRows(path, key) {
-  const rows = []
-  // Supabase/PostgREST allows a bounded page of up to 1,000 rows.  The
-  // previous 50-row page made a production build walk the catalogue through
-  // hundreds of network round-trips (and left Vercel in "Building" for many
-  // minutes).  Keep the request comfortably below the server limit while
-  // still making the SEO build resilient to large catalogues.
-  const pageSize = 500
-  let cursor = ''
-  for (;;) {
-    const url = new URL(path)
-    url.searchParams.set('limit', String(pageSize))
-    if (cursor) url.searchParams.set('id', `gt.${cursor}`)
-    let page
-    let lastError
-    for (let attempt = 0; attempt < 4; attempt += 1) {
-      try {
-        const response = await fetch(url, {
-          headers: { apikey:key, Authorization:`Bearer ${key}`, Accept:'application/json' },
-          signal:AbortSignal.timeout(30000)
-        })
-        if (!response.ok) {
-          const detail = (await response.text()).slice(0, 180)
-          const error = new Error(`Supabase SEO query failed (${response.status}) after id ${cursor || '(start)'}: ${detail}`)
-          if (response.status !== 429 && response.status < 500) throw error
-          lastError = error
-          await new Promise(resolvePromise => setTimeout(resolvePromise, Math.min(8000, 1000 * (attempt + 1))))
-          continue
-        }
-        page = await response.json()
-        break
-      } catch (error) {
-        lastError = error
-        if (attempt === 3 || !/abort|fetch|network|429|5\d\d/i.test(String(error?.message || error))) throw error
-        await new Promise(resolvePromise => setTimeout(resolvePromise, Math.min(8000, 1000 * (attempt + 1))))
-      }
-    }
-    if (!page) throw lastError || new Error(`Supabase SEO query failed after id ${cursor || '(start)'}.`)
-    if (!Array.isArray(page)) throw new Error('Supabase SEO query did not return an array.')
-    rows.push(...page)
-    if (page.length < pageSize) return rows
-    const nextCursor = String(page.at(-1)?.id || '')
-    if (!nextCursor || nextCursor === cursor) throw new Error('Supabase SEO pagination did not advance.')
-    cursor = nextCursor
-  }
-}
+const PRODUCT_SELECT = 'status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at'
+const LEGACY_PRODUCT_SELECT = PRODUCT_SELECT.replace(',seo_status', '')
+let productSnapshotPromise = null
 
-async function loadProducts() {
+async function loadProductSnapshot() {
+  if (productSnapshotPromise) return productSnapshotPromise
   const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (base && key) {
-    try {
-      const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=eq.INDEXABLE&order=id.asc`
-      const rows = await fetchRows(query, key)
-      if (Array.isArray(rows)) return rows.map(normalizeProduct).sort(storefrontOrder)
-    } catch (error) {
-      if (!/42703|column[^]*seo_status[^]*does not exist/i.test(String(error?.message || error))) throw error
-      // Older deployments may not have the gate column yet. In that case only
-      // rows carrying the explicit structured status can be generated.
+    productSnapshotPromise = (async () => {
+      const startedAt = Date.now()
+      let lastReported = -1000
+      const hydrate = select => fetchPublishedProductRows({
+        base,
+        key,
+        select,
+        detailPageSize:200,
+        indexPageSize:1000,
+        concurrency:4,
+        onProgress:({ loaded,total,completedChunks,totalChunks }) => {
+          if (loaded !== 0 && loaded !== total && loaded - lastReported < 1000) return
+          lastReported = loaded
+          console.log(`[seo] Catalogue snapshot ${loaded.toLocaleString('en-US')}/${total.toLocaleString('en-US')} products · ${completedChunks}/${totalChunks} detail ranges`)
+        }
+      })
       try {
-        const legacyQuery = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,custom_fields,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&order=id.asc`
-        const legacyRows = await fetchRows(legacyQuery, key)
-        return (Array.isArray(legacyRows) ? legacyRows : []).filter(row => String(row.seo?.status || '').toUpperCase() === 'INDEXABLE').map(normalizeProduct).sort(storefrontOrder)
-      } catch (legacyError) {
+        let rows
+        try {
+          rows = await hydrate(PRODUCT_SELECT)
+        } catch (error) {
+          if (!/42703|column[^]*seo_status[^]*does not exist/i.test(String(error?.message || error))) throw error
+          console.warn('[seo] seo_status column is unavailable; using the structured SEO status stored in each listing.')
+          rows = await hydrate(LEGACY_PRODUCT_SELECT)
+        }
+        const normalized = rows.map(normalizeProduct).sort(storefrontOrder)
+        const indexable = normalized.filter(product => String(product.seoStatus || product.seo?.status || '').toUpperCase() === 'INDEXABLE')
+        const blocked = normalized.filter(product => String(product.seoStatus || product.seo?.status || '').toUpperCase() !== 'INDEXABLE')
+        const indexableIds = new Set(indexable.map(product => String(product.id)))
+        const merchantRows = rows.filter(row => indexableIds.has(String(row.id)))
+        console.log(`[seo] Catalogue snapshot complete: ${indexable.length.toLocaleString('en-US')} indexable, ${blocked.length.toLocaleString('en-US')} noindex · ${((Date.now() - startedAt) / 1000).toFixed(1)}s`)
+        return { indexable, blocked, merchantRows, source:'supabase' }
+      } catch (error) {
         // A configured production database that is temporarily unavailable is
         // not permission to publish the bundled demo catalogue. Fail the
         // build instead of silently replacing every product page with a shell.
-        throw new Error(`Live catalogue unavailable while generating SEO pages: ${legacyError.message}`)
+        throw new Error(`Live catalogue unavailable while generating SEO pages: ${error.message}`)
       }
-    }
+    })()
+    return productSnapshotPromise
   }
   if (process.env.VERCEL) throw new Error('Production SEO build requires the live Supabase catalogue; demo catalogue is not publishable.')
-  return buildFallbackCatalog(fallbackProducts).map(normalizeProduct)
+  const indexable = buildFallbackCatalog(fallbackProducts).map(normalizeProduct)
+  productSnapshotPromise = Promise.resolve({ indexable, blocked:[], merchantRows:[], source:'fallback' })
+  return productSnapshotPromise
+}
+
+async function loadProducts() {
+  return (await loadProductSnapshot()).indexable
 }
 
 function relatedProductLinks(product, products) {
@@ -128,17 +114,7 @@ function relatedProductLinks(product, products) {
 // whose homepage metadata says `index,follow` before the client can resolve
 // the route. These rows are never included in the shop ItemList or sitemap.
 async function loadBlockedProducts() {
-  const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
-  if (!base || !key) return []
-  try {
-    const query = `${base.replace(/\/$/, '')}/rest/v1/pod_products?select=status,id,handle,title,subtitle,description,price,compare_at,image,seo,seo_status,inventory,sku,taxonomy,tags,content_blocks,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),product_group,media,pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image,barcode),updated_at&status=eq.PUBLISHED&seo_status=neq.INDEXABLE&order=id.asc`
-    const rows = await fetchRows(query, key)
-    return (Array.isArray(rows) ? rows : []).map(normalizeProduct)
-  } catch (error) {
-    if (/42703|column[^]*seo_status[^]*does not exist/i.test(String(error?.message || error))) return []
-    throw error
-  }
+  return (await loadProductSnapshot()).blocked
 }
 
 async function loadCollections() {
@@ -147,7 +123,7 @@ async function loadCollections() {
   if (!base || !key) return []
   try {
     const query = `${base.replace(/\/$/, '')}/rest/v1/pod_collections?select=id,handle,name,description,hero_image,seo,updated_at,pod_collection_products(product_id,sort_order)&status=eq.PUBLISHED&order=id.asc`
-    const rows = await fetchRows(query, key)
+    const rows = await fetchSeoRows(query, key, { pageSize:200, label:'collections' })
     return (Array.isArray(rows) ? rows : []).map(row => {
       const artwork = resolveCollectionArtwork({ ...row, hero:row.hero_image })
       return {
@@ -198,7 +174,7 @@ function upsertMeta(html, attribute, name, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `    ${tag}\n  </head>`)
 }
 
-function pageHtml(shell, { path, title, description, image, noindex = false, fallback, schema, bootstrap = '' }) {
+function pageHtml(shell, { path, title, description, image, noindex = false, noindexRobots = 'noindex,nofollow', fallback, schema, bootstrap = '' }) {
   const canonical = `${PUBLIC_ORIGIN}${path === '/' ? '/' : path}`
   let html = shell
     .replace(/<html[^>]*>/i, '<html lang="en-US">')
@@ -207,8 +183,8 @@ function pageHtml(shell, { path, title, description, image, noindex = false, fal
     .replace(/<link\s+rel=["']preload["'][^>]*id=["']route-lcp-image["'][^>]*>/i, `<link rel="preload" as="image" href="${escapeHtml(image)}" fetchpriority="high" id="route-lcp-image" />`)
   const metaDescription = path.startsWith('/product/') ? cleanSeoText(description) : seoDescription(description, '', 160)
   html = upsertMeta(html, 'name', 'description', metaDescription)
-  html = upsertMeta(html, 'name', 'robots', noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
-  html = upsertMeta(html, 'name', 'googlebot', noindex ? 'noindex,nofollow' : 'index,follow')
+  html = upsertMeta(html, 'name', 'robots', noindex ? noindexRobots : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
+  html = upsertMeta(html, 'name', 'googlebot', noindex ? noindexRobots : 'index,follow')
   html = upsertMeta(html, 'property', 'og:title', title)
   html = upsertMeta(html, 'property', 'og:description', metaDescription)
   html = upsertMeta(html, 'property', 'og:url', canonical)
@@ -247,9 +223,17 @@ async function writePage(path, html) {
 // makes a fresh release look like the catalogue is unavailable.  Keep the
 // output deterministic per page, but let a bounded batch use the build
 // machine's filesystem concurrently.
-async function writePagesInBatches(items, writer, batchSize = 32) {
+async function writePagesInBatches(items, writer, batchSize = 32, label = 'pages') {
+  const startedAt = Date.now()
+  let lastReported = 0
+  if (items.length) console.log(`[seo] Writing ${items.length.toLocaleString('en-US')} ${label}…`)
   for (let offset = 0; offset < items.length; offset += batchSize) {
     await Promise.all(items.slice(offset, offset + batchSize).map(writer))
+    const completed = Math.min(items.length, offset + batchSize)
+    if (completed === items.length || completed - lastReported >= 1024) {
+      lastReported = completed
+      console.log(`[seo] Wrote ${completed.toLocaleString('en-US')}/${items.length.toLocaleString('en-US')} ${label} · ${((Date.now() - startedAt) / 1000).toFixed(1)}s`)
+    }
   }
 }
 
@@ -282,7 +266,14 @@ const shell = await readFile(join(DIST, 'index.html'), 'utf8')
 // never let them contribute to navigation counts, collection pages, schema or
 // the sitemap. This prevents stale imported metadata from becoming an
 // accidental organic landing page.
-const loadedProducts = await loadProducts()
+const productSnapshot = await loadProductSnapshot()
+const loadedProducts = productSnapshot.indexable
+const merchantSnapshotPath = String(process.env.MERCHANT_SOURCE_SNAPSHOT || '').trim()
+if (merchantSnapshotPath && productSnapshot.source === 'supabase') {
+  await mkdir(dirname(merchantSnapshotPath), { recursive:true })
+  await writeFile(merchantSnapshotPath, JSON.stringify(productSnapshot.merchantRows))
+  console.log(`[seo] Merchant source snapshot staged: ${productSnapshot.merchantRows.length.toLocaleString('en-US')} products.`)
+}
 const taxonomyBlockedProducts = loadedProducts.filter(product => !validateCatalogTaxonomy(product).valid)
 const products = loadedProducts.filter(product => validateCatalogTaxonomy(product).valid)
 const teamProductsByKey = new Map()
@@ -363,7 +354,7 @@ await writePagesInBatches(products, async product => {
     entry.lastmod = product.updatedAt
     entry.images = product.images
   }
-})
+}, 32, 'indexable PDPs')
 
 await writePagesInBatches(blockedProducts, async product => {
   const path = `/product/${slug(product.handle)}`
@@ -376,7 +367,7 @@ await writePagesInBatches(blockedProducts, async product => {
     fallback:renderProductContent(product),
     bootstrap:productBootstrap(product)
   }))
-})
+}, 32, 'noindex PDPs')
 
 const itemList = products.slice(0,CATALOG_PAGE_SIZE).map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
 await writePage('/shop', pageHtml(shell, {
@@ -395,8 +386,12 @@ await writePage('/custom', pageHtml(shell, {
   title:'Custom jerseys and personalized fan gear | Jersevo',
   description:'Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.',
   image:absolute(SHOP_COVER.src),
-  noindex:customProducts.length === 0,
-  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/shop">Shop</a> / <strong>Custom</strong></nav><h1>Put your moment on it.</h1><p>Build a jersey in 3D, choose colors, add names, numbers and a team logo, then organize every player before production.</p><p><a href="/custom/design">Open the 3D kit builder</a></p><h2>How custom ordering works</h2><ol><li>Choose a production-ready design.</li><li>Add team colors, text and a logo.</li><li>Complete the player roster and review before print.</li></ol><h2>Live custom jerseys</h2><ul>${customFallbackProducts || '<li><a href="/category/custom-jerseys">Browse custom jerseys</a></li>'}</ul><p><a href="/category/custom-jerseys">View all custom jerseys</a> · <a href="/shipping">Read delivery details</a></p></main>`,
+  // The Custom Studio is in controlled preview while the provider catalogue
+  // and production hand-off are being validated. Keep it reachable from the
+  // storefront, but do not publish it to organic search yet.
+  noindex:true,
+  noindexRobots:'noindex,follow',
+  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/shop">Shop</a> / <strong>Custom</strong></nav><h1>Design it. Wear it.</h1><p>Choose a performance cut, start from a proven template, then set your colors, name, number and logo in the 3D studio.</p><p><a href="/custom/design">Open the 3D kit builder</a></p><h2>How custom ordering works</h2><ol><li>Choose a production-ready garment cut.</li><li>Start from a verified template and add your team identity.</li><li>Complete the roster and review the hand-off before print.</li></ol><h2>Live custom jerseys</h2><ul>${customFallbackProducts || '<li><a href="/category/custom-jerseys">Browse custom jerseys</a></li>'}</ul><p><a href="/category/custom-jerseys">View all custom jerseys</a> · <a href="/shipping">Read delivery details</a></p></main>`,
   schema:[
     { '@context':'https://schema.org', '@type':'CollectionPage', name:'Custom jerseys and personalized fan gear', description:'Choose a designer-led jersey and add approved personal details.', url:`${PUBLIC_ORIGIN}/custom`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/`, name:'Jersevo' } },
     { '@context':'https://schema.org', '@type':'HowTo', name:'How to order a personalized jersey', step:[{ '@type':'HowToStep', name:'Choose a jersey' },{ '@type':'HowToStep', name:'Add your details' },{ '@type':'HowToStep', name:'Review before print' }] },
@@ -409,7 +404,8 @@ await writePage('/custom/design', pageHtml(shell, {
   title:'3D custom jersey designer | Jersevo',
   description:'Design a custom cycling jersey in 3D, change colors, add names, numbers and a team logo, then organize every player in one roster.',
   image:absolute(SHOP_COVER.src),
-  noindex:customProducts.length === 0,
+  noindex:true,
+  noindexRobots:'noindex,follow',
   fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/custom">Custom</a> / <strong>3D kit builder</strong></nav><h1>Build your custom jersey in 3D</h1><p>Choose a garment design, set the team colors, add shared text and a logo, then organize player names, numbers and sizes in one roster.</p><h2>Included design tools</h2><ul><li>Interactive 3D garment rotation and zoom</li><li>Design and color controls</li><li>Name, number and team text placement</li><li>Team logo upload and placement</li><li>Draft saving, undo and redo</li><li>Multi-player roster handoff</li></ul><p><a href="/custom">Read about custom ordering</a> · <a href="/category/custom-jerseys">Browse live custom jerseys</a></p></main>`,
   schema:[
     { '@context':'https://schema.org', '@type':'WebApplication', name:'Jersevo 3D Kit Builder', applicationCategory:'DesignApplication', operatingSystem:'Web browser', description:'Interactive custom jersey designer with colors, text, logos and team roster tools.', url:`${PUBLIC_ORIGIN}/custom/design`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/`, name:'Jersevo' } },
@@ -472,7 +468,10 @@ for (const category of ALL_CATALOG_CATEGORY_PAGES) {
   const override = pageOverride(path)
   if (override?.hidden) continue
   const count = categoryCounts.get(category.handle) || 0
-  const indexable = count >= TAXONOMY_MIN_PRODUCTS
+  // Custom landing pages are staged separately from the normal taxonomy
+  // release. They remain directly reachable but must stay out of the sitemap
+  // and organic index until the designer catalogue is publicly approved.
+  const indexable = category.handle !== 'custom-jerseys' && count >= TAXONOMY_MIN_PRODUCTS
   const categoryProducts = products.filter(product => productMatchesCatalogCategory(product, category))
   const categoryTitle = override?.title || category.label
   const categoryDescription = override?.description || category.description
@@ -483,6 +482,7 @@ for (const category of ALL_CATALOG_CATEGORY_PAGES) {
     description:override?.seoDescription || categoryDescription,
     image:categoryImage,
     noindex:!indexable,
+    ...(category.handle === 'custom-jerseys' ? { noindexRobots:'noindex,follow' } : {}),
     fallback:`<main class="seo-fallback"><h1>${escapeHtml(categoryTitle)}</h1><p>${escapeHtml(categoryDescription)}</p><ul>${categoryProducts.slice(0,CATALOG_PAGE_SIZE).map(product => `<li><a href="/product/${slug(product.handle)}">${escapeHtml(product.title)}</a></li>`).join('')}</ul>${categoryProducts.length > CATALOG_PAGE_SIZE ? `<a href="${path}/page/2">Next page</a>` : ''}</main>`,
     schema:[{ '@context':'https://schema.org', '@type':'CollectionPage', name:categoryTitle, description:categoryDescription, url:`${PUBLIC_ORIGIN}${path}`, image:categoryImage, numberOfItems:count, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/` } },breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Shop',url:`${PUBLIC_ORIGIN}/shop`},{name:categoryTitle,url:`${PUBLIC_ORIGIN}${path}`}])]
   }))

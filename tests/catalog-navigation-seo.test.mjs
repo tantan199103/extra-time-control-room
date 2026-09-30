@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { ACCESSORY_FAMILY_OPTIONS, ACCESSORY_TYPE_OPTIONS, ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, accessoryTaxonomyForProduct, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
-import { CATALOG_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from '../src/lib/catalog-pagination.js'
+import { CATALOG_PAGE_SIZE, SHOP_PAGE_SIZE, catalogPagePath, pageCount, parseCatalogPagePath } from '../src/lib/catalog-pagination.js'
 import { findLeague, findTeam, leaguePath, teamPath } from '../src/lib/league-taxonomy.js'
 import { applyCollectionMembership, collectionMembershipDiff } from '../src/lib/collection-assignment.js'
 import { buildCollectionTree, collectionDescendantIds, collectionParentId, flattenCollectionTree } from '../src/lib/collection-tree.js'
@@ -11,6 +11,14 @@ test('category landing pages match the controlled catalogue taxonomy', () => {
   assert.equal(football.value, 'Football Jerseys')
   assert.equal(productMatchesCatalogCategory({ taxonomy:{ category:'Football Jerseys' }, productGroup:'Jerseys' }, football), true)
   assert.equal(productMatchesCatalogCategory({ taxonomy:{ category:'Basketball Jerseys' }, productGroup:'Jerseys' }, football), false)
+  const jerseys = catalogCategoryByHandle('jerseys')
+  const hats = catalogCategoryByHandle('hats')
+  assert.equal(jerseys.intent, 'jerseys')
+  assert.equal(hats.intent, 'hats')
+  assert.equal(productMatchesCatalogCategory({ taxonomy:{ category:'Football Jerseys' }, productGroup:'Jerseys' }, jerseys), true)
+  assert.equal(productMatchesCatalogCategory({ productGroup:'Caps' }, hats), true)
+  assert.equal(productMatchesCatalogCategory({ productGroup:'Knit Hats' }, hats), true)
+  assert.equal(productMatchesCatalogCategory({ productGroup:'Backpacks' }, hats), false)
   const custom = catalogCategoryByHandle('custom-jerseys')
   assert.equal(productMatchesCatalogCategory({ productGroup:'Jerseys', tags:['3d-designer','designer-product-cycling-c3','designer-provider-owayo'], customFields:[{ key:'name' }] }, custom), true)
   assert.equal(productMatchesCatalogCategory({ productGroup:'Jerseys', customFields:[{ key:'name' }] }, custom), false)
@@ -59,6 +67,7 @@ test('merchandise icons appear in menu, landing pages and product cards without 
 
 test('catalog pages get stable crawlable paths with one canonical per page', () => {
   assert.equal(CATALOG_PAGE_SIZE, 36)
+  assert.equal(SHOP_PAGE_SIZE, 24)
   assert.equal(pageCount(73), 3)
   assert.equal(catalogPagePath('/category/football-jerseys', 1), '/category/football-jerseys')
   assert.equal(catalogPagePath('/category/football-jerseys', 2), '/category/football-jerseys/page/2')

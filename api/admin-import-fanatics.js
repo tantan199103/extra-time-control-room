@@ -9,6 +9,7 @@ import {
 import { buildListingInput } from '../src/lib/catalog-model.js'
 import {
   normalizeFanaticsProduct,
+  isFanaticsTargetProduct,
   hydrateListingMedia,
   PRIMARY_FANATICS_HOST
 } from '../scripts/fanatics-import-lib.mjs'
@@ -22,7 +23,10 @@ export default async function handler(request, response) {
     enforceSameOrigin(request)
     const client = serverSupabase()
     const internalKey = request.headers?.['x-internal-key']
-    const isInternalAuth = internalKey && internalKey === (process.env.INTERNAL_IMPORT_KEY || 'jersevo_fanatics_import_2026')
+    // Never ship a usable default import key. Source permission and media
+    // permission are separate decisions and must be configured server-side.
+    const configuredInternalKey = String(process.env.INTERNAL_IMPORT_KEY || '').trim()
+    const isInternalAuth = Boolean(configuredInternalKey && internalKey && internalKey === configuredInternalKey)
     if (!isInternalAuth) {
       await requireAdmin(request, client)
     }
@@ -43,6 +47,13 @@ export default async function handler(request, response) {
       return sendJson(response, 405, { error: 'GET or POST only.' })
     }
 
+    if (String(process.env.FANATICS_SOURCE_AUTHORIZED || '').toLowerCase() !== 'true') {
+      return sendJson(response, 403, { error: 'Import is disabled until a licensed source feed, written permission, or owner-provided export is recorded.' })
+    }
+    if (String(process.env.FANATICS_MEDIA_AUTHORIZED || '').toLowerCase() !== 'true') {
+      return sendJson(response, 403, { error: 'Media import is disabled until the source licence explicitly covers product photography reuse.' })
+    }
+
     const rawBody = readBody(request, 1024 * 1024)
     const rawItems = Array.isArray(rawBody)
       ? rawBody
@@ -60,6 +71,10 @@ export default async function handler(request, response) {
 
     for (const rawProduct of validItems.slice(0, 10)) {
       try {
+        if (!isFanaticsTargetProduct(rawProduct)) {
+          errors.push({ item: rawProduct.name || rawProduct.title || 'Unknown', error: 'Only jersey and hat products are in the approved import scope.' })
+          continue
+        }
         const normalized = normalizeFanaticsProduct(rawProduct, { usedHandles, usedSkus })
 
         // Download, strip privacy metadata, and upload to 'product-media' bucket (capped at 4 per item for speed)

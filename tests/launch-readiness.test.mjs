@@ -70,7 +70,63 @@ test('newsletter endpoint is routed to the server and stores explicit consent on
 test('machine-readable launch files are valid and linked', async () => {
   const catalog = JSON.parse(await readFile(new URL('../public/ai-catalog.json', import.meta.url),'utf8'))
   const llms = await readFile(new URL('../public/llms.txt', import.meta.url),'utf8')
+  const html = await readFile(new URL('../index.html', import.meta.url),'utf8')
+  const favicon = await readFile(new URL('../public/favicon.ico', import.meta.url))
   assert.equal(catalog.store.legalName,'Jersevo')
   assert.match(llms,/^# Extra Time by Jersevo/m)
   assert.match(llms,/\[XML sitemap\]\(https:\/\/www\.jersevo\.com\/sitemap\.xml\)/)
+  assert.match(html,/href="\/favicon\.ico"/)
+  assert.deepEqual([...favicon.subarray(0,4)],[0,0,1,0])
+})
+
+test('control-room CSS stays behind the lazy Admin route', async () => {
+  const [admin, storefrontCss, adminCss] = await Promise.all([
+    readFile(new URL('../src/admin.jsx', import.meta.url),'utf8'),
+    readFile(new URL('../src/styles.css', import.meta.url),'utf8'),
+    readFile(new URL('../src/admin-shell.css', import.meta.url),'utf8')
+  ])
+  assert.match(admin,/import '\.\/admin-shell\.css'/)
+  assert.doesNotMatch(storefrontCss,/ADMIN \/ CONTROL ROOM/)
+  assert.match(adminCss,/ADMIN \/ CONTROL ROOM/)
+  assert.match(adminCss,/\.admin-bulk-bar/)
+})
+
+test('product decision code stays behind the lazy PDP route', async () => {
+  const [shell, productPage] = await Promise.all([
+    readFile(new URL('../src/main.jsx', import.meta.url),'utf8'),
+    readFile(new URL('../src/ProductPage.jsx', import.meta.url),'utf8')
+  ])
+  assert.match(shell,/const ProductPage = lazy\(\(\) => import\('\.\/ProductPage'\)\)/)
+  assert.match(shell,/<Suspense fallback=\{<div className="route-loading"[^>]*><span>90\+<\/span><p>Opening product details/)
+  assert.doesNotMatch(shell,/function ProductPage\(/)
+  assert.match(productPage,/export default function ProductPage\(/)
+  assert.match(productPage,/createCustomizationOrder/)
+  assert.match(productPage,/ProductPurchaseHighlights/)
+})
+
+test('long-form trust content stays behind lazy policy routes', async () => {
+  const [shell, policyPage, trustPages] = await Promise.all([
+    readFile(new URL('../src/main.jsx', import.meta.url),'utf8'),
+    readFile(new URL('../src/PolicyPage.jsx', import.meta.url),'utf8'),
+    readFile(new URL('../src/lib/trust-pages.js', import.meta.url),'utf8')
+  ])
+  assert.match(shell,/const PolicyPage = lazy\(\(\) => import\('\.\/PolicyPage'\)\)/)
+  assert.doesNotMatch(shell,/import \{ TRUST_PAGES \}/)
+  assert.match(shell,/TRUST_ROUTE_METADATA/)
+  assert.match(policyPage,/import \{ TRUST_PAGES \}/)
+  assert.match(trustPages,/Quote first\. Promise second\./)
+})
+
+test('Merchant feed reuses the verified SEO snapshot and removes the temporary source', async () => {
+  const [postbuild, seoGenerator, merchantGenerator] = await Promise.all([
+    readFile(new URL('../scripts/postbuild.mjs', import.meta.url),'utf8'),
+    readFile(new URL('../scripts/generate-seo-pages.mjs', import.meta.url),'utf8'),
+    readFile(new URL('../scripts/generate-merchant-feed.mjs', import.meta.url),'utf8')
+  ])
+  assert.match(postbuild,/MERCHANT_SOURCE_SNAPSHOT/)
+  assert.match(postbuild,/unlinkSync\(merchantSourceSnapshot\)/)
+  assert.match(seoGenerator,/Merchant source snapshot staged/)
+  assert.match(merchantGenerator,/Reusing verified SEO snapshot/)
+  assert.match(merchantGenerator,/rows\.length !== expected/)
+  assert.doesNotMatch(merchantGenerator,/Math\.abs\(rows\.length - expected\)/)
 })

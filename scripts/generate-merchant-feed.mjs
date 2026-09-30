@@ -6,7 +6,7 @@
 // verifies an exact count, and only then publishes the XML/TSV files.
 
 import fs from 'node:fs'
-import { mkdir, rename, unlink, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzip } from 'node:zlib'
@@ -36,6 +36,7 @@ const apiKey = String(
   || ''
 ).trim()
 const outputDirectory = resolve(process.env.MERCHANT_FEED_OUTPUT_DIR || 'dist/feeds')
+const sourceSnapshotPath = String(process.env.MERCHANT_SOURCE_SNAPSHOT || '').trim()
 const pageSize = 500
 const siteOrigin = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const gzipAsync = promisify(gzip)
@@ -119,6 +120,19 @@ async function expectedProductCount() {
 }
 
 async function loadProducts(expected) {
+  if (sourceSnapshotPath && fs.existsSync(sourceSnapshotPath)) {
+    const rows = JSON.parse(await readFile(sourceSnapshotPath, 'utf8'))
+    if (!Array.isArray(rows)) throw new Error('Merchant source snapshot is not an array.')
+    const uniqueIds = new Set(rows.map(row => String(row?.id || '')).filter(Boolean))
+    if (rows.length !== expected || uniqueIds.size !== rows.length) {
+      throw new Error(`Merchant snapshot completeness check failed: expected ${expected} product rows, loaded ${rows.length} (${uniqueIds.size} unique).`)
+    }
+    if (rows.some(row => String(row?.status || '').toUpperCase() !== 'PUBLISHED' || String(row?.seo_status || row?.seo?.status || '').toUpperCase() !== 'INDEXABLE')) {
+      throw new Error('Merchant source snapshot contains a non-published or non-indexable product.')
+    }
+    console.log(`[merchant-feed] Reusing verified SEO snapshot with ${rows.length.toLocaleString('en-US')} products.`)
+    return rows
+  }
   const rows = []
   let cursor = ''
   for (;;) {
@@ -139,8 +153,7 @@ async function loadProducts(expected) {
   }
 
   const uniqueIds = new Set(rows.map(row => String(row?.id || '')).filter(Boolean))
-  const maxDrift = Math.max(100, Math.ceil(expected * 0.01))
-  if (rows.length === 0 || Math.abs(rows.length - expected) > maxDrift || uniqueIds.size !== rows.length) {
+  if (rows.length === 0 || rows.length !== expected || uniqueIds.size !== rows.length) {
     throw new Error(`Merchant completeness check failed: expected ${expected} product rows, loaded ${rows.length} (${uniqueIds.size} unique).`)
   }
   return rows
@@ -160,7 +173,6 @@ async function removeIfPresent(path) {
 function publicReport(catalogue, expected, rows) {
   const report = catalogue.report || {}
   const uniqueCount = new Set(rows.map(row => row.id)).size
-  const maxDrift = Math.max(100, Math.ceil(expected * 0.01))
   return {
     generatedAt: report.generatedAt,
     expectedProductCount: expected,
@@ -169,7 +181,7 @@ function publicReport(catalogue, expected, rows) {
       expectedProductCount: expected,
       loadedProductCount: rows.length,
       uniqueProductCount: uniqueCount,
-      complete: rows.length > 0 && Math.abs(rows.length - expected) <= maxDrift && uniqueCount === rows.length
+      complete: rows.length > 0 && rows.length === expected && uniqueCount === rows.length
     },
     candidateProducts: report.candidateProducts || 0,
     candidateVariants: report.candidateVariants || 0,

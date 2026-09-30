@@ -44,6 +44,7 @@ import { getMetaPixelId, setMetaPixelId } from './lib/meta-pixel'
 import { resolveMenuImages } from './lib/storefront-model'
 import { applyCollectionMembership } from './lib/collection-assignment'
 import { normalizeCatalogPageOverrides, upsertCatalogPageOverride } from './lib/catalog-page-overrides'
+import './admin-shell.css'
 import './admin-payment.css'
 
 const go = path => {

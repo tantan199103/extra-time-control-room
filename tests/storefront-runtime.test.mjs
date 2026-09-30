@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { availableOptionValue, buildFallbackCatalog, buildMenuTree, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveMenuImages, resolveVariant, sortCollectionProducts } from '../src/lib/storefront-model.js'
+import { availableOptionValue, buildFallbackCatalog, buildMenuTree, findStorefrontProduct, initialSelections, isSellableVariant, menuTargetProblem, prepareStorefrontProduct, reconcileCart, resolveMenuImages, resolveVariant, sortCollectionProducts, storefrontImageSrcSet } from '../src/lib/storefront-model.js'
 import { resolveCollectionArtwork } from '../src/lib/collection-artwork.js'
 import { normalizeCatalogTaxonomy } from '../src/lib/league-taxonomy.js'
 import { products as fallback } from '../src/data.js'
@@ -11,6 +11,31 @@ test('fallback catalogue has published-looking variants while live Supabase is u
   assert.equal(catalog.length,fallback.length)
   assert.ok(catalog.every(product=>product.options.length===2 && product.variants.length===6))
   assert.equal(findStorefrontProduct(catalog,'after-90').handle,'after-90')
+})
+
+test('fallback catalogue never exposes demo shopper ratings', () => {
+  const [product] = buildFallbackCatalog([{
+    id:'fallback-rated',
+    name:'Offline jersey',
+    price:49,
+    image:'/assets/jersey-black.webp',
+    rating:4.9,
+    reviews:428,
+    reviewQuote:'Demo copy'
+  }])
+  assert.equal(product.rating,0)
+  assert.equal(product.reviews,0)
+  assert.equal(product.reviewQuote,'')
+})
+
+test('storefront image candidates use controlled Supabase derivatives only', () => {
+  const source = 'https://example.supabase.co/storage/v1/object/public/product-media/listing/front.avif'
+  const srcSet = storefrontImageSrcSet(source, [768, 320, 768])
+  assert.match(srcSet, /storage\/v1\/render\/image\/public\/product-media\/listing\/front\.avif/)
+  assert.match(srcSet, /width=320/)
+  assert.match(srcSet, /width=768/)
+  assert.equal(storefrontImageSrcSet('/assets/jersey-black.webp'), '')
+  assert.equal(storefrontImageSrcSet('https://cdn.example.com/front.webp'), '')
 })
 
 test('storefront taxonomy separates normalized team from controlled product group', () => {
@@ -90,6 +115,13 @@ test('collection artwork prefers a checked-in team or league logo and uses categ
   assert.equal(accessories.src,'')
   assert.equal(accessories.icon,'accessories')
   assert.equal(accessories.source,'CATEGORY_ICON')
+
+  const linked = resolveCollectionArtwork(
+    { handle:'accessories', name:'Accessories', products:['linked'] },
+    [{ id:'linked', image:'/linked-product.webp' },{ id:'unrelated', image:'/unrelated.webp' }]
+  )
+  assert.equal(linked.src,'/linked-product.webp')
+  assert.equal(linked.source,'PRODUCT_IMAGE')
 })
 
 test('production config serves dynamic collection handles and redirects the plural alias', async () => {
@@ -108,15 +140,33 @@ test('storefront products do not expose private bridge audit metadata', () => {
   assert.equal('bridge' in product.media[0], false)
 })
 
+test('storefront primary image stays listing-specific and ignores generated editorial media', () => {
+  const product = prepareStorefrontProduct({
+    id:'media-priority', handle:'media-priority', title:'Media priority', status:'PUBLISHED',
+    image:'blob:https://store.test/temporary',
+    media:[
+      { id:'generated', type:'IMAGE', role:'model-front', url:'https://cdn.test/editorial/model-front-generated.png' },
+      { id:'back', type:'IMAGE', role:'back', url:'https://cdn.test/listing-back.webp' },
+      { id:'front', type:'IMAGE', role:'front', url:'https://cdn.test/listing-front.webp', alt:'Listing front' }
+    ],
+    variants:[]
+  })
+  assert.equal(product.image,'https://cdn.test/listing-front.webp')
+  assert.equal(product.alt,'Listing front')
+  assert.equal(product.media.some(item => String(item.url).startsWith('blob:')),false)
+})
+
 test('storefront uses the public catalogue and server-validated custom request routes', async () => {
   const main=await readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
+  const productPage=await readFile(new URL('../src/ProductPage.jsx',import.meta.url),'utf8')
+  const storefront=`${main}\n${productPage}`
   const studio=await readFile(new URL('../src/AiStudio.jsx',import.meta.url),'utf8')
   const adapter=await readFile(new URL('../src/lib/supabase.js',import.meta.url),'utf8')
   const ai=await readFile(new URL('../api/ai-preview.js',import.meta.url),'utf8')
   const order=await readFile(new URL('../api/customization-order.js',import.meta.url),'utf8')
-  assert.match(main,/fetchStorefrontCatalog/)
-  assert.match(main,/product\.customFields/)
-  assert.match(main,/selectedVariant/)
+  assert.match(storefront,/fetchStorefrontCatalog/)
+  assert.match(storefront,/product\.customFields/)
+  assert.match(storefront,/selectedVariant/)
   assert.match(adapter,/fetch\('\/api\/customization-order'/)
   assert.doesNotMatch(adapter,/from\('pod_customization_orders'\)\.insert/)
   assert.match(ai,/pod_consume_api_quota|consumeQuota/)
@@ -158,7 +208,7 @@ test('storefront catalog pages use bounded card payloads and remote search', asy
   assert.match(adapter,/source:'cache'/)
   assert.match(adapter,/fetchStorefrontSearch/)
   assert.match(main,/catalogState\.scope !== 'page'/)
-  assert.match(main,/fetchStorefrontSearch\(value,12\)/)
+  assert.match(main,/fetchStorefrontSearch\(candidate,12\)/)
   assert.match(main,/Refresh products/)
 })
 

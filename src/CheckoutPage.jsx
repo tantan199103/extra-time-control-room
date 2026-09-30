@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CircleAlert, Lock, PackageCheck, ShieldCheck, ShoppingBag, Sparkles } from 'lucide-react'
 import { cancelPendingPayment, confirmPayment, createCheckout, requestCheckoutQuote } from './lib/supabase'
 import { trackAddPaymentInfo, trackPurchase } from './lib/meta-pixel'
+import { trackStorefrontEventOnce } from './lib/storefront-analytics'
 
 const money = (value, currency = 'USD') => {
   try { return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(Number(value || 0)) } catch { return `${currency} ${Number(value || 0).toFixed(2)}` }
@@ -117,12 +118,16 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
         let pending = null
         try { pending = JSON.parse(sessionStorage.getItem('extra-time-pending-checkout') || 'null') } catch {}
         const fallbackLineKeys = cart.map(item => item.key || `${item.product.id}:${item.variantId}`)
+        const purchaseValue = Number(result.total || pending?.total || quote?.total || 0)
+        const purchaseCurrency = result.currency || pending?.currency || quote?.currency || 'USD'
+        const itemCount = cart.reduce((sum,item) => sum + Number(item.qty || 1),0) || Number(pending?.itemCount || 0)
         trackPurchase({
           order_id: publicId,
-          value: result.total || pending?.total || quote?.total || 0,
-          currency: result.currency || pending?.currency || quote?.currency || 'USD',
+          value: purchaseValue,
+          currency: purchaseCurrency,
           contents: cart
         })
+        trackStorefrontEventOnce('purchase_completed',publicId,{ order_id:publicId, value:purchaseValue, currency:purchaseCurrency, item_count:itemCount })
         onPaymentConfirmed?.(pending?.publicId === publicId ? (pending.lineKeys || fallbackLineKeys) : fallbackLineKeys)
         if (!onPaymentConfirmed) onClearCart?.()
         try { sessionStorage.removeItem('extra-time-pending-checkout') } catch {}
@@ -169,11 +174,16 @@ export default function CheckoutPage({ cart = [], account, onNavigate, onClearCa
         const secureProviderHost = approval && ((/((^|\.)paypal\.com|(^|\.)paypalobjects\.com)$/i.test(approval.hostname)) || /(^|\.)stripe\.com$/i.test(approval.hostname))
         if (!approval || approval.protocol !== 'https:' || !secureProviderHost) throw new Error('The payment provider returned an invalid secure checkout link. Your bag is still available; try again shortly.')
         trackAddPaymentInfo()
-        sessionStorage.setItem('extra-time-pending-checkout', JSON.stringify({ publicId: result.order.publicId, token: result.order.token, provider: result.provider, lineKeys, customerEmail: customer.email, country: checkoutShipping.country }))
+        sessionStorage.setItem('extra-time-pending-checkout', JSON.stringify({ publicId: result.order.publicId, token: result.order.token, provider: result.provider, lineKeys, customerEmail: customer.email, country: checkoutShipping.country, total:Number(quote.total || 0), currency:quote.currency || 'USD', itemCount:cart.reduce((sum,item) => sum + Number(item.qty || 1),0) }))
         window.location.assign(approval.href)
         return
       }
       if (!result.paid) throw new Error('The payment provider did not return a secure approval link. Your bag is still available; start checkout again.')
+      const purchaseValue = Number(result.total || quote.total || 0)
+      const purchaseCurrency = result.currency || quote.currency || 'USD'
+      const itemCount = cart.reduce((sum,item) => sum + Number(item.qty || 1),0)
+      trackPurchase({ order_id:result.order.publicId, value:purchaseValue, currency:purchaseCurrency, contents:cart })
+      trackStorefrontEventOnce('purchase_completed',result.order.publicId,{ order_id:result.order.publicId, value:purchaseValue, currency:purchaseCurrency, item_count:itemCount })
       onPaymentConfirmed?.(lineKeys)
       if (!onPaymentConfirmed) onClearCart?.()
       onNavigate(`/order/${encodeURIComponent(result.order.publicId)}?token=${encodeURIComponent(result.order.token)}`)

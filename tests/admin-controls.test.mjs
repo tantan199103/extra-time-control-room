@@ -10,7 +10,10 @@ const adapter = await readFile(new URL('../src/lib/supabase.js', import.meta.url
 const aiRoute = await readFile(new URL('../api/ai-listing-copy.js', import.meta.url), 'utf8')
 const mediaRoute = await readFile(new URL('../api/ai-listing-media.js', import.meta.url), 'utf8')
 const collectionsRoute = await readFile(new URL('../api/admin-collections.js', import.meta.url), 'utf8')
-const storefront = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
+const storefront = [
+  await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8'),
+  await readFile(new URL('../src/ProductPage.jsx', import.meta.url), 'utf8')
+].join('\n')
 
 test('admin buttons either have an action or explicitly explain their unavailable state', () => {
   for (const [file, source] of [['admin.jsx', admin], ['admin-builder.jsx', builder], ['ListingWorkspace.jsx', listing], ['VariantMatrix.jsx', variants]]) {

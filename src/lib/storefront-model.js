@@ -8,6 +8,65 @@ const FALLBACK_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const optionSlug = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
+// Public catalog media is expected to be an HTTPS object URL or a local
+// storefront asset. Reject data/blob/source URLs before they reach an <img>;
+// they are not durable listing media and can make one generated preview look
+// like the primary image for unrelated products.
+const usableImageUrl = value => {
+  const url = String(value || '').trim()
+  return /^(?:https:\/\/|\/[^/])[^\s"'<>]+$/i.test(url) ? url : ''
+}
+
+/**
+ * Build responsive candidates for images stored in Supabase's public
+ * storage.  The importers keep one canonical, privacy-cleaned object URL;
+ * Supabase's image renderer can serve smaller derivatives without requiring
+ * another copy of every listing image in the catalogue.  Local assets and
+ * non-Supabase URLs intentionally return an empty value so we never invent a
+ * transformation contract for a provider we do not control.
+ */
+export function storefrontImageSrcSet(value, widths = [320, 480, 768, 1200]) {
+  const raw = usableImageUrl(value)
+  if (!/^https:\/\/[^/]+\/storage\/v1\/object\/public\//i.test(raw)) return ''
+  let parsed
+  try { parsed = new URL(raw) } catch { return '' }
+  parsed.pathname = parsed.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
+  parsed.searchParams.delete('width')
+  parsed.searchParams.delete('height')
+  parsed.searchParams.delete('resize')
+  parsed.searchParams.set('quality', '78')
+  return [...new Set(widths.map(value => Math.max(1, Math.round(Number(value) || 0))).filter(Boolean))]
+    .sort((a, b) => a - b)
+    .map(width => {
+      const candidate = new URL(parsed.href)
+      candidate.searchParams.set('width', String(width))
+      return `${candidate.href} ${width}w`
+    })
+    .join(', ')
+}
+
+const generatedMedia = item => {
+  const role = String(item?.role || item?.mediaRole || '').toLowerCase()
+  const url = String(item?.url || '').toLowerCase()
+  return role.startsWith('model-') || role === 'custom-guide' || /\/editorial\/|generated[-_]/i.test(url)
+}
+
+function resolvePrimaryImage(product, media = []) {
+  const images = media.filter(item => String(item?.type || '').toUpperCase() === 'IMAGE' && usableImageUrl(item?.url))
+  const regularImages = images.filter(item => !generatedMedia(item))
+  const preferred = regularImages.length ? regularImages : images
+  const declared = usableImageUrl(product?.image)
+  // Keep a declared primary only when it is also represented in the media
+  // contract. Otherwise prefer a verified front/first image from that listing.
+  const declaredMedia = preferred.find(item => item.url === declared)
+  const front = preferred.find(item => /^(front|hero|primary|cover)$/i.test(String(item?.role || item?.mediaRole || '')))
+  const selected = declaredMedia || front || preferred[0]
+  return {
+    url: selected?.url || declared || images[0]?.url || '',
+    media: selected || images[0] || null
+  }
+}
+
 export function isHeadwearProduct(product = {}) {
   const group = String(product.productGroup || product.product_group || '').trim()
   if (/^(?:caps?|hats?|knit hats?|beanies?|headwear|visors?)$/i.test(group)) return true
@@ -27,7 +86,7 @@ export function prepareStorefrontProduct(input, persisted = true) {
   const publicMedia = (product.media || []).map(item => {
     const { bridge: _privateBridgeMetadata, ...media } = item || {}
     return media
-  })
+  }).filter(item => String(item?.type || '').toUpperCase() !== 'IMAGE' || usableImageUrl(item?.url))
   const variants = (product.variants || []).filter(variant => variant.status === 'ACTIVE').map(variant => ({
     ...variant,
     // Reserved units are not sellable even though the raw Supabase inventory
@@ -36,8 +95,7 @@ export function prepareStorefrontProduct(input, persisted = true) {
   }))
   const prices = variants.map(variant => Number(variant.price)).filter(Number.isFinite)
   const comparePrices = variants.map(variant => variant.compareAt).filter(value => value != null).map(Number).filter(Number.isFinite)
-  const primaryMedia = publicMedia.find(item => item.type === 'IMAGE' && item.url === product.image)
-    || publicMedia.find(item => item.type === 'IMAGE')
+  const primary = resolvePrimaryImage(product, publicMedia)
 
   const normalizedTaxonomy = normalizeCatalogTaxonomy({ ...publicProduct, taxonomy:publicProduct.taxonomy, productGroup:publicProduct.productGroup })
   const normalizedGroup = normalizedTaxonomy.productGroup || publicProduct.productGroup
@@ -48,8 +106,8 @@ export function prepareStorefrontProduct(input, persisted = true) {
     designerConfig: designerConfig?.provider && designerConfig.productId ? designerConfig : null,
     media: publicMedia,
     handle: product.handle || product.id,
-    image: product.image || primaryMedia?.url || '',
-    alt: primaryMedia?.alt || product.alt || `${product.title || product.name} product image`,
+    image: primary.url,
+    alt: primary.media?.alt || product.alt || `${product.title || product.name} product image`,
     meta: product.meta || [product.productGroup, product.type, product.color].filter(Boolean).join(' · '),
     price: prices.length ? Math.min(...prices) : Number(product.price || 0),
     compareAt: product.compareAt ?? (comparePrices.length ? Math.min(...comparePrices) : null),
@@ -90,6 +148,15 @@ export function buildFallbackCatalog(rows = []) {
       media:row.media?.length ? row.media : [{ id:`${row.id}-primary`, type:'IMAGE', url:row.image, alt:row.alt || '' }],
       content_blocks:row.contentBlocks || [],
       seo:row.seo || { title:`${row.name} — Extra Time`, description:row.story || '' },
+      // The bundled rows are a development/offline catalogue only.  Their
+      // demo rating counts must never be presented as verified shopper
+      // feedback when Supabase is unavailable (or while the first request is
+      // still settling).  Live listings remain free to carry their own
+      // validated rating fields through `prepareStorefrontProduct`.
+      rating:0,
+      reviews:0,
+      reviewQuote:'',
+      review:'',
       options,
       variants
     }, false)

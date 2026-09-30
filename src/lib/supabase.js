@@ -196,6 +196,8 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
     const intentFilter = catalogCategoryIntentFilter(routeCategory)
     const accessoryGroups = routeCategory?.accessoryFamily ? accessoryGroupsForCategory(routeCategory) : []
     const categoryMap = {
+      jerseys:['Football Jersey','Baseball Jersey','Basketball Jersey','Hockey Jersey','Soccer Jersey','Jerseys'],
+      hats:['Caps','Knit Hats','Hats','Headwear'],
       accessories:['Caps','Knit Hats','Accessories','Bags','Backpacks','Sports Bags','Scarves','Gloves','Flags','Banners','Pins','Patches','Key Chains','Keychains','Decals','Magnets','Stickers','Bottles','Mugs','Drinkware','Glassware','Coasters','Socks','Leg Sleeves','Gift Sets','Gift Bundles','Bundles'],
       caps:['Caps'],
       'knit-hats':['Knit Hats'],
@@ -211,6 +213,8 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
     const groups = accessoryGroups.length ? accessoryGroups : categoryMap[parts[1]]
     if (intentFilter?.operator === 'eq') {
       query = query.eq(intentFilter.field,intentFilter.value)
+    } else if (intentFilter?.operator === 'in') {
+      query = query.in(intentFilter.field,intentFilter.values || [])
     } else if (intentFilter?.operator === 'presentAny') {
       query = query.or(intentFilter.fields.map(field => `${field}.not.is.null`).join(','))
     } else if (routeCategory?.accessoryFamily && groups?.length) {
@@ -267,10 +271,10 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   return query
 }
 
-export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, basePath = '/shop', search = '', includeCount = false } = {}) {
+export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 24, basePath = '/shop', search = '', includeCount = false } = {}) {
   if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
-  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
+  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 24)))
   // Once the last 3D listing is removed, do not issue a broad JSONB tags
   // predicate against the live catalogue just to discover an empty page.
   // PostgREST can spend the full statement timeout proving there are no
@@ -342,13 +346,13 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 36, base
   return value
 }
 
-export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize = 36 } = {}) {
+export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize = 24 } = {}) {
   if (!supabase) return { data:[],total:0,page,pageSize,source:'unavailable',error:'Live catalogue is not configured.' }
   const collection = await supabase.from('pod_collections').select('id,handle,name,description,hero_image,seo,updated_at,status,sort_mode').eq('status','PUBLISHED').eq('handle',handle).maybeSingle()
   if (collection.error) return { data:[],total:0,page,pageSize,source:'unavailable',error:collection.error.message }
   if (!collection.data) return { data:[],total:0,page,pageSize,source:'supabase',error:null }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
-  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 36)))
+  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 24)))
   const from = (safePage - 1) * safeSize
   // Filter through the related product table before applying the range. This
   // keeps `total` and page boundaries aligned with what the storefront can

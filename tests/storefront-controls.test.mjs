@@ -2,7 +2,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-const source = await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8')
+const source = [
+  await readFile(new URL('../src/main.jsx', import.meta.url), 'utf8'),
+  await readFile(new URL('../src/ProductPage.jsx', import.meta.url), 'utf8')
+].join('\n')
 const css = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
 const focus = await readFile(new URL('../src/useDialogFocus.js', import.meta.url), 'utf8')
 const supabaseSource = await readFile(new URL('../src/lib/supabase.js', import.meta.url), 'utf8')
@@ -14,6 +17,37 @@ test('closed install sheet cannot intercept pointer events', () => {
   const backdrop = css.match(/\.install-sheet \.backdrop \{([^}]+)\}/)?.[1]
   assert.doesNotMatch(backdrop, /visibility:\s*visible/)
   assert.match(css, /\.install-sheet\.is-open \.backdrop \{[^}]*visibility:\s*visible/)
+})
+
+test('header controls have explicit names and minimum 44px interaction targets', () => {
+  assert.match(source, /aria-label="Search teams, products and leagues"/)
+  assert.match(source, /aria-label=\{`Open bag with \$\{bagCount\}/)
+  assert.match(source, /aria-label="Extra Time home"/)
+  assert.match(css, /\.icon-button \{[^}]*width:44px;[^}]*height:44px/)
+  assert.match(css, /\.text-action \{[^}]*min-height:44px/)
+  assert.match(css, /\.mark \{[^}]*min-height:44px/)
+})
+
+test('search ranks commerce intent and keeps bounded recent searches on the client', () => {
+  assert.match(source, /discoverySearchScore\(b,query\) - discoverySearchScore\(a,query\)/)
+  assert.match(source, /discoveryQueryVariants\(value,3\)/)
+  assert.match(source, /extra-time-recent-searches-v1/)
+  assert.match(source, /RECENT SEARCHES/)
+  assert.match(source, /\.slice\(0,5\)/)
+})
+
+test('storefront emits the planned analytics events at customer actions and failure boundaries', async () => {
+  const designer = await readFile(new URL('../src/CustomDesignerPage.jsx', import.meta.url), 'utf8')
+  const checkout = await readFile(new URL('../src/CheckoutPage.jsx', import.meta.url), 'utf8')
+  const tracking = await readFile(new URL('../src/OrderTrackingPage.jsx', import.meta.url), 'utf8')
+  for (const event of ['search_submitted','filter_applied','product_card_clicked','pdp_viewed','add_to_bag','checkout_started','custom_cta_clicked','image_load_error','catalog_unavailable','search_zero_results']) {
+    assert.match(source,new RegExp(`trackStorefrontEvent\\('${event}'`),event)
+  }
+  for (const event of ['designer_started','designer_completed','designer_load_error']) {
+    assert.match(designer,new RegExp(`trackStorefrontEvent\\('${event}'`),event)
+  }
+  assert.match(checkout,/trackStorefrontEventOnce\('purchase_completed'/)
+  assert.match(tracking,/trackStorefrontEventOnce\('purchase_completed'/)
 })
 
 test('closed panels are inert to keyboard and screen-reader interactions', () => {
@@ -173,4 +207,3 @@ test('product page integrates inline estimated delivery with purchase options an
   assert.match(css, /\.pdp-delivery-badge\s*\{/)
   assert.match(css, /\.pdp-highlights\s*\{\s*padding:\s*36px/)
 })
-

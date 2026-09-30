@@ -33,6 +33,7 @@ import { findActiveVariant } from './lib/variant-selection'
 import { custom3DDesignerConfig } from './lib/custom-3d'
 import { normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PERSONALIZATION_FONTS } from './lib/owayo-personalization'
 import { owayoFamilyByProductId, resolveOwayoManifestRequest } from './lib/owayo-designer-routing'
+import { trackStorefrontEvent } from './lib/storefront-analytics'
 import './custom-designer.css'
 
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
@@ -117,7 +118,7 @@ function initialDesignerState() {
     design:'',
     colors:{ A:'#111311', B:'#F3ED45', C:'#2876FF', K:'#111311' },
     pattern:{ id:'', slug:'', colorCode:'A', scale:1, opacity:.82 },
-    text:{ team:'JERSEVO', name:'YOUR NAME', number:'90', scale:1, color:'#F8F8F4', font:'Barlow Condensed', outlineColor:'#111311', outlineWidth:8, rotation:0, placement:'back', sameOnAll:false, layer:0 },
+    text:{ team:'JERSEVO', name:'YOUR NAME', number:'90', x:0, y:0, scale:1, color:'#F8F8F4', font:'Barlow Condensed', outlineColor:'#111311', outlineWidth:8, rotation:0, placement:'back', sameOnAll:false, layer:0 },
     logo:{ dataUrl:'', name:'', x:0, y:0, scale:1, rotation:0, placement:'front', consent:false },
     previewPlayerId:firstPlayerId,
     roster:[{ id:firstPlayerId, name:'Your name', number:'90', size:'M' }]
@@ -285,6 +286,8 @@ function textTexture(text) {
   const normalized = normalizeOwayoPersonalization(text)
   const layout = owayoBackTextLayout(normalized.placement)
   const rotation = THREE.MathUtils.degToRad(Number(normalized.rotation || 0))
+  const offsetX = Number(normalized.x || 0) * .18
+  const offsetY = Number(normalized.y || 0) * .18
   const fontFamily = OWAYO_PERSONALIZATION_FONTS.includes(normalized.font) ? normalized.font : 'Barlow Condensed'
   const draw = (value, slot) => {
     const content = String(value || '').toUpperCase()
@@ -296,8 +299,10 @@ function textTexture(text) {
       size -= 2
       context.font = `${slot.weight} ${size}px "${fontFamily}", sans-serif`
     }
-    const x = canvas.width * slot.x
-    const y = canvas.height * slot.y
+    // Shift the complete name/number lock-up together.  Clamping each anchor
+    // keeps it inside the selected UV island even at the drag-pad extremes.
+    const x = canvas.width * Math.max(.08, Math.min(.92, slot.x + offsetX))
+    const y = canvas.height * Math.max(.08, Math.min(.92, slot.y + offsetY))
     context.save()
     context.translate(x, y)
     context.rotate(rotation)
@@ -854,7 +859,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
         new THREE.PlaneGeometry(3.1 * Number(text.scale || 1), 3.1 * Number(text.scale || 1)),
         new THREE.MeshBasicMaterial({ map:textMap, transparent:true, depthWrite:false, side:THREE.DoubleSide })
       )
-      textPlane.position.set(0, height * .05, backZ)
+      textPlane.position.set(Number(normalizedText.x || 0) * 1.7, height * .05 - Number(normalizedText.y || 0) * 1.7, backZ)
       textPlane.rotation.y = frontDirection > 0 ? Math.PI : 0
       decoration.add(textPlane)
     } else {
@@ -874,7 +879,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
           new THREE.PlaneGeometry(width, width),
           new THREE.MeshBasicMaterial({ map:texture, transparent:true, depthWrite:false, side:THREE.DoubleSide })
         )
-        plane.position.set(Number(logo.x || 0) * 1.7, height * .12 + Number(logo.y || 0) * 1.7, frontZ)
+        plane.position.set(Number(logo.x || 0) * 1.7, height * .12 - Number(logo.y || 0) * 1.7, frontZ)
         plane.rotation.z = THREE.MathUtils.degToRad(Number(logo.rotation || 0))
         plane.rotation.y = frontDirection > 0 ? 0 : Math.PI
         decoration.add(plane)
@@ -992,6 +997,80 @@ function PatternPanel({ manifest, state, update, onProviderChange, onOpenDesign 
   </div>
 }
 
+const placementValue = (value, fallback = 0) => {
+  const number = Number(value)
+  return Number.isFinite(number) ? Math.max(-1, Math.min(1, number)) : fallback
+}
+
+const placementScale = (value, min, max) => {
+  const number = Number(value)
+  return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : 1
+}
+
+function PlacementPad({ value, onChange, label, preview, previewImage = '', scaleMin = .55, scaleMax = 1.8 }) {
+  const padRef = useRef(null)
+  const x = placementValue(value?.x)
+  const y = placementValue(value?.y)
+  const scale = placementScale(value?.scale, scaleMin, scaleMax)
+  const updateFromPointer = useCallback(event => {
+    const rect = padRef.current?.getBoundingClientRect()
+    if (!rect?.width || !rect?.height) return
+    // The visual safe zone spans 72% x 68% of the pad. Map that area back to
+    // normalized production coordinates so touch, mouse and keyboard agree.
+    const nextX = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - .5) / .36))
+    const nextY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - .5) / .34))
+    onChange({ x:Number(nextX.toFixed(3)), y:Number(nextY.toFixed(3)) })
+  }, [onChange])
+  const changeScale = next => onChange({ scale:Number(placementScale(next, scaleMin, scaleMax).toFixed(2)) })
+  const handleKeyDown = event => {
+    const movement = event.shiftKey ? .1 : .025
+    const directions = {
+      ArrowLeft:{ x:placementValue(x - movement) },
+      ArrowRight:{ x:placementValue(x + movement) },
+      ArrowUp:{ y:placementValue(y - movement) },
+      ArrowDown:{ y:placementValue(y + movement) }
+    }
+    const patch = directions[event.key]
+    if (!patch && event.key !== 'Home') return
+    event.preventDefault()
+    onChange(event.key === 'Home' ? { x:0, y:0 } : patch)
+  }
+  return <section className="designer-placement" aria-label={`${label} placement controls`}>
+    <div className="designer-placement__head"><span><Move size={14}/> Drag to position</span><strong>{Math.round((x + 1) * 50)} · {Math.round((y + 1) * 50)}</strong></div>
+    <div
+      ref={padRef}
+      className="designer-placement__pad"
+      role="group"
+      tabIndex="0"
+      aria-label={`Position ${label}. Drag, use arrow keys, or press Home to center.`}
+      onKeyDown={handleKeyDown}
+      onPointerDown={event => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return
+        event.currentTarget.setPointerCapture(event.pointerId)
+        updateFromPointer(event)
+      }}
+      onPointerMove={event => {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) updateFromPointer(event)
+      }}
+    >
+      <span className="designer-placement__safe" aria-hidden="true"><i>Safe print area</i></span>
+      <span
+        className={`designer-placement__handle${previewImage ? ' has-image' : ''}`}
+        style={{ left:`${50 + x * 36}%`, top:`${50 + y * 34}%`, '--placement-preview-scale':Math.max(.7, Math.min(1.35, scale)) }}
+        aria-hidden="true"
+      >{previewImage ? <img src={previewImage} alt=""/> : <strong>{preview}</strong>}<Move size={13}/></span>
+    </div>
+    <div className="designer-placement__size">
+      <span>Size</span>
+      <button type="button" aria-label={`Make ${label} smaller`} onClick={() => changeScale(scale - .05)}>−</button>
+      <input type="range" aria-label={`${label} size`} min={scaleMin} max={scaleMax} step="0.05" value={scale} onChange={event => changeScale(event.target.value)}/>
+      <button type="button" aria-label={`Make ${label} larger`} onClick={() => changeScale(scale + .05)}>+</button>
+      <output>{Math.round(scale * 100)}%</output>
+    </div>
+    <div className="designer-placement__foot"><small>Drag anywhere in the box. Arrow keys make fine adjustments.</small><button type="button" onClick={() => onChange({ x:0, y:0, scale:1, rotation:0 })}>Reset</button></div>
+  </section>
+}
+
 function TextPanel({ state, update }) {
   const preview = resolveOwayoPreviewText(state.text, state.roster)
   const setText = patch => update(current => {
@@ -1029,7 +1108,7 @@ function TextPanel({ state, update }) {
       <label className="designer-field"><span>Print side</span><select value={state.text.placement || 'back'} onChange={event => setText({ placement:event.target.value })}><option value="back">Back panel</option><option value="front">Front panel</option><option value="left-sleeve">Left sleeve</option><option value="right-sleeve">Right sleeve</option></select><small>UV mapped to the selected garment panel.</small></label>
       <label className="designer-field designer-field--checkbox"><input type="checkbox" checked={Boolean(state.text.sameOnAll)} onChange={event => setText({ sameOnAll:event.target.checked })}/><span>Same on all items</span></label>
     </div>
-    <label className="designer-range"><span>Print scale <strong>{Math.round(state.text.scale * 100)}%</strong></span><input type="range" min="0.7" max="1.3" step="0.05" value={state.text.scale} onChange={event => setText({ scale:Number(event.target.value) })}/></label>
+    <PlacementPad value={state.text} onChange={setText} label="name and number" preview={preview.number || preview.name || '90'}/>
     <label className="designer-range"><span>Text rotation <strong>{Number(state.text.rotation || 0)}°</strong></span><input type="range" min="-30" max="30" step="1" value={state.text.rotation || 0} onChange={event => setText({ rotation:Number(event.target.value) })}/></label>
     <label className="designer-range"><span>Layer <strong>{Number(state.text.layer || 0)}</strong></span><input type="range" min="0" max="20" step="1" value={state.text.layer || 0} onChange={event => setText({ layer:Number(event.target.value) })}/></label>
     <div className="designer-print-note"><CheckCircle2 size={17}/><p>Names and numbers are checked for spelling and safe print placement before production.</p></div>
@@ -1058,7 +1137,8 @@ function LogoPanel({ state, update }) {
     {state.logo.dataUrl && <>
       <div className="designer-logo-actions"><button type="button" onClick={() => setLogo({ dataUrl:'', name:'' })}><Trash2 size={15}/> Remove logo</button><span><Move size={14}/> UV-mapped placement</span></div>
       <label className="designer-field"><span>Place on garment</span><select value={state.logo.placement || 'front'} onChange={event => setLogo({ placement:event.target.value })}><option value="front">Front chest</option><option value="back">Back panel</option><option value="left-sleeve">Left sleeve</option><option value="right-sleeve">Right sleeve</option></select></label>
-      {[['x','Horizontal',-1,1,.05],['y','Vertical',-1,1,.05],['scale','Scale',.5,1.8,.05],['rotation','Rotation',-30,30,1]].map(([key,label,min,max,step]) => <label className="designer-range" key={key}><span>{label} <strong>{key === 'rotation' ? `${state.logo[key]}°` : `${Math.round(state.logo[key] * 100)}%`}</strong></span><input type="range" min={min} max={max} step={step} value={state.logo[key]} onChange={event => setLogo({ [key]:Number(event.target.value) })}/></label>)}
+      <PlacementPad value={state.logo} onChange={setLogo} label="logo" previewImage={state.logo.dataUrl} scaleMin={.25} scaleMax={2}/>
+      <label className="designer-range"><span>Logo rotation <strong>{Number(state.logo.rotation || 0)}°</strong></span><input type="range" min="-180" max="180" step="1" value={state.logo.rotation || 0} onChange={event => setLogo({ rotation:Number(event.target.value) })}/></label>
       <label className="designer-consent"><input type="checkbox" checked={Boolean(state.logo.consent)} onChange={event => setLogo({ consent:event.target.checked })}/><span>I own this logo or have permission to use it.</span></label>
     </>}
   </div>
@@ -1211,6 +1291,14 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const stageRef = useRef(null)
 
   useEffect(() => {
+    trackStorefrontEvent('designer_started',{ provider:routeParams.provider || 'auto', product:routeParams.product || '', listing:routeParams.listing || '' })
+  }, [])
+
+  useEffect(() => {
+    if (stageStatus === 'error') trackStorefrontEvent('designer_load_error',{ provider:history.state.provider || routeParams.provider || 'unknown', product:history.state.productId || routeParams.product || '' })
+  }, [stageStatus])
+
+  useEffect(() => {
     let cancelled = false
     const readJson = async (url, version = '') => {
       const suffix = version ? `${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}` : ''
@@ -1341,6 +1429,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       setListingLoading(false)
       setListingError(error.message || 'The selected listing could not be opened.')
       setManifestError(error.message || 'Designer assets could not be loaded.')
+      trackStorefrontEvent('designer_load_error',{ provider:routeParams.provider || 'auto', product:routeParams.product || '', phase:'manifest' })
     })
     return () => { cancelled = true }
   }, [draftKey])
@@ -1361,6 +1450,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       history.update(current => ({ ...current, provider:'boombah', productId, styleCode:first?.styleCode || '', design:first?.id || first?.slug || '' , colors:{ ...current.colors, ...(first?.defaultColors || {}) } }))
     } catch (error) {
       setManifestError(error.message || 'Boombah product assets could not be loaded.')
+      trackStorefrontEvent('designer_load_error',{ provider:'boombah', product:productId, phase:'product_manifest' })
     }
   }, [catalog, history.update, routeParams.listing, routeParams.product])
 
@@ -1396,6 +1486,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       })
     } catch (error) {
       setManifestError(error.message || 'Owayo product assets could not be loaded.')
+      trackStorefrontEvent('designer_load_error',{ provider:'owayo', product:productId, phase:'product_manifest' })
     }
   }, [history.update, owayoCatalog, routeParams.listing])
 
@@ -1432,6 +1523,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     })
     return exact || candidates.find(product => product.customFields.some(field => field.type === 'logo')) || candidates[0]
   }, [listingProduct, products, routeParams.listing, history.state.provider, history.state.productId, history.state.roster])
+  const previewOnly = !customProduct
   const variant = activeVariant(customProduct, history.state)
   const unitPrice = Number(variant?.price ?? customProduct?.price ?? 79)
   const quantity = Math.max(1, history.state.roster.length)
@@ -1482,6 +1574,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       })
       const requestId = result?.data?.id
       if (!requestId) throw new Error('The design request was not created. Please retry.')
+      trackStorefrontEvent('designer_completed',{ provider:history.state.provider, product_id:customProduct.id, garment:history.state.productId, roster_size:quantity })
       onAdd?.(customProduct, {
         variant,
         options:variant.values || {},
@@ -1532,7 +1625,8 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         <footer className="designer-order">
           <div className="designer-order__price"><span>{quantity} {quantity === 1 ? 'piece' : 'pieces'}{discount ? ` · ${Math.round(discount * 100)}% team saving` : ''}</span><strong>${total.toFixed(2)}</strong><small>{discount ? `$${unitPrice.toFixed(2)} each before team pricing` : 'Artwork review included'}</small></div>
           {submitError && <p className="designer-order__error" role="alert">{submitError}</p>}
-          <div className="designer-order__actions"><button type="button" className="designer-save" onClick={saveNow}><Save size={16}/>{saved ? 'Draft saved' : 'Save draft'}</button><button type="button" className="designer-add" disabled={submitting} onClick={addToBag}><ShoppingBag size={17}/>{submitting ? 'Saving design…' : added ? 'Added to bag' : customProduct && variant ? 'Add team order' : 'Choose a live jersey'}</button></div>
+          <div className="designer-order__actions"><button type="button" className="designer-save" onClick={saveNow}><Save size={16}/>{saved ? 'Draft saved' : 'Save draft'}</button><button type="button" className="designer-add" disabled={submitting || previewOnly || !variant} onClick={addToBag}><ShoppingBag size={17}/>{submitting ? 'Saving design…' : added ? 'Added to bag' : previewOnly ? 'Preview only · listing pending' : customProduct && variant ? 'Add team order' : 'Choose a live jersey'}</button></div>
+          {previewOnly && <p className="designer-order__preview-note">The local 3D studio is ready. A published garment listing is required before checkout.</p>}
         </footer>
       </aside>
     </div>

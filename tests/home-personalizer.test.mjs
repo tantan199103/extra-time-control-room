@@ -54,14 +54,16 @@ test('homepage personalizer uses real catalogue league listings and AI name/numb
 })
 
 test('home customizer links name and number to pdp target query and session storage', async () => {
-  const [main, personalizer] = await Promise.all([
+  const [main, personalizer, productPage] = await Promise.all([
     read('../src/main.jsx'),
-    read('../src/HomeJerseyPersonalizer.jsx')
+    read('../src/HomeJerseyPersonalizer.jsx'),
+    read('../src/ProductPage.jsx')
   ])
   assert.match(personalizer, /jersevo_home_custom/)
-  assert.match(main, /jersevo_home_custom/)
-  assert.match(main, /searchParams\.get\('name'\)/)
-  assert.match(main, /searchParams\.get\('number'\)/)
+  assert.match(productPage, /jersevo_home_custom/)
+  assert.match(productPage, /searchParams\.get\('name'\)/)
+  assert.match(productPage, /searchParams\.get\('number'\)/)
+  assert.match(main, /lazy\(\(\) => import\('\.\/ProductPage'\)\)/)
 })
 
 test('mobile personalizer consolidates timeline and covers 4 major leagues with full size range and no popular chips', async () => {

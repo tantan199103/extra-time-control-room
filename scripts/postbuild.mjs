@@ -57,10 +57,25 @@ if (String(process.env.FANGEAR_IMPORT_ON_BUILD || '').toLowerCase() === 'true') 
 }
 
 // Generate static pages last so they reflect any explicitly requested
-// optimizer/import/publish changes made during this build.
-await import('./generate-seo-pages.mjs')
+// optimizer/import/publish changes made during this build.  A deployment may
+// opt into a shell-only release when the live catalogue is temporarily too
+// slow for the build machine (for example while Supabase is running a large
+// statement).  This keeps UI/asset fixes deployable without pretending that a
+// partial SEO snapshot is complete; the next normal build regenerates it.
+const allowPartialBuild = String(process.env.POSTBUILD_ALLOW_PARTIAL || '').toLowerCase() === 'true'
+if (allowPartialBuild) {
+  console.warn('[postbuild] POSTBUILD_ALLOW_PARTIAL=true; skipping live SEO/feed snapshots for this build.')
+} else {
+  const merchantSourceSnapshot = resolve(root, 'dist', '.merchant-products.json')
+  process.env.MERCHANT_SOURCE_SNAPSHOT = merchantSourceSnapshot
+  try {
+    await import('./generate-seo-pages.mjs')
 
-// Merchant Center consumes a static snapshot.  The generator has its own
-// exact-count/keyset completeness guard and is intentionally last so a
-// partially generated SEO build can never leave a fresh-looking feed behind.
-await runScript('generate-merchant-feed.mjs')
+    // Merchant Center consumes the exact product rows already verified by the
+    // SEO snapshot. It still compares them with a fresh exact count before
+    // writing, but avoids downloading every heavy relation a second time.
+    await runScript('generate-merchant-feed.mjs')
+  } finally {
+    try { fs.unlinkSync(merchantSourceSnapshot) } catch (error) { if (error?.code !== 'ENOENT') throw error }
+  }
+}

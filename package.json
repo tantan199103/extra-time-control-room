@@ -15,6 +15,7 @@
     "migrate:taxonomy": "node scripts/migrate-supplemental-taxonomy.mjs",
     "release:taxonomy": "node scripts/release-repaired-taxonomy.mjs",
     "audit:team-assets": "node scripts/audit-team-assets.mjs --write",
+    "optimize:storefront-images": "node scripts/optimize-storefront-intent-images.mjs",
     "fetch:team-logos": "node scripts/fetch-team-logos.mjs",
     "import:fangear": "node scripts/import-fangear-catalog.mjs",
     "import:taass": "node scripts/import-taass-catalog.mjs",

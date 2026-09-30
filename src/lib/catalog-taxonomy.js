@@ -31,6 +31,12 @@ export const SEASON_DROP_OPTIONS = Object.freeze([
 ])
 
 export const CATALOG_CATEGORY_PAGES = Object.freeze([
+  // Broad product-intent landings mirror the way shoppers search ("jerseys"
+  // and "hats") while the sport-specific pages below carry the deeper SEO
+  // intent. They are intentionally Jersevo-owned labels and copy, not a
+  // replica of a competitor's navigation.
+  { value:'Jerseys', handle:'jerseys', label:'Jerseys', icon:'jersey', intent:'jerseys', description:'Browse Jersevo jerseys by sport, league, team and personalized detail.' },
+  { value:'Hats', handle:'hats', label:'Hats', icon:'cap', intent:'hats', description:'Shop caps, knit hats and game-day headwear by league and team.' },
   { value:'Caps', handle:'caps', label:'Caps', icon:'cap', accessoryFamily:'Headwear', accessoryType:'Caps', description:'Shop fitted, adjustable and snapback caps across leagues and teams.' },
   { value:'Knit Hats', handle:'knit-hats', label:'Knit hats', icon:'beanie', accessoryFamily:'Headwear', accessoryType:'Knit Hats', description:'Explore knit hats and beanies for game day and colder weather.' },
   { value:'Football Jerseys', handle:'football-jerseys', label:'Football jerseys', icon:'jersey', description:'Shop football jerseys and personalized fan gear with tracked US delivery.' },
@@ -160,6 +166,8 @@ export function catalogCategoryByHandle(handle) {
  */
 export function catalogCategoryIntentFilter(category = {}) {
   const intent = String(category?.intent || '').trim().toLowerCase()
+  if (intent === 'jerseys') return { operator:'in', field:'product_group', values:['Football Jersey','Baseball Jersey','Basketball Jersey','Hockey Jersey','Soccer Jersey','Jerseys'] }
+  if (intent === 'hats') return { operator:'in', field:'product_group', values:['Caps','Knit Hats','Hats','Headwear'] }
   if (intent === 'world-cup') return { operator:'eq', field:'taxonomy->>competition', value:'world-cup' }
   if (intent === 'national-teams') return { operator:'presentAny', fields:['taxonomy->>nationalTeam','taxonomy->>national_team'] }
   if (intent === 'football-legends') return { operator:'eq', field:'taxonomy->>theme', value:'football-legends' }
@@ -197,6 +205,18 @@ export function productMatchesCatalogCategory(product = {}, category = {}) {
     ? category
     : ALL_CATALOG_CATEGORY_PAGES.find(item => normalizeAccessoryValue(item.value) === target || item.handle === target) || category
   const resolvedIntent = String(resolvedCategory.intent || '').trim().toLowerCase()
+  if (resolvedIntent === 'jerseys') {
+    const values = [taxonomy.category, taxonomy.productGroup, product.productGroup, product.type]
+      .filter(Boolean).map(value => String(value).toLowerCase())
+    return ['football jerseys','football jersey','baseball jerseys','baseball jersey','basketball jerseys','basketball jersey','hockey jerseys','hockey jersey','soccer jerseys','soccer jersey','jerseys','jersey']
+      .some(group => values.some(value => value === group || value.includes(group)))
+  }
+  if (resolvedIntent === 'hats') {
+    const values = [taxonomy.category, taxonomy.productGroup, product.productGroup, product.type]
+      .filter(Boolean).map(value => String(value).toLowerCase())
+    return ['caps','cap','knit hats','knit hat','hats','hat','headwear','beanies','beanie'].some(group => values.some(value => value === group || value.includes(group)))
+      || ['Caps','Knit Hats'].includes(accessoryTaxonomyForProduct(product).type)
+  }
   if (resolvedIntent === 'world-cup') return String(taxonomy.competition || '').toLowerCase() === 'world-cup'
   if (resolvedIntent === 'national-teams') return Boolean(String(taxonomy.nationalTeam || taxonomy.national_team || '').trim())
   if (resolvedIntent === 'football-legends') return String(taxonomy.theme || '').toLowerCase() === 'football-legends'
@@ -210,6 +230,8 @@ export function productMatchesCatalogCategory(product = {}, category = {}) {
     return hasCustom3DDesigner(product)
   }
   const aliases = {
+    jerseys:['jerseys','jersey','football jerseys','football jersey','basketball jerseys','basketball jersey','baseball jerseys','baseball jersey','hockey jerseys','hockey jersey','soccer jerseys','soccer jersey'],
+    hats:['hats','hat','headwear','caps','cap','snapback caps','fitted caps','adjustable caps','knit hats','knit hat','beanies','beanie'],
     caps:['caps','cap','snapback caps','fitted caps','adjustable caps'],
     'knit hats':['knit hats','knit hat','beanies','beanie'],
     'football jerseys':['football jerseys','football jersey','football','nfl jerseys'],

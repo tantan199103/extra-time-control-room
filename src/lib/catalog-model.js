@@ -61,6 +61,9 @@ export function seoReviewGate(product = {}) {
   const variants = Array.isArray(product.variants) ? product.variants : []
   const legal = catalogLegalReview(product)
   const taxonomy = validateCatalogTaxonomy(product)
+  const importReview = product.aiMetadata?.catalogImport && typeof product.aiMetadata.catalogImport === 'object'
+    ? product.aiMetadata.catalogImport
+    : null
 
   if (String(product.status || '').toUpperCase() !== 'PUBLISHED') blockers.push('PUBLISH_LISTING_FIRST')
   if (!String(product.image || '').trim()) blockers.push('PRIMARY_IMAGE_REQUIRED')
@@ -72,6 +75,16 @@ export function seoReviewGate(product = {}) {
   if (images.some(item => !String(item.alt || '').trim())) blockers.push('ALT_TEXT_REQUIRED_ON_EVERY_IMAGE')
   if (!variants.some(variant => variant.status === 'ACTIVE' && Number(variant.inventory || 0) > 0 && Number(variant.price || 0) > 0)) blockers.push('PRICED_IN_STOCK_VARIANT_REQUIRED')
   if (legal.required && !legal.approved) warnings.push('RIGHTS_REVIEW_RECOMMENDED')
+  // A sanitized import is not proof of a licence. Keep third-party feed rows
+  // out of organic search until an operator records the permission decision.
+  if (importReview) {
+    const rightsStatus = String(importReview.rightsStatus || '').toUpperCase()
+    const mediaRightsStatus = String(importReview.mediaRightsStatus || '').toUpperCase()
+    const catalogReviewStatus = String(product.aiMetadata?.catalogReview?.status || '').toUpperCase()
+    if (rightsStatus && rightsStatus !== 'APPROVED') blockers.push('SOURCE_RIGHTS_REVIEW_REQUIRED')
+    if (mediaRightsStatus && mediaRightsStatus !== 'APPROVED' && mediaRightsStatus !== 'NOT_PROVIDED') blockers.push('SOURCE_MEDIA_RIGHTS_REVIEW_REQUIRED')
+    if (catalogReviewStatus && catalogReviewStatus !== 'APPROVED') blockers.push('SOURCE_CATALOG_REVIEW_REQUIRED')
+  }
   blockers.push(...taxonomy.blockers)
   warnings.push(...taxonomy.warnings)
   if (!seo.primaryKeyword) warnings.push('PRIMARY_KEYWORD_RECOMMENDED')

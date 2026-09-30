@@ -155,6 +155,11 @@ test('Owayo personalization preview is deterministic and roster-backed', () => {
   assert.equal(normalized.font, 'Barlow Condensed')
   assert.equal(normalized.rotation, 30)
   assert.equal(normalized.outlineWidth, 24)
+  assert.equal(normalized.x, 0)
+  assert.equal(normalized.y, 0)
+  assert.equal(normalizeOwayoPersonalization({ x:4, y:-4, scale:4 }).x, 1)
+  assert.equal(normalizeOwayoPersonalization({ x:4, y:-4, scale:4 }).y, -1)
+  assert.equal(normalizeOwayoPersonalization({ x:4, y:-4, scale:4 }).scale, 1.8)
   assert.deepEqual(Object.keys(owayoBackTextLayout()), ['team','name','number'])
   assert.deepEqual(normalizeOwayoLogo({ name:' crest.svg ', placement:'unknown', x:9, scale:0 }), { name:'crest.svg', x:1, y:0, scale:.25, rotation:0, placement:'front' })
 })
@@ -204,6 +209,38 @@ test('Owayo logos and alternate text sides bind to garment UV materials', async 
   assert.deepEqual(owayoPlacementPartNames(['Aermelbandlinks', 'Passelinks'], 'left-sleeve'), ['Aermelbandlinks'])
   assert.deepEqual(owayoPlacementPartNames(['FrontLeftPart', 'FrontRightPart'], 'front'), ['FrontRightPart'])
   assert.deepEqual(owayoPlacementPartNames(['Back1', 'Back2', 'Back3'], 'back'), ['Back1'])
+})
+
+test('placement editor exposes a shared drag pad for text and logos', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /function PlacementPad\(/)
+  assert.match(source, /Drag to position/)
+  assert.match(source, /Arrow keys make fine adjustments/)
+  assert.match(source, /<PlacementPad value=\{state\.text\}/)
+  assert.match(source, /<PlacementPad value=\{state\.logo\}/)
+})
+
+test('custom hub template rail uses complete 3D garment captures', async () => {
+  const source = await readFile(resolve(root, 'src/main.jsx'), 'utf8')
+  for (const slug of ['etape', 'velocity', 'attack', 'aero', 'fire']) {
+    const file = resolve(publicRoot, `designer/owayo/cycling-c3/previews/garment-${slug}.webp`)
+    const metadata = await sharp(file).metadata()
+    assert.equal(metadata.width, 720, `${slug} preview width`)
+    assert.equal(metadata.height, 960, `${slug} preview height`)
+    assert.match(source, new RegExp(`garment-${slug}\\.webp`))
+  }
+  assert.match(source, /custom-template-track__placeholder/)
+})
+
+test('custom hub stays in a transparent preview and waitlist state until live commerce is verified', async () => {
+  const source = await readFile(resolve(root, 'src/main.jsx'), 'utf8')
+  assert.match(source, /source:'custom-3d-waitlist'/)
+  assert.match(source, /PREVIEW IN 3D/)
+  assert.match(source, /Checkout stays locked until a production listing, price, stock and hand-off have passed the publishing gate/)
+  assert.match(source, /commerceVerified=\{!catalogState\.loading/)
+  assert.match(source, /catalogState\.source === 'supabase'/)
+  assert.match(source, /product\.status === 'PUBLISHED' && hasCustom3DDesigner\(product\)/)
+  assert.doesNotMatch(source, /3D custom kits are paused/i)
 })
 
 test('Owayo family catalogue keeps unsupported cuts from masquerading as C3 assets', async () => {

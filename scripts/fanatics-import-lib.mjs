@@ -82,6 +82,41 @@ export function inferFanaticsCustomFields(product = {}) {
   ]
 }
 
+/**
+ * Keep the Fanatics adapter intentionally narrow: Jersevo's approved import
+ * scope is jerseys and headwear only.  This classifier is used before a row
+ * can be written, so a broad category feed cannot quietly turn into a mixed
+ * catalogue of footwear, collectibles or home goods.
+ */
+export function inferFanaticsProductGroup(product = {}, { defaultLeague = '' } = {}) {
+  const text = [
+    product.name,
+    product.title,
+    product.description,
+    product.shortDescription,
+    product.productGroup,
+    product.product_group,
+    product.productType,
+    product.product_type,
+    product.category,
+    product.categoryName,
+    ...(Array.isArray(product.categories) ? product.categories.map(item => typeof item === 'string' ? item : item?.name || item?.slug || '') : []),
+    defaultLeague
+  ]
+    .filter(Boolean).join(' ').toLowerCase()
+  if (/\b(?:knit\s+hat|beanie|skully|toque)\b/i.test(text)) return 'Knit Hats'
+  if (/\b(?:hat|hats|cap|caps|snapback|fitted|trucker|visor|beanie)\b/i.test(text)) return 'Caps'
+  if (/\b(?:jersey|jerseys|kit|uniform|game\s+shirt|swingman|fast\s+break|victory)\b/i.test(text)) {
+    const league = inferFanaticsLeague(text)
+    return league?.group || 'Jerseys'
+  }
+  return ''
+}
+
+export function isFanaticsTargetProduct(product = {}, options = {}) {
+  return Boolean(inferFanaticsProductGroup(product, options))
+}
+
 export function normalizeFanaticsSize(value) {
   const raw = String(value || '').trim()
   const clean = raw.toLowerCase().replace(/^(?:men's|women's|size|adult)\s*/i, '').trim()
@@ -154,7 +189,7 @@ export function normalizeFanaticsProduct(source, { usedHandles = new Set(), used
   const leagueInfo = inferFanaticsLeague(`${title} ${rawDescription} ${defaultLeague}`)
   const leagueKey = leagueInfo?.key || slugify(defaultLeague || '')
   const team = slugify(parsed.team || defaultTeam || '')
-  const productGroup = leagueInfo?.group || 'Football Jersey'
+  const productGroup = inferFanaticsProductGroup(parsed, { defaultLeague }) || leagueInfo?.group || 'Jerseys'
 
   const customFields = inferFanaticsCustomFields(parsed)
 
@@ -238,8 +273,27 @@ export function normalizeFanaticsProduct(source, { usedHandles = new Set(), used
       title: `${title} | Jersevo`.slice(0, 60),
       description: seoDescription(description, '', 160)
     },
+    // Imported rows are deliberately quarantined.  Sanitising a title or
+    // stripping EXIF does not create a licence to reuse a third party's
+    // product, marks or photography; an operator must approve provenance
+    // before publication, indexing or Merchant Center export.
+    seoStatus: 'BLOCKED',
+    seoQualityScore: 0,
+    seoBlockReasons: ['SOURCE_RIGHTS_REVIEW_REQUIRED', 'SOURCE_CONTENT_REVIEW_REQUIRED'],
     aiMetadata: {
       importedFrom: 'CATALOG_ANONYMIZED',
+      catalogImport: {
+        // Keep public listing JSON source-neutral. The internal
+        // `pod_catalog_imports` audit row retains the actual host.
+        sourceKey: 'licensed-third-party-feed',
+        sourceId: rawId,
+        rightsStatus: 'UNVERIFIED',
+        mediaRightsStatus: rawMedia.length ? 'UNVERIFIED' : 'NOT_PROVIDED'
+      },
+      catalogReview: {
+        status: 'PENDING',
+        note: 'Confirm a licensed feed or written permission for product data, marks and media before any publication.'
+      },
       sanitizedAt: new Date().toISOString()
     },
     inventory: variants.reduce((sum, v) => sum + v.inventory, 0),

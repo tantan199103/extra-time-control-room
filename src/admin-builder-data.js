@@ -28,7 +28,7 @@ export const adminTheme = {
       home: { eyebrow: 'CUSTOM JERSEYS', headline: 'YOUR NAME.\nYOUR NUMBER.\nYOUR JERSEY.', supporting: 'Made for fans. Personalized with the details that make it yours.', button: 'START CUSTOMIZING' },
       collection: { eyebrow: 'SHOP THE CATALOG', headline: 'FIND YOUR\nNEXT PIECE.', supporting: 'Browse published jerseys, fan gear and accessories by sport, team or collection.', button: 'SHOP ALL GEAR' },
       product: { eyebrow: 'PRODUCT DETAIL', headline: 'BUILT FOR\nYOUR MOMENT.', supporting: 'Choose a variation, add only the personal details this design supports, then review before checkout.', button: 'ADD TO BAG' },
-      custom: { eyebrow: 'CUSTOM LAB / REVIEWED PERSONALIZATION', headline: 'PUT YOUR\nMOMENT ON IT.', supporting: 'Choose a designer-led base, add approved details and review every field before production.', button: 'CHOOSE A JERSEY' },
+      custom: { eyebrow: 'CUSTOM STUDIO / 3D PREVIEW', headline: 'DESIGN IT.\nWEAR IT.', supporting: 'Choose a performance cut, start from a proven template, then put your colors, name, number and logo exactly where they belong.', button: 'START YOUR DESIGN' },
       vault: { eyebrow: 'THE VAULT', headline: 'EVERY DROP\nLEAVES A MARK.', supporting: 'Archive stories from previous Extra Time releases.', button: 'ENTER THE VAULT' }
     },
     blocks: {
@@ -44,7 +44,8 @@ export const adminMenus = [
     items: [
       { id: 'shop', label: 'Shop', target: '/shop', type: 'Page', visible: true, children: [
         { id: 'all-products', label: 'All gear', target: '/shop', type: 'Page', visible: true },
-        { id: 'jerseys', label: 'Jerseys', target: '/category/football-jerseys', type: 'Page', visible: true },
+        { id: 'jerseys', label: 'Jerseys', target: '/category/jerseys', type: 'Page', visible: true },
+        { id: 'hats', label: 'Hats & headwear', target: '/category/hats', type: 'Page', visible: true },
         { id: 'accessories', label: 'Accessories', target: '/category/accessories', type: 'Page', visible: true }
       ]},
       { id: 'sports', label: 'Sports', target: '/sports', type: 'Page', visible: true, children: [] },

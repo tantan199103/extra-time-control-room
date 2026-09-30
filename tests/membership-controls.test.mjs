@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 const main=await readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
+const productPage=await readFile(new URL('../src/ProductPage.jsx',import.meta.url),'utf8')
 const member=await readFile(new URL('../src/MembershipPage.jsx',import.meta.url),'utf8')
 const admin=await readFile(new URL('../src/AdminMembership.jsx',import.meta.url),'utf8')
 const adapter=await readFile(new URL('../src/lib/supabase.js',import.meta.url),'utf8')
@@ -13,7 +14,7 @@ const worker=await readFile(new URL('../public/sw.js',import.meta.url),'utf8')
 test('membership is reachable from storefront, product, account and app navigation',()=>{
   assert.match(main,/path === '\/membership'/)
   assert.match(main,/90\+ CLUB/)
-  assert.match(main,/pdp__club/)
+  assert.match(productPage,/pdp__club/)
   assert.match(main,/id: 'leagues'/)
   assert.match(main,/membership#account/)
 })

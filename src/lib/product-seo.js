@@ -92,6 +92,28 @@ export function productStructuredData(product, origin = 'https://www.jersevo.com
     itemListElement:productBreadcrumbs(product,options).map((item,index) => ({ '@type':'ListItem',position:index+1,name:item.label,item:new URL(item.href,origin).href })) }]
 }
 
+export function catalogItemListStructuredData(products = [], origin = 'https://www.jersevo.com', { start = 1 } = {}) {
+  const firstPosition = Math.max(1, Math.trunc(Number(start) || 1))
+  const itemListElement = []
+  for (const product of products) {
+    const metadata = productSeoMetadata(product, origin)
+    if (!metadata.indexable) continue
+    itemListElement.push({
+      '@type':'ListItem',
+      position:firstPosition + itemListElement.length,
+      url:metadata.canonical,
+      name:cleanSeoText(product.title || product.name),
+      ...(metadata.image ? { image:metadata.image } : {})
+    })
+  }
+  return {
+    '@context':'https://schema.org',
+    '@type':'ItemList',
+    numberOfItems:itemListElement.length,
+    itemListElement
+  }
+}
+
 const relatedIndexCache = new WeakMap()
 
 function addRelatedIndex(map, key, item) {

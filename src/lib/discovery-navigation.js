@@ -4,6 +4,23 @@ import { resolveCollectionArtwork } from './collection-artwork.js'
 
 export const PRIMARY_DISCOVERY_LABELS = Object.freeze(['Shop', 'Sports', 'Teams', 'Custom', 'Collections', 'New & trending'])
 
+// A collection is eligible for public discovery only when it is published
+// (or came from the already-published storefront endpoint) and has at least
+// one public listing. Keep artwork resolution beside that gate so the
+// directory and mega-menu cannot drift into showing empty editorial shells.
+export function storefrontCollectionEntries(collections = [], products = []) {
+  return (Array.isArray(collections) ? collections : [])
+    .filter(row => row?.handle)
+    .filter(row => !row.status || String(row.status).toUpperCase() === 'PUBLISHED')
+    .filter(row => Number(row.publishedCount ?? row.count ?? row.products?.length ?? 0) > 0)
+    .map(row => ({
+      collection:row,
+      count:Number(row.publishedCount ?? row.count ?? row.products?.length ?? 0),
+      artwork:resolveCollectionArtwork(row,products)
+    }))
+    .sort((left,right) => String(left.collection.name || left.collection.handle).localeCompare(String(right.collection.name || right.collection.handle)))
+}
+
 // Search is a shopper-facing taxonomy, not an editorial full-text search.
 // Keep the normalisation in one place so the overlay, the Shop route and the
 // compact navigation index agree on what a query means (for example, "NY
@@ -16,6 +33,102 @@ export function normalizeDiscoveryQuery(value) {
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, ' ')
+}
+
+const DISCOVERY_SYNONYM_GROUPS = Object.freeze([
+  ['jersey','jerseys','kit','kits'],
+  ['cap','caps','hat','hats','headwear','snapback','snapbacks','beanie','beanies'],
+  ['tee','tees','tshirt','tshirts','shirt','shirts'],
+  ['custom','personalized','personalised'],
+  ['collectible','collectibles','memorabilia']
+])
+
+const DISCOVERY_SYNONYMS = new Map(DISCOVERY_SYNONYM_GROUPS.flatMap(group => group.map(term => [term,group])))
+const DISCOVERY_VOCABULARY = [...new Set([
+  ...DISCOVERY_SYNONYM_GROUPS.flat(),
+  ...ALL_CATALOG_CATEGORY_PAGES.flatMap(category => [category.handle,...normalizeDiscoveryQuery(category.label).split(' ')]),
+  ...ALL_LEAGUE_TAXONOMY.flatMap(league => [league.key,...normalizeDiscoveryQuery(`${league.name} ${league.sport}`).split(' '),...league.teams.flatMap(team => normalizeDiscoveryQuery(`${team.name} ${team.slug}`).split(' '))])
+].filter(Boolean))]
+
+function discoveryEditDistance(left, right) {
+  if (left === right) return 0
+  if (!left.length) return right.length
+  if (!right.length) return left.length
+  let previous = Array.from({ length:right.length + 1 }, (_, index) => index)
+  for (let leftIndex = 0; leftIndex < left.length; leftIndex += 1) {
+    const current = [leftIndex + 1]
+    for (let rightIndex = 0; rightIndex < right.length; rightIndex += 1) {
+      current.push(Math.min(
+        current[rightIndex] + 1,
+        previous[rightIndex + 1] + 1,
+        previous[rightIndex] + (left[leftIndex] === right[rightIndex] ? 0 : 1)
+      ))
+    }
+    previous = current
+  }
+  return previous[right.length]
+}
+
+function adjacentDiscoveryTransposition(left, right) {
+  if (left.length !== right.length) return false
+  const changed = []
+  for (let index = 0; index < left.length; index += 1) if (left[index] !== right[index]) changed.push(index)
+  return changed.length === 2 && changed[1] === changed[0] + 1 && left[changed[0]] === right[changed[1]] && left[changed[1]] === right[changed[0]]
+}
+
+function correctedDiscoveryToken(token) {
+  if (token.length < 4 || DISCOVERY_VOCABULARY.includes(token)) return token
+  const threshold = token.length >= 8 ? 2 : 1
+  let winner = token
+  let distance = threshold + 1
+  for (const candidate of DISCOVERY_VOCABULARY) {
+    if (Math.abs(candidate.length - token.length) > threshold) continue
+    const nextDistance = adjacentDiscoveryTransposition(token,candidate) ? 1 : discoveryEditDistance(token,candidate)
+    if (nextDistance < distance || nextDistance === distance && candidate.length < winner.length) {
+      winner = candidate
+      distance = nextDistance
+    }
+  }
+  return distance <= threshold ? winner : token
+}
+
+function discoveryTokenAlternatives(token) {
+  const corrected = correctedDiscoveryToken(token)
+  return [...new Set([token,corrected,...(DISCOVERY_SYNONYMS.get(token) || []),...(DISCOVERY_SYNONYMS.get(corrected) || [])])]
+}
+
+export function discoveryQueryVariants(value, limit = 4) {
+  const normalized = normalizeDiscoveryQuery(value)
+  if (!normalized) return []
+  const tokens = normalized.split(' ')
+  const corrected = tokens.map(correctedDiscoveryToken).join(' ')
+  const variants = [normalized,corrected]
+  tokens.forEach((token,index) => {
+    for (const alternative of discoveryTokenAlternatives(token)) {
+      if (alternative === token) continue
+      variants.push(tokens.map((part,partIndex) => partIndex === index ? alternative : correctedDiscoveryToken(part)).join(' '))
+    }
+  })
+  return [...new Set(variants)].slice(0,Math.max(1,limit))
+}
+
+function discoveryTokensMatch(value, query) {
+  const words = normalizeDiscoveryQuery(value).split(' ').filter(Boolean)
+  if (!words.length) return false
+  return normalizeDiscoveryQuery(query).split(' ').filter(Boolean).every(token => discoveryTokenAlternatives(token).some(alternative => words.some(word => word.includes(alternative) || alternative.length >= 4 && (adjacentDiscoveryTransposition(alternative,word) || discoveryEditDistance(alternative,word) <= (alternative.length >= 8 ? 2 : 1)))))
+}
+
+export function discoveryTextScore(value, query) {
+  const haystack = normalizeDiscoveryQuery(value)
+  if (!haystack) return 0
+  let score = 0
+  for (const candidate of discoveryQueryVariants(query,8)) {
+    if (haystack === candidate) score = Math.max(score,1000)
+    else if (haystack.startsWith(candidate)) score = Math.max(score,800)
+    else if (haystack.includes(candidate)) score = Math.max(score,650)
+    else if (discoveryTokensMatch(haystack,candidate)) score = Math.max(score,300)
+  }
+  return score
 }
 
 export function productSearchText(product = {}) {
@@ -38,11 +151,24 @@ export function productSearchText(product = {}) {
 export function matchesDiscoveryQuery(product, query) {
   const needle = normalizeDiscoveryQuery(query)
   if (!needle) return true
-  const text = productSearchText(product)
-  // Treat each word as a required intent token.  This keeps "cowboys
-  // pennant" useful while still allowing a normal phrase such as "Dallas
-  // Cowboys" to resolve naturally.
-  return needle.split(' ').filter(Boolean).every(token => text.includes(token))
+  return discoveryTextScore(productSearchText(product),needle) > 0
+}
+
+export function discoverySearchScore(product, query) {
+  if (!matchesDiscoveryQuery(product,query)) return 0
+  const taxonomy = product.taxonomy || {}
+  const weighted = (value,weight) => {
+    const score = discoveryTextScore(value,query)
+    return score ? score + weight : 0
+  }
+  return Math.max(
+    weighted(product.title || product.name,500),
+    weighted(taxonomy.team,400),
+    weighted(taxonomy.league,350),
+    weighted(product.productGroup,300),
+    weighted(taxonomy.category,250),
+    discoveryTextScore(productSearchText(product),query)
+  )
 }
 
 // Imported/preview rows do not always carry the structured taxonomy columns
@@ -108,9 +234,17 @@ export function discoveryMenu(index, collections = [], products = []) {
   const categories = index?.categories || []
   const leagues = index?.leagues || []
   const teams = index?.teams || []
+  const publicCollections = storefrontCollectionEntries(collections,products)
   const category = handle => categories.find(item => item.handle === handle)
-  const categoryLinks = ['football-jerseys','baseball-jerseys','basketball-jerseys','hockey-jerseys','soccer-jerseys','world-cup-jerseys','national-team-jerseys','football-legends','caps','knit-hats','fan-apparel','accessories','collectibles']
-    .map(category).filter(Boolean).map(item => ({ label:item.label, href:`/category/${item.handle}`, icon:item.icon }))
+  const browseCategory = handle => category(handle) || (index?.total ? ALL_CATALOG_CATEGORY_PAGES.find(item => item.handle === handle) : null)
+  // Keep the first product branch at the same intent level as the URL: broad
+  // hubs (jerseys, hats, accessories) first, then sport-specific landings in
+  // their own bounded branch. This gives shoppers a short route while still
+  // exposing deep SEO pages once they choose a sport.
+  const categoryLinks = ['jerseys','hats','accessories','fan-apparel','custom-jerseys','collectibles']
+    .map(browseCategory).filter(Boolean).map(item => ({ label:item.label, href:`/category/${item.handle}`, icon:item.icon }))
+  const sportCategoryLinks = ['football-jerseys','baseball-jerseys','basketball-jerseys','hockey-jerseys','soccer-jerseys','world-cup-jerseys','national-team-jerseys','football-legends']
+    .map(browseCategory).filter(Boolean).map(item => ({ label:item.label, href:`/category/${item.handle}`, icon:item.icon }))
   const accessoryLinks = ACCESSORY_FAMILY_OPTIONS
     .filter(item => categories.some(category => category.handle === item.handle) || index?.total)
     .map(item => ({ label:item.label, href:`/category/${item.handle}`, icon:item.icon }))
@@ -127,6 +261,7 @@ export function discoveryMenu(index, collections = [], products = []) {
   return [
     { id:'shop', label:'Shop', href:'/shop', sections:[
       { label:'Shop by product', links:[{ label:'Shop all', href:'/shop' },...categoryLinks] },
+      { label:'Shop by sport', links:sportCategoryLinks },
       { label:'Accessories', links:[...accessoryLinks, ...accessoryTypeLinks] },
       { label:'Explore', links:[{ label:'Find your team', href:'/teams' },{ label:'Browse sports', href:'/sports' },{ label:'World Cup jerseys', href:'/category/world-cup-jerseys' },{ label:'National team jerseys', href:'/category/national-team-jerseys' },{ label:'Football legends', href:'/category/football-legends' },{ label:'Personalized gear', href:'/shop?custom=1' }] }
     ] },
@@ -140,12 +275,12 @@ export function discoveryMenu(index, collections = [], products = []) {
       { label:'By sport', links:leagues.slice(0,6).map(league => ({ label:league.name, href:`${leaguePath(league)}?custom=1` })) }
     ] },
     { id:'collections', label:'Collections', href:'/collections', sections:[
-      { label:'Current collections', links:(collections || []).filter(row => row?.handle).slice(0,8).map(row => { const artwork = resolveCollectionArtwork(row,products); return { label:row.name || row.title || row.handle, href:`/collection/${encodeURIComponent(row.handle)}`, image:artwork.src, icon:artwork.icon, artworkSource:artwork.source, coverPending:!artwork.src } }) },
+      { label:'Current collections', links:publicCollections.slice(0,8).map(({collection:row,artwork,count}) => ({ label:row.name || row.title || row.handle, href:`/collection/${encodeURIComponent(row.handle)}`, image:artwork.src, icon:artwork.icon, artworkSource:artwork.source, coverPending:!artwork.src, count })) },
       { label:'Explore', links:[{ label:'Browse all gear', href:'/shop' },{ label:'Personalized gear', href:'/shop?custom=1' }] }
     ] },
     { id:'new', label:'New & trending', href:'/shop?sort=NEWEST', sections:[
       { label:'Fresh finds', links:[{ label:'New arrivals', href:'/shop?sort=NEWEST' },{ label:'Fan favorites', href:'/shop' }] },
-      { label:'Shop by interest', links:[{ label:'3D custom kits', href:'/category/custom-jerseys' },{ label:'Headwear', href:'/category/caps' },{ label:'Collectibles', href:'/category/collectibles' }] }
+      { label:'Shop by interest', links:[{ label:'3D custom kits', href:'/category/custom-jerseys' },{ label:'Headwear', href:'/category/hats' },{ label:'Collectibles', href:'/category/collectibles' }] }
     ] }
   ]
 }

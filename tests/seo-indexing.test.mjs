@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { productSeoMetadata, productStructuredData, relatedProducts, usd, safeJson } from '../src/lib/product-seo.js'
+import { catalogItemListStructuredData, productSeoMetadata, productStructuredData, relatedProducts, usd, safeJson } from '../src/lib/product-seo.js'
 import { renderProductContent, renderSitemap, renderSitemapIndex } from '../scripts/seo-render.mjs'
 
 const product = {
@@ -33,6 +33,21 @@ test('PDP breadcrumb links to a team product page only after that landing is qua
   assert.equal(withoutType.itemListElement.some(item => item.item.endsWith('/team/nfl/green-bay-packers/jerseys')),false)
   const withType = productStructuredData({ ...product, productGroup:'Football Jersey' },'https://www.jersevo.com',{includeTeamProductType:true})[1]
   assert.equal(withType.itemListElement.some(item => item.item.endsWith('/team/nfl/green-bay-packers/jerseys')),true)
+})
+
+test('catalog ItemList schema exposes only indexable product URLs in visible order', () => {
+  const schema = catalogItemListStructuredData([
+    product,
+    { ...product, id:'listing-2', handle:'blocked', title:'Blocked Jersey', seoStatus:'BLOCKED' },
+    { ...product, id:'listing-3', handle:'second', title:'Second Jersey' }
+  ])
+  assert.equal(schema['@type'],'ItemList')
+  assert.equal(schema.numberOfItems,2)
+  assert.deepEqual(schema.itemListElement.map(item => item.position),[1,2])
+  assert.deepEqual(schema.itemListElement.map(item => item.url),[
+    'https://www.jersevo.com/product/test-jersey',
+    'https://www.jersevo.com/product/second'
+  ])
 })
 
 test('PDP keeps a complete merchant-written meta description beyond 160 characters', () => {
@@ -86,10 +101,14 @@ test('sitemap contains supplied canonical pages with useful lastmod and product 
 })
 
 test('SEO generation reads every taxonomy signal and removes obsolete sitemap shards', async () => {
-  const generator = await readFile(new URL('../scripts/generate-seo-pages.mjs',import.meta.url),'utf8')
-  const productQueries = [...generator.matchAll(/pod_products\?select=([^`]+)`/g)].map(match => match[1])
-  assert.ok(productQueries.length >= 3)
-  assert.ok(productQueries.every(query => /(?:^|,)taxonomy,tags(?:,|&)/.test(query)))
+  const [generator,snapshot] = await Promise.all([
+    readFile(new URL('../scripts/generate-seo-pages.mjs',import.meta.url),'utf8'),
+    readFile(new URL('../scripts/seo-catalog-snapshot.mjs',import.meta.url),'utf8')
+  ])
+  assert.match(generator,/const PRODUCT_SELECT = '[^']*taxonomy,tags,/)
+  assert.match(generator,/fetchPublishedProductRows/)
+  assert.match(snapshot,/productRangeUrl/)
+  assert.match(snapshot,/assertSameIds\(ids, afterIds, 'published catalogue'\)/)
   assert.match(generator,/normalizeAccessoryTaxonomy\(product\.taxonomy \? \{ \.\.\.product, taxonomy:product\.taxonomy \} : product\)/)
   assert.match(generator,/accessoryCategory:taxonomy\.accessoryCategory/)
   assert.match(generator,/accessoryType:taxonomy\.accessoryType/)

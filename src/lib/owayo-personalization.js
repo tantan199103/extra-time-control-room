@@ -143,7 +143,12 @@ export function normalizeOwayoPersonalization(input = {}, roster = []) {
     color: normalizeOwayoColor(input?.color),
     outlineColor: normalizeOwayoColor(input?.outlineColor, '#111311'),
     outlineWidth: clamp(input?.outlineWidth, 0, 24, 8),
-    scale: clamp(input?.scale, .7, 1.3, 1),
+    // Position and size are part of the production contract.  The editor
+    // exposes them as normalized values so a pointer drag remains portable
+    // between garment cuts and the server can validate the same bounds.
+    x: clamp(input?.x, -1, 1, 0),
+    y: clamp(input?.y, -1, 1, 0),
+    scale: clamp(input?.scale, .55, 1.8, 1),
     rotation: clamp(input?.rotation, -30, 30, 0),
     placement: PLACEMENTS.has(placementCandidate) ? placementCandidate : 'back',
     sameOnAll: Boolean(input?.sameOnAll),

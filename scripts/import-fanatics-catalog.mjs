@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import { buildListingInput } from '../src/lib/catalog-model.js'
 import {
   normalizeFanaticsProduct,
+  isFanaticsTargetProduct,
   hydrateListingMedia,
   PRIMARY_FANATICS_HOST
 } from './fanatics-import-lib.mjs'
@@ -43,6 +44,8 @@ function argValue(name, fallback = '') {
 
 const dryRun = !hasArg('--write')
 const includeMedia = hasArg('--media') || (hasArg('--write') && String(process.env.FANATICS_IMPORT_MEDIA || 'true').toLowerCase() !== 'false')
+const sourceAuthorized = String(process.env.FANATICS_SOURCE_AUTHORIZED || '').toLowerCase() === 'true'
+const mediaAuthorized = String(process.env.FANATICS_MEDIA_AUTHORIZED || '').toLowerCase() === 'true'
 const filePath = argValue('--file', '')
 const jsonArg = argValue('--json', '')
 const limit = Math.max(0, Number(argValue('--limit', 0)) || 0)
@@ -54,9 +57,18 @@ function usage() {
     `  --file <path>   Path to JSON file containing a Fanatics product or array of products.\n` +
     `  --json '<data>' Raw JSON string containing product data.\n` +
     `  --write         Execute writes to Supabase (requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY).\n` +
-    `  --media         Download images, strip EXIF metadata, and upload to 'product-media' bucket.\n` +
+    `  --media         Download images, strip EXIF metadata, and upload to 'product-media' bucket (requires FANATICS_MEDIA_AUTHORIZED=true).\n` +
     `  --limit <n>     Limit the number of products to process.\n` +
     `  --dry-run       Validate and normalize without modifying database or storage (default).\n`)
+}
+
+function assertPermission({ write = false, media = false } = {}) {
+  if ((write || media) && !sourceAuthorized) {
+    throw new Error('Fanatics import is gated. Set FANATICS_SOURCE_AUTHORIZED=true only after confirming a licensed feed, written permission, or an owner-provided export.')
+  }
+  if (media && !mediaAuthorized) {
+    throw new Error('Fanatics media import is gated separately. Set FANATICS_MEDIA_AUTHORIZED=true only when the licence explicitly covers image reuse.')
+  }
 }
 
 export async function loadSourcePayloads({ filePath = '', jsonArg = '' } = {}) {
@@ -142,6 +154,7 @@ export async function run({
   limitCount = limit,
   supabaseClient = null
 } = {}) {
+  assertPermission({ write:!isDryRun, media:withMedia && !isDryRun })
   const sourcePayloads = await loadSourcePayloads({ filePath: file, jsonArg: json })
   const targetedPayloads = limitCount > 0 ? sourcePayloads.slice(0, limitCount) : sourcePayloads
 
@@ -153,6 +166,10 @@ export async function run({
 
   let normalizedItems = targetedPayloads.map(payload => {
     try {
+      if (!isFanaticsTargetProduct(payload)) {
+        errors.push({ kind: 'scope', sourceId: payload?.id || payload?.sku || payload?.name || '', error: 'Only jersey and hat products are in the approved Fanatics import scope.' })
+        return null
+      }
       return normalizeFanaticsProduct(payload, { usedHandles, usedSkus })
     } catch (err) {
       errors.push({ kind: 'normalization', error: err instanceof Error ? err.message : String(err) })

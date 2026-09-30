@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, CircleAlert, Copy, ExternalLink, Package, RefreshCw, Search, Truck } from 'lucide-react'
 import { statusLabel, trackOrder } from './lib/order-tracking'
 import { renderGoogleSurveyOptIn } from './lib/google-reviews'
+import { trackStorefrontEventOnce } from './lib/storefront-analytics'
 
 const stages = [
   { key: 'PAID', title: 'Payment received', copy: 'Your payment is confirmed.' },
@@ -71,6 +72,7 @@ export default function OrderTrackingPage({ onNavigate, onPaymentConfirmed, init
       setOrder(next)
       const pending = readPendingCheckout()
       if (next.paymentStatus === 'PAID' && pending?.publicId === next.publicId) {
+        trackStorefrontEventOnce('purchase_completed',next.publicId,{ order_id:next.publicId, value:Number(next.total || pending.total || 0), currency:next.currency || pending.currency || 'USD', item_count:Number(pending.itemCount || 0) })
         onPaymentConfirmed?.(pending.lineKeys)
         try { sessionStorage.removeItem('extra-time-pending-checkout') } catch {}
       }

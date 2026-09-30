@@ -5,20 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="preconnect" href="https://ofetusgarxcwloxxkhnr.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="//ofetusgarxcwloxxkhnr.supabase.co" />
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel is intentionally booted during idle time. The storefront
+         remains usable if the third-party script is delayed or blocked. -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1684842090311448');
-      fbq('track', 'PageView');
+      (function(w,d){
+        var boot=function(){
+          if(w.__EXTRA_TIME_PIXEL_PAGEVIEW_SENT__) return;
+          !function(f,b,e,v,n,t,s){
+            if(f.fbq) return;
+            n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq) f._fbq=n;
+            n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
+            t=b.createElement(e);t.async=!0;t.src=v;
+            s=b.getElementsByTagName(e)[0];if(s&&s.parentNode)s.parentNode.insertBefore(t,s)
+          }(w,d,'script','https://connect.facebook.net/en_US/fbevents.js');
+          w.__EXTRA_TIME_PIXEL_INITIALIZED_IDS__=w.__EXTRA_TIME_PIXEL_INITIALIZED_IDS__||new Set();
+          if(!w.__EXTRA_TIME_PIXEL_INITIALIZED_IDS__.has('1684842090311448')){
+            w.fbq('init','1684842090311448');
+            w.__EXTRA_TIME_PIXEL_INITIALIZED_IDS__.add('1684842090311448');
+          }
+          w.fbq('track','PageView');
+          w.__EXTRA_TIME_PIXEL_PAGEVIEW_SENT__=true;
+        };
+        if(w.requestIdleCallback) w.requestIdleCallback(boot,{timeout:2500});
+        else w.setTimeout(boot,1200);
+      })(window,document);
     </script>
-    <!-- End Meta Pixel Code -->
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -45,6 +57,7 @@
     <link rel="alternate" hreflang="x-default" href="https://www.jersevo.com/" />
     <link rel="preload" as="image" href="/assets/hero-tunnel.webp" fetchpriority="high" id="route-lcp-image" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <title>Custom Jerseys &amp; Personalized Fan Gear | Jersevo</title>
