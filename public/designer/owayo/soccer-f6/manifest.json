@@ -3,20 +3,26 @@
   "provider": "owayo",
   "source": {
     "ownerConfirmedByOperator": true,
-    "configurator": "https://www.owayo.com/konfigurator_html/?color=RDY47588493&design=Etape&land=us&lang=en&product=bikejerseys_epic&sport=cycling",
+    "catalogue": "https://www.owayo.com/soccer-shirts_f6-us.htm",
+    "configurator": "https://www.owayo.com/konfigurator_html/?land=us&lang=en&product=shirts_f6&sport=football&design=City",
     "productEndpoint": "https://www.owayo.com/konfigurator_php/auswahlmodul/produkt.php",
     "assetOrigin": "https://static.owayo-cdn.com",
-    "syncedAt": "2026-09-28T18:59:53.795Z"
+    "syncedAt": "2026-09-30T05:03:42.539Z"
   },
   "product": {
-    "name": "Aero Cycling Jersey C7 Epic",
-    "publicSlug": "bikejerseys_epic",
-    "normalizedSlug": "radtrikots_c7_epic",
-    "orderType": "Bike Jersey 2.0",
-    "cut": "221m",
-    "model": "221m",
-    "baseModel": "221m",
-    "baseDesign": null,
+    "name": "Football Jersey F6 Hero",
+    "familyId": "soccer-f6",
+    "catalogGroup": "soccer",
+    "catalogGroupLabel": "Soccer",
+    "sport": "football",
+    "sportLabel": "Soccer",
+    "publicSlug": "shirts_f6",
+    "normalizedSlug": "trikots_f6",
+    "orderType": "Teamsport Trikot 2.0",
+    "cut": "204m",
+    "model": "204m_T14_EA_CK_KA",
+    "baseModel": "204m_T14_EA_[Kragen]_[Ärmellänge]",
+    "baseDesign": "Style",
     "sizes": [
       {
         "name": "Choose your size",
@@ -57,22 +63,27 @@
       {
         "name": "10 (XL)",
         "size": "10"
+      },
+      {
+        "name": "11 (XXL)",
+        "size": "11"
+      },
+      {
+        "name": "12 (XXL)",
+        "size": "12"
+      },
+      {
+        "name": "14 (3XL)",
+        "size": "14"
       }
     ],
     "minimumOrder": 1,
     "maximumOrder": -1,
     "droppableParts": [
-      "Back 1",
-      "Back 3",
-      "Bag",
-      "Front Left Part",
-      "Front Right Part",
+      "Back",
+      "Front",
       "Left Arm",
-      "Right Arm",
-      "Seitenteil links oben",
-      "Seitenteil links unten",
-      "Seitenteil rechts oben",
-      "Seitenteil rechts unten"
+      "Right Arm"
     ],
     "colorCodes": [
       {
@@ -86,20 +97,6 @@
         "IsHideable": false,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": true,
-        "InKonfi": true,
-        "farbAbhaengigkeitsArt": "<nix>"
-      },
-      {
-        "colorCode": "A_O",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": false,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "50",
-        "Farbname": "Main Colour Contour",
-        "GroupID": "101",
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
         "InKonfi": true,
         "farbAbhaengigkeitsArt": "<nix>"
       },
@@ -216,158 +213,32 @@
         "farbAbhaengigkeitsArt": "<nix>"
       },
       {
-        "colorCode": "RV",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": false,
-        "PalettenCluster": "CM5 owayo Reißverschlussfarben",
-        "ColorCodeNr": "7",
-        "Farbname": "Front zipper\r\n",
-        "GroupID": "1000",
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": true,
-        "farbAbhaengigkeitsArt": "<nix>"
-      },
-      {
-        "colorCode": "RVP",
+        "colorCode": "Tec",
         "NurSchwarzWeiss": false,
         "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 owayo Reißverschlussfarben",
-        "ColorCodeNr": "34",
-        "Farbname": "Zipper Pocket",
-        "GroupID": "1000",
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": true,
-        "farbAbhaengigkeitsArt": "Nahste Farbe nach Hauptfarben"
-      },
-      {
-        "colorCode": "K1",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "22",
-        "Farbname": "Collar Colour 1",
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "240",
+        "Farbname": "Ultra Dry",
         "GroupID": "200",
-        "IsHideable": false,
+        "IsHideable": true,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": false,
         "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Händische editierte Abhängigkeit"
+        "farbAbhaengigkeitsArt": "Versteckbar"
       },
       {
-        "colorCode": "K2",
+        "colorCode": "TecO",
         "NurSchwarzWeiss": false,
         "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "23",
-        "Farbname": "Collar Colour 2",
-        "GroupID": "200",
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Händische editierte Abhängigkeit"
-      },
-      {
-        "colorCode": "EK",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "230",
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "241",
         "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
+        "GroupID": "300",
+        "IsHideable": true,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": false,
         "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Wie B, wenn auf A; Sonst wie A"
-      },
-      {
-        "colorCode": "EF",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": false,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "226",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "<nix>"
-      },
-      {
-        "colorCode": "EFK",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": false,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "227",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "<nix>"
-      },
-      {
-        "colorCode": "EFKO",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": false,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "228",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "<nix>"
-      },
-      {
-        "colorCode": "GU",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "owayo Antirutschgummifarben",
-        "ColorCodeNr": "238",
-        "Farbname": "Elastic Band",
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": true,
-        "farbAbhaengigkeitsArt": "Nahste Farbe nach Hauptfarben"
-      },
-      {
-        "colorCode": "HLA",
-        "NurSchwarzWeiss": true,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "216",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
-      },
-      {
-        "colorCode": "HRA",
-        "NurSchwarzWeiss": true,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "221",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
+        "farbAbhaengigkeitsArt": "Versteckbar"
       },
       {
         "colorCode": "OOF",
@@ -376,11 +247,11 @@
         "PalettenCluster": "CM5 Bedruckbar",
         "ColorCodeNr": "204",
         "Farbname": null,
-        "GroupID": null,
+        "GroupID": "300",
         "IsHideable": false,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
+        "InKonfi": true,
         "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
       },
       {
@@ -390,11 +261,11 @@
         "PalettenCluster": "CM5 Bedruckbar",
         "ColorCodeNr": "214",
         "Farbname": null,
-        "GroupID": null,
+        "GroupID": "300",
         "IsHideable": false,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
+        "InKonfi": true,
         "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
       },
       {
@@ -404,7 +275,7 @@
         "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
         "ColorCodeNr": "205",
         "Farbname": null,
-        "GroupID": null,
+        "GroupID": "300",
         "IsHideable": false,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": false,
@@ -412,39 +283,11 @@
         "farbAbhaengigkeitsArt": "<nix>"
       },
       {
-        "colorCode": "HB",
-        "NurSchwarzWeiss": true,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "210",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
-      },
-      {
         "colorCode": "OOB",
         "NurSchwarzWeiss": true,
         "IsLinkedColorCodeImWeb": true,
         "PalettenCluster": "CM5 Bedruckbar",
         "ColorCodeNr": "202",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
-      },
-      {
-        "colorCode": "OOL",
-        "NurSchwarzWeiss": true,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar",
-        "ColorCodeNr": "199",
         "Farbname": null,
         "GroupID": null,
         "IsHideable": false,
@@ -482,20 +325,6 @@
         "farbAbhaengigkeitsArt": "<nix>"
       },
       {
-        "colorCode": "OOLK",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": false,
-        "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
-        "ColorCodeNr": "198",
-        "Farbname": null,
-        "GroupID": null,
-        "IsHideable": false,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "<nix>"
-      },
-      {
         "colorCode": "OORK",
         "NurSchwarzWeiss": false,
         "IsLinkedColorCodeImWeb": false,
@@ -510,32 +339,32 @@
         "farbAbhaengigkeitsArt": "<nix>"
       },
       {
-        "colorCode": "Tec",
+        "colorCode": "OOLK",
         "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar Tec",
-        "ColorCodeNr": "240",
-        "Farbname": "Ultra Dry",
-        "GroupID": "300",
-        "IsHideable": true,
-        "PartnameFuerTexturenExport": "",
-        "ImKonfiKoennenPatternsVerwendetWerden": false,
-        "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Versteckbar"
-      },
-      {
-        "colorCode": "TecO",
-        "NurSchwarzWeiss": false,
-        "IsLinkedColorCodeImWeb": true,
-        "PalettenCluster": "CM5 Bedruckbar Tec",
-        "ColorCodeNr": "241",
+        "IsLinkedColorCodeImWeb": false,
+        "PalettenCluster": "CM5 owayo Farbverlauf-Logo Blau",
+        "ColorCodeNr": "198",
         "Farbname": null,
         "GroupID": "300",
-        "IsHideable": true,
+        "IsHideable": false,
         "PartnameFuerTexturenExport": "",
         "ImKonfiKoennenPatternsVerwendetWerden": false,
         "InKonfi": false,
-        "farbAbhaengigkeitsArt": "Versteckbar"
+        "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "OOL",
+        "NurSchwarzWeiss": true,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar",
+        "ColorCodeNr": "199",
+        "Farbname": null,
+        "GroupID": "300",
+        "IsHideable": false,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": true,
+        "farbAbhaengigkeitsArt": "Schwarz-Weiß im Kontrast"
       },
       {
         "colorCode": "3D_3D",
@@ -564,40 +393,80 @@
         "ImKonfiKoennenPatternsVerwendetWerden": false,
         "InKonfi": false,
         "farbAbhaengigkeitsArt": "<nix>"
+      },
+      {
+        "colorCode": "High-1",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "44",
+        "Farbname": "Fifth Colour",
+        "GroupID": "100",
+        "IsHideable": true,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Versteckbar"
+      },
+      {
+        "colorCode": "High-2",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "45",
+        "Farbname": "Fifth Colour",
+        "GroupID": "100",
+        "IsHideable": true,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Versteckbar"
+      },
+      {
+        "colorCode": "High-3",
+        "NurSchwarzWeiss": false,
+        "IsLinkedColorCodeImWeb": true,
+        "PalettenCluster": "CM5 Bedruckbar Tec",
+        "ColorCodeNr": "46",
+        "Farbname": "Fifth Colour",
+        "GroupID": "100",
+        "IsHideable": true,
+        "PartnameFuerTexturenExport": "",
+        "ImKonfiKoennenPatternsVerwendetWerden": false,
+        "InKonfi": false,
+        "farbAbhaengigkeitsArt": "Versteckbar"
       }
     ],
     "defaultColors": {
-      "A": "3032413",
-      "A_O": "16777215",
-      "B": "2054801",
-      "B_O": "16777215",
-      "C": "96955",
-      "C_O": "16777215",
-      "D": "6459072",
-      "D_O": "16777215",
-      "E": "16777215",
-      "HoBo": "3428744",
-      "K": "3032413",
-      "KI": "0",
-      "RV": "10601",
-      "STL": "0",
+      "Tec": "13421772",
       "3D_3D": "16777215",
       "3D_DSGN": "12463204",
+      "A": "3428744",
       "A_2": "5996438",
+      "B": "2765128",
       "BW": "4806557",
       "B_2": "2633275",
       "B_2_O": "16777215",
+      "B_O": "16777215",
+      "C": "16777215",
       "C_2": "16777215",
       "C_2_O": "12570064",
+      "C_O": "10994644",
+      "D": "6342850",
       "D_2": "10204093",
       "D_2_O": "0",
+      "E": "16777215",
+      "HoBo": "0",
+      "K": "3428744",
       "KE": "16777215",
+      "KI": "2246041",
       "MR": "15127229",
       "OOBK": "2718906",
       "OOFK": "2718906",
       "OOLK": "2718906",
       "OORK": "2718906",
       "OOSTK": "2718906",
+      "RV": "10921891",
       "RVP": "16777215",
       "RVPH": "10921891",
       "RVPL": "16777215",
@@ -605,7 +474,7 @@
       "SL": "3428744",
       "SLL": "3428744",
       "SLR": "3428744",
-      "Tec": "13092807",
+      "STL": "2246041",
       "TecO": "7830655",
       "TR-Tex": "2172493",
       "VTL": "739934",
@@ -630,1197 +499,809 @@
       "HRA"
     ],
     "colorIndices": [
-      216,
-      221,
       204,
       214,
       205,
-      210,
       202,
-      199,
       197,
       203,
+      196,
       198,
-      196
+      199
     ]
   },
   "model": {
     "format": "mirl-v1.1-uncompressed",
-    "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/model/221m.mirl.bin",
-    "parts": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/model/parts.json",
-    "restrictedZones": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/model/sperrbezirke.json",
-    "seamLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/model/teilungslinien.json"
+    "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/model/204m_T14_EA_CK_KA.mirl.bin",
+    "parts": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/model/parts.json",
+    "restrictedZones": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/model/sperrbezirke.json",
+    "seamLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/model/teilungslinien.json"
   },
   "designs": [
     {
-      "name": "Etape",
-      "slug": "etape",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/etape.webp",
+      "name": "Cross",
+      "slug": "cross",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/cross.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/Etape_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross/Cross_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross/Cross_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross/Cross_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross/Cross_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross/Cross_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/etape/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
       ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
+      "outlinedColors": []
     },
     {
-      "name": "Velocity",
-      "slug": "velocity",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/velocity.webp",
+      "name": "Cross_V2",
+      "slug": "cross-v2",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/cross-v2.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/Velocity_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross-v2/Cross_V2_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross-v2/Cross_V2_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross-v2/Cross_V2_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross-v2/Cross_V2_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross-v2/Cross_V2_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velocity/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/cross-v2/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Attack",
-      "slug": "attack",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/attack.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/Attack_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/attack/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Break",
-      "slug": "break",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/break.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/Break_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/break/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Shield",
-      "slug": "shield",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/shield.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/Shield_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/shield/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B"
-      ],
-      "outlinedColors": [
-        "A",
-        "B"
-      ]
-    },
-    {
-      "name": "Gruppetto",
-      "slug": "gruppetto",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/gruppetto.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/Gruppetto_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/gruppetto/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "C"
-      ]
-    },
-    {
-      "name": "Galibier 2",
-      "slug": "galibier-2",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/galibier-2.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/Galibier%202_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/galibier-2/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B"
       ],
       "outlinedColors": [
         "B"
       ]
     },
     {
-      "name": "Sprint",
-      "slug": "sprint",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/sprint.webp",
+      "name": "City",
+      "slug": "city",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/city.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/Sprint_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/city/City_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/city/City_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/city/City_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/city/City_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/city/City_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sprint/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/city/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
       ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
+      "outlinedColors": []
     },
     {
-      "name": "Zone",
-      "slug": "zone",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/zone.webp",
+      "name": "Tackle",
+      "slug": "tackle",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/tackle.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/Zone_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tackle/Tackle_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tackle/Tackle_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tackle/Tackle_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tackle/Tackle_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tackle/Tackle_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/zone/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tackle/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
       ],
-      "outlinedColors": [
+      "outlinedColors": []
+    },
+    {
+      "name": "Pool",
+      "slug": "pool",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/pool.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pool/Pool_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pool/Pool_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pool/Pool_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pool/Pool_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pool/Pool_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pool/snap-lines.json",
+      "baseColors": [
+        "A",
         "B",
         "C"
-      ]
+      ],
+      "outlinedColors": []
     },
     {
-      "name": "Sunrise",
-      "slug": "sunrise",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/sunrise.webp",
+      "name": "Style",
+      "slug": "style",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/style.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/Sunrise_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/style/Style_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/style/Style_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/style/Style_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/style/Style_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/style/Style_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sunrise/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/style/snap-lines.json",
       "baseColors": [
         "A",
         "B",
-        "C",
-        "D"
+        "C"
       ],
-      "outlinedColors": [
-        "B"
-      ]
+      "outlinedColors": []
     },
     {
-      "name": "Pace",
-      "slug": "pace",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/pace.webp",
+      "name": "Nou Camp",
+      "slug": "nou-camp",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/nou-camp.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/Pace_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/nou-camp/Nou%20Camp_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/nou-camp/Nou%20Camp_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/nou-camp/Nou%20Camp_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/nou-camp/Nou%20Camp_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/nou-camp/Nou%20Camp_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pace/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/nou-camp/snap-lines.json",
       "baseColors": [
         "A",
         "B",
-        "C",
-        "D"
+        "C"
       ],
-      "outlinedColors": [
-        "B"
-      ]
+      "outlinedColors": []
+    },
+    {
+      "name": "Steps",
+      "slug": "steps",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/steps.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/steps/Steps_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/steps/Steps_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/steps/Steps_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/steps/Steps_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/steps/Steps_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/steps/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Gladiator",
+      "slug": "gladiator",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/gladiator.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/gladiator/Gladiator_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/gladiator/Gladiator_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/gladiator/Gladiator_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/gladiator/Gladiator_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/gladiator/Gladiator_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/gladiator/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Fight",
+      "slug": "fight",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/fight.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/fight/Fight_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/fight/Fight_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/fight/Fight_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/fight/Fight_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/fight/Fight_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/fight/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Horizon",
+      "slug": "horizon",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/horizon.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/horizon/Horizon_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/horizon/Horizon_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/horizon/Horizon_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/horizon/Horizon_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/horizon/Horizon_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/horizon/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Level",
+      "slug": "level",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/level.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/level/Level_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/level/Level_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/level/Level_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/level/Level_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/level/Level_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/level/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
     },
     {
       "name": "Champion",
       "slug": "champion",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/champion.webp",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/champion.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/Champion_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/champion/Champion_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/champion/Champion_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/champion/Champion_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/champion/Champion_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/champion/Champion_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/champion/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C",
-        "D"
-      ],
-      "outlinedColors": [
-        "B"
-      ]
-    },
-    {
-      "name": "Stage",
-      "slug": "stage",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/stage.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/Stage_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/stage/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C",
-        "D"
-      ],
-      "outlinedColors": [
-        "A",
-        "B",
-        "D"
-      ]
-    },
-    {
-      "name": "Brevet",
-      "slug": "brevet",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/brevet.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/Brevet_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/brevet/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C",
-        "D"
-      ],
-      "outlinedColors": [
-        "D"
-      ]
-    },
-    {
-      "name": "Velo 2",
-      "slug": "velo-2",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/velo-2.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/Velo%202_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/velo-2/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/champion/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
-      ],
-      "outlinedColors": [
-        "B"
-      ]
-    },
-    {
-      "name": "Leader",
-      "slug": "leader",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/leader.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/Leader_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/leader/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "C"
-      ]
-    },
-    {
-      "name": "Paceline",
-      "slug": "paceline",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/paceline.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/Paceline_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/paceline/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Allez",
-      "slug": "allez",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/allez.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/Allez_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/allez/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Granfondo",
-      "slug": "granfondo",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/granfondo.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/Granfondo_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/granfondo/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B"
-      ],
-      "outlinedColors": [
-        "B"
-      ]
-    },
-    {
-      "name": "Montagne",
-      "slug": "montagne",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/montagne.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/Montagne_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/montagne/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C",
-        "D"
-      ],
-      "outlinedColors": [
-        "A",
-        "B",
-        "C",
-        "D"
-      ]
-    },
-    {
-      "name": "Trail",
-      "slug": "trail",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/trail.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/Trail_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/trail/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "B"
-      ]
-    },
-    {
-      "name": "Dirt",
-      "slug": "dirt",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/dirt.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/Dirt_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/dirt/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B"
       ],
       "outlinedColors": []
     },
     {
-      "name": "Chaser",
-      "slug": "chaser",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/chaser.webp",
+      "name": "Rayo",
+      "slug": "rayo",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/rayo.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/Chaser_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/rayo/Rayo_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/rayo/Rayo_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/rayo/Rayo_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/rayo/Rayo_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/rayo/Rayo_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/chaser/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/rayo/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Loop",
-      "slug": "loop",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/loop.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/Loop_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/loop/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C"
-      ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
-    },
-    {
-      "name": "Prolog",
-      "slug": "prolog",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/prolog.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/Prolog_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/prolog/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B"
-      ],
-      "outlinedColors": [
-        "B"
-      ]
-    },
-    {
-      "name": "Scorpion 2",
-      "slug": "scorpion-2",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/scorpion-2.webp",
-      "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/Scorpion%202_Toothmesh_BG.png"
-      },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/scorpion-2/snap-lines.json",
-      "baseColors": [
-        "A",
-        "B",
-        "C",
-        "D"
       ],
       "outlinedColors": []
     },
     {
-      "name": "Sanremo",
-      "slug": "sanremo",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/sanremo.webp",
+      "name": "Strike",
+      "slug": "strike",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/strike.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/Sanremo_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/strike/Strike_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/strike/Strike_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/strike/Strike_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/strike/Strike_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/strike/Strike_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/sanremo/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/strike/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
       ],
-      "outlinedColors": [
-        "B"
-      ]
+      "outlinedColors": []
     },
     {
-      "name": "Piet",
-      "slug": "piet",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/piet.webp",
+      "name": "Vivo",
+      "slug": "vivo",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/vivo.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/Piet_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/Vivo_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/Vivo_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/Vivo_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/Vivo_LeftArm.png",
+        "LeftArm204m-T14-EA.01": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/Vivo_LeftArm204m-T14-EA.01.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/Vivo_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/piet/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/vivo/snap-lines.json",
       "baseColors": [
         "A",
         "B",
-        "C",
-        "D"
-      ],
-      "outlinedColors": [
         "C"
-      ]
+      ],
+      "outlinedColors": []
     },
     {
-      "name": "Spirit",
-      "slug": "spirit",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/spirit.webp",
+      "name": "Sweep",
+      "slug": "sweep",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/sweep.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/Spirit_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/sweep/Sweep_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/sweep/Sweep_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/sweep/Sweep_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/sweep/Sweep_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/sweep/Sweep_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/spirit/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/sweep/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
       ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
+      "outlinedColors": []
     },
     {
-      "name": "Animal",
-      "slug": "animal",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/animal.webp",
+      "name": "Monaco",
+      "slug": "monaco",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/monaco.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/Animal_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/monaco/Monaco_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/monaco/Monaco_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/monaco/Monaco_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/monaco/Monaco_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/monaco/Monaco_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/animal/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/monaco/snap-lines.json",
       "baseColors": [
         "A",
         "B",
         "C"
       ],
-      "outlinedColors": [
-        "B",
-        "C"
-      ]
+      "outlinedColors": []
     },
     {
       "name": "Pure",
       "slug": "pure",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/pure.webp",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/pure.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/Pure_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pure/Pure_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pure/Pure_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pure/Pure_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pure/Pure_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pure/Pure_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/pure/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/pure/snap-lines.json",
       "baseColors": [
         "A"
       ],
       "outlinedColors": []
     },
     {
-      "name": "Derny",
-      "slug": "derny",
-      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/previews/derny.webp",
+      "name": "Dirt",
+      "slug": "dirt",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/dirt.webp",
       "textures": {
-        "Back1": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Back1.png",
-        "Back2": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Back2.png",
-        "Back3": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Back3.png",
-        "Bag": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Bag.png",
-        "Collar": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Collar.png",
-        "FrontLeftPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_FrontLeftPart.png",
-        "FrontRightPart": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_FrontRightPart.png",
-        "GU": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_GU.png",
-        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_LeftArm.png",
-        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_RightArm.png",
-        "RV": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_RV.png",
-        "RVS-A": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_RVS-A.png",
-        "Schluesseltasche": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Schluesseltasche.png",
-        "Seitenteillinksoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Seitenteillinksoben.png",
-        "Seitenteillinksunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Seitenteillinksunten.png",
-        "Seitenteilrechtsoben": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Seitenteilrechtsoben.png",
-        "Seitenteilrechtsunten": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Seitenteilrechtsunten.png",
-        "Toothmesh": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Toothmesh.png",
-        "Toothmesh_BG": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/Derny_Toothmesh_BG.png"
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/dirt/Dirt_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/dirt/Dirt_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/dirt/Dirt_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/dirt/Dirt_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/dirt/Dirt_RightArm.png"
       },
-      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/cycling-c7/designs/derny/snap-lines.json",
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/dirt/snap-lines.json",
       "baseColors": [
         "A",
         "B"
       ],
       "outlinedColors": []
+    },
+    {
+      "name": "Spartak",
+      "slug": "spartak",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/spartak.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/spartak/Spartak_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/spartak/Spartak_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/spartak/Spartak_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/spartak/Spartak_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/spartak/Spartak_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/spartak/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Ajax",
+      "slug": "ajax",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/ajax.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/ajax/Ajax_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/ajax/Ajax_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/ajax/Ajax_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/ajax/Ajax_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/ajax/Ajax_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/ajax/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Olympique",
+      "slug": "olympique",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/olympique.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/olympique/Olympique_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/olympique/Olympique_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/olympique/Olympique_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/olympique/Olympique_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/olympique/Olympique_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/olympique/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Deportivo",
+      "slug": "deportivo",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/deportivo.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/deportivo/Deportivo_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/deportivo/Deportivo_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/deportivo/Deportivo_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/deportivo/Deportivo_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/deportivo/Deportivo_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/deportivo/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Calcio",
+      "slug": "calcio",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/calcio.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/calcio/Calcio_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/calcio/Calcio_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/calcio/Calcio_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/calcio/Calcio_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/calcio/Calcio_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/calcio/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Maracana",
+      "slug": "maracana",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/maracana.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/maracana/Maracana_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/maracana/Maracana_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/maracana/Maracana_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/maracana/Maracana_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/maracana/Maracana_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/maracana/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Hattrick",
+      "slug": "hattrick",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/hattrick.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hattrick/Hattrick_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hattrick/Hattrick_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hattrick/Hattrick_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hattrick/Hattrick_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hattrick/Hattrick_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hattrick/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "San Siro",
+      "slug": "san-siro",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/san-siro.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/san-siro/San%20Siro_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/san-siro/San%20Siro_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/san-siro/San%20Siro_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/san-siro/San%20Siro_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/san-siro/San%20Siro_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/san-siro/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Block",
+      "slug": "block",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/block.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/block/Block_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/block/Block_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/block/Block_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/block/Block_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/block/Block_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/block/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Hook",
+      "slug": "hook",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/hook.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hook/Hook_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hook/Hook_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hook/Hook_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hook/Hook_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hook/Hook_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/hook/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Line",
+      "slug": "line",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/line.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/line/Line_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/line/Line_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/line/Line_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/line/Line_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/line/Line_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/line/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Tank",
+      "slug": "tank",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/tank.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tank/Tank_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tank/Tank_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tank/Tank_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tank/Tank_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tank/Tank_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/tank/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Captain",
+      "slug": "captain",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/captain.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/captain/Captain_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/captain/Captain_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/captain/Captain_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/captain/Captain_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/captain/Captain_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/captain/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Victory",
+      "slug": "victory",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/victory.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/victory/Victory_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/victory/Victory_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/victory/Victory_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/victory/Victory_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/victory/Victory_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/victory/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Final",
+      "slug": "final",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/final.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/final/Final_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/final/Final_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/final/Final_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/final/Final_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/final/Final_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/final/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Zebra",
+      "slug": "zebra",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/zebra.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/zebra/Zebra_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/zebra/Zebra_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/zebra/Zebra_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/zebra/Zebra_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/zebra/Zebra_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/zebra/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Orion",
+      "slug": "orion",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/orion.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/orion/Orion_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/orion/Orion_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/orion/Orion_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/orion/Orion_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/orion/Orion_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/orion/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Burn",
+      "slug": "burn",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/burn.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/Burn_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/Burn_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/Burn_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/Burn_LeftArm.png",
+        "LeftCuff": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/Burn_LeftCuff.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/Burn_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/burn/snap-lines.json",
+      "baseColors": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "outlinedColors": []
+    },
+    {
+      "name": "Arsenal",
+      "slug": "arsenal",
+      "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/previews/arsenal.webp",
+      "textures": {
+        "Back": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/arsenal/Arsenal_Back.png",
+        "Front": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/arsenal/Arsenal_Front.png",
+        "Krageneinfass": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/arsenal/Arsenal_Krageneinfass.png",
+        "LeftArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/arsenal/Arsenal_LeftArm.png",
+        "RightArm": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/arsenal/Arsenal_RightArm.png"
+      },
+      "snapLines": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/soccer-f6/designs/arsenal/snap-lines.json",
+      "baseColors": [
+        "A"
+      ],
+      "outlinedColors": []
     }
   ],
-  "syncStatus": "READY_WITH_SOURCE_GAPS",
-  "missingDesigns": [
-    "Route"
-  ],
+  "syncStatus": "READY",
+  "missingDesigns": [],
   "availableDesigns": [
-    "Etape",
-    "Velocity",
-    "Attack",
-    "Break",
-    "Shield",
-    "Gruppetto",
-    "Galibier 2",
-    "Sprint",
-    "Zone",
-    "Sunrise",
-    "Pace",
+    "Cross",
+    "Cross_V2",
+    "City",
+    "Tackle",
+    "Pool",
+    "Style",
+    "Nou Camp",
+    "Steps",
+    "Gladiator",
+    "Fight",
+    "Horizon",
+    "Level",
     "Champion",
-    "Stage",
-    "Brevet",
-    "Velo 2",
-    "Leader",
-    "Paceline",
-    "Allez",
-    "Granfondo",
-    "Montagne",
-    "Trail",
-    "Dirt",
-    "Chaser",
-    "Loop",
-    "Prolog",
-    "Scorpion 2",
-    "Sanremo",
-    "Piet",
-    "Spirit",
-    "Animal",
+    "Rayo",
+    "Strike",
+    "Vivo",
+    "Sweep",
+    "Monaco",
     "Pure",
-    "Derny",
-    "Route"
+    "Dirt",
+    "Spartak",
+    "Ajax",
+    "Olympique",
+    "Deportivo",
+    "Calcio",
+    "Maracana",
+    "Hattrick",
+    "San Siro",
+    "Block",
+    "Hook",
+    "Line",
+    "Tank",
+    "Captain",
+    "Victory",
+    "Final",
+    "Zebra",
+    "Orion",
+    "Burn",
+    "Arsenal"
   ],
   "patterns": [
     {

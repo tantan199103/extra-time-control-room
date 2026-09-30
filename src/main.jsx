@@ -1262,8 +1262,10 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
     .filter(item => item.assetsReady && item.manifest)
     .map(item => ({
       ...item,
-      segment: /^cycling-m/i.test(item.id) ? 'MTB' : 'ROAD'
+      segment:item.group || (/^cycling-m/i.test(item.id) ? 'mtb' : 'cycling'),
+      segmentLabel:item.groupLabel || item.sportLabel || (/^cycling-m/i.test(item.id) ? 'MTB' : 'Cycling')
     })), [owayoCatalog])
+  const familyGroups = useMemo(() => [...new Map(families.map(item => [item.segment, { id:item.segment, label:item.segmentLabel }])).values()], [families])
   const filteredFamilies = useMemo(() => activeFamily === 'ALL' ? families : families.filter(item => item.segment === activeFamily), [activeFamily, families])
   // Prices and checkout language only unlock after the current route has been
   // confirmed by the live public catalogue. Development fallbacks and stale
@@ -1352,9 +1354,9 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
 
       {show('custom-catalog') && <section className="custom-families" id="custom-families" aria-labelledby="custom-families-title">
         <div className="custom-section-head"><div><p className="custom-flow-eyebrow">1 / CHOOSE YOUR GARMENT</p><h2 id="custom-families-title">Pick a cut.<br /><em>Then make it yours.</em></h2></div><span>{families.length ? `${families.length} ready-to-design cuts` : 'Loading garment library…'}</span></div>
-        <div className="custom-family-tabs" role="tablist" aria-label="Custom garment categories"><button type="button" role="tab" aria-selected={activeFamily === 'ALL'} className={activeFamily === 'ALL' ? 'is-active' : ''} onClick={() => setActiveFamily('ALL')}>ALL CUTS</button><button type="button" role="tab" aria-selected={activeFamily === 'ROAD'} className={activeFamily === 'ROAD' ? 'is-active' : ''} onClick={() => setActiveFamily('ROAD')}>ROAD</button><button type="button" role="tab" aria-selected={activeFamily === 'MTB'} className={activeFamily === 'MTB' ? 'is-active' : ''} onClick={() => setActiveFamily('MTB')}>MTB</button></div>
+        <div className="custom-family-tabs" role="tablist" aria-label="Custom garment categories"><button type="button" role="tab" aria-selected={activeFamily === 'ALL'} className={activeFamily === 'ALL' ? 'is-active' : ''} onClick={() => setActiveFamily('ALL')}>ALL CUTS</button>{familyGroups.map(group => <button type="button" role="tab" aria-selected={activeFamily === group.id} className={activeFamily === group.id ? 'is-active' : ''} key={group.id} onClick={() => setActiveFamily(group.id)}>{group.label}</button>)}</div>
         {catalogError && <p className="custom-flow-error" role="status">{catalogError} You can still open the default C3 designer.</p>}
-        <div className="custom-family-grid">{filteredFamilies.slice(0, 12).map(family => { const preview = familyPreview(family); return <button type="button" className="custom-family-card" key={family.id} onClick={() => openFamily(family)}><span className={`custom-family-card__media${preview ? '' : ' is-missing'}`}>{preview ? <img src={preview} alt={`${familyLabel(family)} custom garment preview`} width="480" height="640" loading="lazy" decoding="async" onError={handleFamilyPreviewError} /> : null}<span className="custom-family-card__segment">{family.segment}</span><span className="custom-family-card__placeholder" aria-hidden="true"><strong>{familyLabel(family)}</strong><small>{preview ? 'Preview loading' : 'Preview unavailable'}</small></span></span><span className="custom-family-card__body"><strong>{familyLabel(family)}</strong><small>{family.fit || 'Performance fit'} · {family.sleeve || 'Custom cut'}</small><span><b>{commerceReady ? `From $${Number(family.priceUsd || 0).toFixed(0)}` : '3D PREVIEW'}</b><em>{family.designCount || '50+'} templates</em><ArrowRight size={15}/></span></span></button> })}</div>
+        <div className="custom-family-grid">{filteredFamilies.map(family => { const preview = familyPreview(family); return <button type="button" className="custom-family-card" key={family.id} onClick={() => openFamily(family)}><span className={`custom-family-card__media${preview ? '' : ' is-missing'}`}>{preview ? <img src={preview} alt={`${familyLabel(family)} custom garment preview`} width="480" height="640" loading="lazy" decoding="async" onError={handleFamilyPreviewError} /> : null}<span className="custom-family-card__segment">{family.segmentLabel}</span><span className="custom-family-card__placeholder" aria-hidden="true"><strong>{familyLabel(family)}</strong><small>{preview ? 'Preview loading' : 'Preview unavailable'}</small></span></span><span className="custom-family-card__body"><strong>{familyLabel(family)}</strong><small>{family.fit || 'Performance fit'} · {family.sleeve || 'Custom cut'}</small><span><b>{commerceReady ? `From $${Number(family.priceUsd || 0).toFixed(0)}` : '3D PREVIEW'}</b><em>{family.designCount || '50+'} templates</em><ArrowRight size={15}/></span></span></button> })}</div>
         {!filteredFamilies.length && <div className="custom-flow-empty"><Sparkles size={21}/><strong>Garment library is loading.</strong><span>Open the C3 designer to start with the default production-ready cut.</span><button type="button" className="button button--dark" onClick={() => openDefaultDesigner('custom_hub_empty')}>OPEN C3 DESIGNER <ArrowRight size={15}/></button></div>}
       </section>}
 
@@ -2778,34 +2780,34 @@ function ShopDiscoveryHub({ discovery, onSearch, searchValue = '', total, contro
       <h1 id="shop-discovery-title" className="sr-only">Find your team. Find your gear.</h1>
        <div className="shop-cover__tools">
          {pageContent.supporting && <p className="shop-cover__managed-copy">{pageContent.supporting}</p>}
-        <form className="shop-visual__hero-search" onSubmit={submitSearch} role="search">
-          <Search size={18}/><input value={searchInput} onChange={event => setSearchInput(event.target.value)} placeholder="Search teams, players, jerseys…" aria-label="Search teams, players, jerseys" autoComplete="off" />
-          {searchInput.trim() ? <button type="submit" aria-label="Search catalog"><ArrowRight size={17}/></button> : <button type="button" onClick={onSearch} aria-label="Open full search"><ArrowRight size={17}/></button>}
-        </form>
-        <span className="shop-cover__count">{totalLabel} products{searchValue ? ` · matches for “${searchValue}”` : ''}</span>
-      </div>
+         <span className="shop-cover__count">{totalLabel} products{searchValue ? ` · matches for “${searchValue}”` : ''}</span>
+       </div>
       <nav className="shop-cover__leagues shop-visual__sport-grid" aria-label="Jump to a league">
         <span className="shop-cover__leagues-label">JUMP TO LEAGUE</span>
         {sportCards.map(league => <a key={league.key} href={leaguePath(league)} aria-label={`Shop ${league.name} gear`} onClick={event => { event.preventDefault(); navigate(leaguePath(league)) }}>{league.media?.src ? <img src={league.media.src} alt="" decoding="async"/> : <b className="shop-cover__league-monogram" aria-hidden="true">{league.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase()}</b>}<span>{league.name}</span><ArrowRight size={13}/></a>)}
       </nav>
     </div>}
-    {showBlock('collection-hero') && <div className="shop-visual__unified-links" aria-label="Shop shortcuts">
-      <div className="shop-visual__link-row">
-        <span className="shop-visual__row-label">PRODUCTS</span>
-        <nav className="shop-visual__product-grid" aria-label="Shop by product">
-          {productCards.map(category => <a key={category.handle} href={'/category/' + category.handle} onClick={event => { event.preventDefault(); navigate('/category/' + category.handle) }}><CategoryIcon kind={category.icon} size={19}/><span><strong>{category.label}</strong></span><ArrowRight size={14}/></a>)}
-        </nav>
-      </div>
-      <div className="shop-visual__link-row">
-        <span className="shop-visual__row-label">TEAMS</span>
-        <nav className="shop-visual__team-grid" aria-label="Popular teams">
-          {teamCards.map(team => <a key={team.href} href={team.href} onClick={event => { event.preventDefault(); navigate(team.href) }}>{team.media?.src && !team.media.fallback ? <img src={team.media.src} alt="" loading="lazy" decoding="async"/> : <span className="shop-visual__team-monogram" aria-hidden="true">{team.name.split(/\s+/).map(word => word[0]).join('').slice(0,3).toUpperCase()}</span>}<span><strong>{team.name}</strong><small>{team.leagueName}</small></span></a>)}
-        </nav>
-      </div>
-    </div>}
     {showBlock('filters') && <div className="shop-visual__unified-controls">
+      <form className="shop-visual__hero-search shop-control-band__search" onSubmit={submitSearch} role="search">
+        <Search size={18}/><input value={searchInput} onChange={event => setSearchInput(event.target.value)} placeholder="Search teams, players, jerseys…" aria-label="Search teams, players, jerseys" autoComplete="off" />
+        {searchInput.trim() ? <button type="submit" aria-label="Search catalog"><ArrowRight size={17}/></button> : <button type="button" onClick={onSearch} aria-label="Open full search"><ArrowRight size={17}/></button>}
+      </form>
+      <div className="shop-control-band__filters">{controls}</div>
+      {showBlock('collection-hero') && <div className="shop-visual__unified-links" aria-label="Shop shortcuts">
+        <div className="shop-visual__link-row">
+          <span className="shop-visual__row-label">PRODUCTS</span>
+          <nav className="shop-visual__product-grid" aria-label="Shop by product">
+            {productCards.map(category => <a key={category.handle} href={'/category/' + category.handle} onClick={event => { event.preventDefault(); navigate('/category/' + category.handle) }}><CategoryIcon kind={category.icon} size={19}/><span><strong>{category.label}</strong></span><ArrowRight size={14}/></a>)}
+          </nav>
+        </div>
+        <div className="shop-visual__link-row">
+          <span className="shop-visual__row-label">TEAMS</span>
+          <nav className="shop-visual__team-grid" aria-label="Popular teams">
+            {teamCards.map(team => <a key={team.href} href={team.href} onClick={event => { event.preventDefault(); navigate(team.href) }}>{team.media?.src && !team.media.fallback ? <img src={team.media.src} alt="" loading="lazy" decoding="async"/> : <span className="shop-visual__team-monogram" aria-hidden="true">{team.name.split(/\s+/).map(word => word[0]).join('').slice(0,3).toUpperCase()}</span>}<span><strong>{team.name}</strong><small>{team.leagueName}</small></span></a>)}
+          </nav>
+        </div>
+      </div>}
       <div className="shop-visual__trust"><span><Truck size={16}/> Free US shipping over $100</span><span><ShieldCheck size={16}/> Secure checkout</span><span><PackageCheck size={16}/> Reviewed customization</span></div>
-      {controls}
     </div>}
     {showBlock('filters') && activeFilters}
   </section>

@@ -8,6 +8,7 @@ import {
   ChevronRight,
   CircleHelp,
   Globe2,
+  History,
   ImageOff,
   Lock,
   PackageCheck,
@@ -32,6 +33,7 @@ import { DEFAULT_QUANTITY_DISCOUNT_POLICY, normalizeQuantityDiscountPolicy, quan
 import { relatedProducts, usd } from './lib/product-seo'
 import { trackViewContent } from './lib/meta-pixel'
 import { trackStorefrontEvent } from './lib/storefront-analytics'
+import { readRecentlyViewed, rememberRecentlyViewed } from './lib/recent-products'
 
 const money = usd
 
@@ -229,6 +231,20 @@ function PdpContextTabs({ product, league, team }) {
   )
 }
 
+function PdpRecentlyViewed({ items = [] }) {
+  if (!items.length) return null
+  return <section className="pdp-recent" aria-labelledby="pdp-recent-title">
+    <div className="pdp-recent__heading"><History size={16}/><span><strong id="pdp-recent-title">Recently viewed</strong><small>Pick up where you left off</small></span></div>
+    <div className="pdp-recent__track">
+      {items.map(item => <a key={item.id} className="pdp-recent__item" href={`/product/${item.handle || item.id}`} onClick={event => { event.preventDefault(); navigate(event.currentTarget.getAttribute('href')) }}>
+        <span className="pdp-recent__media">{item.image ? <img src={item.image} alt={item.alt || item.name} width="72" height="90" loading="lazy" decoding="async"/> : <ImageOff size={18}/>}</span>
+        <span className="pdp-recent__copy"><small>{item.team || item.league || item.productGroup || 'Jersevo gear'}</small><strong>{item.name}</strong><em>{money(item.price)}</em></span>
+        <ArrowRight size={13} aria-hidden="true"/>
+      </a>)}
+    </div>
+  </section>
+}
+
 export default function ProductPage({ product, products, onAdd, onQuickView, startPersonalized = false, account, pageConfig = null, components = {} }) {
   const { Breadcrumbs, ProductRail, Rating, SizeFinder } = components
   const savedDraft = readSession(`extra-time-pdp-draft-${product.id}`, {})
@@ -288,6 +304,7 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
   const [submitting,setSubmitting] = useState(false)
   const [added,setAdded] = useState(false)
   const [logoConsent,setLogoConsent] = useState(Boolean(savedDraft?.logoConsent))
+  const [recentlyViewed,setRecentlyViewed] = useState([])
   const previewReadiness = productPreviewReadiness(customFields)
   // A synchronized 3D listing must never fall back to the generic AI image
   // editor: that path can redraw the garment and make name/number placement
@@ -295,6 +312,11 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
   // the exact designer route above.
   const hasStructuredPreview = !designerTarget && previewReadiness.enabled
   const pageCopy = pageConfig?.content || {}
+  const taxonomy = productTaxonomyValues(product)
+  const productLeague = findLeague(taxonomy.league)
+  const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
+  const suggestedProducts = relatedProducts(product,products,8)
+  const suggestedContext = productTeam?.name || productLeague?.name || product.productGroup || 'this catalog'
   const configuredProductBlocks = pageConfig?.blocks || []
   const productEditorialBlocks = (configuredProductBlocks.length ? configuredProductBlocks : [
     { id: 'product-highlights' }, { id: 'product-story' }, { id: 'product-proof' }, { id: 'related-products' }
@@ -303,7 +325,7 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
     'product-highlights': <React.Fragment key={block.id}><ProductPurchaseHighlights product={product} personalized={personalized}/></React.Fragment>,
     'product-story': <ProductContentBlocks key={block.id} product={product}/>,
     'product-proof': <ProductStorySignals key={block.id} product={product}/>,
-    'related-products': <ProductRail key={block.id} title="MORE FROM THIS COLLECTION" subtitle="Explore related teams and styles." items={relatedProducts(product,products,8)} onQuickView={onQuickView}/>
+    'related-products': <ProductRail key={block.id} title="YOU MAY ALSO LIKE" subtitle={`More from ${suggestedContext}, selected by team and product type.`} items={suggestedProducts} onQuickView={onQuickView}/>
   }[block.id] || null)
   const hasUploadedLogo = customFields.some(field => field.type === 'logo' && customValues[field.key])
   const completeSelection = options.every(option => selections[option.name])
@@ -314,7 +336,7 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
   const commerceConfig = productCommerceConfig(product)
   const bulkOffers = commerceConfig.bulkOffers || []
   const designerProvider = String(product?.designerConfig?.provider || '').toLowerCase()
-  const designerLibraryLabel = designerProvider === 'owayo' ? 'matching cycling design library' : 'matching teamwear design library'
+  const designerLibraryLabel = designerProvider === 'owayo' ? 'matching multi-sport design library' : 'matching teamwear design library'
   const estimate = buildDeliveryEstimate(commerceConfig.delivery)
   const soldOut = selectedVariant ? Number(selectedVariant.inventory || 0) < 1 : false
   const selectionSummary = options.map(option => selections[option.name] ? (option.name === sizeName ? canonicalSize(selections[option.name]) : selections[option.name]) : '').filter(Boolean).join(' · ')
@@ -336,6 +358,11 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
       product_type:taxonomy.productType || product.type || product.productGroup || ''
     })
   }, [product?.id])
+  useEffect(() => {
+    const previous = readRecentlyViewed().filter(item => item.id !== String(product.id)).slice(0,8)
+    setRecentlyViewed(previous)
+    rememberRecentlyViewed(product)
+  }, [product.id])
   useEffect(() => {
     try { window.sessionStorage.setItem(`extra-time-pdp-draft-${product.id}`, JSON.stringify({ values:customValues,assetRefs,note:customNote,selections,requestKey,logoConsent })) } catch {}
   }, [product.id,customValues,assetRefs,customNote,selections,requestKey,logoConsent])
@@ -481,12 +508,10 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
       galleryRef.current.scrollTo({ left: 0, behavior: 'auto' })
     }
   }, [product.id, attachedPreview?.imageUrl])
-  const taxonomy = productTaxonomyValues(product)
-  const productLeague = findLeague(taxonomy.league)
-  const productTeam = productLeague ? findTeam(productLeague.key, taxonomy.team) : null
   return <main className="pdp">
     <div className="pdp-breadcrumb-wrap"><Breadcrumbs items={[{ label:'Shop', href:'/shop' }, ...(productLeague ? [{ label:productLeague.name, href:leaguePath(productLeague) }] : []), ...(productTeam ? [{ label:productTeam.name, href:teamPath(productLeague.key,productTeam) }] : []), { label:product.name }]}/></div>
     <PdpContextTabs product={product} league={productLeague} team={productTeam} />
+    <PdpRecentlyViewed items={recentlyViewed}/>
     <div className="pdp__commerce" id="pdp-overview">
       <div className="pdp__gallery-wrapper">
         <button className="pdp__back" onClick={() => navigate('/shop')}><ArrowLeft size={15}/> BACK TO THE DROP</button>

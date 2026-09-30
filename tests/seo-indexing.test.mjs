@@ -57,6 +57,20 @@ test('PDP keeps a complete merchant-written meta description beyond 160 characte
   assert.ok(metadata.description.length > 160)
 })
 
+test('PDP title follows the public product name and never repeats a clipped store suffix', () => {
+  const title = 'New Era Milwaukee Brewers On-Field 9Twenty Strapback Hat'
+  const metadata = productSeoMetadata({
+    ...product,
+    title,
+    seo:{ title:'Milwaukee Brewers Caps | J', description:'A complete product description.' }
+  })
+  assert.equal(metadata.title,`${title} | Jersevo`)
+  assert.equal((metadata.title.match(/Jersevo/g) || []).length,1)
+
+  const completeLegacySuffix = productSeoMetadata({ ...product, title:`${product.title} | Jersevo` })
+  assert.equal(completeLegacySuffix.title,`${product.title} | Jersevo`)
+})
+
 test('HTML fallback has product copy, variant prices and crawlable related product links', () => {
   const html = renderProductContent({...product,customFields:[{key:'name',label:'Name',help:'Up to 12 characters'}],bulkOffers:[{minQty:2,discountPercent:10}],delivery:{production:'3–5 business days',transit:'5–8 business days'}},[{id:'listing-2',handle:'related',title:'Related Jersey'}])
   assert.match(html,/<h1>Test Home Jersey<\/h1>/)

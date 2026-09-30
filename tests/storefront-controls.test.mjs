@@ -112,6 +112,15 @@ test('product cards expose quick view and never quick-add sold-out variants', ()
   assert.match(source, /<QuickView/)
 })
 
+test('PDP keeps a compact recent rail above commerce and team-aware suggestions below', () => {
+  assert.match(source,/readRecentlyViewed/)
+  assert.match(source,/className="pdp-recent"/)
+  assert.match(source,/<PdpRecentlyViewed items=\{recentlyViewed\}\/>[\s\S]*?<div className="pdp__commerce"/)
+  assert.match(source,/title="YOU MAY ALSO LIKE"/)
+  assert.match(source,/suggestedContext/)
+  assert.match(css,/\.pdp-recent__track\s*\{[^}]*overflow-x:\s*auto/)
+})
+
 test('size finder renders catalog sizes in the same canonical form as the option controls', () => {
   assert.match(source, /availableSizes\.map\(canonicalSize\)/)
   assert.match(source, /canonicalSize\(recommendation\)/)

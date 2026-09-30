@@ -1,17 +1,25 @@
 import { spawn } from 'node:child_process'
 import { mkdir, writeFile, rm } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
 import sharp from 'sharp'
 
 const ROOT = resolve(process.cwd())
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 const PORT = 9222
-const PROFILE = join(ROOT, '.tmp-owayo-preview-chrome')
+const PROFILE = join(tmpdir(), 'jersevo-owayo-preview-chrome')
 const BASE = process.env.PREVIEW_CAPTURE_BASE || 'https://www.jersevo.com'
+function defaultDesignFor(id) {
+  try {
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'public', 'designer', 'owayo', id, 'manifest.json'), 'utf8'))
+    return manifest.designs?.find(item => item?.slug)?.slug || ''
+  } catch { return '' }
+}
+
 const TARGETS = (process.argv.slice(2).length ? process.argv.slice(2) : ['cycling-c5']).map(value => {
   const [id, requestedDesign] = String(value).split(':', 2)
-  const design = requestedDesign || (/^cycling-(?:m|ml|f|fl)/i.test(id) ? 'derny' : 'etape')
+  const design = requestedDesign || defaultDesignFor(id) || (/^cycling-(?:m|ml|f|fl)/i.test(id) ? 'derny' : 'etape')
   return { id, design, named:Boolean(requestedDesign) }
 })
 

@@ -41,13 +41,16 @@ const valueOf = (name, fallback = '') => {
   return index >= 0 && process.argv[index + 1] ? process.argv[index + 1] : fallback
 }
 const write = has('--write')
+const audit = has('--audit')
 const ownerConfirmed = has('--owner-confirmed') || String(process.env.OWAYO_SOURCE_AUTHORIZED || '').toLowerCase() === 'true'
 const requestedId = valueOf('--product', '')
+const requestedGroup = valueOf('--group', '')
 const all = has('--all')
 if (write && !ownerConfirmed) throw new Error('Write mode requires --owner-confirmed or OWAYO_SOURCE_AUTHORIZED=true.')
-if (!requestedId && !all) throw new Error('Pass --product <catalog id> or --all.')
+if (write && audit) throw new Error('Choose either --audit or --write, not both.')
+if (!requestedId && !requestedGroup && !all) throw new Error('Pass --product <catalog id>, --group <catalog group>, or --all.')
 if (has('--help') || has('-h')) {
-  console.log('Usage: node scripts/sync-owayo-family-assets.mjs --product cycling-c5 [--write --owner-confirmed]\n       node scripts/sync-owayo-family-assets.mjs --all --write --owner-confirmed')
+  console.log('Usage: node scripts/sync-owayo-family-assets.mjs --product basketball-b6 --audit\n       node scripts/sync-owayo-family-assets.mjs --group basketball --write --owner-confirmed\n       node scripts/sync-owayo-family-assets.mjs --all --write --owner-confirmed')
   process.exit(0)
 }
 
@@ -94,13 +97,16 @@ function selectedFeatures(featureObjects = []) {
 }
 
 async function productMetadata(family) {
-  const sourcePage = `https://www.owayo.com/konfigurator_html/?color=RDY47588493&design=Etape&land=us&lang=en&product=${family.key}&sport=cycling`
+  const parameters = new URLSearchParams({ land:'us', lang:'en', product:family.key, sport:family.sport })
+  if (family.seedDesign) parameters.set('design', family.seedDesign)
+  if (family.seedColor) parameters.set('color', family.seedColor)
+  const sourcePage = `${sourceOrigin}/konfigurator_html/?${parameters}`
   const bootstrap = readBootstrap((await fetchBuffer(sourcePage)).toString('utf8'))
   const product = bootstrap.productInfo
   const body = new URLSearchParams({
     schnitt:product.schnitt,
     sport:product.sport.auwi,
-    websport:bootstrap.sportFuerProduktauswahl?.webNormalized || 'radsport',
+    websport:bootstrap.sportFuerProduktauswahl?.webNormalized || family.webSport || family.sport,
     ordertype:product.ordertype,
     webProduct:product.product.webNormalized,
     iso:bootstrap.lang || 'en',
@@ -116,6 +122,76 @@ async function productMetadata(family) {
   const text = await response.text()
   if (!response.ok || !/^\s*\{/.test(text)) throw new Error(`Product metadata failed for ${family.id}: ${text.slice(0, 120)}`)
   return { sourcePage, product:JSON.parse(text) }
+}
+
+function modelLocation(product) {
+  const first = product.Designs?.[0]
+  if (!first || !product.model) throw new Error('Resolved product has no model or designs.')
+  const pathMatch = String(first.Pfad || '').match(/^\/modelle\/([^/]+)\//)
+  const folder = pathMatch?.[1] || product.Schnitt
+  return {
+    folder,
+    root:`${assetOrigin}/modelle/${encodeURIComponent(folder)}/${encodeURIComponent(product.model)}`
+  }
+}
+
+async function remoteAssetInfo(url) {
+  let response = await fetch(url, { method:'HEAD', headers:catalogRequestHeaders({ accept:'*/*' }) })
+  if (response.status === 405 || response.status === 501) {
+    response = await fetch(url, { headers:catalogRequestHeaders({ accept:'*/*', range:'bytes=0-0' }) })
+  }
+  const bytes = Number(response.headers.get('content-length')) || 0
+  if (response.body) await response.body.cancel().catch(() => {})
+  return { available:response.ok, status:response.status, bytes }
+}
+
+async function mapLimit(items, limit, task) {
+  const output = new Array(items.length)
+  let cursor = 0
+  await Promise.all(Array.from({ length:Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor++
+      output[index] = await task(items[index], index)
+    }
+  }))
+  return output
+}
+
+async function auditFamily(family) {
+  const { sourcePage, product } = await productMetadata(family)
+  const location = modelLocation(product)
+  const modelFile = `${location.root}/${encodeURIComponent(product.model)}.mirl`
+  const supportFiles = ['parts.json','sperrbezirke.json','teilungslinien.json']
+  const [modelAsset, ...supportAssets] = await Promise.all([
+    remoteAssetInfo(modelFile),
+    ...supportFiles.map(filename => remoteAssetInfo(`${location.root}/${filename}`))
+  ])
+  const designAssets = await mapLimit(product.Designs || [], 8, async design => ({
+    name:design.Design,
+    ...await remoteAssetInfo(`${location.root}/designs/${encodeURIComponent(design.Design)}.fish`)
+  }))
+  const missingDesigns = designAssets.filter(item => !item.available).map(item => item.name)
+  const knownBytes = modelAsset.bytes
+    + supportAssets.reduce((sum, item) => sum + item.bytes, 0)
+    + designAssets.reduce((sum, item) => sum + item.bytes, 0)
+  return {
+    id:family.id,
+    group:family.group,
+    sport:family.sport,
+    key:family.key,
+    sourceUrl:family.sourceUrl,
+    configurator:sourcePage,
+    resolved:{ name:product.Name, cut:product.Schnitt, model:product.model, baseModel:product.Basemodel, baseDesign:product.BasisDesign },
+    sizeCount:(product.Sizes || []).filter(item => !/choose/i.test(String(item?.name || ''))).length,
+    designCount:(product.Designs || []).length,
+    archiveCount:designAssets.length - missingDesigns.length,
+    missingDesigns,
+    modelAsset,
+    supportAssets:Object.fromEntries(supportFiles.map((filename, index) => [filename, supportAssets[index]])),
+    knownSourceBytes:knownBytes,
+    ready:modelAsset.available && supportAssets.every(item => item.available) && designAssets.length > missingDesigns.length,
+    sourceGaps:missingDesigns.length > 0
+  }
 }
 
 function unzipEntries(buffer) {
@@ -170,11 +246,7 @@ async function makeStorage(client, path, buffer, contentType) {
 
 async function syncFamily(family, client, sharedPatterns) {
   const { sourcePage, product } = await productMetadata(family)
-  const first = product.Designs?.[0]
-  if (!first || !product.model) throw new Error(`No resolved model/designs for ${family.id}.`)
-  const pathMatch = String(first.Pfad || '').match(/^\/modelle\/([^/]+)\//)
-  const modelFolder = pathMatch?.[1] || product.Schnitt
-  const modelRoot = `${assetOrigin}/modelle/${encodeURIComponent(modelFolder)}/${encodeURIComponent(product.model)}`
+  const { root:modelRoot } = modelLocation(product)
   const modelGzip = await fetchBuffer(`${modelRoot}/${encodeURIComponent(product.model)}.mirl`)
   const modelBinary = modelGzip[0] === 0x1f && modelGzip[1] === 0x8b ? gunzipSync(modelGzip) : modelGzip
   const modelInfo = await makeStorage(client, `designer/owayo/${family.id}/model/${product.model}.mirl.bin`, modelBinary, 'application/octet-stream')
@@ -221,12 +293,12 @@ async function syncFamily(family, client, sharedPatterns) {
   const manifest = {
     schemaVersion:1,
     provider:'owayo',
-    source:{ ownerConfirmedByOperator:true, configurator:sourcePage, productEndpoint:`${sourceOrigin}/konfigurator_php/auswahlmodul/produkt.php`, assetOrigin, syncedAt:new Date().toISOString() },
-    product:{ name:product.Name, publicSlug:product.Urlname, normalizedSlug:product.webproduktNormalized, orderType:product.Ordertype, cut:product.Schnitt, model:product.model, baseModel:product.Basemodel, baseDesign:product.BasisDesign, sizes:product.Sizes || [], minimumOrder:Number(product.MindestBestellung || 1), maximumOrder:Number(product.MaximalBestellung || 250), droppableParts:product.namesOfDroppableParts || [], colorCodes:product.colorCodes || [], defaultColors:product.ColorCodeFarbVorbelegungen || {} },
+    source:{ ownerConfirmedByOperator:true, catalogue:family.sourceUrl, configurator:sourcePage, productEndpoint:`${sourceOrigin}/konfigurator_php/auswahlmodul/produkt.php`, assetOrigin, syncedAt:new Date().toISOString() },
+    product:{ name:product.Name, familyId:family.id, catalogGroup:family.group, catalogGroupLabel:family.groupLabel, sport:family.sport, sportLabel:family.sportLabel, publicSlug:product.Urlname, normalizedSlug:product.webproduktNormalized, orderType:product.Ordertype, cut:product.Schnitt, model:product.model, baseModel:product.Basemodel, baseDesign:product.BasisDesign, sizes:product.Sizes || [], minimumOrder:Number(product.MindestBestellung || 1), maximumOrder:Number(product.MaximalBestellung || 250), droppableParts:product.namesOfDroppableParts || [], colorCodes:product.colorCodes || [], defaultColors:product.ColorCodeFarbVorbelegungen || {} },
     branding:{ removed:'Owayo vendor marks from synchronized mask textures', colorCodes:[...OWAYO_BRAND_COLOR_CODES], colorIndices:[...brandColorIndices(product.colorCodes)] },
     model:{ format:'mirl-v1.1-uncompressed', uri:modelInfo.url, parts:support['parts.json'], restrictedZones:support['sperrbezirke.json'], seamLines:support['teilungslinien.json'] },
     designs,
-    syncStatus:missingDesigns.length ? 'PARTIAL' : 'READY',
+    syncStatus:designs.length === 0 ? 'PARTIAL' : missingDesigns.length ? 'READY_WITH_SOURCE_GAPS' : 'READY',
     missingDesigns,
     availableDesigns:product.Designs.map(item => item.Design),
     // Pattern SVGs are product-independent masks; reuse the already verified
@@ -252,15 +324,31 @@ function hasCompleteLocalManifest(family) {
     const local = JSON.parse(fs.readFileSync(resolve(publicRoot, 'designer', 'owayo', family.id, 'manifest.json'), 'utf8'))
     return Array.isArray(local.designs)
       && local.designs.length > 0
-      && local.syncStatus !== 'PARTIAL'
-      && (!Array.isArray(local.missingDesigns) || local.missingDesigns.length === 0)
+      && /^READY/.test(String(local.syncStatus || ''))
   } catch { return false }
 }
 
-const families = all
-  ? OWAYO_CATALOG_V1.filter(row => !hasCompleteLocalManifest(row))
-  : [owayoFamilyById(requestedId)]
+const families = requestedGroup
+  ? OWAYO_CATALOG_V1.filter(row => row.group === requestedGroup && (audit || !hasCompleteLocalManifest(row)))
+  : all
+    ? OWAYO_CATALOG_V1.filter(row => audit || !hasCompleteLocalManifest(row))
+    : [owayoFamilyById(requestedId)]
 if (families.some(row => !row)) throw new Error(`Unknown Owayo family: ${requestedId}`)
+if (!families.length) throw new Error(`No Owayo families matched ${requestedGroup || requestedId || 'the requested scope'}.`)
+if (audit) {
+  const report = []
+  for (const family of families) {
+    process.stdout.write(`Auditing ${family.id}...\n`)
+    try { report.push(await auditFamily(family)) }
+    catch (error) { report.push({ id:family.id, group:family.group, ready:false, error:error instanceof Error ? error.message : String(error) }) }
+  }
+  await mkdir(resolve(root, 'artifacts'), { recursive:true })
+  const scope = requestedGroup || requestedId || 'all'
+  const output = resolve(root, `artifacts/owayo-family-audit-${slug(scope)}.json`)
+  await writeFile(output, `${JSON.stringify({ generatedAt:new Date().toISOString(), report }, null, 2)}\n`)
+  console.log(JSON.stringify({ output, report:report.map(item => ({ id:item.id, ready:item.ready, model:item.resolved?.model, designs:item.designCount, missingDesigns:item.missingDesigns || [], knownSourceBytes:item.knownSourceBytes || 0, error:item.error || null })) }, null, 2))
+  process.exitCode = report.some(item => item.error) ? 1 : 0
+} else {
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const client = write ? createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth:{ persistSession:false, autoRefreshToken:false } }) : null
 if (write && (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY)) throw new Error('Write mode requires Supabase service credentials.')
@@ -269,3 +357,4 @@ for (const family of families) report.push(await syncFamily(family, client, shar
 await mkdir(resolve(root, 'artifacts'), { recursive:true })
 await writeFile(resolve(root, 'artifacts/owayo-family-sync.json'), `${JSON.stringify({ generatedAt:new Date().toISOString(), mode:write ? 'WRITE' : 'DRY_RUN', report }, null, 2)}\n`)
 console.log(JSON.stringify(report.map(item => ({ id:item.family.id, designCount:item.designCount, missingDesigns:item.missingDesigns, model:item.model, manifest:item.manifestPath })), null, 2))
+}

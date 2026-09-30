@@ -11,12 +11,28 @@ const absolute = (url, origin) => {
 }
 const words = (value, length) => value.length <= length ? value : value.slice(0,length + 1).replace(/\s+\S*$/, '').trim()
 
+const STORE_TITLE_SUFFIX = ' | Jersevo'
+
+function productTitleBase(product) {
+  // The public product name is the canonical naming source for the PDP. Some
+  // imported SEO titles were cut after adding a brand suffix (for example
+  // "| J"), while others contained only a broad category name. Using either
+  // one made the browser title disagree with the H1 and Product schema.
+  const publicName = cleanSeoText(product.title || product.name)
+  const legacySeoTitle = cleanSeoText(product.seo?.title)
+  const source = publicName || legacySeoTitle
+  return source
+    .replace(/\s*(?:\||—|–|-)\s*(?:Extra\s+Time|Jersevo)\s*$/i,'')
+    .replace(/\s*\|\s*(?:J(?:e(?:r(?:s(?:e(?:v(?:o)?)?)?)?)?)?|E(?:x(?:t(?:r(?:a(?:\s+T(?:i(?:m(?:e)?)?)?)?)?)?)?)?)\s*$/i,'')
+    .trim()
+}
+
 export function productSeoMetadata(product, origin = 'https://www.jersevo.com') {
   const name = cleanSeoText(product.title || product.name)
-  const title = cleanSeoText(product.seo?.title || name).replace(/\s*(?:\||—|–|-)\s*(?:Extra Time|Jersevo)\s*$/i,'')
+  const title = productTitleBase(product) || name || 'Product'
   const taxonomy = validateCatalogTaxonomy(product)
   return {
-    title:`${words(title,60)} | Jersevo`,
+    title:`${words(title,72)}${STORE_TITLE_SUFFIX}`,
     description:cleanSeoText(product.seo?.description) || seoDescription('', product.description || product.subtitle || name,160),
     canonical:new URL(productPath(product),origin).href,
     image:absolute(product.image || product.media?.find(item => item.type === 'IMAGE')?.url || '/assets/hero-tunnel.webp',origin),

@@ -4,7 +4,7 @@ import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
+import { OWAYO_CATALOG_GROUPS, OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = resolve(root, 'public/designer/owayo/catalog.json')
@@ -21,8 +21,7 @@ const products = await Promise.all(OWAYO_CATALOG_V1.map(async product => {
     const missingDesigns = Array.isArray(manifest.missingDesigns) ? manifest.missingDesigns : []
     const synchronizedDesigns = Array.isArray(manifest.designs) ? manifest.designs.length : 0
     const assetsReady = synchronizedDesigns > 0
-      && manifest.syncStatus !== 'PARTIAL'
-      && missingDesigns.length === 0
+      && /^READY/.test(String(manifest.syncStatus || ''))
     const manifestPreview = manifest.designs?.find(item => item?.preview)?.preview || ''
     // Prefer a same-origin checked-in cover when available. Remote Supabase
     // previews are useful during syncing, but a local URL avoids browser
@@ -64,14 +63,23 @@ const products = await Promise.all(OWAYO_CATALOG_V1.map(async product => {
   } catch { return product }
 }))
 const summary = owayoCatalogSummary(products)
+const groups = OWAYO_CATALOG_GROUPS.map(group => {
+  const groupedProducts = products.filter(product => product.group === group.id)
+  return {
+    ...group,
+    products:groupedProducts.length,
+    live:groupedProducts.filter(product => product.assetsReady).length
+  }
+}).filter(group => group.products > 0)
 const payload = {
   schemaVersion:1,
   provider:'owayo',
   generatedAt:new Date().toISOString(),
   generatedFrom:'verified-product-family-contract',
-  source:'https://www.owayo.com/cycling/products-us.htm',
+  source:'https://www.owayo.com/',
   publicBrand:'Jersevo',
   summary,
+  groups,
   products:OWAYO_CATALOG_V1
 }
 payload.products = products

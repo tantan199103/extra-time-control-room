@@ -75,7 +75,7 @@ test('pattern UI and order handoff are wired to the local catalogue', async () =
   assert.match(source, /manifest\.patterns/)
   assert.match(source, /loadOwayoPatternTexture/)
   assert.match(source, /pattern:\s*state\.pattern\?\.slug/)
-  assert.match(source, /Switch to Cycling patterns/)
+  assert.match(source, /Switch to Sportswear patterns/)
 })
 
 test('synchronized mask textures do not render Owayo vendor marks', async () => {
@@ -306,18 +306,20 @@ test('Owayo family catalogue keeps unsupported cuts from masquerading as C3 asse
   assert.ok(catalog.products.filter(row => !row.assetsReady).every(row => !row.manifest))
 })
 
-test('every live Owayo family resolves its own model and design archive', async () => {
+test('every live Owayo family resolves its own model and usable design archive', async () => {
   const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8'))
   for (const family of catalog.products.filter(row => row.assetsReady)) {
     const manifest = JSON.parse(await readFile(resolve(publicRoot, family.manifest.slice(1)), 'utf8'))
     assert.equal(manifest.provider, 'owayo')
-    assert.equal(manifest.syncStatus, 'READY', family.id)
-    assert.equal(manifest.missingDesigns?.length || 0, 0, family.id)
+    assert.match(manifest.syncStatus, /^READY(?:_WITH_SOURCE_GAPS)?$/, family.id)
+    if (manifest.syncStatus === 'READY') assert.equal(manifest.missingDesigns?.length || 0, 0, family.id)
+    else assert.ok(manifest.missingDesigns?.length > 0, `${family.id} must name each unavailable source design`)
     assert.ok(manifest.product?.model, `${family.id} has no model`)
     assert.equal(manifest.designs.length, family.designCount, `${family.id} design count drift`)
     assert.ok(manifest.designs.every(design => design.textures && Object.keys(design.textures).length > 0), `${family.id} has an empty design`)
   }
   const c7 = catalog.products.find(row => row.id === 'cycling-c7')
-  assert.equal(c7.assetsReady, false)
+  assert.equal(c7.assetsReady, true)
+  assert.equal(c7.syncStatus, 'READY_WITH_SOURCE_GAPS')
   assert.deepEqual(c7.missingDesigns, ['Route'])
 })

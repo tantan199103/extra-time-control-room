@@ -1008,25 +1008,40 @@ function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, u
     : manifest.designs
   const designs = showAll ? filteredDesigns : filteredDesigns.slice(0, 12)
   const currentProduct = catalog?.products?.find(item => item.id === state.productId)
+  const currentOwayoProduct = owayoCatalog?.products?.find(item => item.id === state.productId)
+  const availableOwayoGroups = (owayoCatalog?.groups?.length
+    ? owayoCatalog.groups
+    : [...new Map((owayoCatalog?.products || []).map(product => [product.group || product.sport || 'catalog', { id:product.group || product.sport || 'catalog', label:product.groupLabel || product.sportLabel || 'Catalog' }])).values()]
+  )
+  const [owayoGroup, setOwayoGroup] = useState(currentOwayoProduct?.group || availableOwayoGroups[0]?.id || 'cycling')
+  useEffect(() => {
+    if (currentOwayoProduct?.group) setOwayoGroup(currentOwayoProduct.group)
+  }, [currentOwayoProduct?.group])
+  const visibleOwayoProducts = (owayoCatalog?.products || []).filter(product => (product.group || product.sport) === owayoGroup)
+  const activeOwayoGroup = availableOwayoGroups.find(group => group.id === owayoGroup)
   const styles = manifestIsBoombah(manifest) ? (manifest.product.styles || []) : []
   return <div className="designer-panel designer-panel--design">
     <div className="designer-library-switch" aria-label="Designer library">
-      <div className="designer-library-switch__head"><span>Design library</span><small>{manifestIsBoombah(manifest) ? 'Teamwear 3D' : 'Cycling 3D'}</small></div>
+      <div className="designer-library-switch__head"><span>Design library</span><small>{manifestIsBoombah(manifest) ? 'Teamwear 3D' : `${currentOwayoProduct?.groupLabel || currentOwayoProduct?.sportLabel || 'Sportswear'} 3D`}</small></div>
       <div className="designer-library-switch__providers">
-        <button type="button" disabled={!owayoAvailable || Boolean(state.listingId)} className={!manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('owayo')}>Cycling</button>
+        <button type="button" disabled={!owayoAvailable || Boolean(state.listingId)} className={!manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('owayo')}>Sportswear</button>
         <button type="button" disabled={!catalog?.products?.length || Boolean(state.listingId)} className={manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('boombah')}>Teamwear</button>
       </div>
       {manifestIsBoombah(manifest) && catalog?.products?.length > 0 && <>
         <label className="designer-library-switch__field"><span>Sport {state.listingId && <small>· listing locked</small>}</span><select disabled={Boolean(state.listingId)} value={state.productId} onChange={event => onProductChange?.(event.target.value)}>{catalog.products.map(product => <option key={product.id} value={product.id}>{product.sport} · {stripBoombahBrandingText(product.name)}</option>)}</select></label>
         {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => item.styleCode === event.target.value)?.id || current.design }))}>{styles.map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select></label>}
       </>}
-      {!manifestIsBoombah(manifest) && owayoCatalog?.products?.length > 0 && <div className="designer-owayo-families" aria-label="Cycling garment families">
-        <span className="designer-library-switch__field-label">Garment family</span>
+      {!manifestIsBoombah(manifest) && owayoCatalog?.products?.length > 0 && <div className="designer-owayo-families" aria-label="Sportswear garment families">
+        <span className="designer-library-switch__field-label">Sport catalogue</span>
+        <div className="designer-owayo-families__groups" role="tablist" aria-label="Sport catalogue">
+          {availableOwayoGroups.map(group => <button type="button" role="tab" aria-selected={group.id === owayoGroup} key={group.id} className={group.id === owayoGroup ? 'is-active' : ''} onClick={() => setOwayoGroup(group.id)}><span>{group.label}</span><small>{group.live ?? (owayoCatalog.products || []).filter(product => product.group === group.id && product.assetsReady).length}/{group.products ?? (owayoCatalog.products || []).filter(product => product.group === group.id).length}</small></button>)}
+        </div>
+        <span className="designer-library-switch__field-label">{activeOwayoGroup?.label || 'Garment'} models</span>
         <div className="designer-owayo-families__list">
-          {owayoCatalog.products.map(product => <button type="button" key={product.id} disabled={!product.assetsReady || Boolean(state.listingId)} className={`${product.assetsReady ? 'is-live' : ''}${state.productId === product.id ? ' is-active' : ''}`} title={product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Exact model assets are being synchronized'} onClick={() => product.assetsReady && onOwayoProductChange?.(product.id)}><span>{product.title.replace(/^Jersevo\s+Custom\s+/i, '')}</span><small>{product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Model sync pending'}</small></button>)}
+          {visibleOwayoProducts.map(product => <button type="button" key={product.id} disabled={!product.assetsReady || Boolean(state.listingId)} className={`${product.assetsReady ? 'is-live' : ''}${state.productId === product.id ? ' is-active' : ''}`} title={product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Exact model assets are being synchronized'} onClick={() => product.assetsReady && onOwayoProductChange?.(product.id)}><span>{product.title.replace(/^Jersevo\s+Custom\s+/i, '')}</span><small>{product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Syncing exact model'}</small></button>)}
         </div>
       </div>}
-      {currentProduct && <p className="designer-library-switch__note">{currentProduct.designs} mirrored templates · model loads on selection</p>}
+      {(currentProduct || currentOwayoProduct) && <p className="designer-library-switch__note">{manifestIsBoombah(manifest) ? currentProduct?.designs : currentOwayoProduct?.designCount} mirrored templates · exact model loads on selection</p>}
     </div>
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">
@@ -1071,7 +1086,7 @@ function PatternPanel({ manifest, state, update, onProviderChange, onOpenDesign 
   const colorCodes = (active?.baseColors?.length ? active.baseColors : ['A', 'B', 'C']).filter(code => manifest?.product?.colorCodes?.some(item => item.colorCode === code))
   const selected = patterns.find(pattern => pattern.slug === state.pattern?.slug || pattern.id === state.pattern?.id)
   const setPattern = patch => update(current => ({ ...current, pattern:{ ...(current.pattern || {}), ...patch } }))
-  if (manifestIsBoombah(manifest)) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are part of Cycling</h2><p>Owayo garment patterns are available in the Cycling library. Switch libraries to browse the mirrored pattern catalogue.</p><button type="button" className="designer-pattern-switch" onClick={() => { onOpenDesign?.(); onProviderChange?.('owayo') }}>Switch to Cycling patterns</button></div></div>
+  if (manifestIsBoombah(manifest)) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are in Sportswear</h2><p>Garment patterns are available in the multi-sport library. Switch libraries to browse the mirrored pattern catalogue.</p><button type="button" className="designer-pattern-switch" onClick={() => { onOpenDesign?.(); onProviderChange?.('owayo') }}>Switch to Sportswear patterns</button></div></div>
   if (!patterns.length) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are unavailable</h2><p>The local Owayo pattern catalogue could not be loaded. Refresh the designer and try again.</p></div></div>
   return <div className="designer-panel designer-panel--patterns">
     <div className="designer-panel__intro"><h2>Add a garment pattern</h2><p>These are mirrored Owayo pattern masks. Choose the color region that should carry the pattern, then adjust its scale and strength.</p></div>
@@ -1561,11 +1576,11 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       if (owayo) setOwayoManifest(owayo)
       if (boombahCatalog) setCatalog(boombahCatalog)
       if (catalogFamilies) setOwayoCatalog(catalogFamilies)
-      if (!owayo && !boombahCatalog) throw new Error('Cycling and teamwear designer assets are temporarily unavailable.')
+      if (!owayo && !boombahCatalog) throw new Error('Sportswear and teamwear designer assets are temporarily unavailable.')
       const requestedProvider = String(
         designer?.provider
           || routeParams.provider
-          || (routeParams.product && /^cycling-/i.test(routeParams.product) ? 'owayo' : '')
+          || (routeParams.product && requestedFamily ? 'owayo' : '')
           || draft?.provider
           || ''
       ).toLowerCase()

@@ -50,11 +50,21 @@ test('Shop keeps discovery, shortcuts and controls in one compact panel', async 
   const css = await readFile(new URL('../src/shop-visual.css', import.meta.url), 'utf8')
   assert.match(source, /shop-visual--unified/)
   assert.match(source, /shop-visual__unified-controls/)
+  assert.match(source, /shop-control-band__search/)
+  assert.match(source, /shop-control-band__filters/)
   assert.match(source, /controls=\{filterBar\}/)
   assert.match(source, /activeFilters=\{activeFilterMarkup\}/)
   assert.match(source, /className="shop-all-filters"/)
   assert.match(css, /\.shop-catalog-shell--root[\s\S]*\.shop-layout--root/)
   assert.match(css, /\.shop-visual--unified[\s\S]*overflow-x:\s*auto/)
+})
+
+test('product cards fill a neutral 3:4 frame without stretching source images', async () => {
+  const css = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
+  assert.match(css,/\.product-card__image\s*\{[^}]*aspect-ratio:\s*3\s*\/\s*4/)
+  assert.match(css,/\.product-card__image\s*\{[^}]*background:\s*#fff/)
+  assert.match(css,/\.product-card__image\s*>\s*img\s*\{[^}]*object-fit:\s*cover/)
+  assert.doesNotMatch(css,/\.product-card:nth-child\(4\)[^}]*grayscale/)
 })
 
 test('Shop hero exposes a direct commercial search and a compact campaign visual', async () => {

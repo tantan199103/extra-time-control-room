@@ -117,6 +117,11 @@
 .designer-library-switch__field span { color: #697169; font-size: 9px; font-weight: 800; }
 .designer-library-switch__field select { width: 100%; min-height: 38px; padding: 0 9px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 10px var(--body); }
 .designer-library-switch__field-label { display: block; margin-top: 10px; color: #697169; font-size: 9px; font-weight: 800; }
+.designer-owayo-families__groups { display: flex; gap: 4px; margin: 6px -2px 0; padding: 2px; overflow-x: auto; scrollbar-width: thin; }
+.designer-owayo-families__groups button { flex: 0 0 auto; min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border: 1px solid var(--designer-line); background: #fff; color: var(--designer-ink); font: 800 9px var(--body); cursor: pointer; }
+.designer-owayo-families__groups button small { color: #7b827a; font-size: 7px; }
+.designer-owayo-families__groups button.is-active { border-color: var(--designer-ink); background: var(--designer-yellow); }
+.designer-owayo-families__groups button.is-active small { color: var(--designer-ink); }
 .designer-owayo-families__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-top: 6px; max-height: 164px; overflow: auto; }
 .designer-owayo-families__list button { min-width: 0; min-height: 42px; display: grid; gap: 3px; padding: 7px 8px; border: 1px solid var(--designer-line); background: #fff; color: var(--designer-ink); text-align: left; cursor: default; }
 .designer-owayo-families__list button.is-live { border-color: var(--designer-ink); box-shadow: inset 3px 0 0 var(--designer-yellow); }
@@ -340,6 +345,9 @@
   .designer-tabs button span { font-size: 8px; }
   .designer-tabs button.is-active::after { right: 9px; bottom: 5px; left: 9px; }
   .designer-panel { padding: 24px 16px 30px; }
+  .designer-library-switch { margin-right: -4px; margin-left: -4px; padding: 12px; }
+  .designer-owayo-families__groups { margin-right: -12px; padding-right: 12px; }
+  .designer-owayo-families__list { max-height: 150px; }
   .designer-panel__intro h2 { font-size: 28px; }
   .designer-layers { margin-top: 20px; }
   .designer-layer-list { max-height: 196px; overflow: auto; }

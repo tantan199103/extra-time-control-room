@@ -60,12 +60,12 @@ function tagConfig(product = {}) {
   // still unambiguous because `designer-product-*` is reserved for that
   // provider when no explicit provider marker is present.
   const providerTag = tags.find(value => value.startsWith('designer-provider-'))
-  // Early Owayo imports only carried `designer-product-cycling-*`; infer that
-  // reserved namespace so a public storefront response cannot route a cycling
-  // listing into the legacy Boombah catalog when private metadata is stripped.
+  // Early Owayo imports only carried `designer-product-*`; infer every
+  // reserved Owayo catalogue namespace so stripped public records still route
+  // to the exact synchronized garment manifest.
   const provider = providerTag
     ? providerTag.slice('designer-provider-'.length)
-    : /^cycling-/i.test(taggedProductId) ? 'owayo' : 'boombah'
+    : /^(?:cycling|basketball|hockey|motocross|soccer|running|tshirts)-/i.test(taggedProductId) ? 'owayo' : 'boombah'
   if (!PROVIDERS.has(provider)) return null
   const productId = provider === 'boombah' ? taggedProductId.toUpperCase() : taggedProductId.toLowerCase()
   const manifest = provider === 'owayo'
