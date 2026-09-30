@@ -12,6 +12,8 @@ COPY src/lib/google-merchant.js ./src/lib/google-merchant.js
 COPY src/lib/listing-media.js ./src/lib/listing-media.js
 COPY src/lib/image-privacy.js ./src/lib/image-privacy.js
 COPY src/lib/customization-ai.js ./src/lib/customization-ai.js
+COPY src/lib/owayo-personalization.js ./src/lib/owayo-personalization.js
+COPY src/lib/quantity-pricing.js ./src/lib/quantity-pricing.js
 COPY backend/src ./backend/src
 
 EXPOSE 8787

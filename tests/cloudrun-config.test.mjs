@@ -7,6 +7,8 @@ test('Cloud Run deployment keeps the API container and public secrets out of Git
   const script = await readFile(new URL('../deploy/cloudrun/deploy.ps1', import.meta.url), 'utf8')
   const envExample = await readFile(new URL('../.env.backend.example', import.meta.url), 'utf8')
   assert.match(dockerfile, /CMD \["node", "backend\/src\/server\.mjs"\]/)
+  assert.match(dockerfile, /COPY src\/lib\/owayo-personalization\.js \.\/src\/lib\/owayo-personalization\.js/)
+  assert.match(dockerfile, /COPY src\/lib\/quantity-pricing\.js \.\/src\/lib\/quantity-pricing\.js/)
   assert.match(script, /gcloud run deploy/)
   assert.match(script, /--update-secrets/)
   assert.doesNotMatch(script, /SUPABASE_SERVICE_ROLE_KEY\s*=/)

@@ -11,7 +11,10 @@ const port = Number(process.env.PORT || 8787)
 const maxBodyBytes = Math.max(1, Number(process.env.BACKEND_MAX_BODY_BYTES || 32 * 1024 * 1024))
 const rateWindowMs = Math.max(10_000, Number(process.env.BACKEND_RATE_WINDOW_MS || 60_000))
 const rateLimit = Math.max(10, Number(process.env.BACKEND_RATE_LIMIT || 180))
+const readinessProbeTimeoutMs = Math.min(5_000, Math.max(500, Number(process.env.BACKEND_READINESS_TIMEOUT_MS || 2_500)))
+const readinessProbeCacheMs = Math.min(60_000, Math.max(1_000, Number(process.env.BACKEND_READINESS_CACHE_MS || 15_000)))
 const requestCounters = new Map()
+const readinessProbeCache = { expiresAt:0, value:null, promise:null }
 
 const routeModules = new Map([
   ['/api/customer-upload', 'customer-upload.js'],
@@ -113,6 +116,48 @@ function readiness() {
   }
 }
 
+async function probeDatabase({ fetchImpl = globalThis.fetch, force = false, now = Date.now() } = {}) {
+  const useCache = fetchImpl === globalThis.fetch && !force
+  if (useCache && readinessProbeCache.value && readinessProbeCache.expiresAt > now) return readinessProbeCache.value
+  if (useCache && readinessProbeCache.promise) return readinessProbeCache.promise
+
+  const run = async () => {
+    try {
+      const endpoint = new URL('/rest/v1/pod_products', String(process.env.SUPABASE_URL || '').trim())
+      endpoint.searchParams.set('select', 'id')
+      endpoint.searchParams.set('limit', '1')
+      const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+      const response = await fetchImpl(endpoint, {
+        method:'HEAD',
+        headers:{ apikey:key, Authorization:`Bearer ${key}` },
+        signal:AbortSignal.timeout(readinessProbeTimeoutMs)
+      })
+      return { ok:Boolean(response?.ok) }
+    } catch {
+      return { ok:false }
+    }
+  }
+
+  if (!useCache) return run()
+  readinessProbeCache.promise = run().then(value => {
+    readinessProbeCache.value = value
+    readinessProbeCache.expiresAt = Date.now() + (value.ok ? readinessProbeCacheMs : Math.min(5_000, readinessProbeCacheMs))
+    return value
+  }).finally(() => { readinessProbeCache.promise = null })
+  return readinessProbeCache.promise
+}
+
+async function readinessWithDependencies(options = {}) {
+  const state = readiness()
+  if (!state.ready) return { ...state, dependencies:{ database:'not-checked' } }
+  const database = await probeDatabase(options)
+  return {
+    ...state,
+    ready:database.ok,
+    dependencies:{ database:database.ok ? 'ready' : 'unavailable' }
+  }
+}
+
 function responseAdapter(nodeResponse) {
   let statusCode = 200
   let settled = false
@@ -180,10 +225,10 @@ async function handle(nodeRequest, nodeResponse) {
     return
   }
   if (url.pathname === '/ready') {
-    const state = readiness()
+    const state = await readinessWithDependencies()
     nodeResponse.setHeader('Content-Type', 'application/json; charset=utf-8')
     nodeResponse.statusCode = state.ready ? 200 : 503
-    nodeResponse.end(JSON.stringify({ ok: state.ready, service: 'jersevo-api', missing: state.missing, capabilities:state.capabilities }))
+    nodeResponse.end(JSON.stringify({ ok: state.ready, service: 'jersevo-api', missing: state.missing, dependencies:state.dependencies, capabilities:state.capabilities }))
     return
   }
 
@@ -261,4 +306,4 @@ if (isMain) {
   })
 }
 
-export { getHandler, rateAllowed, readiness, routeModules, responseAdapter, server, setCors }
+export { getHandler, probeDatabase, rateAllowed, readiness, readinessWithDependencies, routeModules, responseAdapter, server, setCors }

@@ -23,8 +23,11 @@ SUPABASE_SERVICE_ROLE_KEY=server-only-key
 Thêm các biến AI/PayPal/Paddle trong `.env` server. Không đặt chúng với tiền
 tố `VITE_` và không commit file secrets.
 
-Liveness check: `GET /health`. Readiness check: `GET /ready`; readiness trả
-`503` và chỉ nêu tên biến còn thiếu, không bao giờ trả giá trị secret.
+Liveness check: `GET /health`. Readiness check: `GET /ready`; readiness kiểm
+tra cả cấu hình lẫn một truy vấn `HEAD` có timeout ngắn tới catalogue Supabase.
+Endpoint trả `503` khi database không phản hồi và chỉ nêu dependency/biến còn
+thiếu, không bao giờ trả giá trị secret. Có thể điều chỉnh timeout/cache bằng
+`BACKEND_READINESS_TIMEOUT_MS` và `BACKEND_READINESS_CACHE_MS`.
 
 ## Đưa lên VPS/Cloud Run
 

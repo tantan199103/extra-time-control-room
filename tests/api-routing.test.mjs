@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { isEdgeRoute, isNodeBackendRoute, resolveApiTarget } from '../src/lib/api-client.js'
-import { readiness, routeModules } from '../backend/src/server.mjs'
+import { readiness, readinessWithDependencies, routeModules } from '../backend/src/server.mjs'
 
 test('hybrid API routes resolve light calls to Supabase and heavy calls to Node', () => {
   assert.equal(resolveApiTarget('/api/cart-validate', { edgeOrigin: 'https://project.supabase.co/functions/v1', backendOrigin: 'https://api.jersevo.com' }), 'https://project.supabase.co/functions/v1/cart-validate')
@@ -48,6 +48,43 @@ test('Node runtime keeps the webhook route and fails readiness without server se
     const result = readiness()
     assert.equal(result.ready, false)
     assert.deepEqual(result.missing, ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL'])
+  } finally {
+    for (const [name, value] of Object.entries(old)) {
+      if (value == null) delete process.env[name]
+      else process.env[name] = value
+    }
+  }
+})
+
+test('Node readiness probes Supabase and fails closed when the catalogue database is unavailable', async () => {
+  const names = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CHECKOUT_SIGNING_SECRET', 'ALLOWED_ORIGINS', 'SITE_URL']
+  const old = Object.fromEntries(names.map(name => [name, process.env[name]]))
+  Object.assign(process.env, {
+    SUPABASE_URL:'https://project.supabase.co',
+    SUPABASE_SERVICE_ROLE_KEY:'server-only-test-key',
+    CHECKOUT_SIGNING_SECRET:'checkout-test-key',
+    ALLOWED_ORIGINS:'https://www.jersevo.com',
+    SITE_URL:'https://www.jersevo.com'
+  })
+  try {
+    let request
+    const healthy = await readinessWithDependencies({
+      force:true,
+      fetchImpl:async (url, options) => {
+        request = { url:String(url), options }
+        return { ok:true, status:200 }
+      }
+    })
+    assert.equal(healthy.ready, true)
+    assert.deepEqual(healthy.dependencies, { database:'ready' })
+    assert.match(request.url, /\/rest\/v1\/pod_products\?select=id&limit=1$/)
+    assert.equal(request.options.method, 'HEAD')
+    assert.equal(request.options.headers.apikey, 'server-only-test-key')
+
+    const unavailable = await readinessWithDependencies({ force:true, fetchImpl:async () => { throw new Error('timeout') } })
+    assert.equal(unavailable.ready, false)
+    assert.deepEqual(unavailable.dependencies, { database:'unavailable' })
+    assert.deepEqual(unavailable.missing, [])
   } finally {
     for (const [name, value] of Object.entries(old)) {
       if (value == null) delete process.env[name]
