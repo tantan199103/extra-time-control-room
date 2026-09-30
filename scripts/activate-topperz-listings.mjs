@@ -66,27 +66,63 @@ async function retry(label, operation, attempts = 4) {
   throw new Error(`${label}: ${lastError instanceof Error ? lastError.message : String(lastError)}`)
 }
 
-async function allRows(table, select, configure, pageSize = 1_000) {
+async function sourceProductIds(pageSize = 1_000) {
   const rows = []
-  for (let offset = 0; ; offset += pageSize) {
-    const result = await retry(`${table} page ${offset}`, () => configure(client.from(table).select(select).order('id')).range(offset, offset + pageSize - 1))
-    rows.push(...(result.data || []))
-    if (rows.length && rows.length % 10_000 === 0) console.log(`Audited ${table}: ${rows.length}`)
-    if (!result.data || result.data.length < pageSize) return rows
+  let cursor = ''
+  for (;;) {
+    const result = await retry(`pod_catalog_imports after ${cursor || 'start'}`, () => {
+      let query = client.from('pod_catalog_imports')
+        .select('entity_id')
+        .eq('source', SOURCE)
+        .eq('entity_type', 'PRODUCT')
+        .order('entity_id')
+        .limit(pageSize)
+      if (cursor) query = query.gt('entity_id', cursor)
+      return query
+    })
+    const page = result.data || []
+    rows.push(...page)
+    if (rows.length && rows.length % 10_000 === 0) console.log(`Discovered source products: ${rows.length}`)
+    if (page.length < pageSize) return rows
+    cursor = page.at(-1).entity_id
   }
 }
 
-const products = await allRows(
+async function rowsForIds(table, select, column, ids, batchSize = 50, concurrency = 4) {
+  const batches = []
+  for (let offset = 0; offset < ids.length; offset += batchSize) batches.push(ids.slice(offset, offset + batchSize))
+  const rows = []
+  let next = 0
+  let complete = 0
+  const worker = async () => {
+    for (;;) {
+      const index = next++
+      if (index >= batches.length) return
+      const batch = batches[index]
+      const result = await retry(`${table} id batch ${index + 1}`, () => client.from(table).select(select).in(column, batch))
+      rows.push(...(result.data || []))
+      complete += batch.length
+      if (complete === ids.length || complete % 2_000 < batchSize) console.log(`Audited ${table}: ${Math.min(complete, ids.length)}/${ids.length}`)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, batches.length) }, worker))
+  return rows
+}
+
+const sourceIds = [...new Set((await sourceProductIds()).map(row => row.entity_id).filter(Boolean))]
+const products = await rowsForIds(
   'pod_products',
   'id,handle,title,status,image,description,type,tags,seo,seo_status,ai_metadata',
-  query => query.eq('ai_metadata->>importSource', SOURCE)
+  'id',
+  sourceIds
 )
 const productIds = new Set(products.map(row => row.id))
-const variants = (await allRows(
+const variants = await rowsForIds(
   'pod_product_variants',
-  'id,product_id,status,price,inventory,pod_products!inner(id)',
-  query => query.eq('pod_products.ai_metadata->>importSource', SOURCE)
-)).filter(row => productIds.has(row.product_id))
+  'id,product_id,status,price,inventory',
+  'product_id',
+  [...productIds]
+)
 
 const variantsByProduct = new Map()
 for (const variant of variants) variantsByProduct.set(variant.product_id, [...(variantsByProduct.get(variant.product_id) || []), variant])
@@ -165,15 +201,13 @@ if (WRITE) {
   }
 }
 
-const verification = await Promise.all([
-  retry('verify published', () => client.from('pod_products').select('id', { count: 'exact', head: true }).eq('ai_metadata->>importSource', SOURCE).eq('status', 'PUBLISHED')),
-  retry('verify drafts', () => client.from('pod_products').select('id', { count: 'exact', head: true }).eq('ai_metadata->>importSource', SOURCE).eq('status', 'DRAFT')),
-  retry('verify indexable', () => client.from('pod_products').select('id', { count: 'exact', head: true }).eq('ai_metadata->>importSource', SOURCE).eq('seo_status', 'INDEXABLE'))
-])
+const verificationRows = WRITE
+  ? await rowsForIds('pod_products', 'id,status,seo_status', 'id', [...productIds])
+  : products
 report.verified = {
-  published: verification[0].count || 0,
-  drafts: verification[1].count || 0,
-  indexable: verification[2].count || 0
+  published: verificationRows.filter(row => row.status === 'PUBLISHED').length,
+  drafts: verificationRows.filter(row => row.status === 'DRAFT').length,
+  indexable: verificationRows.filter(row => row.seo_status === 'INDEXABLE').length
 }
 
 await mkdir(resolve(reportPath, '..'), { recursive: true })

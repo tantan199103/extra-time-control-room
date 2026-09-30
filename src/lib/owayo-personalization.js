@@ -13,16 +13,51 @@ const FONT_ALLOWLIST = new Set([
   'Impact'
 ])
 
-const PLACEMENTS = new Set(['back', 'front', 'left-sleeve', 'right-sleeve'])
+const PLACEMENT_ALIASES = Object.freeze({
+  front:'front-center',
+  back:'back-center'
+})
 
-// Owayo stores a logo as an object attached to a garment part. Keep the
-// public handoff deliberately small, but retain the part/placement so the
-// renderer can put the uploaded mark on the same UV surface the shopper saw.
-const LOGO_PLACEMENTS = new Set(['front', 'back', 'left-sleeve', 'right-sleeve'])
+const PLACEMENT_PRESETS = Object.freeze({
+  'front-center': Object.freeze({ surface:'front', spanFront:true, centerX:.5, centerY:.46, logoHeight:.2, logoWidth:.66 }),
+  'front-left-chest': Object.freeze({ surface:'front', centerX:.5, centerY:.28, logoHeight:.16, logoWidth:.58 }),
+  'front-right-chest': Object.freeze({ surface:'front', centerX:.5, centerY:.28, logoHeight:.16, logoWidth:.58 }),
+  'front-lower': Object.freeze({ surface:'front', spanFront:true, centerX:.5, centerY:.67, logoHeight:.2, logoWidth:.66 }),
+  'back-upper': Object.freeze({ surface:'back', centerX:.5, centerY:.25, logoHeight:.2, logoWidth:.62 }),
+  'back-center': Object.freeze({ surface:'back', centerX:.5, centerY:.46, logoHeight:.22, logoWidth:.66 }),
+  'back-lower': Object.freeze({ surface:'back', centerX:.5, centerY:.69, logoHeight:.2, logoWidth:.62 }),
+  'left-sleeve': Object.freeze({ surface:'left-sleeve', centerX:.5, centerY:.43, logoHeight:.18, logoWidth:.58 }),
+  'right-sleeve': Object.freeze({ surface:'right-sleeve', centerX:.5, centerY:.43, logoHeight:.18, logoWidth:.58 })
+})
+
+const PLACEMENTS = new Set(Object.keys(PLACEMENT_PRESETS))
+
+export const OWAYO_PRINT_AREA_GROUPS = Object.freeze([
+  Object.freeze({ label:'Front', options:Object.freeze([
+    Object.freeze({ value:'front-center', label:'Center front' }),
+    Object.freeze({ value:'front-left-chest', label:'Left chest' }),
+    Object.freeze({ value:'front-right-chest', label:'Right chest' }),
+    Object.freeze({ value:'front-lower', label:'Lower front' })
+  ]) }),
+  Object.freeze({ label:'Back', options:Object.freeze([
+    Object.freeze({ value:'back-upper', label:'Upper back' }),
+    Object.freeze({ value:'back-center', label:'Center back' }),
+    Object.freeze({ value:'back-lower', label:'Lower back' })
+  ]) }),
+  Object.freeze({ label:'Sleeves', options:Object.freeze([
+    Object.freeze({ value:'left-sleeve', label:'Left sleeve' }),
+    Object.freeze({ value:'right-sleeve', label:'Right sleeve' })
+  ]) })
+])
 
 const PLACEMENT_PART_PRIORITIES = Object.freeze({
-  back: [['back1'], ['back']],
-  front: [['frontrightpart'], ['front']],
+  'front-center': [['frontleftpart', 'frontrightpart'], ['front']],
+  'front-left-chest': [['frontleftpart'], ['front']],
+  'front-right-chest': [['frontrightpart'], ['front']],
+  'front-lower': [['frontleftpart', 'frontrightpart'], ['front']],
+  'back-upper': [['back1'], ['back']],
+  'back-center': [['back1'], ['back']],
+  'back-lower': [['back1'], ['back']],
   'left-sleeve': [['leftarm'], ['aermelbandlinks'], ['leftcuff'], ['keillinks']],
   'right-sleeve': [['rightarm'], ['aermelbandrechts'], ['rightcuff'], ['keilrechts']]
 })
@@ -36,21 +71,59 @@ const clean = (value, max) => String(value ?? '').replace(/[\u0000-\u001f\u007f]
 
 const compactPartName = value => String(value || '').replace(/[^a-z0-9]/gi, '').toLowerCase()
 
+export function normalizeOwayoPlacement(value, fallback = 'front-center') {
+  const candidate = clean(value, 24).toLowerCase()
+  const canonical = PLACEMENT_ALIASES[candidate] || candidate
+  return PLACEMENTS.has(canonical) ? canonical : fallback
+}
+
+export function owayoPlacementPreset(placement = 'front-center') {
+  const id = normalizeOwayoPlacement(placement)
+  return { id, ...PLACEMENT_PRESETS[id] }
+}
+
+export function owayoPlacementSurface(placement = 'front-center') {
+  return owayoPlacementPreset(placement).surface
+}
+
 /**
- * Resolve one deterministic garment mesh for a print placement. Several
- * Owayo cuts expose a primary sleeve plus a secondary side/keil mesh; using
- * every matching name would duplicate a customer's text or logo. The first
- * available priority is therefore the only active UV island.
+ * Resolve the deterministic garment mesh set for a print placement. Centered
+ * front artwork intentionally spans the paired zip panels; sleeves and split
+ * back cuts still select only one primary UV island to prevent duplication.
  */
-export function owayoPlacementPartNames(partNames = [], placement = 'front') {
+export function owayoPlacementPartNames(partNames = [], placement = 'front-center') {
   const names = (Array.isArray(partNames) ? partNames : []).map(value => String(value || '')).filter(Boolean)
-  const priorities = PLACEMENT_PART_PRIORITIES[placement] || PLACEMENT_PART_PRIORITIES.front
+  const preset = owayoPlacementPreset(placement)
+  const priorities = PLACEMENT_PART_PRIORITIES[preset.id] || PLACEMENT_PART_PRIORITIES['front-center']
   for (const group of priorities) {
     const matches = names.filter(name => group.includes(compactPartName(name)))
-    if (matches.length) return [matches[0]]
+    if (matches.length) return preset.spanFront ? matches : [matches[0]]
   }
-  const prefix = placement === 'back' ? 'back' : placement === 'front' ? 'front' : placement === 'left-sleeve' ? 'left' : 'right'
-  return names.filter(name => compactPartName(name).startsWith(prefix)).slice(0, 1)
+  const prefix = preset.surface === 'back' ? 'back' : preset.surface === 'front' ? 'front' : preset.surface === 'left-sleeve' ? 'left' : 'right'
+  return names.filter(name => compactPartName(name).startsWith(prefix)).slice(0, preset.spanFront ? 2 : 1)
+}
+
+/**
+ * A zipped cycling jersey commonly exposes its front as two independent UV
+ * canvases. Map those canvases to opposite halves of one logical artwork so a
+ * centered logo or number crosses the zip once instead of being duplicated.
+ */
+export function owayoPlacementUvTransform(partName, placement = 'front-center', bounds = {}) {
+  const preset = owayoPlacementPreset(placement)
+  const part = compactPartName(partName)
+  if (!preset.spanFront || !['frontleftpart', 'frontrightpart'].includes(part)) {
+    return { scaleX:1, scaleY:1, offsetX:0, offsetY:0 }
+  }
+  const minX = clamp(bounds?.minX, -4, 4, 0)
+  const maxX = clamp(bounds?.maxX, -4, 4, 1)
+  const span = Math.max(.001, maxX - minX)
+  const scaleX = .5 / span
+  return {
+    scaleX,
+    scaleY:1,
+    offsetX:(part === 'frontleftpart' ? .5 : 0) - minX * scaleX,
+    offsetY:0
+  }
 }
 
 function sizeTokens(value) {
@@ -136,7 +209,6 @@ export function resolveOwayoPreviewText(text = {}, roster = []) {
 export function normalizeOwayoPersonalization(input = {}, roster = []) {
   const preview = resolveOwayoPreviewText(input, roster)
   const fontCandidate = clean(input?.font, 32)
-  const placementCandidate = clean(input?.placement, 24).toLowerCase()
   return {
     ...preview,
     font: FONT_ALLOWLIST.has(fontCandidate) ? fontCandidate : 'Barlow Condensed',
@@ -150,21 +222,21 @@ export function normalizeOwayoPersonalization(input = {}, roster = []) {
     y: clamp(input?.y, -1, 1, 0),
     scale: clamp(input?.scale, .55, 1.8, 1),
     rotation: clamp(input?.rotation, -30, 30, 0),
-    placement: PLACEMENTS.has(placementCandidate) ? placementCandidate : 'back',
+    placement: normalizeOwayoPlacement(input?.placement, 'back-center'),
     sameOnAll: Boolean(input?.sameOnAll),
     layer: clamp(input?.layer, 0, 20, 0)
   }
 }
 
 export function normalizeOwayoLogo(input = {}) {
-  const placementCandidate = clean(input?.placement, 24).toLowerCase()
+  const placement = normalizeOwayoPlacement(input?.placement)
   return {
     name: clean(input?.name, 160),
     x: clamp(input?.x, -1, 1, 0),
     y: clamp(input?.y, -1, 1, 0),
     scale: clamp(input?.scale, .25, 2, 1),
     rotation: clamp(input?.rotation, -180, 180, 0),
-    placement: LOGO_PLACEMENTS.has(placementCandidate) ? placementCandidate : 'front'
+    placement
   }
 }
 
@@ -173,19 +245,29 @@ export function normalizeOwayoLogo(input = {}) {
  * resulting map to the selected garment panel's UV island and leaves the
  * collar, pocket and hem clear where those regions exist.
  */
-export function owayoBackTextLayout(placement = 'back') {
-  if (placement === 'left-sleeve' || placement === 'right-sleeve') {
+export function owayoBackTextLayout(placement = 'back-center') {
+  const preset = owayoPlacementPreset(placement)
+  if (preset.surface === 'left-sleeve' || preset.surface === 'right-sleeve') {
     return {
       team: { x: .5, y: .28, width: .72, size: .048, weight: 700 },
       name: { x: .5, y: .46, width: .76, size: .06, weight: 800 },
       number: { x: .5, y: .67, width: .58, size: .16, weight: 800 }
     }
   }
+  if (preset.id === 'front-left-chest' || preset.id === 'front-right-chest') {
+    return {
+      team: { x: .5, y: .19, width: .64, size: .04, weight: 700 },
+      name: { x: .5, y: .31, width: .7, size: .052, weight: 800 },
+      number: { x: .5, y: .47, width: .54, size: .135, weight: 800 }
+    }
+  }
+  const nameY = preset.id === 'back-upper' ? .28
+    : preset.id === 'front-lower' || preset.id === 'back-lower' ? .61
+      : .43
   return {
-    team: { x: .5, y: .255, width: .58, size: .055, weight: 700 },
-    name: { x: .5, y: .405, width: .62, size: .072, weight: 800 },
-    // Keep the number above the C3 pocket seam (the lower Back UV island).
-    number: { x: .5, y: .535, width: .52, size: .205, weight: 800 }
+    team: { x: .5, y:nameY - .14, width: .58, size: .055, weight: 700 },
+    name: { x: .5, y:nameY, width: .62, size: .072, weight: 800 },
+    number: { x: .5, y:nameY + .15, width: .52, size: .19, weight: 800 }
   }
 }
 

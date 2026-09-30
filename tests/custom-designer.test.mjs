@@ -9,7 +9,7 @@ import { matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
 import { STOREFRONT_STATIC_ROUTES } from '../src/lib/storefront-model.js'
 import { normalizeDesignerSpec } from '../api/customization-order.js'
 import { brandColorIndices } from '../scripts/strip-owayo-branding.mjs'
-import { normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, resolveOwayoPreviewText, resolveOwayoSizeValue } from '../src/lib/owayo-personalization.js'
+import { normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, owayoPlacementUvTransform, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PRINT_AREA_GROUPS } from '../src/lib/owayo-personalization.js'
 import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -161,7 +161,9 @@ test('Owayo personalization preview is deterministic and roster-backed', () => {
   assert.equal(normalizeOwayoPersonalization({ x:4, y:-4, scale:4 }).y, -1)
   assert.equal(normalizeOwayoPersonalization({ x:4, y:-4, scale:4 }).scale, 1.8)
   assert.deepEqual(Object.keys(owayoBackTextLayout()), ['team','name','number'])
-  assert.deepEqual(normalizeOwayoLogo({ name:' crest.svg ', placement:'unknown', x:9, scale:0 }), { name:'crest.svg', x:1, y:0, scale:.25, rotation:0, placement:'front' })
+  assert.equal(normalizeOwayoPersonalization({ placement:'back' }).placement, 'back-center')
+  assert.equal(normalizeOwayoPersonalization({ placement:'front' }).placement, 'front-center')
+  assert.deepEqual(normalizeOwayoLogo({ name:' crest.svg ', placement:'unknown', x:9, scale:0 }), { name:'crest.svg', x:1, y:0, scale:.25, rotation:0, placement:'front-center' })
 })
 
 test('Owayo roster keeps display sizes and source variant codes aligned', () => {
@@ -202,13 +204,27 @@ test('Owayo logos and alternate text sides bind to garment UV materials', async 
   assert.match(source, /uniform sampler2D logoMap/)
   assert.match(source, /applyOwayoLogo\(runtime, texture, normalizedLogo\.placement\)/)
   assert.match(source, /owayoPlacementPartNames/)
-  assert.match(source, /Place on garment/)
+  assert.match(source, /Print area/)
   assert.match(source, /productId:manifest\?\.product\?\.id \|\| state\.productId/)
   assert.deepEqual(owayoPlacementPartNames(['LeftArm', 'Keillinks'], 'left-sleeve'), ['LeftArm'])
   assert.deepEqual(owayoPlacementPartNames(['LeftCuff', 'LeftArm'], 'left-sleeve'), ['LeftArm'])
   assert.deepEqual(owayoPlacementPartNames(['Aermelbandlinks', 'Passelinks'], 'left-sleeve'), ['Aermelbandlinks'])
-  assert.deepEqual(owayoPlacementPartNames(['FrontLeftPart', 'FrontRightPart'], 'front'), ['FrontRightPart'])
+  assert.deepEqual(owayoPlacementPartNames(['FrontLeftPart', 'FrontRightPart'], 'front'), ['FrontLeftPart', 'FrontRightPart'])
+  assert.deepEqual(owayoPlacementPartNames(['FrontLeftPart', 'FrontRightPart'], 'front-left-chest'), ['FrontLeftPart'])
+  assert.deepEqual(owayoPlacementPartNames(['FrontLeftPart', 'FrontRightPart'], 'front-right-chest'), ['FrontRightPart'])
   assert.deepEqual(owayoPlacementPartNames(['Back1', 'Back2', 'Back3'], 'back'), ['Back1'])
+})
+
+test('Owayo print areas cover the torso, back and sleeves without duplicating center-front artwork', () => {
+  assert.deepEqual(OWAYO_PRINT_AREA_GROUPS.map(group => group.label), ['Front', 'Back', 'Sleeves'])
+  assert.equal(OWAYO_PRINT_AREA_GROUPS.flatMap(group => group.options).length, 9)
+  const left = owayoPlacementUvTransform('FrontLeftPart', 'front-center', { minX:.08, maxX:.94 })
+  const right = owayoPlacementUvTransform('FrontRightPart', 'front-center', { minX:.06, maxX:.92 })
+  assert.ok(Math.abs((.08 * left.scaleX + left.offsetX) - .5) < .0001)
+  assert.ok(Math.abs((.94 * left.scaleX + left.offsetX) - 1) < .0001)
+  assert.ok(Math.abs((.06 * right.scaleX + right.offsetX) - 0) < .0001)
+  assert.ok(Math.abs((.92 * right.scaleX + right.offsetX) - .5) < .0001)
+  assert.deepEqual(owayoPlacementUvTransform('FrontLeftPart', 'front-left-chest', { minX:.08, maxX:.94 }), { scaleX:1, scaleY:1, offsetX:0, offsetY:0 })
 })
 
 test('placement editor exposes a shared drag pad for text and logos', async () => {

@@ -172,6 +172,7 @@
 .designer-field { display: grid; gap: 7px; margin-top: 18px; }
 .designer-field > span, .designer-range > span { color: #5d635d; font-size: 9px; font-weight: 800; }
 .designer-field > span small { margin-left: 5px; color: var(--designer-blue); font-size: 8px; font-weight: 800; }
+.designer-field > small { color: #777d77; font-size: 8px; line-height: 1.4; }
 .designer-field input:not([type="color"]), .designer-field select { height: 46px; min-width: 0; padding: 0 13px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 13px var(--body); outline: 0; }
 .designer-field input:focus, .designer-field select:focus { border-color: var(--designer-blue); box-shadow: 0 0 0 2px rgba(40,118,255,.13); }
 .designer-field-row { display: grid; grid-template-columns: .75fr 1.25fr; gap: 10px; }
