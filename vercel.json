@@ -7,6 +7,7 @@
   "redirects": [
     { "source": "/collection", "destination": "/shop", "permanent": true },
     { "source": "/collections/:handle", "destination": "/collection/:handle", "permanent": true },
+    { "source": "/category/custom-jerseys", "destination": "/custom", "permanent": true },
     { "source": "/favicon.ico", "destination": "/icons/icon.svg", "permanent": false },
     { "source": "/moments", "destination": "/#story", "permanent": true },
     { "source": "/players", "destination": "/#players", "permanent": true }

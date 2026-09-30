@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { hasCustom3DDesigner, custom3DDesignerConfig } from '../src/lib/custom-3d.js'
+import { hasCustom3DDesigner, custom3DDesignerConfig, isCustom3DOnlyProduct } from '../src/lib/custom-3d.js'
 import { prepareStorefrontProduct } from '../src/lib/storefront-model.js'
 import { catalogCategoryByHandle, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { owayoFamilyByProductId, resolveOwayoManifestRequest } from '../src/lib/owayo-designer-routing.js'
@@ -28,6 +28,7 @@ test('a provider-scoped manifest and 3D marker qualify an Owayo listing', () => 
     custom_fields: [{ key: 'name', label: 'Name', type: 'text' }]
   }
   assert.equal(hasCustom3DDesigner(owayo), true)
+  assert.equal(isCustom3DOnlyProduct(owayo), true)
   assert.deepEqual(custom3DDesignerConfig(owayo), {
     provider: 'owayo',
     productId: 'cycling-c3',
@@ -38,6 +39,11 @@ test('a provider-scoped manifest and 3D marker qualify an Owayo listing', () => 
     allowedDesignIds: []
   })
   assert.equal(productMatchesCatalogCategory({ designerConfig: custom3DDesignerConfig(owayo) }, customCategory), true)
+})
+
+test('ordinary products are not classified as Custom Lab-only rows', () => {
+  assert.equal(isCustom3DOnlyProduct({ tags:['customizable','jersey'] }), false)
+  assert.equal(isCustom3DOnlyProduct(null), false)
 })
 
 test('legacy Boombah marker resolves to its local product manifest', () => {

@@ -3,6 +3,7 @@ import { adminProducts } from '../admin-data'
 import { adminCollections, adminMenus, adminProductOptions, adminTheme, themeBlocks } from '../admin-builder-data'
 import { buildListingInput, normalizeProduct, validateListing } from './catalog-model'
 import { buildMenuTree, prepareStorefrontProduct, resolveMenuImages } from './storefront-model'
+import { custom3DDesignerConfig, isCustom3DOnlyProduct } from './custom-3d.js'
 import { DEFAULT_PAYMENT_SETTINGS, normalizePaymentSettings, validatePaymentSettings } from './payment-config'
 import { apiFetch } from './api-client'
 import { collectionMembershipDiff } from './collection-assignment'
@@ -133,10 +134,52 @@ export async function fetchStorefrontProduct(handle, { includeRelated = true } =
   let related = []
   const league = product.taxonomy?.league
   if (league && includeRelated) {
-    const result = await supabase.from('pod_products').select(fields).eq('status','PUBLISHED').eq('taxonomy->>league',league).neq('id',product.id).order('id').limit(12)
+    let relatedQuery = supabase.from('pod_products').select(fields).eq('status','PUBLISHED').eq('taxonomy->>league',league).neq('id',product.id)
+    if (!isCustom3DOnlyProduct(product)) relatedQuery = relatedQuery.not('tags','cs','{"3d-designer"}')
+    const result = await relatedQuery.order('id').limit(12)
     if (!result.error) related = (result.data || []).map(item=>prepareStorefrontProduct(item))
   }
   return {data:[product,...related],source:'supabase',error:null}
+}
+
+export async function fetchStorefrontDesignerProduct(provider, productId) {
+  if (!supabase) return { data:[],source:'unavailable',error:'Live catalogue is not configured.' }
+  const normalizedProvider = String(provider || '').trim().toLowerCase()
+  const normalizedProductId = String(productId || '').trim()
+  if (!['owayo','boombah'].includes(normalizedProvider) || !/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(normalizedProductId)) {
+    return { data:[],source:'supabase',error:'Invalid 3D garment identity.' }
+  }
+  const productTag = `designer-product-${normalizedProductId.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+  const fields = '*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))'
+  const expectedProduct = normalizedProductId.toLowerCase()
+  const lookup = () => supabase
+    .from('pod_products')
+    // Resolve the tiny identity row first. Joining variants while scanning a
+    // JSON/array predicate can push an otherwise valid public query over the
+    // database statement timeout on a 30k+ catalogue.
+    .select('id,ai_metadata,tags')
+    .eq('status','PUBLISHED')
+    .contains('tags',[productTag])
+    .limit(4)
+  let identity = await lookup()
+  if (String(identity.error?.code || '') === '57014') identity = await lookup()
+  if (identity.error) return { data:[],source:'unavailable',error:identity.error.message }
+  const exactIdentity = (identity.data || []).find(row => {
+      const config = custom3DDesignerConfig(row)
+      return config?.provider === normalizedProvider && String(config.productId || '').toLowerCase() === expectedProduct
+    })
+  if (!exactIdentity?.id) return { data:[],source:'supabase',error:null }
+  const detail = await supabase
+    .from('pod_products')
+    .select(fields)
+    .eq('status','PUBLISHED')
+    .eq('id',exactIdentity.id)
+    .maybeSingle()
+  if (detail.error) return { data:[],source:'unavailable',error:detail.error.message }
+  const product = detail.data ? prepareStorefrontProduct(detail.data) : null
+  const config = custom3DDesignerConfig(product)
+  const exact = config?.provider === normalizedProvider && String(config.productId || '').toLowerCase() === expectedProduct
+  return { data:exact ? [product] : [],source:'supabase',error:null }
 }
 
 // Cards do not need long descriptions, full galleries or SEO JSON. Those are
@@ -151,6 +194,12 @@ const STOREFRONT_SEARCH_FIELDS = Object.freeze([
   'taxonomy->>lifecycle','taxonomy->>year',
   'taxonomy->>accessoryCategory','taxonomy->>accessoryType'
 ])
+const DESIGNER_TAG_FILTER = '{"3d-designer"}'
+const DESIGNER_PROVIDERS = Object.freeze(['owayo','boombah'])
+// Only the private Custom Lab is allowed to hydrate designer source rows.
+// `/category/custom-jerseys` is still a public storefront category and must
+// follow the same exclusion rule as Shop, leagues, teams and collections.
+const isCustom3DRoute = basePath => /^\/custom(?:\/|$)/i.test(String(basePath || ''))
 const transientCatalogueError = (error, status) => String(error?.code || '') === '57014' || [0,408,429,500,502,503,504].includes(Number(status)) || /timeout|temporarily unavailable|fetch failed/i.test(String(error?.message || ''))
 const storefrontPageCache = new Map()
 const STOREFRONT_PAGE_CACHE_TTL = 10 * 60 * 1000
@@ -185,6 +234,16 @@ function writeStorefrontPageCache(cacheKey, value) {
 function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {}) {
   const params = new URLSearchParams(search)
   const parts = String(basePath || '').split('/').filter(Boolean)
+  // Synchronized 3D garment families belong to the Custom Lab only. Apply
+  // this before pagination so Shop, league, team and category totals do not
+  // reserve slots for cards that must not be rendered there.
+  // The GIN-less tags containment query crosses the statement timeout once
+  // the public catalogue grows past ~30k rows. Provider identity is both more
+  // selective and part of the validated designer contract, so Custom loads in
+  // under the public read timeout while the tag remains the exclusion marker
+  // used by ordinary storefront routes.
+  if (isCustom3DRoute(basePath)) query = query.in('ai_metadata->designer->>provider',DESIGNER_PROVIDERS)
+  else query = query.not('tags','cs',DESIGNER_TAG_FILTER)
   if (parts[0] === 'league' && parts[1]) query = query.eq('taxonomy->>league',parts[1])
   if (parts[0] === 'team' && parts[1] && parts[2]) {
     query = query.eq('taxonomy->>league',parts[1]).eq('taxonomy->>team',parts[2])
@@ -275,17 +334,10 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 24, base
   if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
   const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 24)))
-  // Once the last 3D listing is removed, do not issue a broad JSONB tags
-  // predicate against the live catalogue just to discover an empty page.
-  // PostgREST can spend the full statement timeout proving there are no
-  // matches, which otherwise leaves the Custom Lab on an infinite spinner.
-  const normalizedBasePath = String(basePath || '').replace(/\/+$/, '') || '/'
-  if (import.meta.env.PROD && normalizedBasePath === '/category/custom-jerseys') {
-    const navigation = await fetchStorefrontNavigationIndex()
-    if (!navigation.some(row => row?.designerConfig?.provider && row?.designerConfig?.productId)) {
-      return { data:[], total:0, page:safePage, pageSize:safeSize, source:'supabase', error:null }
-    }
-  }
+  // The explicit route filter below is cheap and deterministic for both the
+  // ordinary catalogue and the Custom Lab. Do not short-circuit the custom
+  // route from the navigation index: that index intentionally omits designer
+  // rows so they cannot leak into Shop/league cards.
   // A home-page request intentionally skips the count so it can paint its
   // twelve featured cards immediately.  Keep counted and uncounted pages in
   // separate caches; otherwise a later Shop request could reuse the home
@@ -341,7 +393,9 @@ export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 24, base
     return { data:[],total:null,page:safePage,pageSize:safeSize,source:'unavailable',error:error.message || 'Published catalogue could not be loaded.' }
   }
   const total = await countPromise
-  const value = { data:(data || []).map(row => prepareStorefrontProduct(row)), total, page:safePage, pageSize:safeSize, source:'supabase', error:null }
+  const value = { data:(data || [])
+    .filter(row => isCustom3DRoute(basePath) || !isCustom3DOnlyProduct(row))
+    .map(row => prepareStorefrontProduct(row)), total, page:safePage, pageSize:safeSize, source:'supabase', error:null }
   writeStorefrontPageCache(cacheKey,value)
   return value
 }
@@ -387,7 +441,8 @@ export async function fetchStorefrontCollectionPage(handle, { page = 1, pageSize
   const products = await supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED').in('id',ids)
   if (products.error) return { data:[],total:0,page:safePage,pageSize:safeSize,source:'unavailable',error:products.error.message,collection:collectionMeta }
   const byId = new Map((products.data || []).map(row => [row.id,row]))
-  return { data:ids.map(id => byId.get(id)).filter(Boolean).map(row => prepareStorefrontProduct(row)),total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null,collection:collectionMeta }
+  const visible = ids.map(id => byId.get(id)).filter(Boolean).filter(row => !isCustom3DOnlyProduct(row))
+  return { data:visible.map(row => prepareStorefrontProduct(row)),total:Number(links.count || 0),page:safePage,pageSize:safeSize,source:'supabase',error:null,collection:collectionMeta }
 }
 
 export async function fetchStorefrontSearch(term, limit = 12) {
@@ -396,14 +451,14 @@ export async function fetchStorefrontSearch(term, limit = 12) {
   if (value.length < 2) return { data:[],source:'supabase',error:null }
   const safeLimit = Math.min(24,Math.max(1,Number(limit) || 12))
   const safe = value.replace(/[(),"']/g,' ').replace(/\s+/g,' ').trim()
-  let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED')
+  let query = supabase.from('pod_products').select(STOREFRONT_CARD_FIELDS).eq('status','PUBLISHED').not('tags','cs',DESIGNER_TAG_FILTER)
   for (const token of safe.split(' ').filter(Boolean).slice(0, 6)) {
     const pattern = `*${token}*`
     query = query.or(STOREFRONT_SEARCH_FIELDS.map(field => `${field}.ilike.${pattern}`).join(','))
   }
   const { data,error } = await query.order('updated_at',{ascending:false}).limit(safeLimit)
   if (error) return { data:[],source:'unavailable',error:error.message }
-  return { data:(data || []).map(row => prepareStorefrontProduct(row)),source:'supabase',error:null }
+  return { data:(data || []).filter(row => !isCustom3DOnlyProduct(row)).map(row => prepareStorefrontProduct(row)),source:'supabase',error:null }
 }
 
 export async function fetchStorefrontNavigationIndex() {
@@ -432,6 +487,7 @@ export async function fetchStorefrontCatalog(fallback = []) {
         .from('pod_products')
         .select('*, pod_product_variants(*), pod_product_options(*, pod_product_option_values(*))')
         .eq('status', 'PUBLISHED')
+        .not('tags','cs',DESIGNER_TAG_FILTER)
         .order('updated_at', { ascending:false })
         .order('id', { ascending:true })
         .range(from, from + pageSize - 1)

@@ -4,7 +4,7 @@
   "source": {
     "ownerConfirmedByOperator": true,
     "site": "https://www.boombah.com",
-    "syncedAt": "2026-09-28T13:01:37.069Z"
+    "syncedAt": "2026-09-30T14:59:33.120Z"
   },
   "storage": {
     "bucket": "product-media",
@@ -14,11 +14,179 @@
   },
   "models": [
     {
+      "id": "BM-11015",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+      "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+      "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+      "bytes": 1765284,
+      "format": "glb-draco"
+    },
+    {
       "id": "BM-281W",
       "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-281w-c222d8b6cc9e.glb",
       "path": "designer/boombah/models/bm-281w-c222d8b6cc9e.glb",
       "sha256": "c222d8b6cc9e8215ea3928ba5b480720fa7f28279e505cd12dc3878a8b99c57c",
       "bytes": 728800,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3413",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3413-205d1aade65e.glb",
+      "path": "designer/boombah/models/bm-3413-205d1aade65e.glb",
+      "sha256": "205d1aade65e4a037367aed888e974cb8255fffb1fd4a044c495f72285b16183",
+      "bytes": 401796,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3414",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3414-8de269279163.glb",
+      "path": "designer/boombah/models/bm-3414-8de269279163.glb",
+      "sha256": "8de2692791631e74cae19a063e1a5e3b00c7e0b56249e0263f371b3f5d017b38",
+      "bytes": 401808,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3416",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3416-4163ffa2b675.glb",
+      "path": "designer/boombah/models/bm-3416-4163ffa2b675.glb",
+      "sha256": "4163ffa2b675e922872c0f049b32d7eb18b565c83ce89b0856f81905025e8b2d",
+      "bytes": 455480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3417",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3417-9bc9e4473b14.glb",
+      "path": "designer/boombah/models/bm-3417-9bc9e4473b14.glb",
+      "sha256": "9bc9e4473b14c6dadf7ac7f56837fc9ce3a9c5fdfb1f123a251c72a567d8a132",
+      "bytes": 378632,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3421",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3421-5e42b4e3a4da.glb",
+      "path": "designer/boombah/models/bm-3421-5e42b4e3a4da.glb",
+      "sha256": "5e42b4e3a4da5d5cdf6ff6c6f70478b5ff0ad8d2ea5047e961043334dbdf122f",
+      "bytes": 401808,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3423",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3423-ccd4efa91af6.glb",
+      "path": "designer/boombah/models/bm-3423-ccd4efa91af6.glb",
+      "sha256": "ccd4efa91af62ca82848583b3d5c365d78369607f5f76963f11c71e8e3f4a9fd",
+      "bytes": 401808,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3424",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3424-992fc324119d.glb",
+      "path": "designer/boombah/models/bm-3424-992fc324119d.glb",
+      "sha256": "992fc324119dc6cf8a068ad7ef178673c0153a988af8dcfe0ace87ed55eec4bd",
+      "bytes": 378632,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3426",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3426-e4ae57959bfd.glb",
+      "path": "designer/boombah/models/bm-3426-e4ae57959bfd.glb",
+      "sha256": "e4ae57959bfd78afd3f52bb88ae0128bf9257e19cbd46f12b7e2d0e9e56846c1",
+      "bytes": 378632,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3427",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3427-78193e2f11eb.glb",
+      "path": "designer/boombah/models/bm-3427-78193e2f11eb.glb",
+      "sha256": "78193e2f11ebae1e0965e0e677c8fcdc65a7aa5b24f34ca49c42a93e44f40baf",
+      "bytes": 455480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3429",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3429-01bcd0640e11.glb",
+      "path": "designer/boombah/models/bm-3429-01bcd0640e11.glb",
+      "sha256": "01bcd0640e11925cf5bbd73c540f06effc0fd3890e945e3f6c5242f5a1fbf8f0",
+      "bytes": 455480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3460",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3460-9e8f3a2fefcb.glb",
+      "path": "designer/boombah/models/bm-3460-9e8f3a2fefcb.glb",
+      "sha256": "9e8f3a2fefcb298dc1519bd7520166f55bdf481be44e713ccb7f6f557bc924c2",
+      "bytes": 182516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3461",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3461-6ca10b837742.glb",
+      "path": "designer/boombah/models/bm-3461-6ca10b837742.glb",
+      "sha256": "6ca10b837742a1f2b5898e4d7fefdfd4773859993a58db09efe9407e1a1a7cfa",
+      "bytes": 188440,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3462",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3462-441e883b4460.glb",
+      "path": "designer/boombah/models/bm-3462-441e883b4460.glb",
+      "sha256": "441e883b4460e077c82c40e2a88ca81cf7274c700841cecd57ccf2cba6433887",
+      "bytes": 188752,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3463",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3463-407f56e6d08c.glb",
+      "path": "designer/boombah/models/bm-3463-407f56e6d08c.glb",
+      "sha256": "407f56e6d08cb83c8b82e9809d5d61867d56fb5739e8a7605b697e845d3e05c4",
+      "bytes": 254332,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3464",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3464-0ca647d27960.glb",
+      "path": "designer/boombah/models/bm-3464-0ca647d27960.glb",
+      "sha256": "0ca647d27960ae4ab9249691e60210bde9da897f3e2f824f4c1c3a8394d613d5",
+      "bytes": 258288,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3465",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3465-a9c1c2e43323.glb",
+      "path": "designer/boombah/models/bm-3465-a9c1c2e43323.glb",
+      "sha256": "a9c1c2e43323c06fd3f33feed6782203d7863aa156685bf4ae1066e1ef10a2c4",
+      "bytes": 260040,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3466",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3466-1960e44956c0.glb",
+      "path": "designer/boombah/models/bm-3466-1960e44956c0.glb",
+      "sha256": "1960e44956c0235255c44f34d854104d43694007d312733256899032db60d5d8",
+      "bytes": 259196,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3467",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3467-9e6f21d6d00e.glb",
+      "path": "designer/boombah/models/bm-3467-9e6f21d6d00e.glb",
+      "sha256": "9e6f21d6d00ef79d97aa2249d733046a238ea21129848f8ceff9c2ea77ccb3b3",
+      "bytes": 81712,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3468",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3468-19eaf1418ca3.glb",
+      "path": "designer/boombah/models/bm-3468-19eaf1418ca3.glb",
+      "sha256": "19eaf1418ca381375eb37e16836ef9e03101dfa151eccb02c813e9648037eda3",
+      "bytes": 90892,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3469",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-3469-97fcfaa0fbe8.glb",
+      "path": "designer/boombah/models/bm-3469-97fcfaa0fbe8.glb",
+      "sha256": "97fcfaa0fbe869c1d423ea83aa5455e454a8284d1d6788f2c25eb54b88d8bcf3",
+      "bytes": 93624,
       "format": "glb-draco"
     },
     {
@@ -30,11 +198,739 @@
       "format": "glb-draco"
     },
     {
+      "id": "BM-4413W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4413w-0f20d1c95154.glb",
+      "path": "designer/boombah/models/bm-4413w-0f20d1c95154.glb",
+      "sha256": "0f20d1c95154ed954ccb88656a8e9581ad5e4c4e8e8e0f3a7e2ed6d348e9638d",
+      "bytes": 595252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4415W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4415w-5e7642738030.glb",
+      "path": "designer/boombah/models/bm-4415w-5e7642738030.glb",
+      "sha256": "5e764273803057add4e9b929b31d99d450934cd18636b9cf9b9aa4896fb4d862",
+      "bytes": 440240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4416W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4416w-7d8d7ef40351.glb",
+      "path": "designer/boombah/models/bm-4416w-7d8d7ef40351.glb",
+      "sha256": "7d8d7ef403510d2d2ee31c3f294ff932e84d8d35f79327cc441b32e8875aec6f",
+      "bytes": 433592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4421W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4421w-ef71af4196ae.glb",
+      "path": "designer/boombah/models/bm-4421w-ef71af4196ae.glb",
+      "sha256": "ef71af4196ae4bf05c1ce31ff16e05c244978a1795a0406710bd7285e1dd53da",
+      "bytes": 595252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4423W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4423w-9db2feb12ab3.glb",
+      "path": "designer/boombah/models/bm-4423w-9db2feb12ab3.glb",
+      "sha256": "9db2feb12ab3cb187606d4f1fbec9ba8b64ef93ccd1635b0f228c343e0f62544",
+      "bytes": 595252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4424W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4424w-b0b6bb37960a.glb",
+      "path": "designer/boombah/models/bm-4424w-b0b6bb37960a.glb",
+      "sha256": "b0b6bb37960a22ae6f55c45f3714ebe2457a75e3158334bc5d3e642c2b9381bf",
+      "bytes": 433592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4426W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4426w-ae328b6e1456.glb",
+      "path": "designer/boombah/models/bm-4426w-ae328b6e1456.glb",
+      "sha256": "ae328b6e14568785d8a2eb0c4eebe0ced37feba9c9212c36f195f29396d17328",
+      "bytes": 433592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4427W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4427w-3c1308a8dace.glb",
+      "path": "designer/boombah/models/bm-4427w-3c1308a8dace.glb",
+      "sha256": "3c1308a8dace8af75c048f0e762bc1a70b81f5e4784af268a2e1daccedd01f7a",
+      "bytes": 440240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4429W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-4429w-1edf7dd32345.glb",
+      "path": "designer/boombah/models/bm-4429w-1edf7dd32345.glb",
+      "sha256": "1edf7dd32345009dea5c4203af148574f05fab69a156add29d30245e208bffe2",
+      "bytes": 440240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5017",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5017-1e8cff8b3484.glb",
+      "path": "designer/boombah/models/bm-5017-1e8cff8b3484.glb",
+      "sha256": "1e8cff8b3484aa33e2ba8220cce9112c0ddc8d1a907f85b1c088f723ee2dd048",
+      "bytes": 551568,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5017Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5017y-11367de82a23.glb",
+      "path": "designer/boombah/models/bm-5017y-11367de82a23.glb",
+      "sha256": "11367de82a2361ae844e44d54aedc22c8fee59db237aed800eee37b26a60986e",
+      "bytes": 450480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5019",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5019-d1b0792b5b03.glb",
+      "path": "designer/boombah/models/bm-5019-d1b0792b5b03.glb",
+      "sha256": "d1b0792b5b03d5c4250722afc993fd4c78c896ea15f35179ea05c82e1080cf0f",
+      "bytes": 441260,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5019Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5019y-6d58acb4efdc.glb",
+      "path": "designer/boombah/models/bm-5019y-6d58acb4efdc.glb",
+      "sha256": "6d58acb4efdc30b6d8d50f4d7e8ff1dcdb24f221830f109080ff0331da24bf13",
+      "bytes": 597740,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5022",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5022-b8281b7fdba8.glb",
+      "path": "designer/boombah/models/bm-5022-b8281b7fdba8.glb",
+      "sha256": "b8281b7fdba861e5aaa515d13217094c4240b266e70564d560fcfc9b146ee8a5",
+      "bytes": 593788,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5022Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5022y-e7fd6c2b255a.glb",
+      "path": "designer/boombah/models/bm-5022y-e7fd6c2b255a.glb",
+      "sha256": "e7fd6c2b255a207cc4699220bb23bf8b8b72bf7c9f9c8916cfb32214e6bba10b",
+      "bytes": 590572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5025",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5025-1dced3d8001d.glb",
+      "path": "designer/boombah/models/bm-5025-1dced3d8001d.glb",
+      "sha256": "1dced3d8001d6627ffe7044a0cbff8d376f93492fd7383692ada1cfdcdca177e",
+      "bytes": 230732,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5025Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5025y-4a59dd9aa824.glb",
+      "path": "designer/boombah/models/bm-5025y-4a59dd9aa824.glb",
+      "sha256": "4a59dd9aa8243f2541f4a1f46e36832acbca75b5d18102086bfd3c3c6d91ddce",
+      "bytes": 230736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5027",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5027-9cb14386fa54.glb",
+      "path": "designer/boombah/models/bm-5027-9cb14386fa54.glb",
+      "sha256": "9cb14386fa54493f7ad175b13777b2443ca4981a7d85b72241153d39bbb944ce",
+      "bytes": 447872,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5027Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5027y-53b554cd190c.glb",
+      "path": "designer/boombah/models/bm-5027y-53b554cd190c.glb",
+      "sha256": "53b554cd190c5d9f359b520102313eafeb25ad8d7268521b4c11fdbc3bdc32cf",
+      "bytes": 583104,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5028",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5028-7b7cdf01a2ce.glb",
+      "path": "designer/boombah/models/bm-5028-7b7cdf01a2ce.glb",
+      "sha256": "7b7cdf01a2ce734255904f06afc2df4b7cb5c9f5df41a4881550f5ce4d15577f",
+      "bytes": 367440,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5028Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5028y-088f84c9701f.glb",
+      "path": "designer/boombah/models/bm-5028y-088f84c9701f.glb",
+      "sha256": "088f84c9701f10c603aba6c1f14d7ade83584e69e4c34d905be5bdd82f3d8cd2",
+      "bytes": 364452,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5032",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5032-3663d80b9c00.glb",
+      "path": "designer/boombah/models/bm-5032-3663d80b9c00.glb",
+      "sha256": "3663d80b9c000d8e7fc172c4114fe35b8cea9a94c516a57bb853ea6ea6cfc52e",
+      "bytes": 412472,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5032Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5032y-f451c81534c4.glb",
+      "path": "designer/boombah/models/bm-5032y-f451c81534c4.glb",
+      "sha256": "f451c81534c4c632010ba7dc1322d84edd35c8e2dc68a8a138f0042bd8efa20c",
+      "bytes": 409320,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5033",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5033-2b58ba8ba8a0.glb",
+      "path": "designer/boombah/models/bm-5033-2b58ba8ba8a0.glb",
+      "sha256": "2b58ba8ba8a02ad65e1150e54e987559d80479f7d93caf2c07ea958b57c441e2",
+      "bytes": 538860,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5033Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5033y-8129bcea4853.glb",
+      "path": "designer/boombah/models/bm-5033y-8129bcea4853.glb",
+      "sha256": "8129bcea4853e8787ed3010b585ea970f482846b96715acfe8b51c1f8023b724",
+      "bytes": 538880,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5039W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5039w-af3a5617e825.glb",
+      "path": "designer/boombah/models/bm-5039w-af3a5617e825.glb",
+      "sha256": "af3a5617e825abb46819534ad807f0e04c54ddc94982aa4ebd9ee4b24e53f555",
+      "bytes": 482836,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5041W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5041w-4d3f87fa52bc.glb",
+      "path": "designer/boombah/models/bm-5041w-4d3f87fa52bc.glb",
+      "sha256": "4d3f87fa52bc60dfb7cb66f56fc5a9de582a8aaf315c9b1dde743697c339fd9a",
+      "bytes": 497552,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5050W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5050w-d4cd685feb84.glb",
+      "path": "designer/boombah/models/bm-5050w-d4cd685feb84.glb",
+      "sha256": "d4cd685feb84f26aeffdd24861631514936daabbe398bd37cc600d21f30dd26a",
+      "bytes": 462200,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5060",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5060-e764d126e619.glb",
+      "path": "designer/boombah/models/bm-5060-e764d126e619.glb",
+      "sha256": "e764d126e61974f21c23c8d66fc48a2e6220555387ed9f2f294bb231b0215e40",
+      "bytes": 509736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5060G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5060g-821eeae78e52.glb",
+      "path": "designer/boombah/models/bm-5060g-821eeae78e52.glb",
+      "sha256": "821eeae78e52b9271f51822f2430535e0d12f573a74ad2fdf552cf680f488d66",
+      "bytes": 258100,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5060W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5060w-456c9490bd1a.glb",
+      "path": "designer/boombah/models/bm-5060w-456c9490bd1a.glb",
+      "sha256": "456c9490bd1af4f060101904db1a83a869d30c1e38f53c197fe9e16cf182398e",
+      "bytes": 236264,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5070W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5070w-673a565ae188.glb",
+      "path": "designer/boombah/models/bm-5070w-673a565ae188.glb",
+      "sha256": "673a565ae188232f43fe556bf66124b9d7e32d9bf49694208e9e93537ad298c2",
+      "bytes": 386972,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5077",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5077-f7bdae4b1290.glb",
+      "path": "designer/boombah/models/bm-5077-f7bdae4b1290.glb",
+      "sha256": "f7bdae4b1290d834d39856e47a9306263f6ccf89538442d248ba78e3f465f042",
+      "bytes": 545436,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5077Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5077y-9d5f6b42d9fc.glb",
+      "path": "designer/boombah/models/bm-5077y-9d5f6b42d9fc.glb",
+      "sha256": "9d5f6b42d9fc2333f66c69926405d28b74892d9d24fa8118866db220933649cb",
+      "bytes": 1340508,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5082",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5082-5b30cf8737b2.glb",
+      "path": "designer/boombah/models/bm-5082-5b30cf8737b2.glb",
+      "sha256": "5b30cf8737b20bc90421bdb30b9f9aa4b7e3876d43ede2071a158e72a41f7c80",
+      "bytes": 593360,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5082G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5082g-ea4ad4c3ea47.glb",
+      "path": "designer/boombah/models/bm-5082g-ea4ad4c3ea47.glb",
+      "sha256": "ea4ad4c3ea478af28914e97469a51a3118054526e64ee5022a7d32ad2db3430c",
+      "bytes": 630572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5082W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5082w-ec1b04a81823.glb",
+      "path": "designer/boombah/models/bm-5082w-ec1b04a81823.glb",
+      "sha256": "ec1b04a81823e50f61869e815bdf9b3eb08bbbec996cdc284fe357eb0b22cac7",
+      "bytes": 630572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5084",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5084-6496c2eae026.glb",
+      "path": "designer/boombah/models/bm-5084-6496c2eae026.glb",
+      "sha256": "6496c2eae026c6cd706845dc7e77127c4a96e7bb4748daf5f6395af0143621c3",
+      "bytes": 489372,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5084G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5084g-1e0b990da824.glb",
+      "path": "designer/boombah/models/bm-5084g-1e0b990da824.glb",
+      "sha256": "1e0b990da8246b08d89e09442871567900ed8e3524c790a611243005d21c9cca",
+      "bytes": 503764,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5084W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5084w-3b4629d2fc24.glb",
+      "path": "designer/boombah/models/bm-5084w-3b4629d2fc24.glb",
+      "sha256": "3b4629d2fc2407131fb16edcfe2c095462c1990dd3afd09fa32b787de3d52f52",
+      "bytes": 504116,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5085",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5085-cae4f2987b58.glb",
+      "path": "designer/boombah/models/bm-5085-cae4f2987b58.glb",
+      "sha256": "cae4f2987b5841fe95c043cfa594924d46baa3425465f02b3755ed3144d72f91",
+      "bytes": 520132,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5085G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5085g-c658edcf421a.glb",
+      "path": "designer/boombah/models/bm-5085g-c658edcf421a.glb",
+      "sha256": "c658edcf421a9787a9919f6be3ea0816a0e8e13609adcb4e41bfe612eac7dc1a",
+      "bytes": 639480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5085W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5085w-8109b21d2fbc.glb",
+      "path": "designer/boombah/models/bm-5085w-8109b21d2fbc.glb",
+      "sha256": "8109b21d2fbc60e0ac83e2672e20b0e8517f8d1a62de51f6405fed69d67d4150",
+      "bytes": 639480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5087",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5087-fb272a0985ea.glb",
+      "path": "designer/boombah/models/bm-5087-fb272a0985ea.glb",
+      "sha256": "fb272a0985ea39ecad89da552c04564a4d1ab9beab6239c33a88da4bcbe348eb",
+      "bytes": 620912,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5087G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5087g-63e595b9b22e.glb",
+      "path": "designer/boombah/models/bm-5087g-63e595b9b22e.glb",
+      "sha256": "63e595b9b22e60483cc7922d979f59c5d8017b921cc866ea1d8fa30da210c58d",
+      "bytes": 564700,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5087W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5087w-1ac9a9244f0d.glb",
+      "path": "designer/boombah/models/bm-5087w-1ac9a9244f0d.glb",
+      "sha256": "1ac9a9244f0d855da31cdd257295b54040cae2ab6d087a6d04ba390ce679cdfd",
+      "bytes": 564700,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5088-c28891ed8445.glb",
+      "path": "designer/boombah/models/bm-5088-c28891ed8445.glb",
+      "sha256": "c28891ed8445dd5b81d1d90ab72be90de7c335b4e2701f7efd88a1a763414138",
+      "bytes": 657436,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5088g-32ce85089bcc.glb",
+      "path": "designer/boombah/models/bm-5088g-32ce85089bcc.glb",
+      "sha256": "32ce85089bcc8e52ffb5873bc7cda6550d14de57f71df0a69213340d81a179d7",
+      "bytes": 623560,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5088w-ea1afd3a7b11.glb",
+      "path": "designer/boombah/models/bm-5088w-ea1afd3a7b11.glb",
+      "sha256": "ea1afd3a7b115fb07fb8b70231e1d1b8385f0ff008ebce6259fb636d128e8a7a",
+      "bytes": 623560,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5088y-af79ac8e82ca.glb",
+      "path": "designer/boombah/models/bm-5088y-af79ac8e82ca.glb",
+      "sha256": "af79ac8e82cab3ad1ca4ef24aa88d71a4249f48cda2051f069be197931926728",
+      "bytes": 1131008,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5089",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5089-97e61287448a.glb",
+      "path": "designer/boombah/models/bm-5089-97e61287448a.glb",
+      "sha256": "97e61287448acb6a1774202f95ee5993569c20c7ef22d6dfa166a7e6678db8ae",
+      "bytes": 470564,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5089G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5089g-b11afd68fd4d.glb",
+      "path": "designer/boombah/models/bm-5089g-b11afd68fd4d.glb",
+      "sha256": "b11afd68fd4db4f4d8fbe16bf852ab25f8c0811eb99c038c6d1f6b91b9525031",
+      "bytes": 608312,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5089W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5089w-e59acae87aac.glb",
+      "path": "designer/boombah/models/bm-5089w-e59acae87aac.glb",
+      "sha256": "e59acae87aac1011d394ebf24c8b04ce5f0a3b643f355a55b3b31c2b3fa1fd85",
+      "bytes": 608312,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5090G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5090g-7ca693b68092.glb",
+      "path": "designer/boombah/models/bm-5090g-7ca693b68092.glb",
+      "sha256": "7ca693b680927c61a28b99339832ba93baab9d8a668cce8cbb4857d62c28a326",
+      "bytes": 619860,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5090W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5090w-43f4bbde12c5.glb",
+      "path": "designer/boombah/models/bm-5090w-43f4bbde12c5.glb",
+      "sha256": "43f4bbde12c5296108cbc3f25bbb844aaef641233d27b61d39362b5fa183b9a5",
+      "bytes": 619860,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5091",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5091-3f4765a71d7a.glb",
+      "path": "designer/boombah/models/bm-5091-3f4765a71d7a.glb",
+      "sha256": "3f4765a71d7a0c0331c5aaac6873062c9771c0b61850b081e1bf865e31e73496",
+      "bytes": 619692,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5091G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5091g-8cf863771165.glb",
+      "path": "designer/boombah/models/bm-5091g-8cf863771165.glb",
+      "sha256": "8cf863771165f3d402d3762ab4a6353fe1325c9bc519aa9d7c6c7bc26a696479",
+      "bytes": 608184,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5091W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5091w-a2da04db2b9b.glb",
+      "path": "designer/boombah/models/bm-5091w-a2da04db2b9b.glb",
+      "sha256": "a2da04db2b9ba4547a93bcc88470ccc0a7e861b97d7ee3d46ec2cb15e1628de5",
+      "bytes": 608184,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5092",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5092-8223241c4797.glb",
+      "path": "designer/boombah/models/bm-5092-8223241c4797.glb",
+      "sha256": "8223241c4797100d566841eefd2a11e2dd7df872c0eecb1c2a4ab5251f9296a2",
+      "bytes": 568028,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5092G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5092g-861a95fc2849.glb",
+      "path": "designer/boombah/models/bm-5092g-861a95fc2849.glb",
+      "sha256": "861a95fc28494470efe86adc6f3e658018d809943f73cb133f3d6a95f0552c25",
+      "bytes": 585228,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5092W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5092w-d161e024a86c.glb",
+      "path": "designer/boombah/models/bm-5092w-d161e024a86c.glb",
+      "sha256": "d161e024a86c13831ceb25b2c7c671a038fb7e410041739eac73e1837a319878",
+      "bytes": 587620,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5093-a98fe6583e98.glb",
+      "path": "designer/boombah/models/bm-5093-a98fe6583e98.glb",
+      "sha256": "a98fe6583e98f28a8497e49b28db63600232efbaf36c0122182ac0585e9b5b7c",
+      "bytes": 563516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5093g-48a9b1496114.glb",
+      "path": "designer/boombah/models/bm-5093g-48a9b1496114.glb",
+      "sha256": "48a9b149611417ee5294211524fc233ab217c8e3131ce29095ebe0ef44885cea",
+      "bytes": 571724,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5093w-0983238f9737.glb",
+      "path": "designer/boombah/models/bm-5093w-0983238f9737.glb",
+      "sha256": "0983238f9737892044e6acc2c1117445f016a3fa4e05b21bba598fd7a59b9c8b",
+      "bytes": 571724,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5093y-178780e31c0f.glb",
+      "path": "designer/boombah/models/bm-5093y-178780e31c0f.glb",
+      "sha256": "178780e31c0fcb4d0290133b285c9dbef05c175caa920eda05c5d4c1f3b5dbbc",
+      "bytes": 862956,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5095W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5095w-6a7e9dfad304.glb",
+      "path": "designer/boombah/models/bm-5095w-6a7e9dfad304.glb",
+      "sha256": "6a7e9dfad30498d1fa1ff354ff09cc1e10a34bb6a3df34a0177f34689e0c2eeb",
+      "bytes": 664356,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5096G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5096g-fc34f178d60f.glb",
+      "path": "designer/boombah/models/bm-5096g-fc34f178d60f.glb",
+      "sha256": "fc34f178d60f26383a43e3ef144a27d74e77a5252b15d6fa70d07e451ae5fd4c",
+      "bytes": 559916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5096W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5096w-84cb94cd835c.glb",
+      "path": "designer/boombah/models/bm-5096w-84cb94cd835c.glb",
+      "sha256": "84cb94cd835c2574080f978966954efc75893f73dfe9f065b617708077845ed0",
+      "bytes": 559916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5097G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5097g-7a9fcb56d2ff.glb",
+      "path": "designer/boombah/models/bm-5097g-7a9fcb56d2ff.glb",
+      "sha256": "7a9fcb56d2ff511f3abc69de335b2f5449567e9405820736d70de070f4c326be",
+      "bytes": 525692,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5097W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5097w-d67e015909e5.glb",
+      "path": "designer/boombah/models/bm-5097w-d67e015909e5.glb",
+      "sha256": "d67e015909e5fb8dd92d692f8d09388e020a7d85eebdacf526fa6fdbf878a14e",
+      "bytes": 525692,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5105",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5105-215841b57831.glb",
+      "path": "designer/boombah/models/bm-5105-215841b57831.glb",
+      "sha256": "215841b57831fd7b0eb0bac4e892495950cf837064839b2e76bb09c462b0a17f",
+      "bytes": 792984,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5105Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5105y-420ec8f177a3.glb",
+      "path": "designer/boombah/models/bm-5105y-420ec8f177a3.glb",
+      "sha256": "420ec8f177a3cc3613ea4c4fe617a44e7e9b8f2bba429d410d1537ea44ceceb4",
+      "bytes": 1175756,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5107",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5107-b92b8fd8160f.glb",
+      "path": "designer/boombah/models/bm-5107-b92b8fd8160f.glb",
+      "sha256": "b92b8fd8160f4933dc4aed63e763e5f24e18c225231db2764a121898d8865929",
+      "bytes": 458540,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5107Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5107y-a061e9f2fbcb.glb",
+      "path": "designer/boombah/models/bm-5107y-a061e9f2fbcb.glb",
+      "sha256": "a061e9f2fbcbafebfd8f33bd244f5d5af25ed7aa3e857f554c1d55529a375777",
+      "bytes": 1369320,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5177",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5177-efeddc3accd7.glb",
+      "path": "designer/boombah/models/bm-5177-efeddc3accd7.glb",
+      "sha256": "efeddc3accd727b13099e41b4420063ee306a2e450df1744ab6c6c92e8f65dfb",
+      "bytes": 368568,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5177Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5177y-22cfa173d02f.glb",
+      "path": "designer/boombah/models/bm-5177y-22cfa173d02f.glb",
+      "sha256": "22cfa173d02fb76f0affa22cc7de7ab0294f752c6316cdcc91b4f318639cedee",
+      "bytes": 1350684,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5273",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5273-b1e9f71091f6.glb",
+      "path": "designer/boombah/models/bm-5273-b1e9f71091f6.glb",
+      "sha256": "b1e9f71091f611df9acefb718e6eb4c0f82249327a0de95f13d1bcf19928715b",
+      "bytes": 133400,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5273Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5273y-c186a27a0584.glb",
+      "path": "designer/boombah/models/bm-5273y-c186a27a0584.glb",
+      "sha256": "c186a27a05847ceea7eede828f4956b3d08b58c87f2cfddc08ec25c44c406544",
+      "bytes": 133404,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5283",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5283-3d40c0703ad2.glb",
+      "path": "designer/boombah/models/bm-5283-3d40c0703ad2.glb",
+      "sha256": "3d40c0703ad215211dc8255e4cd92c06abfe3ac5c6c41f61e143f8e47b4b1659",
+      "bytes": 144572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5283Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5283y-bca0952570d0.glb",
+      "path": "designer/boombah/models/bm-5283y-bca0952570d0.glb",
+      "sha256": "bca0952570d001d08db7ad2a8d4b7e8eff60ee4f4f658e9a1723056fe4508236",
+      "bytes": 144576,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5284",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5284-1cf3df015490.glb",
+      "path": "designer/boombah/models/bm-5284-1cf3df015490.glb",
+      "sha256": "1cf3df015490c4cd58b643de6eafe95687b01691bd1aa0fe9e29285ce56df92d",
+      "bytes": 151392,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5284Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-5284y-a41a8a862867.glb",
+      "path": "designer/boombah/models/bm-5284y-a41a8a862867.glb",
+      "sha256": "a41a8a86286794bee4552fe8591f568898845ae0c852d78da4cc59f54fe7f59f",
+      "bytes": 151396,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B17T",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-bb-b17t-143744f16e86.glb",
+      "path": "designer/boombah/models/cbg-bb-b17t-143744f16e86.glb",
+      "sha256": "143744f16e869a34cfddf1ca1877a909a1da8a79637a76ab49e1e0d826d06875",
+      "bytes": 1706220,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B3I",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-bb-b3i-d8eae394a24e.glb",
+      "path": "designer/boombah/models/cbg-bb-b3i-d8eae394a24e.glb",
+      "sha256": "d8eae394a24e97d476fd6f447ecf0cea14f9fdb5e901b3a455b8dfcef98bfacf",
+      "bytes": 1656944,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B4H",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-bb-b4h-5a1d69dd714e.glb",
+      "path": "designer/boombah/models/cbg-bb-b4h-5a1d69dd714e.glb",
+      "sha256": "5a1d69dd714ebfbe413d8dbc497d4b8b0f7e63ce1aaa7534b9b19efcfd5b6ecf",
+      "bytes": 1661444,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B7B",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-bb-b7b-a897225ec8fa.glb",
+      "path": "designer/boombah/models/cbg-bb-b7b-a897225ec8fa.glb",
+      "sha256": "a897225ec8fa31b230e8226c116d892d7b49d4c5091bcfd44b953109fbf0c977",
+      "bytes": 1603812,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-SB-B17T",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-sb-b17t-b9867cbad9d2.glb",
+      "path": "designer/boombah/models/cbg-sb-b17t-b9867cbad9d2.glb",
+      "sha256": "b9867cbad9d2152b2f30abe7391e6e0880668c3d57f542c9ac43d7db47b47d21",
+      "bytes": 1706208,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-SB-B4H",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-sb-b4h-8f99fd90da9f.glb",
+      "path": "designer/boombah/models/cbg-sb-b4h-8f99fd90da9f.glb",
+      "sha256": "8f99fd90da9fde3715987baf64fd9ec96abda0ac73287e14d57c47f44b06b83f",
+      "bytes": 1661856,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-SB-B7B",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/cbg-sb-b7b-be339bc0d3a8.glb",
+      "path": "designer/boombah/models/cbg-sb-b7b-be339bc0d3a8.glb",
+      "sha256": "be339bc0d3a8bfa741c916e1cf8efc35116260b0b95af253e34e75897119bf39",
+      "bytes": 1599188,
+      "format": "glb-draco"
+    },
+    {
       "id": "FD-105",
       "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-105-61ae431679b5.glb",
       "path": "designer/boombah/models/fd-105-61ae431679b5.glb",
       "sha256": "61ae431679b50001390ef51a82a75816fdea0f73b0135f9f5552fd4a4af5ca43",
       "bytes": 84132,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-11004",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+      "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+      "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+      "bytes": 350964,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-11005",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11005-246060e9a15f.glb",
+      "path": "designer/boombah/models/fd-11005-246060e9a15f.glb",
+      "sha256": "246060e9a15ffa59f3bbb2de5699c5a9c32b1e2d932c3313861f8eb8261352af",
+      "bytes": 175936,
       "format": "glb-draco"
     },
     {
@@ -2291,8 +3187,8 @@
     }
   ],
   "stats": {
-    "discovered": 286,
-    "available": 283,
+    "discovered": 398,
+    "available": 395,
     "unavailable": 3
   }
 }

@@ -29,7 +29,7 @@ import {
 } from 'lucide-react'
 import { matchMirlTexture, parseMirl } from './lib/mirl-loader'
 import { isBoombahBrandingName, isBoombahLogoPartName, stripBoombahBrandingText } from './lib/boombah-branding'
-import { createCustomizationOrder, fetchStorefrontProduct, getCustomerSessionId, uploadCustomerReference } from './lib/storefront-api'
+import { createCustomizationOrder, fetchStorefrontDesignerProduct, fetchStorefrontProduct, getCustomerSessionId, uploadCustomerReference } from './lib/storefront-api'
 import { DEFAULT_QUANTITY_DISCOUNT_POLICY, quantityDiscountForQty } from './lib/quantity-pricing'
 import { findActiveVariant } from './lib/variant-selection'
 import { custom3DDesignerConfig } from './lib/custom-3d'
@@ -309,6 +309,9 @@ function maskMaterial(maskMap, paletteMap, patternFallback, personalizationFallb
       varying vec2 vUv;
       varying vec3 vNormalView;
       varying vec3 vViewPosition;
+      float weaveNoise(vec2 point) {
+        return fract(sin(dot(point, vec2(127.1, 311.7))) * 43758.5453123);
+      }
       void main() {
         vec4 mask = texture2D(maskMap, vUv);
         float paletteIndex = floor(mask.r * 255.0 + 0.5);
@@ -323,7 +326,20 @@ function maskMaterial(maskMap, paletteMap, patternFallback, personalizationFallb
         vec3 garmentBase = mix(base, motif.rgb, target * patternEnabled * patternOpacity * motif.a);
         vec4 personalization = texture2D(personalizationMap, vUv * personalizationUvScale + personalizationUvOffset);
         garmentBase = mix(garmentBase, personalization.rgb, personalization.a * personalizationEnabled);
-        vec3 color = garmentBase * (0.52 + keyLight * 0.48 + fillLight * 0.14) + rim * 0.055;
+        // A restrained procedural knit gives the jersey a breathable
+        // performance-mesh read at close range without baking a noisy image
+        // into every synchronized family. Crossed warp/weft lines plus a
+        // tiny seeded variation catch light like polyester sports fabric.
+        vec2 knitUv = vUv * vec2(300.0, 220.0);
+        float warp = smoothstep(0.28, 0.72, abs(fract(knitUv.x) - 0.5) * 2.0);
+        float weft = smoothstep(0.28, 0.72, abs(fract(knitUv.y) - 0.5) * 2.0);
+        float grain = (warp * 0.52 + weft * 0.48) - 0.5;
+        float fleck = weaveNoise(floor(knitUv)) - 0.5;
+        float knit = clamp(grain * 0.018 + fleck * 0.009, -0.028, 0.028);
+        vec3 fabricBase = clamp(garmentBase + knit, 0.0, 1.0);
+        float viewFacing = max(dot(normal, normalize(vViewPosition)), 0.0);
+        float breathableSheen = pow(1.0 - viewFacing, 3.4) * 0.075;
+        vec3 color = fabricBase * (0.52 + keyLight * 0.48 + fillLight * 0.14) + rim * 0.055 + breathableSheen * vec3(0.92, 0.97, 1.0);
         vec4 logo = texture2D(logoMap, vUv * logoUvScale + logoUvOffset);
         color = mix(color, logo.rgb * (0.82 + keyLight * 0.18), logo.a * logoEnabled);
         gl_FragColor = vec4(color, mask.a);
@@ -618,7 +634,7 @@ function supportsBoombahGarmentPersonalization(manifest, selected) {
   if (!manifestIsBoombah(manifest)) return true
   const identity = [manifest?.product?.sport, manifest?.product?.name, selected?.garment, selected?.styleName]
     .filter(Boolean).join(' ').toLowerCase()
-  return !/\b(?:shoe|shoes|accessor(?:y|ies)|bag|backpack|sock|socks)\b/.test(identity)
+  return !/\b(?:shoe|shoes|accessor(?:y|ies)|bag|backpack|sock|socks|glove|gloves)\b/.test(identity)
 }
 
 function sanitizeBoombahScene(content) {
@@ -1073,7 +1089,7 @@ function ColorPanel({ manifest, state, update }) {
   </div>
 }
 
-function PatternPanel({ manifest, state, update, onProviderChange, onOpenDesign }) {
+function PatternPanel({ manifest, state, update }) {
   const [category, setCategory] = useState('all')
   const [showAll, setShowAll] = useState(false)
   const patterns = Array.isArray(manifest?.patterns) ? manifest.patterns : []
@@ -1086,7 +1102,27 @@ function PatternPanel({ manifest, state, update, onProviderChange, onOpenDesign 
   const colorCodes = (active?.baseColors?.length ? active.baseColors : ['A', 'B', 'C']).filter(code => manifest?.product?.colorCodes?.some(item => item.colorCode === code))
   const selected = patterns.find(pattern => pattern.slug === state.pattern?.slug || pattern.id === state.pattern?.id)
   const setPattern = patch => update(current => ({ ...current, pattern:{ ...(current.pattern || {}), ...patch } }))
-  if (manifestIsBoombah(manifest)) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are in Sportswear</h2><p>Garment patterns are available in the multi-sport library. Switch libraries to browse the mirrored pattern catalogue.</p><button type="button" className="designer-pattern-switch" onClick={() => { onOpenDesign?.(); onProviderChange?.('owayo') }}>Switch to Sportswear patterns</button></div></div>
+  if (manifestIsBoombah(manifest)) {
+    const templates = state.styleCode
+      ? (manifest.designs || []).filter(item => item.styleCode === state.styleCode)
+      : (manifest.designs || [])
+    const visibleTemplates = showAll ? templates : templates.slice(0, 18)
+    const chooseTemplate = item => update(current => ({
+      ...current,
+      design:item.id || item.slug,
+      styleCode:item.styleCode || current.styleCode,
+      colors:{ ...current.colors, ...(item.defaultColors || {}) },
+      pattern:{ ...current.pattern, id:'', slug:'' }
+    }))
+    return <div className="designer-panel designer-panel--patterns">
+      <div className="designer-panel__intro"><h2>Choose an artwork pattern</h2><p>These templates belong to the selected garment cut. Pick one here, then refine its editable colors without leaving this editor.</p></div>
+      <div className="designer-pattern-grid">
+        {visibleTemplates.map(item => <button type="button" key={item.id || item.slug} className={(state.design === item.id || state.design === item.slug) ? 'is-active' : ''} onClick={() => chooseTemplate(item)}><span><img src={assetUrl(item.preview, manifest)} alt="" loading="lazy" decoding="async"/></span><strong>{item.name}</strong><small>{stripBoombahBrandingText(item.styleName || item.garment || '')}</small>{(state.design === item.id || state.design === item.slug) && <Check size={14}/>}</button>)}
+      </div>
+      {!templates.length && <p className="designer-library-empty">No synchronized artwork templates match this garment cut.</p>}
+      {templates.length > 18 && <button type="button" className="designer-design-more" onClick={() => setShowAll(value => !value)}>{showAll ? 'Show featured patterns' : `Show all ${templates.length} patterns`}</button>}
+    </div>
+  }
   if (!patterns.length) return <div className="designer-panel designer-panel--patterns"><div className="designer-panel__intro"><h2>Patterns are unavailable</h2><p>The local Owayo pattern catalogue could not be loaded. Refresh the designer and try again.</p></div></div>
   return <div className="designer-panel designer-panel--patterns">
     <div className="designer-panel__intro"><h2>Add a garment pattern</h2><p>These are mirrored Owayo pattern masks. Choose the color region that should carry the pattern, then adjust its scale and strength.</p></div>
@@ -1531,7 +1567,11 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     let cancelled = false
     const readJson = async (url, version = '') => {
       const suffix = version ? `${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}` : ''
-      const response = await fetch(`${url}${suffix}`, { cache:'force-cache' })
+      // Catalogue JSON changes as families are synchronized. Revalidate that
+      // small index so an older browser cache cannot collapse the sport tabs
+      // into a misleading “Catalog 0/0” state; versioned manifests and large
+      // model assets remain force-cached.
+      const response = await fetch(`${url}${suffix}`, { cache:/\/catalog\.json(?:\?|$)/i.test(url) ? 'no-cache' : 'force-cache' })
       if (!response.ok) throw new Error(`Designer assets returned ${response.status}.`)
       return response.json()
     }
@@ -1665,6 +1705,45 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     return () => { cancelled = true }
   }, [draftKey])
 
+  // `/custom` intentionally loads only a small page of private designer rows.
+  // Resolve the active family directly so checkout can never fall through to
+  // a different customizable jersey merely because that row happened to be
+  // present in the current page payload.
+  useEffect(() => {
+    if (routeParams.listing || !manifest) return undefined
+    const provider = String(history.state.provider || '').toLowerCase()
+    const productId = String(history.state.productId || '').trim()
+    const manifestProvider = String(manifest.provider || '').toLowerCase()
+    const manifestProductId = String(manifest.product?.id || productId).trim()
+    if (!provider || !productId || provider !== manifestProvider || manifestProductId.toLowerCase() !== productId.toLowerCase()) return undefined
+    const matches = product => {
+      const config = custom3DDesignerConfig(product)
+      return config?.provider === provider && String(config.productId || '').toLowerCase() === productId.toLowerCase()
+    }
+    const local = products.find(matches) || null
+    if (local) {
+      setListingProduct(local)
+      setListingLoading(false)
+      setListingError('')
+      return undefined
+    }
+    let cancelled = false
+    setListingProduct(null)
+    setListingLoading(true)
+    setListingError('')
+    fetchStorefrontDesignerProduct(provider, productId).then(result => {
+      if (cancelled) return
+      const exact = result?.data?.find(matches) || null
+      setListingProduct(exact)
+      setListingError(result?.error || '')
+    }).catch(error => {
+      if (!cancelled) setListingError(error instanceof Error ? error.message : 'The live garment listing could not be checked.')
+    }).finally(() => {
+      if (!cancelled) setListingLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [routeParams.listing, manifest, products, history.state.provider, history.state.productId])
+
   const loadBoombahProduct = useCallback(async productId => {
     if (routeParams.listing && productId !== routeParams.product) return
     const product = catalog?.products?.find(item => item.id === productId)
@@ -1740,20 +1819,11 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   }, [draftKey, history.state])
 
   const customProduct = useMemo(() => {
-    if (routeParams.listing) return listingProduct
-    const candidates = products.filter(product => {
-    const searchText = [product?.name, product?.title, product?.type, product?.productGroup, product?.taxonomy?.category].filter(Boolean).join(' ')
-    return product?.customFields?.length && /jersey|shirt|kit/i.test(searchText) && activeVariant(product,history.state)
-    })
-    // Direct family links (for example `?product=cycling-c5`) should price and
-    // submit against that same published listing, not whichever customizable
-    // jersey happens to appear first in the catalogue.
-    const exact = candidates.find(product => {
-      const config = custom3DDesignerConfig(product)
-      return config?.provider === history.state.provider && config?.productId === history.state.productId
-    })
-    return exact || candidates.find(product => product.customFields.some(field => field.type === 'logo')) || candidates[0]
-  }, [listingProduct, products, routeParams.listing, history.state.provider, history.state.productId, history.state.roster])
+    const config = custom3DDesignerConfig(listingProduct)
+    const exact = config?.provider === history.state.provider
+      && String(config?.productId || '').toLowerCase() === String(history.state.productId || '').toLowerCase()
+    return exact ? listingProduct : null
+  }, [listingProduct, history.state.provider, history.state.productId])
   const previewOnly = !customProduct
   const variant = activeVariant(customProduct, history.state)
   const unitPrice = Number(variant?.price ?? customProduct?.price ?? 79)
@@ -1864,8 +1934,8 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         <footer className="designer-order">
           <div className="designer-order__price"><span>{quantity} {quantity === 1 ? 'piece' : 'pieces'}{discount ? ` · ${Math.round(discount * 100)}% team saving` : ''}</span><strong>${total.toFixed(2)}</strong><small>{discount ? `$${unitPrice.toFixed(2)} each before team pricing` : 'Artwork review included'}</small></div>
           {submitError && <p className="designer-order__error" role="alert">{submitError}</p>}
-          <div className="designer-order__actions"><button type="button" className="designer-save" onClick={saveNow}><Save size={16}/>{saved ? 'Draft saved' : 'Save draft'}</button><button type="button" className="designer-add" disabled={submitting || previewOnly || !variant} onClick={addToBag}><ShoppingBag size={17}/>{submitting ? 'Saving design…' : added ? 'Added to bag' : previewOnly ? 'Preview only · listing pending' : customProduct && variant ? 'Add team order' : 'Choose a live jersey'}</button></div>
-          {previewOnly && <p className="designer-order__preview-note">The local 3D studio is ready. A published garment listing is required before checkout.</p>}
+          <div className="designer-order__actions"><button type="button" className="designer-save" onClick={saveNow}><Save size={16}/>{saved ? 'Draft saved' : 'Save draft'}</button><button type="button" className="designer-add" disabled={submitting || listingLoading || previewOnly || !variant} onClick={addToBag}><ShoppingBag size={17}/>{submitting ? 'Saving design…' : listingLoading ? 'Checking live listing…' : added ? 'Added to bag' : previewOnly ? 'Preview only · listing pending' : customProduct && variant ? 'Add team order' : 'Choose a live jersey'}</button></div>
+          {previewOnly && !listingLoading && <p className="designer-order__preview-note">The 3D studio is ready. This exact garment needs a published listing before checkout.{listingError ? ` ${listingError}` : ''}</p>}
         </footer>
       </aside>
     </div>

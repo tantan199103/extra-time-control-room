@@ -50,7 +50,7 @@ export const adminMenus = [
       ]},
       { id: 'sports', label: 'Sports', target: '/sports', type: 'Page', visible: true, children: [] },
       { id: 'teams', label: 'Teams', target: '/teams', type: 'Page', visible: true, children: [] },
-      { id: 'custom', label: 'Custom', target: '/category/custom-jerseys', type: 'Page', visible: true, children: [] },
+      { id: 'custom', label: 'Custom', target: '/custom', type: 'Page', visible: true, children: [] },
       { id: 'collections', label: 'Collections', target: '/collections', type: 'Page', visible: true, children: [] },
       { id: 'new', label: 'New & trending', target: '/shop?sort=NEWEST', type: 'Page', visible: true, children: [] }
     ]

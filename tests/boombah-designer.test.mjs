@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { normalizeDesignerSpec } from '../api/customization-order.js'
-import { stripBoombahBranding } from '../scripts/sync-boombah-designer-assets.mjs'
+import { stripBoombahBranding, VERIFIED_BOOMBAH_3D_PRODUCTS } from '../scripts/sync-boombah-designer-assets.mjs'
 import { isBoombahBrandingName, isBoombahLogoPartName } from '../src/lib/boombah-branding.js'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -17,6 +17,13 @@ test('Boombah designer catalog is mirrored and provider-scoped', async () => {
   assert.ok(catalog.products.length >= 1)
   for (const product of catalog.products) {
     assert.match(product.manifest, /^\/designer\/boombah\/products\/[a-z0-9-]+\.json$/)
+  }
+})
+
+test('verified 3D coverage includes all 21 product families exposed by the builder', () => {
+  assert.equal(VERIFIED_BOOMBAH_3D_PRODUCTS.length, 21)
+  for (const product of ['GLOVES3D','SOCKS3D','MENSPANTS3D','WOMENSPANTS3D']) {
+    assert.equal(VERIFIED_BOOMBAH_3D_PRODUCTS.includes(product), true, `${product} is missing`)
   }
 })
 

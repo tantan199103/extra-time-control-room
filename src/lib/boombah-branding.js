@@ -90,7 +90,17 @@ export function isBoombahLogoPartName(value) {
 }
 
 export function stripBoombahBrandingText(value, colorZones = []) {
-  let svg = String(value || '').replace(/encoding=["']iso-8859-1["']/i, 'encoding="utf-8"')
+  const source = String(value || '')
+  // The same helper is used for manifest labels in the public editor. Avoid
+  // exposing the upstream vendor name there while leaving SVG identifiers and
+  // linked resources untouched during the markup sanitization path below.
+  if (!/<[a-z][\s\S]*>/i.test(source)) {
+    return source
+      .replace(/\bBoombah(?:\s+Ink)?\b/gi, 'Jersevo')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+  let svg = source.replace(/encoding=["']iso-8859-1["']/i, 'encoding="utf-8"')
   for (const id of ['production_colors', 'guides', 'artwork_targets']) svg = hideGroup(svg, id)
   svg = hideNamedBrandElements(svg)
   const removedCodes = colorZones

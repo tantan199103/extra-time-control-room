@@ -275,7 +275,13 @@ if (merchantSnapshotPath && productSnapshot.source === 'supabase') {
   console.log(`[seo] Merchant source snapshot staged: ${productSnapshot.merchantRows.length.toLocaleString('en-US')} products.`)
 }
 const taxonomyBlockedProducts = loadedProducts.filter(product => !validateCatalogTaxonomy(product).valid)
-const products = loadedProducts.filter(product => validateCatalogTaxonomy(product).valid)
+const validatedProducts = loadedProducts.filter(product => validateCatalogTaxonomy(product).valid)
+// 3D garment families are navigated from the noindex Custom Lab, not from
+// the ordinary Shop/league/category SEO graph. Keep one private collection
+// for the Custom page metadata, while every public catalogue/sitemap loop
+// receives only conventional storefront products.
+const customProducts = validatedProducts.filter(product => hasCustom3DDesigner(product)).slice(0, 12)
+const products = validatedProducts.filter(product => !hasCustom3DDesigner(product))
 const teamProductsByKey = new Map()
 for (const product of products) {
   const league = String(product.taxonomy?.league || '').toLowerCase()
@@ -291,9 +297,8 @@ for (const [key, rows] of teamProductsByKey) {
   const [league,team] = key.split('/')
   for (const type of teamProductTypeCounts(rows,{league,team})) teamProductTypeRouteSet.add(type.path)
 }
-featuredCustomProduct = products.find(product => hasCustom3DDesigner(product) && product.inventory > 0 && /jersey/i.test(product.title || ''))
-  || products.find(product => hasCustom3DDesigner(product) && product.inventory > 0)
-const customProducts = products.filter(product => hasCustom3DDesigner(product)).slice(0, 12)
+featuredCustomProduct = customProducts.find(product => product.inventory > 0 && /jersey/i.test(product.title || ''))
+  || customProducts.find(product => product.inventory > 0)
 const blockedProducts = [...(await loadBlockedProducts()), ...taxonomyBlockedProducts]
 const collections = await loadCollections()
 const catalogPageOverrides = await loadCatalogPageOverrides()
@@ -328,7 +333,7 @@ const home = pageHtml(shell, {
   title:'Custom Jerseys & Personalized Fan Gear | Jersevo',
   description:'Design custom jerseys and personalized fan gear with your name, number and approved listing options. Browse football, baseball, basketball and soccer-inspired styles at Jersevo.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct ? `/product/${slug(featuredCustomProduct.handle)}?custom=1` : '/shop'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${ALL_LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
+  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct?.designerConfig?.productId ? `/custom/design?provider=${featuredCustomProduct.designerConfig.provider}&product=${featuredCustomProduct.designerConfig.productId}` : '/custom/design'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${ALL_LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
 sitemapEntries.push({path:'/'})
@@ -380,7 +385,7 @@ await writePage('/shop', pageHtml(shell, {
 }))
 await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute(SHOP_COVER.src))
 
-const customFallbackProducts = customProducts.map(product => `<li><a href="/product/${slug(product.handle)}?custom=1">${escapeHtml(product.title)}</a><span>3D designer listing</span></li>`).join('')
+const customFallbackProducts = customProducts.map(product => `<li><a href="/custom/design?provider=${encodeURIComponent(product.designerConfig?.provider || 'owayo')}&product=${encodeURIComponent(product.designerConfig?.productId || '')}">${escapeHtml(product.title)}</a><span>3D designer garment</span></li>`).join('')
 await writePage('/custom', pageHtml(shell, {
   path:'/custom',
   title:'Custom jerseys and personalized fan gear | Jersevo',

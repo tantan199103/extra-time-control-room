@@ -1,0 +1,2733 @@
+{
+  "schemaVersion": 2,
+  "provider": "boombah",
+  "source": {
+    "ownerConfirmedByOperator": true,
+    "site": "https://www.boombah.com",
+    "builder": "https://www.boombah.com/builders/builder3d.html?product=SOCKS3D&qs=t",
+    "assetOrigins": [
+      "https://res.cloudinary.com/boombld/image/upload/models",
+      "https://res.cloudinary.com/boombld/image/upload",
+      "https://media.boombah.com/image/upload/t_builderThumb"
+    ],
+    "syncedAt": "2026-09-30T14:41:02.789Z"
+  },
+  "storage": {
+    "bucket": "product-media",
+    "root": "designer/boombah",
+    "mirrored": true,
+    "hotlinked": false
+  },
+  "branding": {
+    "removed": "Boombah vendor marks, production colors, cut guides and artwork targets from synchronized templates"
+  },
+  "catalog": "/designer/boombah/catalog.json",
+  "product": {
+    "id": "SOCKS3D",
+    "name": "Custom Socks",
+    "sport": "Socks",
+    "description": "Complete your team's uniform with custom socks built to match your look. Choose from a range of knit and printed options to create a coordinated design in your team colors. Bold graphics and vibrant colors help your team stand out on the field. Orders having less than 10 pairs are subject to a minimum order fee of $25.",
+    "leadTime": "Mockup Lead Time: 2-4 business days after order is placed. Ships: 2 weeks after artwork approval.",
+    "type": "SOCKS3D",
+    "minOrder": 10,
+    "sections": [
+      {
+        "id": "top",
+        "name": "Tops"
+      }
+    ],
+    "styles": [
+      {
+        "id": "socks3d-top-teamsock",
+        "section": "top",
+        "code": "TEAMSOCK",
+        "name": "Custom-Knit Team Socks",
+        "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+        "designIds": [
+          "socks3d-top-bm-sock-teamsock-1001",
+          "socks3d-top-bm-sock-teamsock-1002",
+          "socks3d-top-bm-sock-teamsock-1003",
+          "socks3d-top-bm-sock-teamsock-1101",
+          "socks3d-top-bm-sock-teamsock-1102",
+          "socks3d-top-bm-sock-teamsock-1103"
+        ]
+      },
+      {
+        "id": "socks3d-top-perfsock",
+        "section": "top",
+        "code": "PERFSOCK",
+        "name": "Custom Printed Performance Socks",
+        "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+        "designIds": [
+          "socks3d-top-fd-sock-perfsock-1000",
+          "socks3d-top-fd-sock-perfsock-1001",
+          "socks3d-top-fd-sock-perfsock-1002",
+          "socks3d-top-fd-sock-perfsock-1003",
+          "socks3d-top-fd-sock-perfsock-1004",
+          "socks3d-top-fd-sock-perfsock-1005",
+          "socks3d-top-fd-sock-perfsock-1006",
+          "socks3d-top-fd-sock-perfsock-1007",
+          "socks3d-top-fd-sock-perfsock-1008",
+          "socks3d-top-fd-sock-perfsock-1009",
+          "socks3d-top-fd-sock-perfsock-1010",
+          "socks3d-top-fd-sock-perfsock-1011",
+          "socks3d-top-fd-sock-perfsock-1012",
+          "socks3d-top-fd-sock-perfsock-1013",
+          "socks3d-top-fd-sock-perfsock-1014"
+        ]
+      }
+    ],
+    "sizes": [
+      {
+        "name": "Youth",
+        "code": "Y"
+      },
+      {
+        "name": "Intermediate",
+        "code": "I"
+      },
+      {
+        "name": "Adult",
+        "code": "A"
+      }
+    ],
+    "colorCodes": [
+      {
+        "code": "C1",
+        "name": "Main Color",
+        "palette": "SockColors",
+        "gradients": false,
+        "patterns": false,
+        "mesh": "BM-11015-main",
+        "editable": true,
+        "removed": false
+      },
+      {
+        "code": "C2",
+        "name": "Foot Color",
+        "palette": "SockColors",
+        "gradients": false,
+        "patterns": false,
+        "mesh": "BM-11015-main",
+        "editable": true,
+        "removed": false
+      },
+      {
+        "code": "C3",
+        "name": "Main Stripe Color",
+        "palette": "SockColors",
+        "gradients": false,
+        "patterns": false,
+        "mesh": "BM-11015-main",
+        "editable": true,
+        "removed": false
+      },
+      {
+        "code": "C4",
+        "name": "Accent Stripe Color",
+        "palette": "SockColors",
+        "gradients": false,
+        "patterns": false,
+        "mesh": "BM-11015-main",
+        "editable": true,
+        "removed": false
+      },
+      {
+        "code": "C5",
+        "name": "Boombah Logo Color",
+        "palette": "SockColors",
+        "gradients": false,
+        "patterns": false,
+        "mesh": "BM-11015-main",
+        "editable": false,
+        "removed": true
+      }
+    ],
+    "defaultColors": {
+      "C1": "#111311",
+      "C2": "#F3ED45",
+      "C3": "#2876FF",
+      "C4": "#F8F8F4"
+    },
+    "colors": [
+      {
+        "code": "B",
+        "name": "Black",
+        "value": "#222123"
+      },
+      {
+        "code": "BPU",
+        "name": "Bright Purple",
+        "value": "#AC62B5"
+      },
+      {
+        "code": "BN",
+        "name": "Brown",
+        "value": "#5B3624"
+      },
+      {
+        "code": "BT",
+        "name": "Blonde Tan",
+        "value": "#E0C5A0"
+      },
+      {
+        "code": "BRN",
+        "name": "Brown",
+        "value": "#5B3624"
+      },
+      {
+        "code": "CRD",
+        "name": "Cardinal",
+        "value": "#6E1A2B"
+      },
+      {
+        "code": "C",
+        "name": "Charcoal",
+        "value": "#36363A"
+      },
+      {
+        "code": "CLR",
+        "name": "Clear",
+        "value": "#EFEFEF"
+      },
+      {
+        "code": "CB",
+        "name": "Columbia",
+        "value": "#5096C8"
+      },
+      {
+        "code": "CY",
+        "name": "Cyan",
+        "value": "#1373AF"
+      },
+      {
+        "code": "CRM",
+        "name": "Cream",
+        "value": "#F5EAD7"
+      },
+      {
+        "code": "DF",
+        "name": "Dark Flesh",
+        "value": "#C2987D"
+      },
+      {
+        "code": "DG",
+        "name": "Dark Green",
+        "value": "#154031"
+      },
+      {
+        "code": "FLM",
+        "name": "Flame",
+        "value": "#F04923"
+      },
+      {
+        "code": "FL",
+        "name": "Flesh",
+        "value": "#FCCAAD"
+      },
+      {
+        "code": "FLG",
+        "name": "Fluorescent Green",
+        "value": "#8CC74D"
+      },
+      {
+        "code": "FO",
+        "name": "Fluorescent Orange",
+        "value": "#FF6700"
+      },
+      {
+        "code": "FLPN",
+        "name": "Fluorescent Passion",
+        "value": "#D5558D"
+      },
+      {
+        "code": "FY",
+        "name": "Fluorescent Yellow",
+        "value": "#F7FA24"
+      },
+      {
+        "code": "FP",
+        "name": "Fluorescent Pink",
+        "value": "#FF5BA4"
+      },
+      {
+        "code": "FLT",
+        "name": "Fluorescent Tangerine",
+        "value": "#F78D2A"
+      },
+      {
+        "code": "GD",
+        "name": "Gold",
+        "value": "#EDA12F"
+      },
+      {
+        "code": "GY",
+        "name": "Gray",
+        "value": "#98A3AD"
+      },
+      {
+        "code": "HP",
+        "name": "Hot Pink",
+        "value": "#A5276C"
+      },
+      {
+        "code": "KG",
+        "name": "Kelly Green",
+        "value": "#007D4F"
+      },
+      {
+        "code": "KH",
+        "name": "Khaki",
+        "value": "#BAAA99"
+      },
+      {
+        "code": "LG",
+        "name": "Lime Green",
+        "value": "#88C657"
+      },
+      {
+        "code": "MG",
+        "name": "Magenta",
+        "value": "#BF2A52"
+      },
+      {
+        "code": "MRN",
+        "name": "Maroon",
+        "value": "#4D2A2F"
+      },
+      {
+        "code": "MBRN",
+        "name": "Medium Brown",
+        "value": "#7E4819"
+      },
+      {
+        "code": "MN",
+        "name": "Mint",
+        "value": "#70C388"
+      },
+      {
+        "code": "N",
+        "name": "Navy",
+        "value": "#031D40"
+      },
+      {
+        "code": "NB",
+        "name": "Neon Blue",
+        "value": "#65BFE7"
+      },
+      {
+        "code": "NC",
+        "name": "Neon Coral",
+        "value": "#FF5155"
+      },
+      {
+        "code": "OY",
+        "name": "Optic Yellow",
+        "value": "#E1EE4E"
+      },
+      {
+        "code": "OD",
+        "name": "Olive Drab",
+        "value": "#5E6738"
+      },
+      {
+        "code": "O",
+        "name": "Orange",
+        "value": "#CE5628"
+      },
+      {
+        "code": "PK",
+        "name": "Pink",
+        "value": "#DA6C94"
+      },
+      {
+        "code": "PU",
+        "name": "Purple",
+        "value": "#3E296A"
+      },
+      {
+        "code": "RD",
+        "name": "Red",
+        "value": "#AA1E28"
+      },
+      {
+        "code": "RB",
+        "name": "Royal",
+        "value": "#1E3363"
+      },
+      {
+        "code": "SP",
+        "name": "Soft Pink",
+        "value": "#ECBDD5"
+      },
+      {
+        "code": "STL",
+        "name": "Steel",
+        "value": "#7C767A"
+      },
+      {
+        "code": "TL",
+        "name": "Teal",
+        "value": "#15747E"
+      },
+      {
+        "code": "TO",
+        "name": "Texas Orange",
+        "value": "#9E4A24"
+      },
+      {
+        "code": "TW",
+        "name": "Twitch",
+        "value": "#DBF721"
+      },
+      {
+        "code": "VG",
+        "name": "Vegas Gold",
+        "value": "#BFA67B"
+      },
+      {
+        "code": "W",
+        "name": "White",
+        "value": "#FFFFFF"
+      },
+      {
+        "code": "YL",
+        "name": "Yellow",
+        "value": "#FFF200"
+      },
+      {
+        "code": "AO",
+        "name": "Amethyst Orchid",
+        "value": "#8666AC"
+      },
+      {
+        "code": "AQ",
+        "name": "Aqua",
+        "value": "#59BEC9"
+      },
+      {
+        "code": "ARGY",
+        "name": "Arctic Gray",
+        "value": "#D1D4D8"
+      },
+      {
+        "code": "AG",
+        "name": "Autumn Glory",
+        "value": "#FF8200"
+      },
+      {
+        "code": "AZ",
+        "name": "Azure",
+        "value": "#0038A8"
+      },
+      {
+        "code": "CO",
+        "name": "Cobalt",
+        "value": "#171C8F"
+      },
+      {
+        "code": "COY",
+        "name": "Coyote",
+        "value": "#8F7E35"
+      },
+      {
+        "code": "D",
+        "name": "Desert",
+        "value": "#BFBB98"
+      },
+      {
+        "code": "DU",
+        "name": "Dusty Rose",
+        "value": "#C48490"
+      },
+      {
+        "code": "EG",
+        "name": "Eggplant",
+        "value": "#694357"
+      },
+      {
+        "code": "FOL",
+        "name": "Foliage",
+        "value": "#6C7D7E"
+      },
+      {
+        "code": "FG",
+        "name": "Forest Green",
+        "value": "#2B3A20"
+      },
+      {
+        "code": "F",
+        "name": "Fuschia",
+        "value": "#A33995"
+      },
+      {
+        "code": "GM",
+        "name": "Gun Metal",
+        "value": "#505049"
+      },
+      {
+        "code": "HCR",
+        "name": "Hot Coral",
+        "value": "#FF585D"
+      },
+      {
+        "code": "IB",
+        "name": "Ice Blue",
+        "value": "#89B3C4"
+      },
+      {
+        "code": "KW",
+        "name": "Kiwi",
+        "value": "#A2D45E"
+      },
+      {
+        "code": "MUL",
+        "name": "Mulch",
+        "value": "#372E2D"
+      },
+      {
+        "code": "OKB",
+        "name": "Oak Brown",
+        "value": "#674736"
+      },
+      {
+        "code": "PC",
+        "name": "Peacock",
+        "value": "#005D5E"
+      },
+      {
+        "code": "PLM",
+        "name": "Plum",
+        "value": "#4F1E47"
+      },
+      {
+        "code": "PO",
+        "name": "Poppy",
+        "value": "#E83E36"
+      },
+      {
+        "code": "SND",
+        "name": "Sand",
+        "value": "#9B9260"
+      },
+      {
+        "code": "SNG",
+        "name": "Sangria",
+        "value": "#76002C"
+      },
+      {
+        "code": "SLT",
+        "name": "Slate",
+        "value": "#5A666F"
+      },
+      {
+        "code": "STR",
+        "name": "Storm",
+        "value": "#384954"
+      },
+      {
+        "code": "TKB",
+        "name": "Teak Brown",
+        "value": "#94795D"
+      },
+      {
+        "code": "TB",
+        "name": "Tree Bark",
+        "value": "#453C24"
+      },
+      {
+        "code": "TG",
+        "name": "Tropical Green",
+        "value": "#00837E"
+      },
+      {
+        "code": "TU",
+        "name": "Turquoise",
+        "value": "#5CB8B2"
+      },
+      {
+        "code": "V",
+        "name": "Violet",
+        "value": "#592D82"
+      },
+      {
+        "code": "WI",
+        "name": "Wine",
+        "value": "#642340"
+      },
+      {
+        "code": "WG",
+        "name": "Wolf Gray",
+        "value": "#BCC2C9"
+      },
+      {
+        "code": "L-B",
+        "name": "Black Leather",
+        "value": "#1C1C1C"
+      },
+      {
+        "code": "L-BT",
+        "name": "Blonde Tan Leather",
+        "value": "#E0C5A0"
+      },
+      {
+        "code": "L-BRN",
+        "name": "Brown Leather",
+        "value": "#5B3624"
+      },
+      {
+        "code": "L-CB",
+        "name": "Columbia Blue Leather",
+        "value": "#5096C8"
+      },
+      {
+        "code": "L-CT",
+        "name": "Cork Tan Leather",
+        "value": "#996513"
+      },
+      {
+        "code": "L-DG",
+        "name": "Dark Green Leather",
+        "value": "#154031"
+      },
+      {
+        "code": "L-GD",
+        "name": "Gold Leather",
+        "value": "#EEA32B"
+      },
+      {
+        "code": "L-MGD",
+        "name": "Metallic Gold Leather",
+        "value": "#A5660D"
+      },
+      {
+        "code": "L-GY",
+        "name": "Grey Leather",
+        "value": "#757572"
+      },
+      {
+        "code": "L-KG",
+        "name": "Kelly Green Leather",
+        "value": "#007D4F"
+      },
+      {
+        "code": "L-LG",
+        "name": "Light Green Leather",
+        "value": "#88C657"
+      },
+      {
+        "code": "L-LO",
+        "name": "Light Orange Leather",
+        "value": "#9B600C"
+      },
+      {
+        "code": "L-M",
+        "name": "Maroon Leather",
+        "value": "#4D2A2F"
+      },
+      {
+        "code": "L-MBRN",
+        "name": "Medium Brown Leather",
+        "value": "#7E4819"
+      },
+      {
+        "code": "L-MT",
+        "name": "Medium Tan Leather",
+        "value": "#79430E"
+      },
+      {
+        "code": "L-N",
+        "name": "Navy Leather",
+        "value": "#2B2F43"
+      },
+      {
+        "code": "L-O",
+        "name": "Orange Leather",
+        "value": "#D54B27"
+      },
+      {
+        "code": "L-PK",
+        "name": "Pink Leather",
+        "value": "#BB6464"
+      },
+      {
+        "code": "L-PU",
+        "name": "Purple Leather",
+        "value": "#3E296A"
+      },
+      {
+        "code": "L-RD",
+        "name": "Red Leather",
+        "value": "#74080B"
+      },
+      {
+        "code": "L-RO",
+        "name": "Red Orange Leather",
+        "value": "#962A11"
+      },
+      {
+        "code": "L-RB",
+        "name": "Royal Blue Leather",
+        "value": "#1E3363"
+      },
+      {
+        "code": "L-S",
+        "name": "Metallic Silver Leather",
+        "value": "#757572"
+      },
+      {
+        "code": "L-TO",
+        "name": "Texas Orange Leather",
+        "value": "#A73B00"
+      },
+      {
+        "code": "L-W",
+        "name": "White Leather",
+        "value": "#ECEBE3"
+      },
+      {
+        "code": "L-Y",
+        "name": "Yellow Leather",
+        "value": "#B9871A"
+      }
+    ]
+  },
+  "designs": [
+    {
+      "id": "socks3d-top-bm-sock-teamsock-1001",
+      "slug": "socks3d-top-bm-sock-teamsock-1001",
+      "name": "Design 1001",
+      "section": "top",
+      "styleCode": "TEAMSOCK",
+      "styleName": "Custom-Knit Team Socks",
+      "styleNo": "1001",
+      "garment": "BM-SOCK-TEAMSOCK-1001",
+      "modelId": "BM-11015",
+      "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Foot Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Main Stripe Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Stripe Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Boombah Logo Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+        "bytes": 1765284,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/bm-sock-teamsock-1001-bf1f2c9e8caa.svg",
+        "path": "designer/boombah/templates/socks3d/top/bm-sock-teamsock-1001-bf1f2c9e8caa.svg",
+        "sha256": "bf1f2c9e8caac47dd3fefc6eab9232d44e9e7bbbfeb3b8d25a114ab98f54bf98",
+        "bytes": 277292
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1001-c08a627c17e2.jpg",
+        "path": "designer/boombah/previews/socks3d/top/bm-sock-teamsock-1001-c08a627c17e2.jpg",
+        "sha256": "c08a627c17e25d3aa3ca9dc344cdfa479ac96bf3bf591e311a31fe36a97280d2",
+        "bytes": 9296
+      }
+    },
+    {
+      "id": "socks3d-top-bm-sock-teamsock-1002",
+      "slug": "socks3d-top-bm-sock-teamsock-1002",
+      "name": "Design 1002",
+      "section": "top",
+      "styleCode": "TEAMSOCK",
+      "styleName": "Custom-Knit Team Socks",
+      "styleNo": "1002",
+      "garment": "BM-SOCK-TEAMSOCK-1002",
+      "modelId": "BM-11015",
+      "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Foot Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Main Stripe Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Stripe Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Boombah Logo Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+        "bytes": 1765284,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/bm-sock-teamsock-1002-c55d54fda679.svg",
+        "path": "designer/boombah/templates/socks3d/top/bm-sock-teamsock-1002-c55d54fda679.svg",
+        "sha256": "c55d54fda6799e4ea88726d9b6b02a928dab279a44ea06bd43dd699a467fa7ce",
+        "bytes": 277426
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1002-86d85db24fc5.jpg",
+        "path": "designer/boombah/previews/socks3d/top/bm-sock-teamsock-1002-86d85db24fc5.jpg",
+        "sha256": "86d85db24fc5f036274b343995915630c051ae51956f6b837be5089457dd2445",
+        "bytes": 9346
+      }
+    },
+    {
+      "id": "socks3d-top-bm-sock-teamsock-1003",
+      "slug": "socks3d-top-bm-sock-teamsock-1003",
+      "name": "Design 1003",
+      "section": "top",
+      "styleCode": "TEAMSOCK",
+      "styleName": "Custom-Knit Team Socks",
+      "styleNo": "1003",
+      "garment": "BM-SOCK-TEAMSOCK-1003",
+      "modelId": "BM-11015",
+      "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Foot Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Main Stripe Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Stripe Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Boombah Logo Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+        "bytes": 1765284,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/bm-sock-teamsock-1003-99e9bc6f3618.svg",
+        "path": "designer/boombah/templates/socks3d/top/bm-sock-teamsock-1003-99e9bc6f3618.svg",
+        "sha256": "99e9bc6f36180d6d130535aa9dbf8ce85c13b2f43c1157c0f5b29bf7b5f418cd",
+        "bytes": 277628
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1003-f79e6e533691.jpg",
+        "path": "designer/boombah/previews/socks3d/top/bm-sock-teamsock-1003-f79e6e533691.jpg",
+        "sha256": "f79e6e5336917af0252ed96b6207335d03bc006559f0fe532e5b93e6980c42ae",
+        "bytes": 9213
+      }
+    },
+    {
+      "id": "socks3d-top-bm-sock-teamsock-1101",
+      "slug": "socks3d-top-bm-sock-teamsock-1101",
+      "name": "Design 1101",
+      "section": "top",
+      "styleCode": "TEAMSOCK",
+      "styleName": "Custom-Knit Team Socks",
+      "styleNo": "1101",
+      "garment": "BM-SOCK-TEAMSOCK-1101",
+      "modelId": "BM-11015",
+      "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Stripes Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+        "bytes": 1765284,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/bm-sock-teamsock-1101-0f2cd4768557.svg",
+        "path": "designer/boombah/templates/socks3d/top/bm-sock-teamsock-1101-0f2cd4768557.svg",
+        "sha256": "0f2cd476855771a5e2fc57b07b3f76e46cd3694cf7194b0c339e00b3fa5232fd",
+        "bytes": 276567
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1101-718c250f6e49.jpg",
+        "path": "designer/boombah/previews/socks3d/top/bm-sock-teamsock-1101-718c250f6e49.jpg",
+        "sha256": "718c250f6e49bc2cf4b33b6cf5d574387f3de21d3ad8e150b481492d1b91b1c1",
+        "bytes": 8596
+      }
+    },
+    {
+      "id": "socks3d-top-bm-sock-teamsock-1102",
+      "slug": "socks3d-top-bm-sock-teamsock-1102",
+      "name": "Design 1102",
+      "section": "top",
+      "styleCode": "TEAMSOCK",
+      "styleName": "Custom-Knit Team Socks",
+      "styleNo": "1102",
+      "garment": "BM-SOCK-TEAMSOCK-1102",
+      "modelId": "BM-11015",
+      "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Stripes Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+        "bytes": 1765284,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/bm-sock-teamsock-1102-afc65af6039e.svg",
+        "path": "designer/boombah/templates/socks3d/top/bm-sock-teamsock-1102-afc65af6039e.svg",
+        "sha256": "afc65af6039e0b2b9d2b5b01d53bdcebd1ebae31b41b5a65bda68f78d3980c01",
+        "bytes": 276730
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1102-614fe7aa3a10.jpg",
+        "path": "designer/boombah/previews/socks3d/top/bm-sock-teamsock-1102-614fe7aa3a10.jpg",
+        "sha256": "614fe7aa3a103b96b9f484beaf2344db13095916eab1c26e425bdc05b6bb349f",
+        "bytes": 8649
+      }
+    },
+    {
+      "id": "socks3d-top-bm-sock-teamsock-1103",
+      "slug": "socks3d-top-bm-sock-teamsock-1103",
+      "name": "Design 1103",
+      "section": "top",
+      "styleCode": "TEAMSOCK",
+      "styleName": "Custom-Knit Team Socks",
+      "styleNo": "1103",
+      "garment": "BM-SOCK-TEAMSOCK-1103",
+      "modelId": "BM-11015",
+      "description": "Details: Contours around the middle of the foot and ankle | Sits just at the knee | Medium cushion | Classic designs in customizable colorways | Fabric: 72% Nylon / 28% Spandex | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Stripes Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "SockColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "BM-11015-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "path": "designer/boombah/models/bm-11015-2b25dc6b1f4d.glb",
+        "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+        "bytes": 1765284,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/bm-sock-teamsock-1103-7a9c8d039c11.svg",
+        "path": "designer/boombah/templates/socks3d/top/bm-sock-teamsock-1103-7a9c8d039c11.svg",
+        "sha256": "7a9c8d039c11537af336f2d7aa466e1fc35e850f1a206faa7a4c910870b0bedc",
+        "bytes": 276957
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1103-bb8fbff57f6e.jpg",
+        "path": "designer/boombah/previews/socks3d/top/bm-sock-teamsock-1103-bb8fbff57f6e.jpg",
+        "sha256": "bb8fbff57f6eb654f5b9654180b21c970ed9628af190f2ca89bb36cdfc14e7ef",
+        "bytes": 8841
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1000",
+      "slug": "socks3d-top-fd-sock-perfsock-1000",
+      "name": "Design 1000",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1000",
+      "garment": "FD-SOCK-PERFSOCK-1000",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1000-218189af9655.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1000-218189af9655.svg",
+        "sha256": "218189af965524594fa7f36aa45f505754369feb4c046aa3874696a648073231",
+        "bytes": 10151
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1000-51159e0b7a70.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1000-51159e0b7a70.jpg",
+        "sha256": "51159e0b7a707c79feaa107b2f87c5586eb49dac66fd09b5db1294e1ca2b27b2",
+        "bytes": 9388
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1001",
+      "slug": "socks3d-top-fd-sock-perfsock-1001",
+      "name": "Design 1001",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1001",
+      "garment": "FD-SOCK-PERFSOCK-1001",
+      "modelId": "FD-11005",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Stirrup Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Color",
+          "palette": "white",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Main Stripe Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11005-246060e9a15f.glb",
+        "path": "designer/boombah/models/fd-11005-246060e9a15f.glb",
+        "sha256": "246060e9a15ffa59f3bbb2de5699c5a9c32b1e2d932c3313861f8eb8261352af",
+        "bytes": 175936,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1001-470291c998e6.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1001-470291c998e6.svg",
+        "sha256": "470291c998e6176066ac4b643dd6d5f30c1c0bc2a08327214c059ac4a34ba5f0",
+        "bytes": 11864
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1001-e256afce666c.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1001-e256afce666c.jpg",
+        "sha256": "e256afce666cb52fe68d62e173e9eb341429c08c3815c72a525b70813c9cc008",
+        "bytes": 8944
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1002",
+      "slug": "socks3d-top-fd-sock-perfsock-1002",
+      "name": "Design 1002",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1002",
+      "garment": "FD-SOCK-PERFSOCK-1002",
+      "modelId": "FD-11005",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Stirrup Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "white",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11005-246060e9a15f.glb",
+        "path": "designer/boombah/models/fd-11005-246060e9a15f.glb",
+        "sha256": "246060e9a15ffa59f3bbb2de5699c5a9c32b1e2d932c3313861f8eb8261352af",
+        "bytes": 175936,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1002-8c5fea40c4a1.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1002-8c5fea40c4a1.svg",
+        "sha256": "8c5fea40c4a19119b7bae2a7dc64d92e7358c58926e3a3b59f8558df07e5db30",
+        "bytes": 11264
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1002-2253f193965d.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1002-2253f193965d.jpg",
+        "sha256": "2253f193965d4005e718a38d4647fc8cb8f3154394a8a20e3a429515b6bc2d5d",
+        "bytes": 8014
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1003",
+      "slug": "socks3d-top-fd-sock-perfsock-1003",
+      "name": "Design 1003",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1003",
+      "garment": "FD-SOCK-PERFSOCK-1003",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1003-50241657ec3e.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1003-50241657ec3e.svg",
+        "sha256": "50241657ec3eb7e73a26274260df97c81bc7efedd7c2b000f4326a55403431fe",
+        "bytes": 10809
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1003-7ff39e6441b0.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1003-7ff39e6441b0.jpg",
+        "sha256": "7ff39e6441b0dab111c2c9d50ad660b62d545ee2b63a2df153a47d734c4e6bfe",
+        "bytes": 8740
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1004",
+      "slug": "socks3d-top-fd-sock-perfsock-1004",
+      "name": "Design 1004",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1004",
+      "garment": "FD-SOCK-PERFSOCK-1004",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1004-79dc2db7120d.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1004-79dc2db7120d.svg",
+        "sha256": "79dc2db7120dbc03eca09d520d36d22c19befb0684929ba917ca0f03001d2538",
+        "bytes": 10895
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1004-6feb8b88f7fd.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1004-6feb8b88f7fd.jpg",
+        "sha256": "6feb8b88f7fdb12aebd9a3a2877f1e256706abd47b28c74c2d1019f73280a38d",
+        "bytes": 8882
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1005",
+      "slug": "socks3d-top-fd-sock-perfsock-1005",
+      "name": "Design 1005",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1005",
+      "garment": "FD-SOCK-PERFSOCK-1005",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1005-8e71244a3209.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1005-8e71244a3209.svg",
+        "sha256": "8e71244a32099c4785e2c486cfe3bc78bd1f17e104b6bf9b77e907f48f61c415",
+        "bytes": 375318
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1005-668d888d3253.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1005-668d888d3253.jpg",
+        "sha256": "668d888d32533bf07a96c256bb19275cf4f4ab0d1f5da00031fc10f1a34cd077",
+        "bytes": 9139
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1006",
+      "slug": "socks3d-top-fd-sock-perfsock-1006",
+      "name": "Design 1006",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1006",
+      "garment": "FD-SOCK-PERFSOCK-1006",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1006-ada99affdd34.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1006-ada99affdd34.svg",
+        "sha256": "ada99affdd34172c206c2b45959655f0115f3d7a1b0b4f5d1861df7ab0ceacf1",
+        "bytes": 11161
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1006-30f65ed6a941.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1006-30f65ed6a941.jpg",
+        "sha256": "30f65ed6a941701b853fe716e8aa94f8c7e2056e10241e16a66aced361c56edf",
+        "bytes": 9607
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1007",
+      "slug": "socks3d-top-fd-sock-perfsock-1007",
+      "name": "Design 1007",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1007",
+      "garment": "FD-SOCK-PERFSOCK-1007",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1007-cdeb57844d7c.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1007-cdeb57844d7c.svg",
+        "sha256": "cdeb57844d7c0e5888f622ba6f2ec7a35017a94ff6fc0aaa6629f6a8cea10c11",
+        "bytes": 14001
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1007-6dbbb142a1e4.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1007-6dbbb142a1e4.jpg",
+        "sha256": "6dbbb142a1e48a7f2cc2171dfcf16a08853b38b7e6865f1605670efe1f063e92",
+        "bytes": 9475
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1008",
+      "slug": "socks3d-top-fd-sock-perfsock-1008",
+      "name": "Design 1008",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1008",
+      "garment": "FD-SOCK-PERFSOCK-1008",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Main Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Stripes Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1008-71eb6b4d8727.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1008-71eb6b4d8727.svg",
+        "sha256": "71eb6b4d872773641ce3d30ff33993575c9f1e6b3ba1890a45903637507f1171",
+        "bytes": 11237
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1008-d276b5646e19.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1008-d276b5646e19.jpg",
+        "sha256": "d276b5646e19b329991e151f134529b53a78bf48f51ebb9b907906e7df3da27f",
+        "bytes": 8887
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1009",
+      "slug": "socks3d-top-fd-sock-perfsock-1009",
+      "name": "Design 1009",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1009",
+      "garment": "FD-SOCK-PERFSOCK-1009",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C8",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C9",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311",
+        "C7": "#F3ED45",
+        "C8": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1009-ddfa272d6e27.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1009-ddfa272d6e27.svg",
+        "sha256": "ddfa272d6e27213456837e9af408d3e8ace65b69201823f16cf17107e4068bf8",
+        "bytes": 14909
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1009-e04f019e59e5.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1009-e04f019e59e5.jpg",
+        "sha256": "e04f019e59e5203063fb31d367b949ab8298576e995754a6d0317d95be5b5a6b",
+        "bytes": 9863
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1010",
+      "slug": "socks3d-top-fd-sock-perfsock-1010",
+      "name": "Design 1010",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1010",
+      "garment": "FD-SOCK-PERFSOCK-1010",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1010-79dfaf9dff9c.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1010-79dfaf9dff9c.svg",
+        "sha256": "79dfaf9dff9c32c9d4c55059b5d4b45b8c116b02dfab143dde9701c6f99452f0",
+        "bytes": 10738
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1010-bc7c6c758038.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1010-bc7c6c758038.jpg",
+        "sha256": "bc7c6c75803822960da5ce3da3497b12b62a551c89d6724250139f297fe6894b",
+        "bytes": 9563
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1011",
+      "slug": "socks3d-top-fd-sock-perfsock-1011",
+      "name": "Design 1011",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1011",
+      "garment": "FD-SOCK-PERFSOCK-1011",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1011-c02d9bfa1cd0.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1011-c02d9bfa1cd0.svg",
+        "sha256": "c02d9bfa1cd063d937b710db5207352ccadd32f1670b6b5c0de7f22374256a04",
+        "bytes": 12620
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1011-9294407d936d.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1011-9294407d936d.jpg",
+        "sha256": "9294407d936d559e4e6eceea155a01f365f98454a403ef8a644915f531e1c85c",
+        "bytes": 9291
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1012",
+      "slug": "socks3d-top-fd-sock-perfsock-1012",
+      "name": "Design 1012",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1012",
+      "garment": "FD-SOCK-PERFSOCK-1012",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": true,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1012-b9735b7b386b.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1012-b9735b7b386b.svg",
+        "sha256": "b9735b7b386bfe7954eaeb0b26c8e62ff99b4793951ee30714054ccab1420dbc",
+        "bytes": 10791
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1012-af3a33ad5b7b.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1012-af3a33ad5b7b.jpg",
+        "sha256": "af3a33ad5b7b259bcce9ebe364e256e72e5bece4df572b780c37d0e73d920fc9",
+        "bytes": 9057
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1013",
+      "slug": "socks3d-top-fd-sock-perfsock-1013",
+      "name": "Design 1013",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1013",
+      "garment": "FD-SOCK-PERFSOCK-1013",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1013-327d5bcddf5d.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1013-327d5bcddf5d.svg",
+        "sha256": "327d5bcddf5d1622400b9bab686d7f87f46d81f83f81560ff6220e6c4c520223",
+        "bytes": 374083
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1013-16cb0f9677db.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1013-16cb0f9677db.jpg",
+        "sha256": "16cb0f9677db9f05bbddb3a4dd4d19e01115064d920e8393c561a76c039bbadc",
+        "bytes": 14576
+      }
+    },
+    {
+      "id": "socks3d-top-fd-sock-perfsock-1014",
+      "slug": "socks3d-top-fd-sock-perfsock-1014",
+      "name": "Design 1014",
+      "section": "top",
+      "styleCode": "PERFSOCK",
+      "styleName": "Custom Printed Performance Socks",
+      "styleNo": "1014",
+      "garment": "FD-SOCK-PERFSOCK-1014",
+      "modelId": "FD-11004",
+      "description": "Details: Terry panels for added comfort | Contours around the middle of the foot and ankle | Sits just below the knee | Fabric: 73% Polyester / 21% Lycra / 6% Elastic | Machine wash | Imported",
+      "sizes": [
+        {
+          "name": "Youth",
+          "code": "Y"
+        },
+        {
+          "name": "Intermediate",
+          "code": "I"
+        },
+        {
+          "name": "Adult",
+          "code": "A"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Main Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Boombah Logo Color",
+          "palette": "fdNoFlo",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-11004-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "path": "designer/boombah/models/fd-11004-3f7e35d0ef12.glb",
+        "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+        "bytes": 350964,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/socks3d/top/fd-sock-perfsock-1014-2a790b00fbae.svg",
+        "path": "designer/boombah/templates/socks3d/top/fd-sock-perfsock-1014-2a790b00fbae.svg",
+        "sha256": "2a790b00fbae2b9b7afd751b6109407771c8d32f5819d1ce48f8cd57aab9b794",
+        "bytes": 490573
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/fd-sock-perfsock-1014-bea67be7e7b0.jpg",
+        "path": "designer/boombah/previews/socks3d/top/fd-sock-perfsock-1014-bea67be7e7b0.jpg",
+        "sha256": "bea67be7e7b0f2e067a096e3fec321d473ef666679c0aee346957728897eaa5f",
+        "bytes": 42469
+      }
+    }
+  ],
+  "stats": {
+    "styles": 2,
+    "designs": 21,
+    "models": 3
+  }
+}

@@ -18,15 +18,17 @@ const MODEL_ORIGIN = 'https://res.cloudinary.com/boombld/image/upload/models'
 const ASSET_ORIGIN = 'https://res.cloudinary.com/boombld/image/upload'
 const PREVIEW_ORIGIN = 'https://media.boombah.com/image/upload/t_builderThumb'
 const CATALOG_ENDPOINT = 'https://460511.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=902&deploy=1&compid=460511&ns-at=AAEJ7tMQw9G2yX07_bS1K30lpsfUvOFQFZhxv973u5Y3TZ8Ck8A'
-const PRODUCTS = [
+export const VERIFIED_BOOMBAH_3D_PRODUCTS = Object.freeze([
   'FASTPITCH3D', 'BASEBALL3D', 'SLOWPITCH3D',
   'BASKETBALL3D', 'BASKETBALLREV3D',
   'WOMENSBASKETBALL3D', 'WOMENSBASKETBALLREV3D',
   'FOOTBALL3D', 'FOOTBALLREV3D',
   'VOLLEYBALL3D', 'MENSVOLLEYBALL3D', 'HOCKEY3D',
   'MENSAPPAREL3D', 'WOMENSAPPAREL3D',
-  'ACCESSORIES3D', 'SHOES3D', 'WOMENSSHOES3D'
-]
+  'ACCESSORIES3D', 'GLOVES3D', 'SOCKS3D',
+  'MENSPANTS3D', 'WOMENSPANTS3D',
+  'SHOES3D', 'WOMENSSHOES3D'
+])
 
 function hasArg(name) { return process.argv.includes(name) }
 function argValue(name, fallback = '') {
@@ -41,7 +43,7 @@ const MODELS_ONLY = hasArg('--models-only')
 const OWNER_CONFIRMED = hasArg('--owner-confirmed') || String(process.env.BOOMBAH_SOURCE_AUTHORIZED || '').toLowerCase() === 'true'
 const CONCURRENCY = Math.max(1, Math.min(12, Number(argValue('--concurrency', process.env.BOOMBAH_SYNC_CONCURRENCY || 5)) || 5))
 const PRODUCT_FILTER = new Set(String(argValue('--products', '')).split(',').map(value => value.trim().toUpperCase()).filter(Boolean))
-const selectedProducts = PRODUCT_FILTER.size ? PRODUCTS.filter(product => PRODUCT_FILTER.has(product)) : PRODUCTS
+const selectedProducts = PRODUCT_FILTER.size ? VERIFIED_BOOMBAH_3D_PRODUCTS.filter(product => PRODUCT_FILTER.has(product)) : VERIFIED_BOOMBAH_3D_PRODUCTS
 
 function usage() {
   console.log(`Boombah designer asset sync\n\n` +
@@ -82,6 +84,10 @@ function immutablePath(path, digest) {
 
 function jsonBuffer(value) { return Buffer.from(`${JSON.stringify(value, null, 2)}\n`) }
 
+async function readJsonIfPresent(path) {
+  try { return JSON.parse(await readFile(path, 'utf8')) } catch { return null }
+}
+
 async function fetchBuffer(url, { optional = false, attempts = 4 } = {}) {
   let lastError
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -112,7 +118,14 @@ async function fetchCatalog(product) {
 function baseNameForStyle(catalog, style) {
   if (style.baseName) return String(style.baseName).trim()
   const item = Object.values(catalog.nsItems || {}).find(value => String(value?.parent || '') === String(style.nsId || ''))
-  return String(item?.name || '').split(' : ')[0].trim().split(/\s+/)[0]
+  const fromItem = String(item?.name || '').split(' : ')[0].trim().split(/\s+/)[0]
+  if (fromItem) return fromItem
+  // Authentic pants catalogues do not expose `baseName` or a style-level
+  // NetSuite id. Their verified quick-start id carries the same deterministic
+  // garment prefix: BA-PANT-HYPER-BM5091-<draft token>.
+  const quickStart = String(style.quickStarts?.[0] || style.quickStart || '').trim()
+  const parts = quickStart.split('-').filter(Boolean)
+  return parts.length >= 4 ? parts.slice(0, -2).join('-') : ''
 }
 
 function isBrandZone(zone) {
@@ -209,9 +222,12 @@ function normalizeProduct(productId, catalog) {
       })
     }
   }
+  const publicFamilyName = productId === 'MENSPANTS3D'
+    ? "Men's Baseball Uniforms and Pants"
+    : productId === 'WOMENSPANTS3D' ? "Women's Fastpitch Uniforms and Pants" : ''
   return {
     id:productId,
-    name:cleanText(catalog.top?.overview || catalog.bottom?.overview || catalog.name || productId),
+    name:publicFamilyName || cleanText(catalog.top?.overview || catalog.bottom?.overview || catalog.name || productId),
     sport:cleanText(catalog.top?.sport || catalog.bottom?.sport || catalog.name || productId),
     description:cleanText(catalog.description || catalog.top?.desc || catalog.bottom?.desc),
     leadTime:cleanText(catalog.top?.leadTime || catalog.bottom?.leadTime),
@@ -259,6 +275,9 @@ function duplicateUpload(error) {
 
 async function sync() {
   const syncedAt = new Date().toISOString()
+  const partialUpdate = PRODUCT_FILTER.size > 0
+  const existingCatalog = WRITE && partialUpdate ? await readJsonIfPresent(resolve(OUTPUT_ROOT, 'catalog.json')) : null
+  const existingModelInventory = WRITE && partialUpdate ? await readJsonIfPresent(resolve(OUTPUT_ROOT, 'models.json')) : null
   console.log(`Reading ${selectedProducts.length} live designer catalogs...`)
   const products = []
   for (const productId of selectedProducts) {
@@ -335,13 +354,20 @@ async function sync() {
   })
   const modelMap = new Map(modelResults)
 
+  const selectedModelRows = modelIds.map(id => ({ id, ...(modelMap.get(id) || { unavailable:true }) }))
+  const mergedModelRows = partialUpdate && existingModelInventory?.models?.length
+    ? [...new Map([
+        ...existingModelInventory.models.map(model => [model.id, model]),
+        ...selectedModelRows.map(model => [model.id, model])
+      ]).values()].sort((a,b) => String(a.id).localeCompare(String(b.id)))
+    : selectedModelRows
   const modelInventory = {
     schemaVersion:2,
     provider:'boombah',
     source:{ ownerConfirmedByOperator:true, site:SOURCE_ORIGIN, syncedAt },
     storage:{ bucket:BUCKET, root:`${STORAGE_ROOT}/models`, mirrored:true, hotlinked:false },
-    models:modelIds.map(id => ({ id, ...(modelMap.get(id) || { unavailable:true }) })),
-    stats:{ discovered:modelIds.length, available:[...modelMap.values()].filter(Boolean).length, unavailable:[...modelMap.values()].filter(value => !value).length }
+    models:mergedModelRows,
+    stats:{ discovered:mergedModelRows.length, available:mergedModelRows.filter(model => !model.unavailable).length, unavailable:mergedModelRows.filter(model => model.unavailable).length }
   }
   await mkdir(OUTPUT_ROOT, { recursive:true })
   await writeFile(resolve(OUTPUT_ROOT, 'models.json'), jsonBuffer(modelInventory))
@@ -370,7 +396,11 @@ async function sync() {
     const cleanedSvg = stripBoombahBranding(svgBuffer, design.colorZones)
     const productSlug = slug(product.id)
     const template = await mirror(cleanedSvg, `${STORAGE_ROOT}/templates/${productSlug}/${design.section}/${slug(design.garment)}.svg`, 'image/svg+xml')
-    const previewBuffer = await fetchBuffer(design.source.preview, { optional:true })
+    let previewBuffer = null
+    for (const previewSource of [...new Set([design.source.preview, design.source.preview.replace(/-3D$/, '')])]) {
+      previewBuffer = await fetchBuffer(previewSource, { optional:true })
+      if (previewBuffer) break
+    }
     const preview = previewBuffer
       ? await mirror(previewBuffer, `${STORAGE_ROOT}/previews/${productSlug}/${design.section}/${slug(design.garment)}.jpg`, 'image/jpeg')
       : null
@@ -433,23 +463,42 @@ async function sync() {
       manifest:manifestPath,
       styles:activeStyles.length,
       designs:availableDesigns.length,
-      defaultDesignId:first?.id || ''
+      defaultDesignId:first?.id || '',
+      defaultStyleCode:first?.styleCode || '',
+      defaultStyleName:first?.styleName || '',
+      defaultGarment:first?.garment || '',
+      defaultModelId:first?.modelId || '',
+      preview:first?.preview?.uri || '',
+      sizeCount:first?.sizes?.length || 0,
+      capabilities:{
+        colors:Boolean(first?.colorZones?.some(zone => zone.editable !== false)),
+        templates:availableDesigns.length > 1,
+        textAndLogo:!/(?:shoe|accessor|bag|backpack|sock|glove)/i.test(`${product.sport} ${product.name} ${first?.styleName || ''}`)
+      }
     })
   }
 
+  const mergedProductManifests = partialUpdate && existingCatalog?.products?.length
+    ? [...new Map([
+        ...existingCatalog.products.map(product => [product.id, product]),
+        ...productManifests.map(product => [product.id, product])
+      ]).values()]
+    : productManifests
+  const productOrder = new Map(VERIFIED_BOOMBAH_3D_PRODUCTS.map((id, index) => [id,index]))
+  mergedProductManifests.sort((a,b) => (productOrder.get(a.id) ?? 999) - (productOrder.get(b.id) ?? 999) || String(a.id).localeCompare(String(b.id)))
   const catalog = {
     schemaVersion:2,
     provider:'boombah',
     source:{ ownerConfirmedByOperator:true, site:SOURCE_ORIGIN, syncedAt },
     storage:{ bucket:BUCKET, root:STORAGE_ROOT, mirrored:true, hotlinked:false },
     modelsManifest:'/designer/boombah/models.json',
-    defaultProductId:productManifests.find(product => product.id === 'FASTPITCH3D')?.id || productManifests[0]?.id || '',
-    products:productManifests,
+    defaultProductId:mergedProductManifests.find(product => product.id === 'FASTPITCH3D')?.id || mergedProductManifests[0]?.id || '',
+    products:mergedProductManifests,
     stats:{
-      products:productManifests.length,
+      products:mergedProductManifests.length,
       models:modelInventory.stats.available,
       unavailableModels:modelInventory.stats.unavailable,
-      templates:productManifests.reduce((sum, product) => sum + product.designs, 0),
+      templates:mergedProductManifests.reduce((sum, product) => sum + product.designs, 0),
       uploadedFiles,
       reusedFiles,
       uploadedBytes

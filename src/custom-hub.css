@@ -145,7 +145,7 @@
 /* Owayo-inspired decision flow: choose a sport/cut first, then enter the
    designer. The visual language stays Jersevo editorial rather than copying
    an external brand shell or its marks. */
-.custom-hub--owayo { background:var(--chalk); color:var(--ink); }
+.custom-hub--studio { background:var(--chalk); color:var(--ink); }
 .custom-flow-hero { min-height:min(720px,74vw); display:grid; grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr); background:var(--ink); color:var(--chalk); }
 .custom-flow-hero__copy { display:flex; flex-direction:column; justify-content:center; padding:clamp(34px,6vw,86px) clamp(22px,6vw,96px); border-right:1px solid #30302d; }
 .custom-flow-crumb { display:flex; gap:9px; align-items:center; margin-bottom:clamp(30px,5vw,70px); color:#a9a9a2; font:600 10px var(--body); letter-spacing:.08em; text-transform:uppercase; }

@@ -39,7 +39,8 @@ import {
 } from 'lucide-react'
 import { products as fallbackProducts, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, sellableVariants, sortCollectionProducts, storefrontImageSrcSet } from './lib/storefront-model'
-import { custom3DDesignerConfig, hasCustom3DDesigner } from './lib/custom-3d'
+import { custom3DDesignerConfig, hasCustom3DDesigner, isCustom3DOnlyProduct } from './lib/custom-3d'
+import { customDesignerRoute, customFamilyKey, normalizeCustomHubCatalogs } from './lib/custom-hub-catalog'
 import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { SHOP_COVER, leagueCover } from './lib/league-covers'
 import { ACCESSORY_CATEGORY_PAGES, ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, catalogCategoryByHandle, catalogIconForProduct, productMatchesCatalogCategory } from './lib/catalog-taxonomy'
@@ -191,9 +192,7 @@ function Announcement() {
 }
 
 function customProductTarget(product) {
-  if (!hasCustom3DDesigner(product)) return '/category/custom-jerseys'
-  const handle = product?.handle || product?.id
-  return handle ? `/product/${encodeURIComponent(handle)}?custom=1` : '/shop'
+  return listingDesignerTarget(product) || '/custom'
 }
 
 // A teamwear listing owns its designer context. The public card only carries
@@ -220,6 +219,7 @@ function menuTarget(target, customProduct) {
   // taxonomy route. Unlike the previous implementation this does not drop a
   // query string from every collection link.
   if (/^\/collection\?type=jerseys$/i.test(value)) return '/category/jerseys'
+  if (/^\/category\/custom-jerseys(?:\/|$)/i.test(value)) return '/custom'
   if (target === '/custom') return '/custom'
   if (target === '/moments') return '/#story'
   if (target === '/players') return '/#players'
@@ -347,7 +347,7 @@ function SearchOverlay({ open, onClose, products, navigationProducts = [], colle
   const index = useMemo(() => discoveryIndex(navigationProducts.length ? navigationProducts : products), [navigationProducts,products])
   const needle = normalizeDiscoveryQuery(query)
   const rank = (items,text) => items.map(item => ({ item, score:discoveryTextScore(text(item),query) })).filter(row => row.score > 0).sort((a,b) => b.score - a.score || text(a.item).localeCompare(text(b.item))).map(row => row.item)
-  const matchingProducts = needle.length >= 2 ? products.filter(product => matchesDiscoveryQuery(product,query)) : []
+  const matchingProducts = needle.length >= 2 ? products.filter(product => !isCustom3DOnlyProduct(product) && matchesDiscoveryQuery(product,query)) : []
   const productCandidates = [...remoteResults,...matchingProducts].filter((product,index,rows) => rows.findIndex(row => row.id === product.id) === index)
   const displayProducts = needle.length >= 2 ? productCandidates.sort((a,b) => discoverySearchScore(b,query) - discoverySearchScore(a,query) || String(a.title || a.name).localeCompare(String(b.title || b.name))).slice(0,8) : []
   const teamMatches = needle.length >= 2 ? rank(index.teams,team => `${team.name} ${team.leagueName} ${team.slug}`).slice(0,5) : []
@@ -608,7 +608,7 @@ function ProductCard({ product, onQuickView, className = '' }) {
   const maxPrice = Math.max(Number(product.price || 0),...available.map(variant => Number(variant.price || 0)))
   const sizeOption = (product.options || []).find(option => /^(size|fit)$/i.test(option.name))
   const designerTarget = listingDesignerTarget(product)
-  const productHref = `/product/${product.handle || product.id}`
+  const productHref = designerTarget || `/product/${product.handle || product.id}`
   const imageSrcSet = storefrontImageSrcSet(product.image)
   const imageFallback = event => {
     const image = event.currentTarget
@@ -1237,6 +1237,7 @@ function CustomStudioWaitlist() {
 
 function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVerified = false }) {
   const [owayoCatalog, setOwayoCatalog] = useState(null)
+  const [teamwearCatalog, setTeamwearCatalog] = useState(null)
   const [catalogError, setCatalogError] = useState('')
   const [activeFamily, setActiveFamily] = useState('ALL')
   const copy = pageConfig?.content || {}
@@ -1245,36 +1246,49 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   const show = id => !hasBlockConfig || blocks.has(id)
   const go = href => navigate(href)
 
-  // Keep the family catalogue outside the main storefront payload. The local
-  // mirror is already checked into the project and loads only when a shopper
-  // opens Custom, matching the Owayo-style “choose a sport/product first” flow
-  // without making Home or Shop pay for the designer library.
+  // Load both local designer catalogues only on `/custom`, then present them
+  // as one garment picker. Provider remains an internal route detail instead
+  // of creating a second shopper journey.
   useEffect(() => {
     let active = true
-    fetch('/designer/owayo/catalog.json', { cache: 'force-cache' })
-      .then(response => { if (!response.ok) throw new Error(`Custom catalogue returned ${response.status}.`); return response.json() })
-      .then(data => { if (active) setOwayoCatalog(data) })
-      .catch(error => { if (active) setCatalogError(error instanceof Error ? error.message : 'Custom catalogue unavailable.') })
+    const readCatalog = async url => {
+      // These tiny indexes change whenever a garment family is synchronized.
+      // Revalidate them while the large, versioned 3D manifests stay cached.
+      const response = await fetch(url, { cache:'no-cache' })
+      if (!response.ok) throw new Error(`${url} returned ${response.status}.`)
+      return response.json()
+    }
+    Promise.allSettled([
+      readCatalog('/designer/owayo/catalog.json'),
+      readCatalog('/designer/boombah/catalog.json')
+    ]).then(([sportswear,teamwear]) => {
+      if (!active) return
+      if (sportswear.status === 'fulfilled') setOwayoCatalog(sportswear.value)
+      if (teamwear.status === 'fulfilled') setTeamwearCatalog(teamwear.value)
+      const failed = [sportswear,teamwear].filter(result => result.status === 'rejected').length
+      setCatalogError(failed === 2
+        ? 'The 3D garment library is temporarily unavailable.'
+        : failed ? 'Part of the 3D garment library is temporarily unavailable.' : '')
+    })
     return () => { active = false }
   }, [])
 
-  const families = useMemo(() => (owayoCatalog?.products || [])
-    .filter(item => item.assetsReady && item.manifest)
-    .map(item => ({
-      ...item,
-      segment:item.group || (/^cycling-m/i.test(item.id) ? 'mtb' : 'cycling'),
-      segmentLabel:item.groupLabel || item.sportLabel || (/^cycling-m/i.test(item.id) ? 'MTB' : 'Cycling')
-    })), [owayoCatalog])
+  const families = useMemo(() => normalizeCustomHubCatalogs(owayoCatalog, teamwearCatalog), [owayoCatalog,teamwearCatalog])
   const familyGroups = useMemo(() => [...new Map(families.map(item => [item.segment, { id:item.segment, label:item.segmentLabel }])).values()], [families])
   const filteredFamilies = useMemo(() => activeFamily === 'ALL' ? families : families.filter(item => item.segment === activeFamily), [activeFamily, families])
   // Prices and checkout language only unlock after the current route has been
   // confirmed by the live public catalogue. Development fallbacks and stale
   // cache rows remain useful for previews, but must never imply orderability.
   const liveCustomProducts = useMemo(() => commerceVerified
-    ? products.filter(product => product.status === 'PUBLISHED' && hasCustom3DDesigner(product)).slice(0, 4)
+    ? products.filter(product => product.status === 'PUBLISHED' && hasCustom3DDesigner(product))
     : [], [products, commerceVerified])
+  const listingByFamily = useMemo(() => new Map(liveCustomProducts.flatMap(product => {
+    const config = custom3DDesignerConfig(product)
+    return config ? [[customFamilyKey(config.provider, config.productId), product]] : []
+  })), [liveCustomProducts])
   const commerceReady = liveCustomProducts.length > 0
   const featuredFamily = filteredFamilies[0] || families[0]
+  const templateCount = families.reduce((total, family) => total + Number(family.designCount || 0), 0)
   // The preview belongs to the synchronized family manifest. Road cuts and
   // MTB cuts use different first designs (Etape vs Derny), and guessing a
   // single filename made every missing asset fall back to the same white
@@ -1287,6 +1301,7 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   const familyPreview = family => {
     const explicit = String(family?.preview || '').trim()
     if (explicit) return explicit
+    if (family?.provider !== 'owayo') return ''
     const id = String(family?.id || '').trim()
     if (!id) return ''
     // Older cached catalog snapshots did not carry `preview`. Prefer the
@@ -1301,33 +1316,20 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
     event.currentTarget.hidden = true
     event.currentTarget.parentElement?.classList.add('is-missing')
   }
-  const familyLabel = family => String(family?.title || '').replace(/^Jersevo\s+Custom\s+/i, '')
-  const openFamily = family => {
-    if (!family?.id) return
-    trackStorefrontEvent('custom_cta_clicked',{ source:'custom_hub_family', family:family.id, commerce_ready:commerceReady })
-    go(`/custom/design?provider=owayo&product=${encodeURIComponent(family.id)}`)
-  }
-  const openTemplate = design => {
-    trackStorefrontEvent('custom_cta_clicked',{ source:'custom_hub_template', family:'cycling-c3', design })
-    go(`/custom/design?provider=owayo&product=cycling-c3&design=${encodeURIComponent(design)}`)
+  const familyLabel = family => String(family?.title || family?.name || 'Custom garment').replace(/^Jersevo\s+Custom\s+/i, '')
+  const openFamily = (family, source = 'custom_hub_family') => {
+    if (!family?.productId) return
+    trackStorefrontEvent('custom_cta_clicked',{ source, provider:family.provider, family:family.productId, commerce_ready:Boolean(listingByFamily.get(family.key)) })
+    go(customDesignerRoute(family))
   }
   const openDefaultDesigner = source => {
+    if (featuredFamily) { openFamily(featuredFamily, source); return }
     trackStorefrontEvent('custom_cta_clicked',{ source, family:'cycling-c3', commerce_ready:commerceReady })
     go('/custom/design?provider=owayo&product=cycling-c3')
   }
-  // These are captured from the same live 3D stage as the designer.  The old
-  // rail pointed at flat UV masks, which made each slide look like a cropped
-  // black/white texture instead of a garment.
-  const templates = [
-    { slug:'etape', label:'Etape', preview:'/designer/owayo/cycling-c3/previews/garment-etape.webp' },
-    { slug:'velocity', label:'Velocity', preview:'/designer/owayo/cycling-c3/previews/garment-velocity.webp' },
-    { slug:'attack', label:'Attack', preview:'/designer/owayo/cycling-c3/previews/garment-attack.webp' },
-    { slug:'aero', label:'Aero', preview:'/designer/owayo/cycling-c3/previews/garment-aero.webp' },
-    { slug:'fire', label:'Fire', preview:'/designer/owayo/cycling-c3/previews/garment-fire.webp' }
-  ]
 
   return (
-    <main className="custom-hub custom-hub--owayo">
+    <main className="custom-hub custom-hub--studio">
       {show('custom-hero') && <section className="custom-flow-hero" aria-labelledby="custom-hub-title">
         <div className="custom-flow-hero__copy">
           <nav className="custom-flow-crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom studio</strong></nav>
@@ -1335,7 +1337,7 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
           <h1 id="custom-hub-title">{String(copy.headline || 'DESIGN IT.\nWEAR IT.').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{index === 1 ? <em>{line}</em> : line}</React.Fragment>)}</h1>
           <p className="custom-flow-hero__lede">{copy.supporting || 'Choose a performance cut, start from a proven template, then put your colors, name, number and logo exactly where they belong.'}</p>
           <div className="custom-flow-hero__actions"><button className="button button--acid" onClick={() => featuredFamily ? openFamily(featuredFamily) : openDefaultDesigner('custom_hub_hero')}>{commerceReady ? (copy.button || 'START YOUR DESIGN') : 'PREVIEW IN 3D'} <ArrowRight size={16}/></button><button className="button-link" onClick={() => document.getElementById('custom-families')?.scrollIntoView({ behavior:'smooth' })}>CHOOSE A BASE <ArrowDown size={15}/></button></div>
-          <div className="custom-flow-hero__facts"><span><strong>{owayoCatalog?.summary?.designsVerified || '50+'}</strong><small>verified templates</small></span><span><strong>{families.length || '16'}</strong><small>{commerceReady ? 'order-ready cuts' : 'preview-ready cuts'}</small></span><span><strong>{commerceReady ? 'LIVE' : 'PREVIEW'}</strong><small>ordering status</small></span></div>
+          <div className="custom-flow-hero__facts"><span><strong>{templateCount || '50+'}</strong><small>verified templates</small></span><span><strong>{families.length || '16'}</strong><small>3D garment families</small></span><span><strong>{commerceReady ? 'LIVE' : 'PREVIEW'}</strong><small>ordering status</small></span></div>
         </div>
         <div className="custom-flow-hero__visual">
           <img src={SHOP_COVER.src} alt="Jersey artwork ready for custom team details" width="2048" height="683" loading="eager" fetchPriority="high" decoding="async" />
@@ -1355,22 +1357,16 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
       {show('custom-catalog') && <section className="custom-families" id="custom-families" aria-labelledby="custom-families-title">
         <div className="custom-section-head"><div><p className="custom-flow-eyebrow">1 / CHOOSE YOUR GARMENT</p><h2 id="custom-families-title">Pick a cut.<br /><em>Then make it yours.</em></h2></div><span>{families.length ? `${families.length} ready-to-design cuts` : 'Loading garment library…'}</span></div>
         <div className="custom-family-tabs" role="tablist" aria-label="Custom garment categories"><button type="button" role="tab" aria-selected={activeFamily === 'ALL'} className={activeFamily === 'ALL' ? 'is-active' : ''} onClick={() => setActiveFamily('ALL')}>ALL CUTS</button>{familyGroups.map(group => <button type="button" role="tab" aria-selected={activeFamily === group.id} className={activeFamily === group.id ? 'is-active' : ''} key={group.id} onClick={() => setActiveFamily(group.id)}>{group.label}</button>)}</div>
-        {catalogError && <p className="custom-flow-error" role="status">{catalogError} You can still open the default C3 designer.</p>}
-        <div className="custom-family-grid">{filteredFamilies.map(family => { const preview = familyPreview(family); return <button type="button" className="custom-family-card" key={family.id} onClick={() => openFamily(family)}><span className={`custom-family-card__media${preview ? '' : ' is-missing'}`}>{preview ? <img src={preview} alt={`${familyLabel(family)} custom garment preview`} width="480" height="640" loading="lazy" decoding="async" onError={handleFamilyPreviewError} /> : null}<span className="custom-family-card__segment">{family.segmentLabel}</span><span className="custom-family-card__placeholder" aria-hidden="true"><strong>{familyLabel(family)}</strong><small>{preview ? 'Preview loading' : 'Preview unavailable'}</small></span></span><span className="custom-family-card__body"><strong>{familyLabel(family)}</strong><small>{family.fit || 'Performance fit'} · {family.sleeve || 'Custom cut'}</small><span><b>{commerceReady ? `From $${Number(family.priceUsd || 0).toFixed(0)}` : '3D PREVIEW'}</b><em>{family.designCount || '50+'} templates</em><ArrowRight size={15}/></span></span></button> })}</div>
+        {catalogError && <p className="custom-flow-error" role="status">{catalogError} Available garments remain editable in the same 3D studio.</p>}
+        <div className="custom-family-grid">{filteredFamilies.map(family => { const preview = familyPreview(family); const listing = listingByFamily.get(family.key); const price = Number(listing?.price || 0); return <button type="button" className="custom-family-card" key={family.key} onClick={() => openFamily(family)}><span className={`custom-family-card__media${preview ? '' : ' is-missing'}`}>{preview ? <img src={preview} alt={`${familyLabel(family)} custom garment preview`} width="480" height="640" loading="lazy" decoding="async" onError={handleFamilyPreviewError} /> : null}<span className="custom-family-card__segment">{family.segmentLabel}</span><span className="custom-family-card__placeholder" aria-hidden="true"><strong>{familyLabel(family)}</strong><small>{preview ? 'Preview loading' : 'Preview unavailable'}</small></span></span><span className="custom-family-card__body"><strong>{familyLabel(family)}</strong><small>{family.styleCount || 1} cuts · {family.designCount || 1} templates</small><span><b>{listing && price > 0 ? `From $${price.toFixed(0)}` : '3D PREVIEW'}</b><em>Open editor</em><ArrowRight size={15}/></span></span></button> })}</div>
         {!filteredFamilies.length && <div className="custom-flow-empty"><Sparkles size={21}/><strong>Garment library is loading.</strong><span>Open the C3 designer to start with the default production-ready cut.</span><button type="button" className="button button--dark" onClick={() => openDefaultDesigner('custom_hub_empty')}>OPEN C3 DESIGNER <ArrowRight size={15}/></button></div>}
       </section>}
 
-      <section className="custom-template-rail" aria-labelledby="custom-template-title">
-        <div className="custom-section-head"><div><p className="custom-flow-eyebrow">2 / CHOOSE A STARTING IDEA</p><h2 id="custom-template-title">Templates for<br /><em>your first draft.</em></h2></div><p>Every template is a starting point. Change the colors, pattern, text and logo in the live 3D workspace.</p></div>
-        <div className="custom-template-track">{templates.map(template => <button type="button" key={template.slug} onClick={() => openTemplate(template.slug)}><span className="custom-template-track__media"><img src={template.preview} alt={`${template.label} 3D jersey template`} width="720" height="960" loading="lazy" decoding="async" onError={event => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add('is-missing') }} /><span className="custom-template-track__placeholder" aria-hidden="true">Preview unavailable</span></span><strong>{template.label}</strong><small>OPEN IN 3D <ArrowRight size={13}/></small></button>)}</div>
-      </section>
-
       <section className="custom-process" aria-labelledby="custom-process-title">
-        <div className="custom-section-head"><div><p className="custom-flow-eyebrow">3 / MAKE THE PIECE YOURS</p><h2 id="custom-process-title">From blank canvas<br /><em>to team identity.</em></h2></div><p>Names, numbers, colors and customer-supplied logos stay bounded to the approved garment zones. The studio checks the hand-off before production.</p></div>
+        <div className="custom-section-head"><div><p className="custom-flow-eyebrow">2 / MAKE THE PIECE YOURS</p><h2 id="custom-process-title">From blank canvas<br /><em>to team identity.</em></h2></div><p>Names, numbers, colors and customer-supplied logos stay bounded to the approved garment zones. The studio checks the hand-off before production.</p></div>
         <div className="custom-process__grid"><article><span>01</span><Palette size={22}/><h3>Shape the color story</h3><p>Set the main, secondary and trim colors while the model updates in real time.</p></article><article><span>02</span><Type size={22}/><h3>Add the identity</h3><p>Place team text, player names and numbers with the exact preview font and side.</p></article><article><span>03</span><ShieldCheck size={22}/><h3>Review the hand-off</h3><p>Save the draft, organize sizes and send one production-ready request to the studio.</p></article></div>
       </section>
 
-      {liveCustomProducts.length > 0 && <section className="custom-live-listings" aria-labelledby="custom-live-title"><div className="custom-section-head"><div><p className="custom-flow-eyebrow">PUBLISHED PIECES</p><h2 id="custom-live-title">Personalize a<br /><em>live jersey.</em></h2></div><a href="/category/custom-jerseys" onClick={event => { event.preventDefault(); go('/category/custom-jerseys') }}>VIEW ALL <ArrowRight size={15}/></a></div><div className="custom-hub__product-grid">{liveCustomProducts.map(product => <ProductCard key={product.id} product={product} onQuickView={onQuickView} className="custom-hub__product-card" />)}</div></section>}
       {show('custom-trust') && <section className="custom-flow-trust"><div><Check size={18}/><span><strong>Artwork review</strong><small>Spelling, placement and logo quality checked before print.</small></span></div><div><UsersRound size={18}/><span><strong>One organized roster</strong><small>Keep names, numbers and sizes together in one design.</small></span></div><div><Truck size={18}/><span><strong>Tracked hand-off</strong><small>Delivery and order status stay visible after checkout.</small></span></div></section>}
       <section className="custom-flow-final"><p className="custom-flow-eyebrow">{commerceReady ? 'READY WHEN YOU ARE' : 'PREVIEW THE STUDIO'}</p><h2>Make the piece<br /><em>only your team could wear.</em></h2><button type="button" className="button button--acid" onClick={() => featuredFamily ? openFamily(featuredFamily) : openDefaultDesigner('custom_hub_final')}>{commerceReady ? 'OPEN THE 3D DESIGNER' : 'OPEN THE 3D PREVIEW'} <ArrowRight size={16}/></button></section>
     </main>
@@ -2870,6 +2866,12 @@ function App() {
   }, [catalogMeta.total,routeCollection?.publishedCount,routeCollection?.count,routeCategory?.handle,routeLeague?.key,routeTeam?.slug,routeProductType?.handle,navigationProducts,path])
   useRouteMetadata({ path, page:catalogPage, paginated, search, product:routeProduct, collection:routeCollection, category:routeCategory, league:routeLeague, team:routeTeam, productType:routeProductType, hasTeamProductTypeSegment, products, catalogTotal:metadataCatalogTotal, collectionCount:collections.length, loading:catalogState.loading, unavailable:catalogState.source === 'unavailable', theme })
   useEffect(() => {
+    if (!productSlug || !routeProduct || !isCustom3DOnlyProduct(routeProduct)) return
+    const target = listingDesignerTarget(routeProduct) || '/custom'
+    window.history.replaceState({}, '', target)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }, [productSlug,routeProduct?.id])
+  useEffect(() => {
     // Vercel performs the same redirect before serving production HTML. Keep
     // client-side navigation and local development on the identical URL shape.
     const decision = routeIndexability({ pathname:rawPath, search })
@@ -2895,7 +2897,7 @@ function App() {
     let active = true
     setNavigationLoading(true)
     fetchStorefrontNavigationIndex().then(rows => {
-      if (active && Array.isArray(rows)) setNavigationProducts(rows)
+      if (active && Array.isArray(rows)) setNavigationProducts(rows.filter(row => !isCustom3DOnlyProduct(row)))
     }).catch(()=>{}).finally(() => { if (active) setNavigationLoading(false) })
     return () => { active = false }
   }, [])
@@ -2925,7 +2927,6 @@ function App() {
     let active=true
     setCatalogState(current => ({...current,loading:true}))
     let catalogRows = []
-    let featuredRows = []
     let catalogLive = false
     let chromeResults = null
     const applyChrome = () => {
@@ -2943,7 +2944,7 @@ function App() {
       ? Promise.resolve({ data:[], source:'navigation', error:null, total:null })
       : productSlug
       ? fetchStorefrontProduct(productSlug)
-      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:SHOP_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:homeRoute ? 12 : SHOP_PAGE_SIZE, basePath:customRoute ? '/category/custom-jerseys' : path, search, includeCount:!homeRoute })
+      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:SHOP_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:homeRoute ? 12 : SHOP_PAGE_SIZE, basePath:customRoute ? '/custom' : path, search, includeCount:!homeRoute })
     Promise.all([
       fetchStorefrontMenus(adminMenus),
       fetchStorefrontCollections([],collectionHandle || ''),
@@ -2954,7 +2955,20 @@ function App() {
       const catalogUsable = catalogResult.source === 'supabase' || catalogResult.source === 'cache'
       catalogLive = catalogUsable
       catalogRows = [...(catalogResult.data || [])]
-      if (catalogLive) for (const row of featuredRows) if (!catalogRows.some(item => item.id === row.id)) catalogRows.push(row)
+      // A legacy/direct PDP URL can resolve a designer source row before the
+      // route-level visibility guard runs. Move it into the Custom Lab first;
+      // otherwise filtering the row below would briefly render a false 404.
+      const directDesignerProduct = productSlug ? catalogRows.find(row => isCustom3DOnlyProduct(row)) : null
+      if (directDesignerProduct) {
+        const target = listingDesignerTarget(directDesignerProduct) || '/custom'
+        window.history.replaceState({}, '', target)
+        setRoute(target)
+        return
+      }
+      // Keep synchronized 3D garments inside the Custom Lab. This client-side
+      // guard also protects visitors with a stale session cache while the
+      // server query and navigation index roll forward together.
+      if (!customRoute) catalogRows = catalogRows.filter(row => !isCustom3DOnlyProduct(row))
       if (catalogLive) {
         setProducts(catalogRows)
         if (catalogResult.collection) {
@@ -2981,18 +2995,6 @@ function App() {
       setCatalogMeta({ total:null, page:catalogPage, pageSize:SHOP_PAGE_SIZE, server:false })
       setCatalogState({loading:false,source:'unavailable',error:error instanceof Error ? error.message : 'Catalogue unavailable.',scope:'none',routeKey:catalogRequestKey})
     })
-    if (homeRoute && featuredCustomProduct?.handle) {
-      fetchStorefrontProduct(featuredCustomProduct.handle,{ includeRelated:false }).then(result => {
-        if (!active || result.source !== 'supabase' || !result.data?.length) return
-        featuredRows = result.data.slice(0,1)
-        if (!catalogLive) return
-        const extra = featuredRows.filter(row => !catalogRows.some(item => item.id === row.id))
-        if (!extra.length) return
-        catalogRows = [...catalogRows,...extra]
-        setProducts(current => [...current,...extra.filter(row => !current.some(item => item.id === row.id))])
-        applyChrome()
-      }).catch(() => {})
-    }
     return () => { active=false }
   }, [path.startsWith('/admin'),productSlug,path,catalogPage,search,catalogRefresh])
   useEffect(() => {
@@ -3241,7 +3243,7 @@ function App() {
   else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
   else if (path === '/about') page = <AboutPage/>
   else if (['/privacy','/terms','/accessibility','/shipping','/returns','/warranty','/journal'].includes(path)) page=<Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the trust desk…</p></div>}><PolicyPage type={path.slice(1)} components={{ Breadcrumbs, StorefrontTrust }}/></Suspense>
-  else if (path.startsWith('/product/')) page = routeProduct ? <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening product details…</p></div>}><ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account} pageConfig={pageConfig('product')} components={{ Breadcrumbs, ProductRail, Rating, SizeFinder }}/></Suspense> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
+  else if (path.startsWith('/product/')) page = routeProduct ? isCustom3DOnlyProduct(routeProduct) ? <div className="route-loading"><span>90+</span><p>Opening the 3D custom studio…</p></div> : <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening product details…</p></div>}><ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account} pageConfig={pageConfig('product')} components={{ Breadcrumbs, ProductRail, Rating, SizeFinder }}/></Suspense> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>
   else page = <NotFound/>
   return (
     <>

@@ -270,8 +270,8 @@ export function discoveryMenu(index, collections = [], products = []) {
       { label:'Popular teams', links:popularTeams.map(team => ({ label:team.name, href:team.href, image:team.media?.fallback ? '' : team.media?.src || '', monogram:team.media?.fallback ? team.name.split(/\s+/).map(word => word[0]).join('').slice(0,3) : '', detail:team.leagueName })) },
       { label:'Browse by league', links:leagues.map(league => ({ label:`${league.name} teams`, href:leaguePath(league), image:league.media?.src || '' })) }
     ] },
-    { id:'custom', label:'Custom', href:'/category/custom-jerseys', sections:[
-      { label:'Create yours', links:[{ label:'Custom jerseys', href:'/custom' },{ label:'3D custom kits', href:'/category/custom-jerseys' }] },
+    { id:'custom', label:'Custom', href:'/custom', sections:[
+      { label:'Create yours', links:[{ label:'Custom jerseys', href:'/custom' },{ label:'3D custom kits', href:'/custom/design' }] },
       { label:'By sport', links:leagues.slice(0,6).map(league => ({ label:league.name, href:`${leaguePath(league)}?custom=1` })) }
     ] },
     { id:'collections', label:'Collections', href:'/collections', sections:[
@@ -280,7 +280,7 @@ export function discoveryMenu(index, collections = [], products = []) {
     ] },
     { id:'new', label:'New & trending', href:'/shop?sort=NEWEST', sections:[
       { label:'Fresh finds', links:[{ label:'New arrivals', href:'/shop?sort=NEWEST' },{ label:'Fan favorites', href:'/shop' }] },
-      { label:'Shop by interest', links:[{ label:'3D custom kits', href:'/category/custom-jerseys' },{ label:'Headwear', href:'/category/hats' },{ label:'Collectibles', href:'/category/collectibles' }] }
+      { label:'Shop by interest', links:[{ label:'3D custom kits', href:'/custom' },{ label:'Headwear', href:'/category/hats' },{ label:'Collectibles', href:'/category/collectibles' }] }
     ] }
   ]
 }

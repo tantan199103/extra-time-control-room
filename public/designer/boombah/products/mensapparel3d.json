@@ -10,7 +10,7 @@
       "https://res.cloudinary.com/boombld/image/upload",
       "https://media.boombah.com/image/upload/t_builderThumb"
     ],
-    "syncedAt": "2026-09-28T13:01:37.069Z"
+    "syncedAt": "2026-09-30T14:41:02.789Z"
   },
   "storage": {
     "bucket": "product-media",
@@ -64492,9 +64492,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/top/fd-sp-tqcomp-1000-980e3ac16c2a.svg",
-        "path": "designer/boombah/templates/mensapparel3d/top/fd-sp-tqcomp-1000-980e3ac16c2a.svg",
-        "sha256": "980e3ac16c2a6b084468745f42527af1a01df7335d5630f30c8e0d3c87bdedab",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/top/fd-sp-tqcomp-1000-6b412cefde34.svg",
+        "path": "designer/boombah/templates/mensapparel3d/top/fd-sp-tqcomp-1000-6b412cefde34.svg",
+        "sha256": "6b412cefde344af87f90b3424121ba66614a9f2a06fa8b24c48911fe8e1a14c3",
         "bytes": 77330
       },
       "preview": {
@@ -65455,9 +65455,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1000a-2a0c793216b8.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1000a-2a0c793216b8.svg",
-        "sha256": "2a0c793216b80c11186ffc9251ed17bb97e1fff6a8378c343329dc2a2725021a",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1000a-7afbc87fb52d.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1000a-7afbc87fb52d.svg",
+        "sha256": "7afbc87fb52d9ad600bfcf04fbc8e1f46d7b46346729cef88da06eb12d9824f1",
         "bytes": 97950
       },
       "preview": {
@@ -65602,9 +65602,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1001a-696d06ea75e6.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1001a-696d06ea75e6.svg",
-        "sha256": "696d06ea75e660085d1c5193d0fa3c79c99bd0b6bc560c408da35028132fd887",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1001a-eeaae5464d72.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1001a-eeaae5464d72.svg",
+        "sha256": "eeaae5464d72842dfecb5a2281904d6df001604473653ab86791260ed1a88197",
         "bytes": 114586
       },
       "preview": {
@@ -65760,9 +65760,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1002a-08144065256a.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1002a-08144065256a.svg",
-        "sha256": "08144065256a1478276a1794368d965c74f1385423163e79f65a4ec8d385ade5",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1002a-ca5a407f7469.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1002a-ca5a407f7469.svg",
+        "sha256": "ca5a407f7469865d6abda8bba471c4408d213ddf664f2a0a5dce3d3adba66b68",
         "bytes": 110814
       },
       "preview": {
@@ -65918,9 +65918,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1003a-2659c9d0821a.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1003a-2659c9d0821a.svg",
-        "sha256": "2659c9d0821a91b4ad5ccf8f584f95bfb8f0ebd2239f153894772ec33a9697b7",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1003a-9db88752a977.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1003a-9db88752a977.svg",
+        "sha256": "9db88752a97774b0843faee2df109d31edcc4ce902bd275734175bc5aa0dad88",
         "bytes": 112790
       },
       "preview": {
@@ -66065,9 +66065,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1004a-c31ad45723d0.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1004a-c31ad45723d0.svg",
-        "sha256": "c31ad45723d0447dfba2fbc68e6973bbf100d8e9b3624c3b74c68a0488287003",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1004a-05bc02245dc6.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1004a-05bc02245dc6.svg",
+        "sha256": "05bc02245dc6901d79823f306050dadb0be9fb3bc2190f0545ccf5e7533e322a",
         "bytes": 136894
       },
       "preview": {
@@ -66212,9 +66212,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1005a-73715907b21a.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1005a-73715907b21a.svg",
-        "sha256": "73715907b21a7c6abdb419b1da8eeb6ddd44279c0ebaf10a13d9b9326a842a6f",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1005a-3005e240ecfc.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1005a-3005e240ecfc.svg",
+        "sha256": "3005e240ecfc6514419d98805ecdbf491c5d7487ffecdea565364c6fa47def0b",
         "bytes": 100736
       },
       "preview": {
@@ -66348,9 +66348,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1006a-63e77d7f0984.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1006a-63e77d7f0984.svg",
-        "sha256": "63e77d7f0984fdd21d9d825a754eff77ecbf1aad5acb999e30d878190f87b039",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1006a-c511f429af55.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1006a-c511f429af55.svg",
+        "sha256": "c511f429af558638707fd8a50705bf4ce28542ecb79b8ee6b9f42eafe842f3a7",
         "bytes": 110254
       },
       "preview": {
@@ -66506,9 +66506,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1007a-8ad253693831.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1007a-8ad253693831.svg",
-        "sha256": "8ad253693831f135dcc3326c54ad265202cbefcf8c9e2e63b9280c01ff929cdb",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1007a-46c7259d6303.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1007a-46c7259d6303.svg",
+        "sha256": "46c7259d63032850fbdbdce72c6f2f584c31a52421d13ab1e1f4fe8d588b7ebf",
         "bytes": 676008
       },
       "preview": {
@@ -66653,9 +66653,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1008a-3e2afb29fb11.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1008a-3e2afb29fb11.svg",
-        "sha256": "3e2afb29fb11fe806a58634e3d06a05b841ca609e345011daa611ce0a7a7a631",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1008a-04d457a86db3.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1008a-04d457a86db3.svg",
+        "sha256": "04d457a86db3a88cf075283ab3e4d4fa3222dc7982585d6d70a564f8fcadb022",
         "bytes": 113470
       },
       "preview": {
@@ -66800,9 +66800,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1009a-1486952307ef.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1009a-1486952307ef.svg",
-        "sha256": "1486952307ef915e4c41e6cad89625081170e4be001ed0e5455ddfbf92f3ac1c",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1009a-0c744434e4ee.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1009a-0c744434e4ee.svg",
+        "sha256": "0c744434e4ee947381791bfeb290b212a19694f65b39c7d0abe5f6704a851d5f",
         "bytes": 113230
       },
       "preview": {
@@ -66958,9 +66958,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1010a-067bdc2a341a.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1010a-067bdc2a341a.svg",
-        "sha256": "067bdc2a341a5fdc95b202363c49fe01da333ec22fe56f3472dd9938f39a876e",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1010a-52d21ad4b423.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1010a-52d21ad4b423.svg",
+        "sha256": "52d21ad4b423257bb06d266e63df7c282d94f073803f58b51e9af57b1acf322e",
         "bytes": 115644
       },
       "preview": {
@@ -67105,9 +67105,9 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1011a-4325795e3d98.svg",
-        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1011a-4325795e3d98.svg",
-        "sha256": "4325795e3d9843ef44e630ecbfaf1d3caa4fac18e8b01e8105add8c1aa8878a2",
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1011a-03fa2e6c483e.svg",
+        "path": "designer/boombah/templates/mensapparel3d/bottom/fd-sp-bksh-1011a-03fa2e6c483e.svg",
+        "sha256": "03fa2e6c483e2c5650e21e94e1c67daf80e0c35cded93eef7299ff2d9217495b",
         "bytes": 115958
       },
       "preview": {

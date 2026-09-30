@@ -75,7 +75,9 @@ test('pattern UI and order handoff are wired to the local catalogue', async () =
   assert.match(source, /manifest\.patterns/)
   assert.match(source, /loadOwayoPatternTexture/)
   assert.match(source, /pattern:\s*state\.pattern\?\.slug/)
-  assert.match(source, /Switch to Sportswear patterns/)
+  assert.match(source, /Choose an artwork pattern/)
+  assert.match(source, /manifest\.designs \|\| \[\]\)\.filter\(item => item\.styleCode === state\.styleCode\)/)
+  assert.doesNotMatch(source, /Switch to Sportswear patterns/)
 })
 
 test('synchronized mask textures do not render Owayo vendor marks', async () => {
@@ -230,6 +232,23 @@ test('3D stage composites independent Owayo layers into garment UV shaders', asy
   assert.match(source, /buildOwayoLayerTextures\(text, normalizedLayers\)/)
   assert.match(source, /applyOwayoLayers\(runtime, textures\)/)
   assert.match(source, /layerTextures:new Map\(\)/)
+  assert.match(source, /performance-mesh read/)
+  assert.match(source, /breathableSheen/)
+})
+
+test('mobile designer keeps its 3D stage and base-design previews inside the viewport', async () => {
+  const source = await readFile(resolve(root, 'src/custom-designer.css'), 'utf8')
+  assert.match(source, /\.custom-designer\s*\{[\s\S]*?overflow-x:\s*clip/)
+  assert.match(source, /\.designer-controls\s*\{[^}]*max-width:\s*100%[^}]*overflow:\s*hidden/)
+  assert.match(source, /\.designer-design-grid__art\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/)
+  assert.match(source, /\.designer-design-grid__art img\s*\{[^}]*object-fit:\s*contain/)
+  assert.doesNotMatch(source, /\.designer-design-grid__art img\s*\{[^}]*transform:\s*scale/)
+})
+
+test('designer catalogue indexes revalidate while large versioned assets remain cacheable', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /\/\\\/catalog\\\.json/)
+  assert.match(source, /\? 'no-cache' : 'force-cache'/)
 })
 
 test('Owayo logos and text layers bind to independent garment areas', async () => {
@@ -273,16 +292,37 @@ test('placement editor exposes a drag pad for every selected text and logo layer
   assert.match(source, /<PlacementPad value=\{activeLayer\} onChange=\{patch => setLayer\(activeLayer\.id, patch\)\}/)
 })
 
-test('custom hub template rail uses complete 3D garment captures', async () => {
+test('custom hub uses one garment catalogue and one editor route without a duplicate template rail', async () => {
   const source = await readFile(resolve(root, 'src/main.jsx'), 'utf8')
-  for (const slug of ['etape', 'velocity', 'attack', 'aero', 'fire']) {
-    const file = resolve(publicRoot, `designer/owayo/cycling-c3/previews/garment-${slug}.webp`)
-    const metadata = await sharp(file).metadata()
-    assert.equal(metadata.width, 720, `${slug} preview width`)
-    assert.equal(metadata.height, 960, `${slug} preview height`)
-    assert.match(source, new RegExp(`garment-${slug}\\.webp`))
-  }
-  assert.match(source, /custom-template-track__placeholder/)
+  assert.match(source, /normalizeCustomHubCatalogs\(owayoCatalog, teamwearCatalog\)/)
+  assert.match(source, /go\(customDesignerRoute\(family\)\)/)
+  assert.match(source, /readCatalog\('\/designer\/owayo\/catalog\.json'\)/)
+  assert.match(source, /readCatalog\('\/designer\/boombah\/catalog\.json'\)/)
+  assert.doesNotMatch(source, /custom-template-track__placeholder/)
+  assert.doesNotMatch(source, /PUBLISHED PIECES/)
+})
+
+test('designer checkout resolves only the exact provider and garment listing', async () => {
+  const [designer, api, supabase] = await Promise.all([
+    readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8'),
+    readFile(resolve(root, 'src/lib/storefront-api.js'), 'utf8'),
+    readFile(resolve(root, 'src/lib/supabase.js'), 'utf8')
+  ])
+  assert.match(designer, /fetchStorefrontDesignerProduct\(provider, productId\)/)
+  assert.match(designer, /return exact \? listingProduct : null/)
+  assert.doesNotMatch(designer, /return exact \|\| candidates/)
+  assert.match(api, /fetchStorefrontDesignerProduct = forward\('fetchStorefrontDesignerProduct'\)/)
+  assert.match(supabase, /contains\('tags',\[productTag\]\)/)
+  assert.doesNotMatch(supabase, /contains\('tags',\['3d-designer',productTag\]\)/)
+})
+
+test('legacy 3D listing URLs redirect into the Custom Lab before storefront filtering can render a false 404', async () => {
+  const source = await readFile(resolve(root, 'src/main.jsx'), 'utf8')
+  const redirect = source.indexOf('const directDesignerProduct = productSlug ? catalogRows.find(row => isCustom3DOnlyProduct(row)) : null')
+  const filter = source.indexOf('if (!customRoute) catalogRows = catalogRows.filter(row => !isCustom3DOnlyProduct(row))')
+  assert.ok(redirect > -1)
+  assert.ok(filter > redirect)
+  assert.match(source, /listingDesignerTarget\(directDesignerProduct\) \|\| '\/custom'/)
 })
 
 test('custom hub stays in a transparent preview and waitlist state until live commerce is verified', async () => {

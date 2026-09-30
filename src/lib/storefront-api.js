@@ -12,6 +12,7 @@ const loadSupabaseModule = () => {
 const forward = name => (...args) => loadSupabaseModule().then(module => module[name](...args))
 
 export const fetchStorefrontProduct = forward('fetchStorefrontProduct')
+export const fetchStorefrontDesignerProduct = forward('fetchStorefrontDesignerProduct')
 export const fetchStorefrontCatalogPage = forward('fetchStorefrontCatalogPage')
 export const fetchStorefrontCollectionPage = forward('fetchStorefrontCollectionPage')
 export const fetchStorefrontSearch = forward('fetchStorefrontSearch')

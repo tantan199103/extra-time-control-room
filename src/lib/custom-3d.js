@@ -93,6 +93,17 @@ export function hasCustom3DDesigner(product = {}) {
   return Boolean(custom3DDesignerConfig(product))
 }
 
+/**
+ * 3D designer listings are production inputs for the Custom Lab rather than
+ * ordinary ready-to-buy catalogue rows.  Keep this predicate at the public
+ * model boundary so Shop, search, taxonomy hubs and collections can all make
+ * the same visibility decision without guessing from a title or product
+ * group.
+ */
+export function isCustom3DOnlyProduct(product = {}) {
+  return hasCustom3DDesigner(product)
+}
+
 export function custom3DManifestIsSafe(provider, manifest) {
   return providerManifestIsSafe(provider, manifest)
 }

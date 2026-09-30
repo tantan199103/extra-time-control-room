@@ -47,6 +47,11 @@ test('plural collection aliases redirect to the singular canonical route', () =>
   assert.equal(page.redirectPath, '/collection/ncaa/page/2')
 })
 
+test('retired custom-jersey catalogue aliases consolidate into the Custom Lab', () => {
+  assert.equal(routeIndexability({ pathname:'/category/custom-jerseys' }).redirectPath, '/custom')
+  assert.equal(routeIndexability({ pathname:'/category/custom-jerseys/page/2' }).redirectPath, '/custom')
+})
+
 test('team product-type landings share the catalog pagination and robots contract', () => {
   const route = routeIndexability({ pathname: '/team/nfl/dallas-cowboys/jerseys' })
   assert.equal(route.catalogRoute, true)

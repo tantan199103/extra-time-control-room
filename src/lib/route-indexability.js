@@ -69,6 +69,10 @@ export function routeIndexability({ pathname = '/', search = '' } = {}) {
   // Older menu records used the plural alias. Keep one canonical storefront
   // URL so direct links and crawlers land on the same collection page.
   if (/^\/collections\//.test(path)) redirectPath = canonicalPath
+  // 3D garment source listings live only in the Custom Lab. Consolidate the
+  // retired catalogue alias so customers and crawlers never land on an empty
+  // public product grid.
+  if (path === '/category/custom-jerseys' || path.startsWith('/category/custom-jerseys/')) redirectPath = '/custom'
 
   if (catalog && query.has('page')) {
     const rawPage = String(query.get('page') || '')
