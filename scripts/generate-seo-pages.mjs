@@ -208,9 +208,20 @@ function pageHtml(shell, { path, title, description, image, noindex = false, noi
   return html
 }
 
+// Product pages share a small set of parent directories (for example every
+// PDP lives under `dist/product`).  Calling mkdir recursively for every one
+// of the 30k rows makes Vercel spend most of the build in filesystem metadata
+// work. Cache the in-flight promise per directory so concurrent page batches
+// only perform one mkdir operation per unique parent.
+const preparedDirectories = new Map()
+async function ensurePageDirectory(directory) {
+  if (!preparedDirectories.has(directory)) preparedDirectories.set(directory, mkdir(directory, { recursive:true }))
+  await preparedDirectories.get(directory)
+}
+
 async function writePage(path, html) {
   const target = join(DIST, path === '/' ? 'index.html' : path.replace(/^\//, '').replace(/\/$/, ''), 'index.html')
-  await mkdir(dirname(target), { recursive:true })
+  await ensurePageDirectory(dirname(target))
   await writeFile(target, html)
   if (/<meta name="robots" content="noindex/i.test(html)) return null
   const entry = { path }
@@ -359,7 +370,7 @@ await writePagesInBatches(products, async product => {
     entry.lastmod = product.updatedAt
     entry.images = product.images
   }
-}, 32, 'indexable PDPs')
+}, 128, 'indexable PDPs')
 
 await writePagesInBatches(blockedProducts, async product => {
   const path = `/product/${slug(product.handle)}`
@@ -372,7 +383,7 @@ await writePagesInBatches(blockedProducts, async product => {
     fallback:renderProductContent(product),
     bootstrap:productBootstrap(product)
   }))
-}, 32, 'noindex PDPs')
+}, 128, 'noindex PDPs')
 
 const itemList = products.slice(0,CATALOG_PAGE_SIZE).map((product, index) => ({ '@type':'ListItem', position:index + 1, url:`${PUBLIC_ORIGIN}/product/${slug(product.handle)}`, name:product.title, image:product.image }))
 await writePage('/shop', pageHtml(shell, {
