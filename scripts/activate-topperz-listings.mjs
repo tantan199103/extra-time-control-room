@@ -27,7 +27,7 @@ const supabaseUrl = String(process.env.SUPABASE_URL || '').trim()
 const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
 const reportPath = resolve(process.env.TOPPERZ_ACTIVATION_REPORT || 'artifacts/topperz-activation-report.json')
 const timeoutMs = Math.max(10_000, Number(process.env.TOPPERZ_SUPABASE_TIMEOUT_MS || 60_000))
-const updateBatchSize = Math.min(100, Math.max(10, Number(process.env.TOPPERZ_ACTIVATION_BATCH_SIZE || 75)))
+const updateBatchSize = Math.min(100, Math.max(10, Number(process.env.TOPPERZ_ACTIVATION_BATCH_SIZE || 25)))
 
 if (!supabaseUrl || !serviceRoleKey) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.')
 if (new URL(supabaseUrl).hostname !== ACTIVE_PROJECT) throw new Error('Activation is restricted to the active Jersevo Supabase project.')
@@ -66,7 +66,7 @@ async function retry(label, operation, attempts = 4) {
   throw new Error(`${label}: ${lastError instanceof Error ? lastError.message : String(lastError)}`)
 }
 
-async function sourceProductIds(pageSize = 1_000) {
+async function sourceProductIds(pageSize = 250) {
   const rows = []
   let cursor = ''
   for (;;) {
@@ -183,15 +183,15 @@ if (WRITE) {
   for (let offset = 0; offset < draftIds.length; offset += updateBatchSize) {
     const ids = draftIds.slice(offset, offset + updateBatchSize)
     try {
-      const result = await retry(`publish products ${offset}`, () => client.from('pod_products').update({
+      await retry(`publish products ${offset}`, () => client.from('pod_products').update({
         status: 'PUBLISHED',
         seo_status: 'INDEXABLE',
         seo_quality_score: 100,
         seo_block_reasons: [],
         seo_reviewed_at: now,
         seo_published_at: now
-      }).in('id', ids).eq('status', 'DRAFT').select('id'))
-      report.activatedProducts += result.data?.length || 0
+      }).in('id', ids).eq('status', 'DRAFT'))
+      report.activatedProducts += ids.length
     } catch (error) {
       report.writeFailures.push({ kind: 'PRODUCTS', ids, error: error instanceof Error ? error.message : String(error) })
     }
