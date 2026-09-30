@@ -29,7 +29,17 @@ export const OWAYO_CATALOG_GROUPS = Object.freeze([
   { id:'soccer', label:'Soccer' },
   { id:'running', label:'Running' },
   { id:'mtb', label:'MTB' },
-  { id:'tshirts', label:'T-Shirts' }
+  { id:'tshirts', label:'T-Shirts' },
+  { id:'bowling', label:'Bowling' },
+  { id:'darts', label:'Darts' },
+  { id:'esports', label:'eSports' },
+  { id:'fieldhockey', label:'Field Hockey' },
+  { id:'handball', label:'Handball' },
+  { id:'rowing', label:'Rowing' },
+  { id:'volleyball', label:'Volleyball' },
+  { id:'floorball', label:'Floorball' },
+  { id:'tabletennis', label:'Table Tennis' },
+  { id:'yoga', label:'Yoga' }
 ])
 
 /**
@@ -66,7 +76,58 @@ export const OWAYO_CATALOG_V1 = [
   family({ id:'soccer-f5', group:'soccer', groupLabel:'Soccer', sport:'football', sportLabel:'Soccer', key:'shirts', seedDesign:'City', title:'Custom Soccer Jersey F5 Pro', sourceName:'Soccer Jersey F5 Pro', priceUsd:79, audience:'men', sleeve:'short', fit:'anatomic', sourceUrl:'https://www.owayo.com/design-custom-soccer-jerseys.htm' }),
   family({ id:'soccer-f6', group:'soccer', groupLabel:'Soccer', sport:'football', sportLabel:'Soccer', key:'shirts_f6', seedDesign:'City', title:'Custom Soccer Jersey F6 Hero', sourceName:'Soccer Jersey F6 Hero', priceUsd:85, audience:'men', sleeve:'short', fit:'athletic tailored', sourceUrl:'https://www.owayo.com/soccer-shirts_f6-us.htm' }),
   family({ id:'running-r5', group:'running', groupLabel:'Running', sport:'running', sportLabel:'Running', key:'custom-short-sleeve-shirts', seedDesign:'Final', title:'Custom Running Jersey R5 Pro Cool', sourceName:'Running Jersey R5 Pro Cool', priceUsd:79, audience:'men', sleeve:'short', fit:'slim', sourceUrl:'https://www.owayo.com/running-custom-short-sleeve-shirts-us.htm' }),
-  family({ id:'tshirts-basic', group:'tshirts', groupLabel:'T-Shirts', sport:'productservice', sportLabel:'T-Shirts', key:'tshirts_classic_basic_productservice', seedDesign:'pure', title:'Custom T-Shirt Basic', sourceName:'T-Shirt Classic Basic', priceUsd:18, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/productservice-tshirts_classic_basic_productservice-us.htm' })
+  family({ id:'tshirts-basic', group:'tshirts', groupLabel:'T-Shirts', sport:'productservice', sportLabel:'T-Shirts', key:'tshirts_classic_basic_productservice', seedDesign:'pure', title:'Custom T-Shirt Basic', sourceName:'T-Shirt Classic Basic', priceUsd:18, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/productservice-tshirts_classic_basic_productservice-us.htm' }),
+
+  // Additional Owayo catalogue families. These rows intentionally describe
+  // exact configurator products rather than treating a sport landing page as
+  // a generic jersey. The asset sync resolves each row to its own model,
+  // masks, size map and design archive before it becomes selectable.
+  family({ id:'basketball-b1', group:'basketball', groupLabel:'Basketball', sport:'basketball', sportLabel:'Basketball', key:'shirts_b1', seedDesign:'Legend', title:'Custom Basketball Jersey B1 Basic', sourceName:'Basketball Jersey B1 Basic', priceUsd:69, audience:'unisex', sleeve:'sleeveless', fit:'regular', sourceUrl:'https://www.owayo.com/basketball-shirts_b1-us.htm' }),
+  family({ id:'basketball-b7w', group:'basketball', groupLabel:'Basketball', sport:'basketball', sportLabel:'Basketball', key:'shirts_b7w', seedDesign:'Legend', title:'Custom Basketball Jersey B7w Epic', sourceName:'Basketball Jersey B7w Epic Women', priceUsd:83, audience:'women', sleeve:'sleeveless', fit:'athletic', sourceUrl:'https://www.owayo.com/basketball-shirts_b7w-us.htm' }),
+  family({ id:'basketball-br1', group:'basketball', groupLabel:'Basketball', sport:'basketball', sportLabel:'Basketball', key:'shirts_br1', seedDesign:'Legend', title:'Custom Reversible Basketball Jersey BR1', sourceName:'Reversible Basketball Jersey BR1', priceUsd:89, audience:'unisex', sleeve:'sleeveless reversible', fit:'regular', sourceUrl:'https://www.owayo.com/basketball-shirts_br1-us.htm' }),
+  family({ id:'basketball-br6', group:'basketball', groupLabel:'Basketball', sport:'basketball', sportLabel:'Basketball', key:'shirts_br6', seedDesign:'Legend', title:'Custom Reversible Basketball Jersey BR6', sourceName:'Reversible Basketball Jersey BR6 Hero', priceUsd:99, audience:'unisex', sleeve:'sleeveless reversible', fit:'professional', sourceUrl:'https://www.owayo.com/basketball-shirts_br6-us.htm' }),
+  family({ id:'basketball-shooting-f1', group:'basketball', groupLabel:'Basketball', sport:'basketball', sportLabel:'Basketball', key:'shooting_shirts_f1', seedDesign:'Throw', title:'Custom Basketball Shooting Shirt F1', sourceName:'Basketball Shooting Shirt F1', priceUsd:72, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/basketball-shooting_shirts_f1-us.htm' }),
+
+  family({ id:'bowling-f5', group:'bowling', groupLabel:'Bowling', sport:'bowling', sportLabel:'Bowling', key:'shirts_f5_bowling', seedDesign:'Dirt', title:'Custom Bowling Shirt F5', sourceName:'Bowling Shirt F5', priceUsd:78, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/bowling-us.htm' }),
+  family({ id:'bowling-basic', group:'bowling', groupLabel:'Bowling', sport:'bowling', sportLabel:'Bowling', key:'shirts_bowling', seedDesign:'Dirt', title:'Custom Bowling Shirt Basic', sourceName:'Bowling Shirt Basic', priceUsd:74, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/bowling-shirts_bowling-us.htm' }),
+  family({ id:'bowling-xp5', group:'bowling', groupLabel:'Bowling', sport:'bowling', sportLabel:'Bowling', key:'shirts_bowling_xp5', seedDesign:'Pure', title:'Custom Bowling Shirt XP5', sourceName:'Bowling Shirt XP5', priceUsd:86, audience:'unisex', sleeve:'short', fit:'athletic', sourceUrl:'https://www.owayo.com/bowling-shirts_bowling_xp5-us.htm' }),
+
+  family({ id:'darts-basic', group:'darts', groupLabel:'Darts', sport:'darts', sportLabel:'Darts', key:'shirts_dart', seedDesign:'Dirt', title:'Custom Darts Shirt Basic', sourceName:'Darts Shirt Basic', priceUsd:74, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/darts-us.htm' }),
+  family({ id:'darts-f5', group:'darts', groupLabel:'Darts', sport:'darts', sportLabel:'Darts', key:'shirts_f5_dart', seedDesign:'Dirt', title:'Custom Darts Shirt F5', sourceName:'Darts Shirt F5', priceUsd:79, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/darts-us.htm' }),
+  family({ id:'darts-xp5', group:'darts', groupLabel:'Darts', sport:'darts', sportLabel:'Darts', key:'shirts_dart_xp5', seedDesign:'Dirt', title:'Custom Darts Shirt XP5', sourceName:'Darts Shirt XP5', priceUsd:86, audience:'unisex', sleeve:'short', fit:'athletic', sourceUrl:'https://www.owayo.com/darts-shirts_dart_xp5-us.htm' }),
+
+  family({ id:'esports-e3', group:'esports', groupLabel:'eSports', sport:'esports', sportLabel:'eSports', key:'shirts_e3', seedDesign:'League', title:'Custom eSports Jersey E3', sourceName:'eSports Jersey E3', priceUsd:69, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/esports-shirts_e3-us.htm' }),
+  family({ id:'esports-e6', group:'esports', groupLabel:'eSports', sport:'esports', sportLabel:'eSports', key:'shirts_e6', seedDesign:'League', title:'Custom eSports Jersey E6', sourceName:'eSports Jersey E6', priceUsd:79, audience:'unisex', sleeve:'short', fit:'athletic', sourceUrl:'https://www.owayo.com/esports-shirts_e6-us.htm' }),
+  family({ id:'esports-f1', group:'esports', groupLabel:'eSports', sport:'esports', sportLabel:'eSports', key:'shirts_f1', seedDesign:'Final', title:'Custom eSports Jersey F1', sourceName:'eSports Jersey F1', priceUsd:72, audience:'kids', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/esports-shirts_f1-us.htm' }),
+  family({ id:'esports-long-el5', group:'esports', groupLabel:'eSports', sport:'esports', sportLabel:'eSports', key:'shirts_long_sleeve_el5', seedDesign:'League', title:'Custom eSports Jersey EL5 Long Sleeve', sourceName:'eSports Jersey EL5 Long Sleeve', priceUsd:84, audience:'unisex', sleeve:'long', fit:'athletic', sourceUrl:'https://www.owayo.com/esports-shirts_long_sleeve_el5-us.htm' }),
+
+  family({ id:'fieldhockey-f3', group:'fieldhockey', groupLabel:'Field Hockey', sport:'fieldhockey', sportLabel:'Field Hockey', key:'shirts_f3', seedDesign:'Final', title:'Custom Field Hockey Jersey F3', sourceName:'Field Hockey Jersey F3', priceUsd:76, audience:'unisex', sleeve:'short', fit:'classic', sourceUrl:'https://www.owayo.com/fieldhockey-shirts_f3-us.htm' }),
+  family({ id:'fieldhockey-d6', group:'fieldhockey', groupLabel:'Field Hockey', sport:'fieldhockey', sportLabel:'Field Hockey', key:'shirts_d6', seedDesign:'Final', title:'Custom Field Hockey Jersey D6', sourceName:'Field Hockey Jersey D6', priceUsd:84, audience:'unisex', sleeve:'short', fit:'athletic', sourceUrl:'https://www.owayo.com/fieldhockey-shirts_d6-us.htm' }),
+  family({ id:'fieldhockey-f1', group:'fieldhockey', groupLabel:'Field Hockey', sport:'fieldhockey', sportLabel:'Field Hockey', key:'shirts_f1', seedDesign:'Pure', title:'Custom Field Hockey Jersey F1 Kids', sourceName:'Field Hockey Jersey F1 Kids', priceUsd:65, audience:'kids', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/fieldhockey-shirts_f1-us.htm' }),
+
+  family({ id:'handball-basic', group:'handball', groupLabel:'Handball', sport:'handball', sportLabel:'Handball', key:'shirts', seedDesign:'Gladiator', title:'Custom Handball Jersey Basic', sourceName:'Handball Jersey Basic', priceUsd:76, audience:'unisex', sleeve:'short', fit:'classic', sourceUrl:'https://www.owayo.com/handball-us.htm' }),
+  family({ id:'handball-d6', group:'handball', groupLabel:'Handball', sport:'handball', sportLabel:'Handball', key:'shirts_d6', seedDesign:'Gladiator', title:'Custom Handball Jersey D6', sourceName:'Handball Jersey D6', priceUsd:84, audience:'unisex', sleeve:'short', fit:'athletic', sourceUrl:'https://www.owayo.com/handball-shirts_d6-us.htm' }),
+  family({ id:'handball-f1', group:'handball', groupLabel:'Handball', sport:'handball', sportLabel:'Handball', key:'shirts_f1', seedDesign:'Gladiator', title:'Custom Handball Jersey F1 Kids', sourceName:'Handball Jersey F1 Kids', priceUsd:65, audience:'kids', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/handball-shirts_f1-us.htm' }),
+  family({ id:'handball-f3', group:'handball', groupLabel:'Handball', sport:'handball', sportLabel:'Handball', key:'shirts_f3', seedDesign:'Gladiator', title:'Custom Handball Jersey F3', sourceName:'Handball Jersey F3', priceUsd:79, audience:'unisex', sleeve:'short', fit:'classic', sourceUrl:'https://www.owayo.com/handball-shirts_f3-us.htm' }),
+  family({ id:'handball-gk-f1', group:'handball', groupLabel:'Handball', sport:'handball', sportLabel:'Handball', key:'shirts_f1_goalkeeper', seedDesign:'Gladiator', title:'Custom Handball Goalkeeper Jersey F1', sourceName:'Handball Goalkeeper Jersey F1', priceUsd:82, audience:'unisex', sleeve:'long', fit:'regular', sourceUrl:'https://www.owayo.com/handball-shirts_f1_goalkeeper-us.htm' }),
+
+  family({ id:'rowing-w6', group:'rowing', groupLabel:'Rowing', sport:'rowing', sportLabel:'Rowing', key:'unisuit_w6', seedDesign:'Limit', title:'Custom Rowing Unisuit W6', sourceName:'Rowing Unisuit W6', priceUsd:119, audience:'unisex', sleeve:'sleeveless', fit:'race', sourceUrl:'https://www.owayo.com/rowing-us.htm' }),
+  family({ id:'rowing-w6-comp', group:'rowing', groupLabel:'Rowing', sport:'rowing', sportLabel:'Rowing', key:'ruderanzug_w6_comp', seedDesign:'Limit', title:'Custom Rowing Unisuit W6 Competition', sourceName:'Rowing Unisuit W6 Competition', priceUsd:129, audience:'unisex', sleeve:'sleeveless', fit:'race', sourceUrl:'https://www.owayo.com/rowing/products/rowing-unisuits-us.htm' }),
+
+  family({ id:'running-long', group:'running', groupLabel:'Running', sport:'running', sportLabel:'Running', key:'custom-long-sleeve-shirts', seedDesign:'Rise', title:'Custom Running Jersey R5 Long Sleeve', sourceName:'Running Long Sleeve Shirt', priceUsd:86, audience:'men', sleeve:'long', fit:'slim', sourceUrl:'https://www.owayo.com/running-custom-long-sleeve-shirts-us.htm' }),
+  family({ id:'running-short-ladies', group:'running', groupLabel:'Running', sport:'running', sportLabel:'Running', key:'custom-short-sleeve-shirts_ladies', seedDesign:'Rise', title:'Custom Running Jersey R5 Women', sourceName:'Running Short Sleeve Shirt Women', priceUsd:79, audience:'women', sleeve:'short', fit:'slim', sourceUrl:'https://www.owayo.com/running-custom-short-sleeve-shirts_ladies-us.htm' }),
+  family({ id:'running-singlets', group:'running', groupLabel:'Running', sport:'running', sportLabel:'Running', key:'singlets', seedDesign:'Rise', title:'Custom Running Singlet', sourceName:'Running Singlet', priceUsd:69, audience:'men', sleeve:'sleeveless', fit:'slim', sourceUrl:'https://www.owayo.com/running-singlets-us.htm' }),
+
+  family({ id:'motocross-m5', group:'motocross', groupLabel:'Motocross', sport:'motocross', sportLabel:'Motocross', key:'jerseys_m5', seedDesign:'Flight', title:'Custom Motocross Jersey M5', sourceName:'Motocross Jersey M5', priceUsd:89, audience:'unisex', sleeve:'long', fit:'extended back', sourceUrl:'https://www.owayo.com/motocross-jerseys_m5-us.htm' }),
+  family({ id:'motocross-ml5', group:'motocross', groupLabel:'Motocross', sport:'motocross', sportLabel:'Motocross', key:'jerseys_ml5', seedDesign:'Flight', title:'Custom Motocross Jersey ML5 Long Sleeve', sourceName:'Motocross Jersey ML5', priceUsd:94, audience:'unisex', sleeve:'long', fit:'extended back', sourceUrl:'https://www.owayo.com/motocross-jerseys_ml5-us.htm' }),
+
+  // These catalogue pages use the shared teamsport configurator but expose
+  // distinct sport-specific design archives, so they remain separate family
+  // cards and can be filtered independently in the designer.
+  family({ id:'volleyball-f3', group:'volleyball', groupLabel:'Volleyball', sport:'teamsport', sportLabel:'Volleyball', key:'shirts_f3', seedDesign:'City', title:'Custom Volleyball Jersey F3', sourceName:'Volleyball Jersey F3', priceUsd:76, audience:'unisex', sleeve:'short', fit:'classic', sourceUrl:'https://www.owayo.com/custom-volleyball-jerseys.htm' }),
+  family({ id:'floorball-f3', group:'floorball', groupLabel:'Floorball', sport:'teamsport', sportLabel:'Floorball', key:'shirts_f3', seedDesign:'City', title:'Custom Floorball Jersey F3', sourceName:'Floorball Jersey F3', priceUsd:76, audience:'unisex', sleeve:'short', fit:'classic', sourceUrl:'https://www.owayo.com/custom-floorball-jerseys.htm' }),
+  family({ id:'tabletennis-f3', group:'tabletennis', groupLabel:'Table Tennis', sport:'teamsport', sportLabel:'Table Tennis', key:'shirts_f3', seedDesign:'City', title:'Custom Table Tennis Jersey F3', sourceName:'Table Tennis Jersey F3', priceUsd:72, audience:'unisex', sleeve:'short', fit:'regular', sourceUrl:'https://www.owayo.com/custom-table-tennis-jerseys.htm' }),
+  family({ id:'yoga-pants-highwaist', group:'yoga', groupLabel:'Yoga', sport:'yoga', sportLabel:'Yoga', key:'yogapants_highwaist_light', seedDesign:'Flight', title:'Custom Yoga High-Waist Pants', sourceName:'Yoga Pants High-Waist Light', priceUsd:64, audience:'women', sleeve:'n/a', fit:'high-waist', sourceUrl:'https://www.owayo.com/custom-yoga-pants.htm' })
 ]
 
 export function owayoCatalogSummary(rows = OWAYO_CATALOG_V1) {
