@@ -250,46 +250,54 @@ async function syncFamily(family, client, sharedPatterns) {
   const modelGzip = await fetchBuffer(`${modelRoot}/${encodeURIComponent(product.model)}.mirl`)
   const modelBinary = modelGzip[0] === 0x1f && modelGzip[1] === 0x8b ? gunzipSync(modelGzip) : modelGzip
   const modelInfo = await makeStorage(client, `designer/owayo/${family.id}/model/${product.model}.mirl.bin`, modelBinary, 'application/octet-stream')
-  const support = {}
-  for (const filename of ['parts.json','sperrbezirke.json','teilungslinien.json']) {
-    const info = await makeStorage(client, `designer/owayo/${family.id}/model/${filename}`, await fetchBuffer(`${modelRoot}/${filename}`), 'application/json')
-    support[filename] = info.url
-  }
-  const designs = []
-  const missingDesigns = []
-  for (const design of product.Designs) {
+  const supportFiles = ['parts.json','sperrbezirke.json','teilungslinien.json']
+  const supportResults = await Promise.all(supportFiles.map(async filename => [
+    filename,
+    await makeStorage(client, `designer/owayo/${family.id}/model/${filename}`, await fetchBuffer(`${modelRoot}/${filename}`), 'application/json')
+  ]))
+  const support = Object.fromEntries(supportResults.map(([filename, info]) => [filename, info.url]))
+  // Design archives are independent. Process a small bounded batch in
+  // parallel so a catalogue with dozens of templates does not spend several
+  // minutes waiting on one download/upload at a time. The limit keeps the
+  // Supabase Storage API below its connection throttle and preserves the
+  // deterministic design order in the manifest below.
+  const syncedDesigns = await mapLimit(product.Designs, 4, async design => {
     const archiveResult = await fetchOptionalBuffer(`${modelRoot}/designs/${encodeURIComponent(design.Design)}.fish`)
     if (archiveResult.missing) {
       // A source catalogue can advertise a design whose archive is not
       // published for a particular cut (C7 currently has one such entry).
       // Keep the family manifest honest and continue syncing the other exact
       // designs instead of aborting the entire family.
-      missingDesigns.push(design.Design)
       process.stdout.write(`${family.id}: skipped unavailable design ${design.Design}\n`)
-      continue
+      return { missing:design.Design }
     }
     const archive = unzipEntries(archiveResult.buffer).filter(entry => /\.png$/i.test(entry.name))
     if (!archive.length) {
-      missingDesigns.push(design.Design)
       process.stdout.write(`${family.id}: skipped empty design ${design.Design}\n`)
-      continue
+      return { missing:design.Design }
     }
-    const textures = {}
-    let previewMask = null
-    for (const entry of archive) {
+    const textureResults = await mapLimit(archive, 4, async entry => {
       const filename = entry.name.split(/[\\/]/).at(-1)
       const cleaned = await stripOwayoBranding(entry.data, product.colorCodes, { optimize:true })
-      if (/FrontRightPart\.png$/i.test(filename)) previewMask = cleaned.buffer
       const info = await makeStorage(client, `designer/owayo/${family.id}/designs/${slug(design.Design)}/${filename}`, cleaned.buffer, 'image/png')
       const base = filename.slice(0, -4).replace(new RegExp(`^${design.Design.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}_`, 'i'), '')
-      textures[base] = info.url
-    }
-    const preview = await makeStorage(client, `designer/owayo/${family.id}/previews/${slug(design.Design)}.webp`, await renderPreview(previewMask || archive[0].data, product), 'image/webp')
-    const snap = await fetchBuffer(`${sourceOrigin}/konfigurator_php/designmodul/getSnapLines.php?${new URLSearchParams({ cut:product.Schnitt, model:product.model, design:design.Design })}`, { headers:{ referer:sourcePage } })
-    const snapInfo = await makeStorage(client, `designer/owayo/${family.id}/designs/${slug(design.Design)}/snap-lines.json`, snap, 'application/json')
-    designs.push({ name:design.Design, slug:slug(design.Design), preview:preview.url, textures, snapLines:snapInfo.url, baseColors:design.baseColors || [], outlinedColors:String(design.ColorCodesWithOutline || '').split(',').filter(Boolean) })
+      return { base, url:info.url, previewMask:/FrontRightPart\.png$/i.test(filename) ? cleaned.buffer : null }
+    })
+    const textures = Object.fromEntries(textureResults.map(item => [item.base, item.url]))
+    const previewMask = textureResults.find(item => item.previewMask)?.previewMask || archive[0].data
+    const [previewBuffer, snap] = await Promise.all([
+      renderPreview(previewMask, product),
+      fetchBuffer(`${sourceOrigin}/konfigurator_php/designmodul/getSnapLines.php?${new URLSearchParams({ cut:product.Schnitt, model:product.model, design:design.Design })}`, { headers:{ referer:sourcePage } })
+    ])
+    const [preview, snapInfo] = await Promise.all([
+      makeStorage(client, `designer/owayo/${family.id}/previews/${slug(design.Design)}.webp`, previewBuffer, 'image/webp'),
+      makeStorage(client, `designer/owayo/${family.id}/designs/${slug(design.Design)}/snap-lines.json`, snap, 'application/json')
+    ])
     process.stdout.write(`${family.id}: ${design.Design}\n`)
-  }
+    return { record:{ name:design.Design, slug:slug(design.Design), preview:preview.url, textures, snapLines:snapInfo.url, baseColors:design.baseColors || [], outlinedColors:String(design.ColorCodesWithOutline || '').split(',').filter(Boolean) } }
+  })
+  const designs = syncedDesigns.flatMap(item => item.record ? [item.record] : [])
+  const missingDesigns = syncedDesigns.flatMap(item => item.missing ? [item.missing] : [])
   const manifest = {
     schemaVersion:1,
     provider:'owayo',

@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "provider": "owayo",
-  "generatedAt": "2026-09-30T06:41:02.968Z",
+  "generatedAt": "2026-09-30T07:26:31.324Z",
   "generatedFrom": "verified-product-family-contract",
   "source": "https://www.owayo.com/",
   "publicBrand": "Jersevo",
   "summary": {
     "total": 61,
-    "live": 27,
-    "pending": 34,
+    "live": 61,
+    "pending": 0,
     "groups": 18,
-    "designsVerified": 1226
+    "designsVerified": 2302
   },
   "groups": [
     {
@@ -23,7 +23,7 @@
       "id": "basketball",
       "label": "Basketball",
       "products": 7,
-      "live": 2
+      "live": 7
     },
     {
       "id": "hockey",
@@ -35,7 +35,7 @@
       "id": "motocross",
       "label": "Motocross",
       "products": 3,
-      "live": 1
+      "live": 3
     },
     {
       "id": "soccer",
@@ -47,7 +47,7 @@
       "id": "running",
       "label": "Running",
       "products": 4,
-      "live": 1
+      "live": 4
     },
     {
       "id": "mtb",
@@ -65,61 +65,61 @@
       "id": "bowling",
       "label": "Bowling",
       "products": 3,
-      "live": 0
+      "live": 3
     },
     {
       "id": "darts",
       "label": "Darts",
       "products": 3,
-      "live": 0
+      "live": 3
     },
     {
       "id": "esports",
       "label": "eSports",
       "products": 4,
-      "live": 0
+      "live": 4
     },
     {
       "id": "fieldhockey",
       "label": "Field Hockey",
       "products": 3,
-      "live": 0
+      "live": 3
     },
     {
       "id": "handball",
       "label": "Handball",
       "products": 5,
-      "live": 0
+      "live": 5
     },
     {
       "id": "rowing",
       "label": "Rowing",
       "products": 2,
-      "live": 0
+      "live": 2
     },
     {
       "id": "volleyball",
       "label": "Volleyball",
       "products": 1,
-      "live": 0
+      "live": 1
     },
     {
       "id": "floorball",
       "label": "Floorball",
       "products": 1,
-      "live": 0
+      "live": 1
     },
     {
       "id": "tabletennis",
       "label": "Table Tennis",
       "products": 1,
-      "live": 0
+      "live": 1
     },
     {
       "id": "yoga",
       "label": "Yoga",
       "products": 1,
-      "live": 0
+      "live": 1
     }
   ],
   "products": [
@@ -866,12 +866,12 @@
       "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/basketball-b1/manifest.json",
+      "assetsReady": true,
+      "model": "CUT_004k",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 44,
+      "sizeCount": 7,
       "webSport": "",
       "id": "basketball-b1",
       "group": "basketball",
@@ -886,15 +886,19 @@
       "audience": "unisex",
       "sleeve": "sleeveless",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/basketball-shirts_b1-us.htm"
+      "sourceUrl": "https://www.owayo.com/basketball-shirts_b1-us.htm",
+      "preview": "/designer/owayo/basketball-b1/previews/garment-render.webp",
+      "previewDesign": "legend",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/basketball-b7w/manifest.json",
+      "assetsReady": true,
+      "model": "222w-Epic",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 28,
+      "sizeCount": 5,
       "webSport": "",
       "id": "basketball-b7w",
       "group": "basketball",
@@ -909,15 +913,21 @@
       "audience": "women",
       "sleeve": "sleeveless",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/basketball-shirts_b7w-us.htm"
+      "sourceUrl": "https://www.owayo.com/basketball-shirts_b7w-us.htm",
+      "preview": "/designer/owayo/basketball-b7w/previews/garment-render.webp",
+      "previewDesign": "legend",
+      "syncStatus": "READY_WITH_SOURCE_GAPS",
+      "missingDesigns": [
+        "Simple"
+      ]
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/basketball-br1/manifest.json",
+      "assetsReady": true,
+      "model": "CUT_004k-Wende",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 28,
+      "sizeCount": 7,
       "webSport": "",
       "id": "basketball-br1",
       "group": "basketball",
@@ -932,15 +942,21 @@
       "audience": "unisex",
       "sleeve": "sleeveless reversible",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/basketball-shirts_br1-us.htm"
+      "sourceUrl": "https://www.owayo.com/basketball-shirts_br1-us.htm",
+      "preview": "/designer/owayo/basketball-br1/previews/garment-render.webp",
+      "previewDesign": "legend",
+      "syncStatus": "READY_WITH_SOURCE_GAPS",
+      "missingDesigns": [
+        "Simple"
+      ]
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/basketball-br6/manifest.json",
+      "assetsReady": true,
+      "model": "222m-Hero-Wende",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 28,
+      "sizeCount": 14,
       "webSport": "",
       "id": "basketball-br6",
       "group": "basketball",
@@ -955,15 +971,21 @@
       "audience": "unisex",
       "sleeve": "sleeveless reversible",
       "fit": "professional",
-      "sourceUrl": "https://www.owayo.com/basketball-shirts_br6-us.htm"
+      "sourceUrl": "https://www.owayo.com/basketball-shirts_br6-us.htm",
+      "preview": "/designer/owayo/basketball-br6/previews/garment-render.webp",
+      "previewDesign": "legend",
+      "syncStatus": "READY_WITH_SOURCE_GAPS",
+      "missingDesigns": [
+        "Simple"
+      ]
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/basketball-shooting-f1/manifest.json",
+      "assetsReady": true,
+      "model": "204k-BB_VK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 19,
+      "sizeCount": 7,
       "webSport": "",
       "id": "basketball-shooting-f1",
       "group": "basketball",
@@ -978,15 +1000,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/basketball-shooting_shirts_f1-us.htm"
+      "sourceUrl": "https://www.owayo.com/basketball-shooting_shirts_f1-us.htm",
+      "preview": "/designer/owayo/basketball-shooting-f1/previews/garment-render.webp",
+      "previewDesign": "throw",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/bowling-f5/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T02_EA_CK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 27,
+      "sizeCount": 13,
       "webSport": "",
       "id": "bowling-f5",
       "group": "bowling",
@@ -1001,15 +1027,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/bowling-us.htm"
+      "sourceUrl": "https://www.owayo.com/bowling-us.htm",
+      "preview": "/designer/owayo/bowling-f5/previews/garment-render.webp",
+      "previewDesign": "dirt",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/bowling-basic/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T02_EA_Polo_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 27,
+      "sizeCount": 13,
       "webSport": "",
       "id": "bowling-basic",
       "group": "bowling",
@@ -1024,15 +1054,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/bowling-shirts_bowling-us.htm"
+      "sourceUrl": "https://www.owayo.com/bowling-shirts_bowling-us.htm",
+      "preview": "/designer/owayo/bowling-basic/previews/garment-render.webp",
+      "previewDesign": "dirt",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/bowling-xp5/manifest.json",
+      "assetsReady": true,
+      "model": "214m-Dart",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 17,
+      "sizeCount": 12,
       "webSport": "",
       "id": "bowling-xp5",
       "group": "bowling",
@@ -1047,15 +1081,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/bowling-shirts_bowling_xp5-us.htm"
+      "sourceUrl": "https://www.owayo.com/bowling-shirts_bowling_xp5-us.htm",
+      "preview": "/designer/owayo/bowling-xp5/previews/garment-render.webp",
+      "previewDesign": "pure",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/darts-basic/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T02_EA_Polo_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 37,
+      "sizeCount": 13,
       "webSport": "",
       "id": "darts-basic",
       "group": "darts",
@@ -1070,15 +1108,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/darts-us.htm"
+      "sourceUrl": "https://www.owayo.com/darts-us.htm",
+      "preview": "/designer/owayo/darts-basic/previews/garment-render.webp",
+      "previewDesign": "dirt",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/darts-f5/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T02_EA_CK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 37,
+      "sizeCount": 13,
       "webSport": "",
       "id": "darts-f5",
       "group": "darts",
@@ -1093,15 +1135,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/darts-us.htm"
+      "sourceUrl": "https://www.owayo.com/darts-us.htm",
+      "preview": "/designer/owayo/darts-f5/previews/garment-render.webp",
+      "previewDesign": "dirt",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/darts-xp5/manifest.json",
+      "assetsReady": true,
+      "model": "214m-Dart",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 17,
+      "sizeCount": 12,
       "webSport": "",
       "id": "darts-xp5",
       "group": "darts",
@@ -1116,15 +1162,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/darts-shirts_dart_xp5-us.htm"
+      "sourceUrl": "https://www.owayo.com/darts-shirts_dart_xp5-us.htm",
+      "preview": "/designer/owayo/darts-xp5/previews/garment-render.webp",
+      "previewDesign": "dirt",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/esports-e3/manifest.json",
+      "assetsReady": true,
+      "model": "204m_Basic_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 53,
+      "sizeCount": 12,
       "webSport": "",
       "id": "esports-e3",
       "group": "esports",
@@ -1139,15 +1189,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/esports-shirts_e3-us.htm"
+      "sourceUrl": "https://www.owayo.com/esports-shirts_e3-us.htm",
+      "preview": "/designer/owayo/esports-e3/previews/garment-render.webp",
+      "previewDesign": "league",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/esports-e6/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T14_EA_CK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 54,
+      "sizeCount": 12,
       "webSport": "",
       "id": "esports-e6",
       "group": "esports",
@@ -1162,15 +1216,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/esports-shirts_e6-us.htm"
+      "sourceUrl": "https://www.owayo.com/esports-shirts_e6-us.htm",
+      "preview": "/designer/owayo/esports-e6/previews/garment-render.webp",
+      "previewDesign": "league",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/esports-f1/manifest.json",
+      "assetsReady": true,
+      "model": "204k_EA_VK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 32,
+      "sizeCount": 7,
       "webSport": "",
       "id": "esports-f1",
       "group": "esports",
@@ -1185,15 +1243,19 @@
       "audience": "kids",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/esports-shirts_f1-us.htm"
+      "sourceUrl": "https://www.owayo.com/esports-shirts_f1-us.htm",
+      "preview": "/designer/owayo/esports-f1/previews/garment-render.webp",
+      "previewDesign": "final",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/esports-long-el5/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T02_EA_CK_LA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 54,
+      "sizeCount": 12,
       "webSport": "",
       "id": "esports-long-el5",
       "group": "esports",
@@ -1208,15 +1270,19 @@
       "audience": "unisex",
       "sleeve": "long",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/esports-shirts_long_sleeve_el5-us.htm"
+      "sourceUrl": "https://www.owayo.com/esports-shirts_long_sleeve_el5-us.htm",
+      "preview": "/designer/owayo/esports-long-el5/previews/garment-render.webp",
+      "previewDesign": "league",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/fieldhockey-f3/manifest.json",
+      "assetsReady": true,
+      "model": "204m_Basic_FH_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 25,
+      "sizeCount": 12,
       "webSport": "",
       "id": "fieldhockey-f3",
       "group": "fieldhockey",
@@ -1231,15 +1297,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "classic",
-      "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_f3-us.htm"
+      "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_f3-us.htm",
+      "preview": "/designer/owayo/fieldhockey-f3/previews/garment-render.webp",
+      "previewDesign": "final",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/fieldhockey-d6/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T14_EA_FH_CK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 24,
+      "sizeCount": 12,
       "webSport": "",
       "id": "fieldhockey-d6",
       "group": "fieldhockey",
@@ -1254,15 +1324,21 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_d6-us.htm"
+      "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_d6-us.htm",
+      "preview": "/designer/owayo/fieldhockey-d6/previews/garment-render.webp",
+      "previewDesign": "final",
+      "syncStatus": "READY_WITH_SOURCE_GAPS",
+      "missingDesigns": [
+        "Dirt"
+      ]
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/fieldhockey-f1/manifest.json",
+      "assetsReady": true,
+      "model": "204k_EA_VK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 32,
+      "sizeCount": 7,
       "webSport": "",
       "id": "fieldhockey-f1",
       "group": "fieldhockey",
@@ -1277,15 +1353,19 @@
       "audience": "kids",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_f1-us.htm"
+      "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_f1-us.htm",
+      "preview": "/designer/owayo/fieldhockey-f1/previews/garment-render.webp",
+      "previewDesign": "pure",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/handball-basic/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T02_EA_HB_CK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 28,
+      "sizeCount": 12,
       "webSport": "",
       "id": "handball-basic",
       "group": "handball",
@@ -1300,15 +1380,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "classic",
-      "sourceUrl": "https://www.owayo.com/handball-us.htm"
+      "sourceUrl": "https://www.owayo.com/handball-us.htm",
+      "preview": "/designer/owayo/handball-basic/previews/garment-render.webp",
+      "previewDesign": "gladiator",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/handball-d6/manifest.json",
+      "assetsReady": true,
+      "model": "204m_T14_EA_HB_CK_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 28,
+      "sizeCount": 12,
       "webSport": "",
       "id": "handball-d6",
       "group": "handball",
@@ -1323,15 +1407,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "athletic",
-      "sourceUrl": "https://www.owayo.com/handball-shirts_d6-us.htm"
+      "sourceUrl": "https://www.owayo.com/handball-shirts_d6-us.htm",
+      "preview": "/designer/owayo/handball-d6/previews/garment-render.webp",
+      "previewDesign": "gladiator",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/handball-f1/manifest.json",
+      "assetsReady": true,
+      "model": "204k_HB_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 27,
+      "sizeCount": 7,
       "webSport": "",
       "id": "handball-f1",
       "group": "handball",
@@ -1346,15 +1434,19 @@
       "audience": "kids",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/handball-shirts_f1-us.htm"
+      "sourceUrl": "https://www.owayo.com/handball-shirts_f1-us.htm",
+      "preview": "/designer/owayo/handball-f1/previews/garment-render.webp",
+      "previewDesign": "gladiator",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/handball-f3/manifest.json",
+      "assetsReady": true,
+      "model": "204m_Basic_HB_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 28,
+      "sizeCount": 12,
       "webSport": "",
       "id": "handball-f3",
       "group": "handball",
@@ -1369,15 +1461,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "classic",
-      "sourceUrl": "https://www.owayo.com/handball-shirts_f3-us.htm"
+      "sourceUrl": "https://www.owayo.com/handball-shirts_f3-us.htm",
+      "preview": "/designer/owayo/handball-f3/previews/garment-render.webp",
+      "previewDesign": "gladiator",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/handball-gk-f1/manifest.json",
+      "assetsReady": true,
+      "model": "204k_HB_LA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 27,
+      "sizeCount": 7,
       "webSport": "",
       "id": "handball-gk-f1",
       "group": "handball",
@@ -1392,15 +1488,19 @@
       "audience": "unisex",
       "sleeve": "long",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/handball-shirts_f1_goalkeeper-us.htm"
+      "sourceUrl": "https://www.owayo.com/handball-shirts_f1_goalkeeper-us.htm",
+      "preview": "/designer/owayo/handball-gk-f1/previews/garment-render.webp",
+      "previewDesign": "gladiator",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/rowing-w6/manifest.json",
+      "assetsReady": true,
+      "model": "505m-ENB",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 21,
+      "sizeCount": 15,
       "webSport": "",
       "id": "rowing-w6",
       "group": "rowing",
@@ -1415,15 +1515,22 @@
       "audience": "unisex",
       "sleeve": "sleeveless",
       "fit": "race",
-      "sourceUrl": "https://www.owayo.com/rowing-us.htm"
+      "sourceUrl": "https://www.owayo.com/rowing-us.htm",
+      "preview": "/designer/owayo/rowing-w6/previews/garment-render.webp",
+      "previewDesign": "limit",
+      "syncStatus": "READY_WITH_SOURCE_GAPS",
+      "missingDesigns": [
+        "Simple",
+        "Special"
+      ]
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/rowing-w6-comp/manifest.json",
+      "assetsReady": true,
+      "model": "505m-ENB-Basic",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 21,
+      "sizeCount": 15,
       "webSport": "",
       "id": "rowing-w6-comp",
       "group": "rowing",
@@ -1438,15 +1545,22 @@
       "audience": "unisex",
       "sleeve": "sleeveless",
       "fit": "race",
-      "sourceUrl": "https://www.owayo.com/rowing/products/rowing-unisuits-us.htm"
+      "sourceUrl": "https://www.owayo.com/rowing/products/rowing-unisuits-us.htm",
+      "preview": "/designer/owayo/rowing-w6-comp/previews/garment-render.webp",
+      "previewDesign": "limit",
+      "syncStatus": "READY_WITH_SOURCE_GAPS",
+      "missingDesigns": [
+        "Simple",
+        "Special"
+      ]
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/running-long/manifest.json",
+      "assetsReady": true,
+      "model": "203m_LA_CK",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 52,
+      "sizeCount": 11,
       "webSport": "",
       "id": "running-long",
       "group": "running",
@@ -1461,15 +1575,19 @@
       "audience": "men",
       "sleeve": "long",
       "fit": "slim",
-      "sourceUrl": "https://www.owayo.com/running-custom-long-sleeve-shirts-us.htm"
+      "sourceUrl": "https://www.owayo.com/running-custom-long-sleeve-shirts-us.htm",
+      "preview": "/designer/owayo/running-long/previews/garment-render.webp",
+      "previewDesign": "rise",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/running-short-ladies/manifest.json",
+      "assetsReady": true,
+      "model": "203w_KA_CK",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 52,
+      "sizeCount": 10,
       "webSport": "",
       "id": "running-short-ladies",
       "group": "running",
@@ -1484,15 +1602,19 @@
       "audience": "women",
       "sleeve": "short",
       "fit": "slim",
-      "sourceUrl": "https://www.owayo.com/running-custom-short-sleeve-shirts_ladies-us.htm"
+      "sourceUrl": "https://www.owayo.com/running-custom-short-sleeve-shirts_ladies-us.htm",
+      "preview": "/designer/owayo/running-short-ladies/previews/garment-render.webp",
+      "previewDesign": "rise",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/running-singlets/manifest.json",
+      "assetsReady": true,
+      "model": "203m_Singlet",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 50,
+      "sizeCount": 11,
       "webSport": "",
       "id": "running-singlets",
       "group": "running",
@@ -1507,15 +1629,19 @@
       "audience": "men",
       "sleeve": "sleeveless",
       "fit": "slim",
-      "sourceUrl": "https://www.owayo.com/running-singlets-us.htm"
+      "sourceUrl": "https://www.owayo.com/running-singlets-us.htm",
+      "preview": "/designer/owayo/running-singlets/previews/garment-render.webp",
+      "previewDesign": "rise",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/motocross-m5/manifest.json",
+      "assetsReady": true,
+      "model": "207m-AD_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 29,
+      "sizeCount": 11,
       "webSport": "",
       "id": "motocross-m5",
       "group": "motocross",
@@ -1530,15 +1656,19 @@
       "audience": "unisex",
       "sleeve": "long",
       "fit": "extended back",
-      "sourceUrl": "https://www.owayo.com/motocross-jerseys_m5-us.htm"
+      "sourceUrl": "https://www.owayo.com/motocross-jerseys_m5-us.htm",
+      "preview": "/designer/owayo/motocross-m5/previews/garment-render.webp",
+      "previewDesign": "flight",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/motocross-ml5/manifest.json",
+      "assetsReady": true,
+      "model": "207m-AD_LA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 29,
+      "sizeCount": 11,
       "webSport": "",
       "id": "motocross-ml5",
       "group": "motocross",
@@ -1553,15 +1683,19 @@
       "audience": "unisex",
       "sleeve": "long",
       "fit": "extended back",
-      "sourceUrl": "https://www.owayo.com/motocross-jerseys_ml5-us.htm"
+      "sourceUrl": "https://www.owayo.com/motocross-jerseys_ml5-us.htm",
+      "preview": "/designer/owayo/motocross-ml5/previews/garment-render.webp",
+      "previewDesign": "flight",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/volleyball-f3/manifest.json",
+      "assetsReady": true,
+      "model": "204m_Basic_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 24,
+      "sizeCount": 12,
       "webSport": "",
       "id": "volleyball-f3",
       "group": "volleyball",
@@ -1576,15 +1710,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "classic",
-      "sourceUrl": "https://www.owayo.com/custom-volleyball-jerseys.htm"
+      "sourceUrl": "https://www.owayo.com/custom-volleyball-jerseys.htm",
+      "preview": "/designer/owayo/volleyball-f3/previews/garment-render.webp",
+      "previewDesign": "cross",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/floorball-f3/manifest.json",
+      "assetsReady": true,
+      "model": "204m_Basic_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 24,
+      "sizeCount": 12,
       "webSport": "",
       "id": "floorball-f3",
       "group": "floorball",
@@ -1599,15 +1737,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "classic",
-      "sourceUrl": "https://www.owayo.com/custom-floorball-jerseys.htm"
+      "sourceUrl": "https://www.owayo.com/custom-floorball-jerseys.htm",
+      "preview": "/designer/owayo/floorball-f3/previews/garment-render.webp",
+      "previewDesign": "cross",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/tabletennis-f3/manifest.json",
+      "assetsReady": true,
+      "model": "204m_Basic_KA",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 24,
+      "sizeCount": 12,
       "webSport": "",
       "id": "tabletennis-f3",
       "group": "tabletennis",
@@ -1622,15 +1764,19 @@
       "audience": "unisex",
       "sleeve": "short",
       "fit": "regular",
-      "sourceUrl": "https://www.owayo.com/custom-table-tennis-jerseys.htm"
+      "sourceUrl": "https://www.owayo.com/custom-table-tennis-jerseys.htm",
+      "preview": "/designer/owayo/tabletennis-f3/previews/garment-render.webp",
+      "previewDesign": "cross",
+      "syncStatus": "READY",
+      "missingDesigns": []
     },
     {
-      "manifest": "",
-      "assetsReady": false,
-      "model": "",
+      "manifest": "/designer/owayo/yoga-pants-highwaist/manifest.json",
+      "assetsReady": true,
+      "model": "308w-88-Light",
       "cut": "",
-      "designCount": 0,
-      "sizeCount": 0,
+      "designCount": 29,
+      "sizeCount": 8,
       "webSport": "",
       "id": "yoga-pants-highwaist",
       "group": "yoga",
@@ -1645,7 +1791,11 @@
       "audience": "women",
       "sleeve": "n/a",
       "fit": "high-waist",
-      "sourceUrl": "https://www.owayo.com/custom-yoga-pants.htm"
+      "sourceUrl": "https://www.owayo.com/custom-yoga-pants.htm",
+      "preview": "/designer/owayo/yoga-pants-highwaist/previews/garment-render.webp",
+      "previewDesign": "flight",
+      "syncStatus": "READY",
+      "missingDesigns": []
     }
   ]
 }
