@@ -203,13 +203,47 @@ async function main() {
     return { skipped: true }
   }
 
-  const expected = await expectedProductCount()
+  // When the SEO build has already produced a verified source snapshot, that
+  // snapshot is the consistency boundary for this deployment. Supabase can
+  // legitimately gain (or lose) a published row between the SEO query and
+  // this feed step; comparing the snapshot with a second live count would
+  // make an otherwise valid build fail on a one-row race. Keep checking the
+  // live count for observability, but build the feed from the same immutable
+  // rows that produced the sitemap/PDPs.
+  let expected
+  let liveProductCount = null
+  const hasVerifiedSnapshot = Boolean(sourceSnapshotPath && fs.existsSync(sourceSnapshotPath))
+  if (hasVerifiedSnapshot) {
+    const snapshotRows = JSON.parse(await readFile(sourceSnapshotPath, 'utf8'))
+    if (!Array.isArray(snapshotRows) || snapshotRows.length === 0) {
+      throw new Error('Merchant source snapshot is empty or invalid.')
+    }
+    expected = snapshotRows.length
+    try {
+      liveProductCount = await expectedProductCount()
+      if (liveProductCount !== expected) {
+        console.warn(`[merchant-feed] Live product count drifted from verified SEO snapshot (${liveProductCount} vs ${expected}); using the snapshot for this deployment.`)
+      }
+    } catch (error) {
+      // The snapshot is already verified by generate-seo-pages. A transient
+      // count probe failure must not discard a complete, internally
+      // consistent deployment artifact.
+      console.warn(`[merchant-feed] Live product count probe unavailable; using the verified SEO snapshot (${error?.message || error}).`)
+    }
+  } else {
+    expected = await expectedProductCount()
+  }
   const products = await loadProducts(expected)
   const catalogue = buildGoogleMerchantCatalogue(products, {
     origin: siteOrigin,
     brand: process.env.GMC_BRAND || 'Extra Time'
   })
   const report = publicReport(catalogue, expected, products)
+  if (hasVerifiedSnapshot) {
+    report.source = 'verified-seo-snapshot'
+    report.liveProductCount = liveProductCount
+    report.liveCountDrift = liveProductCount === null ? null : liveProductCount - expected
+  }
   if (!report.completeness.complete) throw new Error('Merchant completeness guard failed before writing files.')
 
   const xml = renderGoogleMerchantXml(catalogue, { origin: siteOrigin })
