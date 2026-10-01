@@ -7,6 +7,9 @@ import {
   ArrowLeft,
   Check,
   CheckCircle2,
+  Download,
+  FileImage,
+  FileJson,
   Grid3X3,
   Hash,
   Image as ImageIcon,
@@ -36,13 +39,17 @@ import { custom3DDesignerConfig } from './lib/custom-3d'
 import { normalizeOwayoLayer, normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, owayoPlacementPreset, owayoPlacementSurface, owayoPlacementUvTransform, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PERSONALIZATION_FONTS, OWAYO_PRINT_AREA_GROUPS } from './lib/owayo-personalization'
 import { owayoFamilyByProductId, resolveOwayoManifestRequest } from './lib/owayo-designer-routing'
 import { trackStorefrontEvent } from './lib/storefront-analytics'
+import { MOCKUP_EXPORT_PRESETS, MOCKUP_SCENE_PRESETS, validateMockupAsset } from './lib/mockup-workflow'
 import './custom-designer.css'
 
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
 const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
+const MOCKUP_CATALOG_URL = '/designer/3dmockups/catalog.json'
 const ASSET_CACHE_BUSTER = '1'
-const DRAFT_KEY = 'jersevo-3d-designer-draft-v1'
+// Listing-specific presets must not be silently overwritten by an older
+// generic teamwear draft left in local storage.
+const DRAFT_KEY = 'jersevo-3d-designer-draft-v2'
 const COLOR_SWATCHES = [
   '#111311', '#F8F8F4', '#F3ED45', '#2876FF', '#EF3340', '#F97316',
   '#7C3AED', '#EC4899', '#12B981', '#00A6A6', '#82C91E', '#7DD3FC',
@@ -53,7 +60,8 @@ const TABS = [
   { id:'colors', label:'Colors', icon:Palette },
   { id:'patterns', label:'Patterns', icon:Grid3X3 },
   { id:'text', label:'Text', icon:Type },
-  { id:'logos', label:'Logos', icon:ImageIcon }
+  { id:'logos', label:'Logos', icon:ImageIcon },
+  { id:'artwork', label:'Artwork', icon:FileImage }
 ]
 
 function assetUrl(uri, manifest) {
@@ -83,11 +91,19 @@ function recolorBoombahSvg(svgText, design, colors) {
   const zones = design?.colorZones || []
   let svg = stripBoombahBrandingText(svgText, zones)
   const replacements = new Map()
+  // Some synchronized templates keep a production colour directly in art
+  // paths while the paramcolor marker retains the palette's canonical value.
+  // Retail manifests can declare these aliases to keep a photographed jersey
+  // from falling back to the template's demo yellow.
+  for (const [source, code] of Object.entries(design?.artworkColorMap || {})) {
+    if (!/^#[0-9a-f]{6}$/i.test(String(source || '')) || !String(code || '').trim()) continue
+    replacements.set(String(source).toLowerCase(), colorHex(colors?.[code], '#F8F8F4'))
+  }
   for (const zone of zones) {
     const code = String(zone.code || '')
     const marker = new RegExp(`<rect\\b(?=[^>]*\\bid=["']paramcolor-${escapeRegex(code)}["'])[^>]*>`, 'i').exec(svg)?.[0]
     const sourceColor = marker?.match(/\bfill=["']([^"']+)["']/i)?.[1]
-    if (sourceColor && zone.editable !== false) replacements.set(sourceColor.toLowerCase(), colorHex(colors?.[code], '#F8F8F4'))
+    if (sourceColor && zone.editable !== false && !replacements.has(sourceColor.toLowerCase())) replacements.set(sourceColor.toLowerCase(), colorHex(colors?.[code], '#F8F8F4'))
   }
   if (!replacements.size) return svg
   return svg.split(/(<[^>]+>)/g).map(part => {
@@ -110,12 +126,13 @@ function id() {
 }
 
 const LAYER_LIMIT = 24
-const LAYER_LABELS = Object.freeze({ team:'Team name', name:'Player name', number:'Player number', logo:'Logo' })
+const LAYER_LABELS = Object.freeze({ team:'Team name', name:'Player name', number:'Player number', logo:'Logo', artwork:'Artwork' })
 const LAYER_AREA_SUGGESTIONS = Object.freeze({
   team:['front-center', 'back-upper', 'front-lower'],
   name:['back-upper', 'front-right-chest', 'front-center'],
   number:['back-center', 'front-left-chest', 'right-sleeve'],
-  logo:['front-left-chest', 'right-sleeve', 'front-center', 'back-upper']
+  logo:['front-left-chest', 'right-sleeve', 'front-center', 'back-upper'],
+  artwork:['front-center', 'back-center', 'front-lower', 'left-sleeve']
 })
 
 function newDesignerLayer(kind, placement = '', patch = {}) {
@@ -127,10 +144,17 @@ function newDesignerLayer(kind, placement = '', patch = {}) {
     y:0,
     scale:1,
     rotation:0,
-    ...(kind === 'logo' ? { dataUrl:'', name:'', consent:false } : {}),
+    ...(['logo', 'artwork'].includes(kind) ? { dataUrl:'', name:'', consent:false } : {}),
     ...patch
   }
-  return { ...normalizeOwayoLayer(candidate), ...(kind === 'logo' ? { dataUrl:String(candidate.dataUrl || ''), consent:Boolean(candidate.consent) } : {}) }
+  const normalized = normalizeOwayoLayer(candidate)
+  return {
+    ...normalized,
+    ...(candidate.color ? { color:colorHex(candidate.color) } : {}),
+    ...(candidate.outlineColor ? { outlineColor:colorHex(candidate.outlineColor) } : {}),
+    ...(candidate.textureColor ? { textureColor:colorHex(candidate.textureColor) } : {}),
+    ...(['logo', 'artwork'].includes(kind) ? { dataUrl:String(candidate.dataUrl || ''), consent:Boolean(candidate.consent) } : {})
+  }
 }
 
 function legacyDesignerLayers(text = {}, logo = {}) {
@@ -153,9 +177,13 @@ function migrateDesignerLayers(state = {}) {
     const source = state.layers.slice(0, LAYER_LIMIT)
     return normalizeOwayoLayers(source).map((normalized, index) => {
       const layer = source[index]
-      return normalized.kind === 'logo'
-        ? { ...normalized, dataUrl:String(layer?.dataUrl || ''), consent:Boolean(layer?.consent) }
-        : normalized
+      return {
+        ...normalized,
+        ...(layer?.color ? { color:colorHex(layer.color) } : {}),
+        ...(layer?.outlineColor ? { outlineColor:colorHex(layer.outlineColor) } : {}),
+        ...(layer?.textureColor ? { textureColor:colorHex(layer.textureColor) } : {}),
+        ...(['logo', 'artwork'].includes(normalized.kind) ? { dataUrl:String(layer?.dataUrl || ''), consent:Boolean(layer?.consent) } : {})
+      }
     })
   }
   return legacyDesignerLayers(state.text, state.logo)
@@ -424,10 +452,28 @@ function drawTextLayer(context, layer, text) {
   context.translate(context.canvas.width * x, context.canvas.height * y)
   context.rotate(THREE.MathUtils.degToRad(normalizedLayer.rotation))
   context.lineWidth = Math.max(0, Number(normalizedText.outlineWidth || 0)) * normalizedLayer.scale
-  context.strokeStyle = normalizedText.outlineColor
-  context.fillStyle = normalizedText.color
+  context.strokeStyle = layer?.outlineColor || normalizedText.outlineColor
+  context.fillStyle = layer?.color || normalizedText.color
   if (context.lineWidth > 0) context.strokeText(content, 0, 0)
   context.fillText(content, 0, 0)
+  // The photographed listing uses a dark carbon-twill numeral with a bright
+  // blue edge. Composite a restrained diagonal weave only inside number glyphs
+  // so the live preview reads like the supplied jersey rather than flat text.
+  if (normalizedLayer.kind === 'number' && text?.numberStyle === 'carbon') {
+    context.save()
+    context.globalCompositeOperation = 'source-atop'
+    context.globalAlpha = .34
+    context.strokeStyle = layer?.textureColor || '#9AA3AB'
+    context.lineWidth = Math.max(1, size * .012)
+    const span = Math.max(maxWidth, size * 1.4)
+    for (let offset = -span; offset < span; offset += Math.max(10, size * .09)) {
+      context.beginPath()
+      context.moveTo(offset, -size * .8)
+      context.lineTo(offset + size * .8, size * .8)
+      context.stroke()
+    }
+    context.restore()
+  }
   context.restore()
   return true
 }
@@ -450,6 +496,11 @@ async function drawLogoLayer(context, layer) {
   return true
 }
 
+// Artwork and logo layers intentionally share the same renderer.  Keeping the
+// raster pipeline in one place guarantees that uploaded art follows the exact
+// print-area/UV rules already used by the team-logo flow.
+const drawArtworkLayer = drawLogoLayer
+
 async function buildOwayoLayerTextures(text, layers = []) {
   const surfaces = new Map()
   const ensure = surface => {
@@ -459,9 +510,9 @@ async function buildOwayoLayerTextures(text, layers = []) {
   for (const layer of layers) {
     const surface = owayoPlacementSurface(layer.placement)
     const target = ensure(surface)
-    if (layer?.kind === 'logo') {
+    if (['logo', 'artwork'].includes(layer?.kind)) {
       if (!layer.dataUrl) continue
-      try { target.used = await drawLogoLayer(target.context, layer) || target.used } catch (error) { console.error('Logo layer preview failed', error) }
+      try { target.used = await (layer.kind === 'artwork' ? drawArtworkLayer : drawLogoLayer)(target.context, layer) || target.used } catch (error) { console.error(`${layer.kind === 'artwork' ? 'Artwork' : 'Logo'} layer preview failed`, error) }
     } else {
       target.used = drawTextLayer(target.context, layer, text) || target.used
     }
@@ -711,6 +762,17 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
       runtime.controls.target.set(0, 0, 0)
       runtime.controls.update()
       renderRef.current()
+    },
+    view(preset = 'front') {
+      const runtime = runtimeRef.current
+      if (!runtime) return
+      const normalized = String(preset || 'front').toLowerCase()
+      runtime.model.rotation.y = normalized === 'back' ? Math.PI : normalized === 'left' ? -Math.PI / 2 : normalized === 'right' ? Math.PI / 2 : 0
+      runtime.controls.update()
+      renderRef.current()
+    },
+    capture() {
+      return runtimeRef.current?.renderer?.domElement?.toDataURL?.('image/png') || ''
     }
   }), [])
 
@@ -720,7 +782,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     const host = hostRef.current
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(31, 1, .1, 100)
-    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance' })
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, preserveDrawingBuffer:true, powerPreference:'high-performance' })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.65))
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -1017,7 +1079,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
   return <div className="designer-stage__canvas" ref={hostRef} role="img" aria-label="Interactive 3D preview of the custom jersey" />
 })
 
-function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange, designerConfig }) {
+function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange, designerConfig }) {
   const [showAll, setShowAll] = useState(false)
   const allowedDesignIds = Array.isArray(designerConfig?.allowedDesignIds) ? designerConfig.allowedDesignIds : []
   const allowedStyleCodes = Array.isArray(designerConfig?.allowedStyleCodes) ? designerConfig.allowedStyleCodes : []
@@ -1061,6 +1123,16 @@ function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, u
       </div>}
       {(currentProduct || currentOwayoProduct) && <p className="designer-library-switch__note">{manifestIsBoombah(manifest) ? currentProduct?.designs : currentOwayoProduct?.designCount} mirrored templates · exact model loads on selection</p>}
     </div>
+    {mockupCatalog?.entries?.length > 0 && <section className="designer-mockup-reference" aria-label="Mockup reference library">
+      <div className="designer-mockup-reference__head"><span>Mockup workflow library</span><small>Metadata mapped to Jersevo assets · {mockupCatalog.entries.length} bases</small></div>
+      <div className="designer-mockup-reference__grid">
+        {mockupCatalog.entries.slice(0, 4).map(entry => <button type="button" key={entry.id} disabled={Boolean(state.listingId) || !entry.adapter?.productId} onClick={() => entry.adapter?.provider === 'owayo' ? onOwayoProductChange?.(entry.adapter.productId) : onProductChange?.(entry.adapter.productId)}>
+          {entry.preview ? <img src={entry.preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-mockup-reference__placeholder">3D</span>}
+          <span><strong>{entry.title}</strong><small>{entry.category} · {entry.adapter?.provider || 'pending'}</small></span>
+        </button>)}
+      </div>
+      <p className="designer-library-switch__note">Only public catalogue metadata is referenced. Models, textures and templates come from Jersevo-owned or separately licensed manifests.</p>
+    </section>}
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">
       {designs.map(item => <button type="button" className={state.design === item.slug || state.design === item.id ? 'is-active' : ''} key={item.slug || item.id} onClick={() => update(current => ({ ...current, design:item.slug || item.id, styleCode:item.styleCode || current.styleCode, colors:{ ...current.colors, ...(item.defaultColors || {}) } }))}>
@@ -1239,13 +1311,13 @@ function patchDesignerLayer(layer, patch = {}) {
 function LayerKindIcon({ kind, size = 15 }) {
   if (kind === 'number') return <Hash size={size}/>
   if (kind === 'team') return <UsersRound size={size}/>
-  if (kind === 'logo') return <ImageIcon size={size}/>
+  if (kind === 'logo' || kind === 'artwork') return <ImageIcon size={size}/>
   return <Type size={size}/>
 }
 
 function TextPanel({ state, update }) {
   const preview = resolveOwayoPreviewText(state.text, state.roster)
-  const textLayers = migrateDesignerLayers(state).filter(layer => layer.kind !== 'logo')
+  const textLayers = migrateDesignerLayers(state).filter(layer => !['logo', 'artwork'].includes(layer.kind))
   const [activeLayerId, setActiveLayerId] = useState(() => textLayers[0]?.id || '')
   const activeLayer = textLayers.find(layer => layer.id === activeLayerId) || textLayers[0] || null
   useEffect(() => {
@@ -1402,6 +1474,75 @@ function LogoPanel({ state, update }) {
   </div>
 }
 
+function ArtworkPanel({ state, update }) {
+  const [error, setError] = useState('')
+  const artworkLayers = migrateDesignerLayers(state).filter(layer => layer.kind === 'artwork')
+  const [activeLayerId, setActiveLayerId] = useState(() => artworkLayers[0]?.id || '')
+  const activeLayer = artworkLayers.find(layer => layer.id === activeLayerId) || artworkLayers[0] || null
+  useEffect(() => {
+    if (!artworkLayers.length) { if (activeLayerId) setActiveLayerId(''); return }
+    if (!artworkLayers.some(layer => layer.id === activeLayerId)) setActiveLayerId(artworkLayers[0].id)
+  }, [activeLayerId, artworkLayers])
+  const setLayer = (layerId, patch) => update(current => ({
+    ...current,
+    layerVersion:1,
+    layers:migrateDesignerLayers(current).map(layer => layer.id === layerId ? patchDesignerLayer(layer, patch) : layer)
+  }))
+  const addArtwork = () => {
+    const currentLayers = migrateDesignerLayers(state)
+    if (currentLayers.length >= LAYER_LIMIT || artworkLayers.length >= 8) return
+    const layer = newDesignerLayer('artwork', LAYER_AREA_SUGGESTIONS.artwork[artworkLayers.length % LAYER_AREA_SUGGESTIONS.artwork.length])
+    update(current => ({ ...current, layerVersion:1, layers:[...migrateDesignerLayers(current), layer] }))
+    setError('')
+    setActiveLayerId(layer.id)
+  }
+  const removeArtwork = layerId => {
+    const next = artworkLayers.filter(layer => layer.id !== layerId)
+    update(current => ({ ...current, layerVersion:1, layers:migrateDesignerLayers(current).filter(layer => layer.id !== layerId) }))
+    setError('')
+    if (activeLayerId === layerId) setActiveLayerId(next[0]?.id || '')
+  }
+  const select = (file, layerId) => {
+    if (!file) return
+    const result = validateMockupAsset({ name:file.name, mime:file.type, bytes:file.size, kind:'artwork' }, { kind:'artwork' })
+    if (!result.ok) { setError(result.error); return }
+    const reader = new FileReader()
+    reader.onload = () => { setError(''); setLayer(layerId, { dataUrl:String(reader.result), name:file.name, consent:false }) }
+    reader.onerror = () => setError('That artwork could not be read. Choose another file.')
+    reader.readAsDataURL(file)
+  }
+  return <div className="designer-panel designer-panel--artwork">
+    <div className="designer-panel__intro"><h2>Add artwork layers</h2><p>Upload a badge, sponsor mark or graphic and place it on a verified garment panel. The same 3D editor handles artwork, logos and text.</p></div>
+    <section className="designer-layers designer-layers--artwork" aria-label="Artwork placement layers">
+      <div className="designer-layers__head"><span><Layers3 size={16}/><strong>Artwork layers</strong><small>{artworkLayers.length} / 8</small></span><button type="button" disabled={artworkLayers.length >= 8 || migrateDesignerLayers(state).length >= LAYER_LIMIT} onClick={addArtwork}><Plus size={14}/> Add artwork</button></div>
+      {artworkLayers.length > 0 ? <div className="designer-layer-list">
+        {artworkLayers.map((layer, index) => <div key={layer.id} className={`designer-layer-list__item${layer.id === activeLayer?.id ? ' is-active' : ''}`}>
+          <button type="button" className="designer-layer-list__select" onClick={() => { setActiveLayerId(layer.id); setError('') }} aria-pressed={layer.id === activeLayer?.id}>
+            <span>{layer.dataUrl ? <img src={layer.dataUrl} alt=""/> : <ImageIcon size={15}/>}<strong>{layer.name || `Artwork ${index + 1}`}</strong></span><small>{printAreaLabel(layer.placement)}</small>
+          </button>
+          <button type="button" className="designer-layer-list__remove" onClick={() => removeArtwork(layer.id)} aria-label={`Remove artwork ${index + 1}`}><Trash2 size={14}/></button>
+        </div>)}
+      </div> : <div className="designer-layer-empty designer-layer-empty--logo"><FileImage size={22}/><p>Add artwork when you want a custom badge, sponsor or graphic beyond the team-name/logo fields.</p><button type="button" onClick={addArtwork}><Plus size={14}/> Add first artwork</button></div>}
+      {activeLayer && <div className="designer-layer-editor" key={activeLayer.id}>
+        <div className="designer-layer-editor__title"><span><FileImage size={15}/><strong>{activeLayer.name || 'New artwork'}</strong></span><small>Independent placement</small></div>
+        <label className={`designer-logo-drop${activeLayer.dataUrl ? ' has-logo' : ''}`} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); select(event.dataTransfer.files?.[0], activeLayer.id) }}>
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={event => select(event.target.files?.[0], activeLayer.id)}/>
+          {activeLayer.dataUrl ? <><img src={activeLayer.dataUrl} alt="Uploaded artwork preview"/><span><strong>{activeLayer.name}</strong><small>Click or drop a file to replace this artwork</small></span></> : <><Upload size={25}/><span><strong>Upload artwork</strong><small>PNG, JPG, WebP or SVG · up to 8 MB</small></span></>}
+        </label>
+        {error && <p className="designer-field-error" role="alert">{error}</p>}
+        {activeLayer.dataUrl && <>
+          <div className="designer-logo-actions"><button type="button" onClick={() => setLayer(activeLayer.id, { dataUrl:'', name:'', consent:false })}><Trash2 size={15}/> Clear file</button><span><Move size={14}/> UV-mapped placement</span></div>
+          <label className="designer-field"><span>Print area</span><select value={activeLayer.placement} onChange={event => setLayer(activeLayer.id, { placement:event.target.value, x:0, y:0 })}><PrintAreaOptions/></select><small>Only the selected panel receives the artwork in the 3D preview.</small></label>
+          <PlacementPad value={activeLayer} onChange={patch => setLayer(activeLayer.id, patch)} label="artwork" previewImage={activeLayer.dataUrl} scaleMin={.25} scaleMax={2}/>
+          <label className="designer-range"><span>Artwork rotation <strong>{Number(activeLayer.rotation || 0)}°</strong></span><input type="range" min="-180" max="180" step="1" value={activeLayer.rotation || 0} onChange={event => setLayer(activeLayer.id, { rotation:Number(event.target.value) })}/></label>
+          <label className="designer-consent"><input type="checkbox" checked={Boolean(activeLayer.consent)} onChange={event => setLayer(activeLayer.id, { consent:event.target.checked })}/><span>I own this artwork or have permission to use it.</span></label>
+        </>}
+      </div>}
+    </section>
+    <div className="designer-print-note"><CheckCircle2 size={17}/><p>Artwork is normalized for a private production request; it is not added to the public catalogue.</p></div>
+  </div>
+}
+
 function Roster({ state, update, sizes }) {
   const visibleSizes = normalizeOwayoSizeOptions(sizes)
   const change = (playerId, patch) => update(current => {
@@ -1472,12 +1613,16 @@ function designerNote(state, selectedDesign, manifest) {
 
 function designerPayload(state, selectedDesign, manifest, listing = null, manifestUrl = '') {
   const roster = normalizeOwayoRoster(state.roster, manifest?.product?.sizes || [])
+  const sourceLayers = migrateDesignerLayers(state)
+  const logoCount = sourceLayers.filter(layer => layer.kind === 'logo' && layer.dataUrl).length
   let logoAssetIndex = 0
-  const layers = migrateDesignerLayers(state).flatMap(layer => {
-    if (layer.kind === 'logo' && !layer.dataUrl) return []
+  let artworkAssetIndex = logoCount
+  const layers = sourceLayers.flatMap(layer => {
+    if (['logo', 'artwork'].includes(layer.kind) && !layer.dataUrl) return []
     const normalized = normalizeOwayoLayer(layer)
-    if (normalized.kind !== 'logo') return [normalized]
-    return [{ ...normalized, name:String(layer.name || '').slice(0, 160), assetIndex:logoAssetIndex++ }]
+    if (!['logo', 'artwork'].includes(normalized.kind)) return [normalized]
+    const assetIndex = normalized.kind === 'artwork' ? artworkAssetIndex++ : logoAssetIndex++
+    return [{ ...normalized, name:String(layer.name || '').slice(0, 160), assetIndex }]
   })
   const firstLogo = migrateDesignerLayers(state).find(layer => layer.kind === 'logo' && layer.dataUrl)
   const legacyLogo = Number(state.layerVersion) >= 1 ? {} : state.logo
@@ -1511,6 +1656,7 @@ function designerPayload(state, selectedDesign, manifest, listing = null, manife
     // Keep the first mark in the v2 slot for older production tooling while
     // v3 consumers use the complete independent layer list below.
     logo:{ ...normalizeOwayoLogo(firstLogo || legacyLogo), name:firstLogo?.name || legacyLogo?.name || '' },
+    assetPolicy:'private-customer-assets',
     layerVersion:1,
     layers,
     roster:roster.map(player => ({ name:player.name, number:player.number, size:player.size }))
@@ -1521,6 +1667,27 @@ async function fileFromDataUrl(dataUrl, name = 'team-logo.png') {
   const response = await fetch(dataUrl)
   const blob = await response.blob()
   return new File([blob], name, { type:blob.type || 'image/png' })
+}
+
+function downloadDataUrl(dataUrl, filename) {
+  if (!dataUrl || typeof document === 'undefined') return false
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = filename
+  link.click()
+  return true
+}
+
+function downloadJson(value, filename) {
+  if (typeof document === 'undefined') return false
+  const blob = new Blob([JSON.stringify(value, null, 2)], { type:'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+  return true
 }
 
 export default function CustomDesignerPage({ products = [], onAdd, onNavigate }) {
@@ -1549,15 +1716,18 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const [owayoManifest, setOwayoManifest] = useState(null)
   const [owayoCatalog, setOwayoCatalog] = useState(null)
   const [catalog, setCatalog] = useState(null)
+  const [mockupCatalog, setMockupCatalog] = useState(null)
   const [manifestError, setManifestError] = useState('')
   const [stageStatus, setStageStatus] = useState('loading')
   const [activeTab, setActiveTab] = useState('design')
+  const [scenePreset, setScenePreset] = useState('studio-light')
   const [saved, setSaved] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [added, setAdded] = useState(false)
   const [requestKey, setRequestKey] = useState(() => `request_${id().replace(/-/g, '')}`)
   const logoUploadRef = useRef(new Map())
+  const initializedRef = useRef(false)
   const history = useDesignerHistory(initialDesignerState())
   const stageRef = useRef(null)
 
@@ -1603,13 +1773,15 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       // Resolve the family before loading the garment. The old bootstrap always
       // fetched C3, so a plain `?product=cycling-c5` silently rendered a C3
       // mesh even though the C5 listing had its own synchronized manifest.
-      const [boombahResult, owayoCatalogResult] = await Promise.allSettled([
+      const [boombahResult, owayoCatalogResult, mockupCatalogResult] = await Promise.allSettled([
         readJson(BOOMBAH_CATALOG_URL),
-        readJson(OWAYO_CATALOG_URL)
+        readJson(OWAYO_CATALOG_URL),
+        readJson(MOCKUP_CATALOG_URL)
       ])
       if (cancelled) return
       const boombahCatalog = boombahResult.status === 'fulfilled' ? boombahResult.value : null
       const catalogFamilies = owayoCatalogResult.status === 'fulfilled' ? owayoCatalogResult.value : null
+      const mockupReferenceCatalog = mockupCatalogResult.status === 'fulfilled' ? mockupCatalogResult.value : null
       const requestedFamilyId = designer?.provider === 'owayo'
         ? designer.productId
         : routeParams.product || draft?.productId || ''
@@ -1622,6 +1794,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       if (owayo) setOwayoManifest(owayo)
       if (boombahCatalog) setCatalog(boombahCatalog)
       if (catalogFamilies) setOwayoCatalog(catalogFamilies)
+      if (mockupReferenceCatalog) setMockupCatalog(mockupReferenceCatalog)
       if (!owayo && !boombahCatalog) throw new Error('Sportswear and teamwear designer assets are temporarily unavailable.')
       const requestedProvider = String(
         designer?.provider
@@ -1681,6 +1854,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       seed.layers = migrateDesignerLayers(seed)
       seed.layerVersion = 1
       history.replace(seed)
+      initializedRef.current = true
       if (provider === 'owayo') {
         if (!owayo) throw new Error(`The synchronized Owayo garment ${productId} could not be loaded.`)
         setManifest(owayo)
@@ -1696,10 +1870,14 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       }
       const product = boombahCatalog.products?.find(item => item.id === productId)
         || (resolvedListing ? null : boombahCatalog.products?.[0])
-      if (!product?.manifest) throw new Error('The Boombah catalog has no product manifest.')
+      // Retail listings can opt into a narrow listing-specific manifest so
+      // their photographed artwork never falls back to the generic template.
+      const configuredManifest = designer?.provider === 'boombah' ? designer?.manifest : ''
+      const productManifest = configuredManifest || product?.manifest
+      if (!productManifest) throw new Error('The Boombah catalog has no product manifest.')
       let productResponse
       try {
-        productResponse = await readJson(product.manifest)
+        productResponse = await readJson(productManifest)
       } catch (error) {
         if (!owayo) throw error
         setManifest(owayo)
@@ -1710,7 +1888,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       }
       if (cancelled) return
        setManifest(productResponse)
-       setManifestUrl(product.manifest)
+       setManifestUrl(productManifest)
       const allowedDesigns = designer?.allowedDesignIds?.length ? productResponse.designs?.filter(item => designer.allowedDesignIds.includes(item.id) || designer.allowedDesignIds.includes(item.slug)) : productResponse.designs
       const first = allowedDesigns?.[0] || productResponse.designs?.[0]
       const designMatch = allowedDesigns?.find(item => item.id === seed.design || item.slug === seed.design)
@@ -1834,6 +2012,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
 
   useEffect(() => {
     setSaved(false)
+    if (!initializedRef.current) return undefined
     const timer = window.setTimeout(() => {
       try { localStorage.setItem(draftKey, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
     }, 700)
@@ -1853,7 +2032,20 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const discount = quantityDiscountForQty(quantity, DEFAULT_QUANTITY_DISCOUNT_POLICY).discountPercent / 100
   const total = unitPrice * quantity * (1 - discount)
   const selectedDesign = manifest?.designs?.find(item => item.slug === history.state.design || item.id === history.state.design)
-  const previewText = useMemo(() => normalizeOwayoPersonalization(history.state.text, history.state.roster), [history.state.text, history.state.roster])
+  const previewText = useMemo(() => ({
+    ...normalizeOwayoPersonalization(history.state.text, history.state.roster),
+    numberStyle:history.state.text?.numberStyle || ''
+  }), [history.state.text, history.state.roster])
+  const activeScene = MOCKUP_SCENE_PRESETS.find(scene => scene.id === scenePreset) || MOCKUP_SCENE_PRESETS[0]
+  const exportPng = () => {
+    const dataUrl = stageRef.current?.capture?.()
+    if (!dataUrl) return
+    downloadDataUrl(dataUrl, `${String(history.state.productId || 'jersevo-mockup').toLowerCase()}-preview.png`)
+  }
+  const exportJson = () => {
+    const payload = designerPayload(history.state, selectedDesign, manifest, customProduct, manifestUrl)
+    downloadJson({ schemaVersion:'1.0', workflow:'JERSEVO_MOCKUP_WORKFLOW', scene:activeScene.id, design:payload }, 'jersevo-design.json')
+  }
   const saveNow = () => {
     try { localStorage.setItem(draftKey, JSON.stringify(history.state)); setSaved(true) } catch { setSaved(false) }
   }
@@ -1864,25 +2056,32 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
     setAdded(false)
     try {
       const logoField = customProduct.customFields.find(field => field.type === 'logo')
-      const logoLayers = migrateDesignerLayers(history.state).filter(layer => layer.kind === 'logo' && layer.dataUrl).slice(0, 8)
+      const imageLayers = migrateDesignerLayers(history.state).filter(layer => ['logo', 'artwork'].includes(layer.kind) && layer.dataUrl).slice(0, 16)
+      const logoLayers = imageLayers.filter(layer => layer.kind === 'logo').slice(0, 8)
+      const artworkLayers = imageLayers.filter(layer => layer.kind === 'artwork').slice(0, 8)
       if (logoLayers.length && !logoField) throw new Error('This live jersey does not accept a team logo. Choose a jersey with logo personalization.')
-      if (logoLayers.length && logoField.requiresConsent !== false && logoLayers.some(layer => !layer.consent)) throw new Error('Confirm that you own or have permission to use every uploaded logo.')
+      if (imageLayers.some(layer => !layer.consent)) throw new Error('Confirm that you own or have permission to use every uploaded logo or artwork asset.')
       let logoUrl = ''
       const assetRefs = {}
-      const designerAssetRefs = []
-      if (logoLayers.length) {
-        for (const [index, layer] of logoLayers.entries()) {
-          let uploaded = logoUploadRef.current.get(layer.dataUrl) || null
+      const designerAssetRefs = Array(imageLayers.length)
+      let logoAssetIndex = 0
+      let artworkAssetIndex = logoLayers.length
+      if (imageLayers.length) {
+        for (const [index, layer] of imageLayers.entries()) {
+          const kind = layer.kind === 'artwork' ? 'artwork' : 'logo'
+          const cacheKey = `${kind}:${layer.dataUrl}`
+          let uploaded = logoUploadRef.current.get(cacheKey) || null
           if (!uploaded) {
-            const file = await fileFromDataUrl(layer.dataUrl, layer.name || `team-logo-${index + 1}.png`)
-            uploaded = await uploadCustomerReference(file, customProduct.id, logoField.key, 'logo')
-            logoUploadRef.current.set(layer.dataUrl, uploaded)
+            const file = await fileFromDataUrl(layer.dataUrl, layer.name || `${kind}-${index + 1}.${kind === 'artwork' ? 'webp' : 'png'}`)
+            if (!uploaded) uploaded = await uploadCustomerReference(file, customProduct.id, kind === 'artwork' ? '__designer_artwork__' : logoField.key, kind)
+            logoUploadRef.current.set(cacheKey, uploaded)
           }
-          if (index === 0) {
+          if (layer.kind === 'logo' && !logoUrl) {
             logoUrl = uploaded.imageUrl
             assetRefs[logoField.key] = uploaded.storage
           }
-          designerAssetRefs.push(uploaded.storage)
+          const assetIndex = layer.kind === 'artwork' ? artworkAssetIndex++ : logoAssetIndex++
+          designerAssetRefs[assetIndex] = uploaded.storage
         }
       } else {
         logoUploadRef.current.clear()
@@ -1900,7 +2099,8 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         assetRefs,
         designerAssetRefs,
         note,
-        logoConsent:Boolean(logoLayers.length && logoLayers.every(layer => layer.consent)),
+        logoConsent:Boolean(imageLayers.length && imageLayers.every(layer => layer.consent)),
+        assetConsent:Boolean(imageLayers.length && imageLayers.every(layer => layer.consent)),
          designer:designerPayload(history.state, selectedDesign, manifest, customProduct, manifestUrl)
       })
       const requestId = result?.data?.id
@@ -1910,7 +2110,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         variant,
         options:variant.values || {},
         quantity,
-         customization:{ requestId, fields, note, hasLogo:Boolean(logoLayers.length), logoConsent:Boolean(logoLayers.length && logoLayers.every(layer => layer.consent)), designer:designerPayload(history.state, selectedDesign, manifest, customProduct, manifestUrl) }
+         customization:{ requestId, fields, note, hasLogo:Boolean(logoLayers.length), hasArtwork:Boolean(artworkLayers.length), logoConsent:Boolean(imageLayers.length && imageLayers.every(layer => layer.consent)), designer:designerPayload(history.state, selectedDesign, manifest, customProduct, manifestUrl) }
       })
       setAdded(true)
       setRequestKey(`request_${globalThis.crypto.randomUUID().replace(/-/g,'')}`)
@@ -1929,7 +2129,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const backTarget = listingProduct?.handle ? `/product/${listingProduct.handle}` : '/custom'
   const headerTitle = isRetailListing ? listingProduct.title : stripBoombahBrandingText(manifest.product.name)
   const headerLabel = isRetailListing ? 'Customize this jersey in 3D' : 'Jersevo 3D kit builder'
-  const Panel = activeTab === 'design' ? DesignPanel : activeTab === 'colors' ? ColorPanel : activeTab === 'patterns' ? PatternPanel : activeTab === 'text' ? TextPanel : LogoPanel
+  const Panel = activeTab === 'design' ? DesignPanel : activeTab === 'colors' ? ColorPanel : activeTab === 'patterns' ? PatternPanel : activeTab === 'text' ? TextPanel : activeTab === 'logos' ? LogoPanel : ArtworkPanel
   return <main className="custom-designer">
     <header className="custom-designer__header">
       <button type="button" className="custom-designer__back" onClick={() => onNavigate?.(backTarget)}><ArrowLeft size={17}/> {isRetailListing ? 'Back to product' : 'Custom lab'}</button>
@@ -1937,8 +2137,8 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${isRetailListing ? 'Retail jersey' : (manifestIsBoombah(manifest) ? 'Teamwear' : (manifest?.product?.sportLabel || manifest?.product?.catalogGroupLabel || 'Sportswear'))} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
     </header>
     <div className="custom-designer__workspace">
-      <section className="designer-stage" aria-label="3D jersey workspace">
-        <div className="designer-stage__meta"><span>{selectedDesign?.name || 'Custom design'}</span><strong>{history.state.text.team || 'Your team'}</strong></div>
+      <section className="designer-stage" aria-label="3D jersey workspace" style={activeScene.background === 'transparent' ? undefined : { background:activeScene.background }}>
+        <div className="designer-stage__meta"><span>{selectedDesign?.name || 'Custom design'}</span><strong>{history.state.text.team || 'Your team'}</strong><label className="designer-stage__scene"><span>Scene</span><select value={scenePreset} onChange={event => setScenePreset(event.target.value)} aria-label="Mockup scene">{MOCKUP_SCENE_PRESETS.map(scene => <option key={scene.id} value={scene.id}>{scene.label}</option>)}</select></label></div>
          <JerseyStage ref={stageRef} manifest={manifest} design={history.state.design} colors={history.state.colors} pattern={history.state.pattern} text={previewText} layers={history.state.layers} onStatus={setStageStatus}/>
         {stageStatus === 'loading' && <div className="designer-stage__loading"><span>90+</span><p>Stitching the 3D preview…</p></div>}
         {stageStatus === 'error' && <div className="designer-stage__loading is-error"><span>!</span><p>The design is saved. Reload to restore the 3D preview.</p></div>}
@@ -1947,6 +2147,8 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
           <button type="button" onClick={() => stageRef.current?.zoom(-1)} aria-label="Zoom out"><ZoomOut size={18}/></button>
           <button type="button" onClick={() => stageRef.current?.rotate(-1)} aria-label="Rotate left"><Rotate3D size={18}/></button>
           <button type="button" onClick={() => stageRef.current?.reset()} aria-label="Reset 3D view"><span>0°</span></button>
+          <button type="button" onClick={exportPng} aria-label="Download preview PNG"><Download size={17}/></button>
+          <button type="button" onClick={exportJson} aria-label="Download design JSON"><FileJson size={17}/></button>
         </div>
         <div className="designer-stage__history">
           <button type="button" disabled={!history.canUndo} onClick={history.undo}><Undo2 size={16}/> Undo</button>
@@ -1956,7 +2158,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       </section>
       <aside className="designer-controls">
         <nav className="designer-tabs" aria-label="Design tools">{TABS.map(tab => { const Icon = tab.icon; return <button type="button" key={tab.id} className={activeTab === tab.id ? 'is-active' : ''} onClick={() => setActiveTab(tab.id)}><Icon size={17}/><span>{tab.label}</span></button> })}</nav>
-        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoCatalog={owayoCatalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} designerConfig={activeDesignerConfig} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct} onOwayoProductChange={loadOwayoProduct}/></div>
+        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoCatalog={owayoCatalog} mockupCatalog={mockupCatalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} designerConfig={activeDesignerConfig} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct} onOwayoProductChange={loadOwayoProduct}/></div>
         <Roster state={history.state} update={history.update} sizes={selectedDesign?.sizes || manifest.product.sizes || []}/>
         <footer className="designer-order">
           <div className="designer-order__price"><span>{quantity} {quantity === 1 ? 'piece' : 'pieces'}{discount ? ` · ${Math.round(discount * 100)}% team saving` : ''}</span><strong>${total.toFixed(2)}</strong><small>{discount ? `$${unitPrice.toFixed(2)} each before team pricing` : 'Artwork review included'}</small></div>

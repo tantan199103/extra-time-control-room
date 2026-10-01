@@ -95,17 +95,19 @@ export function getCustomerSessionId() {
 }
 
 export async function uploadCustomerReference(file, productId, fieldKey, kind = 'photo') {
-  const logo = kind === 'logo'
-  const accepted = logo ? /^image\/(?:png|jpe?g|webp|svg\+xml)$/i : /^image\/(?:png|jpe?g|webp)$/i
-  const limit = logo ? 8 * 1024 * 1024 : 2 * 1024 * 1024
-  if (!file || !accepted.test(file.type) || file.size > limit) throw new Error(`Use a ${logo ? 'PNG, SVG, JPG or WebP logo' : 'JPG, PNG or WebP image'} smaller than ${limit / 1024 / 1024} MB.`)
+  const normalizedKind = ['logo', 'artwork'].includes(String(kind || '').toLowerCase()) ? String(kind).toLowerCase() : 'photo'
+  const imageAsset = normalizedKind !== 'photo'
+  const accepted = imageAsset ? /^image\/(?:png|jpe?g|webp|svg\+xml)$/i : /^image\/(?:png|jpe?g|webp)$/i
+  const limit = imageAsset ? 8 * 1024 * 1024 : 2 * 1024 * 1024
+  const label = normalizedKind === 'logo' ? 'PNG, SVG, JPG or WebP logo' : normalizedKind === 'artwork' ? 'PNG, SVG, JPG or WebP artwork' : 'JPG, PNG or WebP image'
+  if (!file || !accepted.test(file.type) || file.size > limit) throw new Error(`Use a ${label} smaller than ${limit / 1024 / 1024} MB.`)
   const dataUrl = await new Promise((resolve,reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result)
     reader.onerror = () => reject(new Error('The selected image could not be read.'))
     reader.readAsDataURL(file)
   })
-  const response = await apiFetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, kind:logo ? 'logo' : 'photo', dataUrl }) })
+  const response = await apiFetch('/api/customer-upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId:getCustomerSessionId(), productId, fieldKey, kind:normalizedKind, dataUrl }) })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error || 'The reference image could not be uploaded.')
   return result

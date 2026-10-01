@@ -45,7 +45,7 @@ export function assertCustomerAsset(productId, identityHash, rawAsset, { kind = 
   if (kind === 'logo' && !/\.png$/i.test(path)) {
     throw Object.assign(new Error('The logo asset must be the normalized private PNG upload.'), { status:422 })
   }
-  if (kind === 'photo' && !/\.webp$/i.test(path)) {
+  if (['photo', 'artwork'].includes(kind) && !/\.webp$/i.test(path)) {
     throw Object.assign(new Error('The reference asset must be the normalized private WebP upload.'), { status:422 })
   }
   return { bucket, path:normalizedPath }

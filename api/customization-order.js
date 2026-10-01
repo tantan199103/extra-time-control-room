@@ -46,8 +46,9 @@ export function normalizeDesignerSpec(value) {
   const text = normalizeOwayoPersonalization(textSource, roster)
   const layers = normalizeOwayoLayers(value.layers)
   if (layers.filter(layer => layer.kind === 'logo').length > 8) throw Object.assign(new Error('A 3D design can contain up to eight logo layers.'), { status:422 })
-  const logoAssetIndexes = layers.filter(layer => layer.kind === 'logo').map(layer => layer.assetIndex)
-  if (new Set(logoAssetIndexes).size !== logoAssetIndexes.length) throw Object.assign(new Error('Every 3D logo layer needs a distinct uploaded asset reference.'), { status:422 })
+  if (layers.filter(layer => layer.kind === 'artwork').length > 8) throw Object.assign(new Error('A 3D design can contain up to eight artwork layers.'), { status:422 })
+  const imageAssetIndexes = layers.filter(layer => ['logo', 'artwork'].includes(layer.kind)).map(layer => layer.assetIndex)
+  if (new Set(imageAssetIndexes).size !== imageAssetIndexes.length) throw Object.assign(new Error('Every 3D image layer needs a distinct uploaded asset reference.'), { status:422 })
   return {
     source:'JERSEVO_3D_DESIGNER',
     version:Math.max(1, Math.min(3, Number(value.version) || 1)),
@@ -62,6 +63,7 @@ export function normalizeDesignerSpec(value) {
     garment:safeText(value.garment, 160),
     designSlug:safeText(value.designSlug, 80),
     designName:safeText(value.designName, 120),
+    assetPolicy:safeText(value.assetPolicy, 80) || 'private-customer-assets',
     colors,
     pattern:patternSource.slug ? {
       id:safeText(patternSource.id, 40),
@@ -81,17 +83,23 @@ export function normalizeDesignerSpec(value) {
 export function validateDesignerAssetRefs(designer, designerAssetRefs = []) {
   const refs = Array.isArray(designerAssetRefs) ? designerAssetRefs : []
   const logoLayers = designer?.layers?.filter(layer => layer.kind === 'logo') || []
+  const artworkLayers = designer?.layers?.filter(layer => layer.kind === 'artwork') || []
+  const imageLayers = [...logoLayers, ...artworkLayers]
   if (logoLayers.some(layer => !refs[layer.assetIndex])) {
     throw Object.assign(new Error('Every 3D logo layer must reference its securely uploaded logo asset.'), { status:422 })
   }
-  if (refs.length && !logoLayers.length) {
+  if (artworkLayers.some(layer => !refs[layer.assetIndex])) {
+    throw Object.assign(new Error('Every 3D artwork layer must reference its securely uploaded artwork asset.'), { status:422 })
+  }
+  if (refs.length && !imageLayers.length) {
     throw Object.assign(new Error('The uploaded 3D logo assets are not attached to a logo layer.'), { status:422 })
   }
-  const referencedIndexes = new Set(logoLayers.map(layer => layer.assetIndex))
+  const referencedIndexes = new Set(imageLayers.map(layer => layer.assetIndex))
   if (refs.some((_, index) => !referencedIndexes.has(index))) {
-    throw Object.assign(new Error('Every uploaded 3D logo asset must be attached to a logo layer.'), { status:422 })
+    const message = artworkLayers.length ? 'Every uploaded 3D asset must be attached to an image layer.' : 'Every uploaded 3D logo asset must be attached to a logo layer.'
+    throw Object.assign(new Error(message), { status:422 })
   }
-  return logoLayers
+  return imageLayers
 }
 
 async function publishedListing(client, productId) {
@@ -163,14 +171,18 @@ export default async function handler(request, response) {
       }
     }
     const incomingDesignerAssetRefs = Array.isArray(body.designerAssetRefs) ? body.designerAssetRefs : []
-    if (incomingDesignerAssetRefs.length > 8) throw Object.assign(new Error('A design can contain up to eight uploaded logos.'), { status:422 })
-    if (incomingDesignerAssetRefs.length && !schema.some(field => field.type === 'logo')) throw Object.assign(new Error('This listing does not accept logo layers.'), { status:422 })
-    const designerAssetRefs = incomingDesignerAssetRefs.map(raw => {
+    if (incomingDesignerAssetRefs.length > 16) throw Object.assign(new Error('A design can contain up to sixteen uploaded image assets.'), { status:422 })
+    if (incomingDesignerAssetRefs.length && !schema.some(field => field.type === 'logo') && !body.designer) throw Object.assign(new Error('This listing does not accept designer image layers.'), { status:422 })
+    const designerAssetRefs = incomingDesignerAssetRefs.map((raw, index) => {
       try {
-        return assertCustomerAsset(product.id, identityHash, raw, { kind:'logo' })
+        // The normalized designer spec below determines whether this index is
+        // a logo (private PNG) or artwork (private WebP).  We validate the
+        // path once more after parsing the spec; this first check only limits
+        // the storage object to the current customer session.
+        return assertCustomerAsset(product.id, identityHash, raw, { kind:'' })
       } catch (error) {
         if (error?.status) throw error
-        throw Object.assign(new Error('A 3D logo layer does not belong to this request.'), { status:422 })
+        throw Object.assign(new Error('A 3D image layer does not belong to this request.'), { status:422 })
       }
     })
     const aiPreviewId = safeText(body.aiPreviewId,180)
@@ -192,6 +204,7 @@ export default async function handler(request, response) {
     }
     const logoFields = schema.filter(field => field.type === 'logo' && fields[field.key])
     const logoConsent = body.logoConsent === true
+    const assetConsent = body.assetConsent === true || logoConsent
     if (logoFields.some(field => field.requiresConsent !== false) && !logoConsent) {
       throw Object.assign(new Error('Confirm that you own or have permission to use the uploaded logo.'), { status:422 })
     }
@@ -201,12 +214,25 @@ export default async function handler(request, response) {
     }
     if (!Object.values(fields).some(Boolean) && !note && !aiPreviewStorage) throw Object.assign(new Error('Add at least one custom detail, studio note or AI preview.'), { status:422 })
     const designer = normalizeDesignerSpec(body.designer)
+    const imageLayers = designer?.layers?.filter(layer => ['logo', 'artwork'].includes(layer.kind)) || []
+    if (imageLayers.length && !assetConsent) throw Object.assign(new Error('Confirm that you own or have permission to use every uploaded logo or artwork asset.'), { status:422 })
+    // Verify the extension of every uploaded object against its declared layer
+    // kind. This prevents a WebP artwork from being replayed as a logo PNG (or
+    // vice versa) while keeping the refs opaque to the client.
+    imageLayers.forEach(layer => {
+      const ref = designerAssetRefs[layer.assetIndex]
+      try { assertCustomerAsset(product.id, identityHash, ref, { kind:layer.kind === 'logo' ? 'logo' : 'artwork' }) }
+      catch (error) { throw error?.status ? error : Object.assign(new Error('A 3D image asset does not match its layer.'), { status:422 }) }
+    })
     validateDesignerAssetRefs(designer, designerAssetRefs)
     validateListingDesigner(product, designer)
 
     const storedAssetRefs = {
       ...assetRefs,
-      ...Object.fromEntries(designerAssetRefs.map((asset, index) => [`designer-logo-${index + 1}`, asset]))
+      ...Object.fromEntries(designerAssetRefs.map((asset, index) => {
+        const layer = imageLayers.find(item => Number(item.assetIndex) === index)
+        return [`designer-${layer?.kind === 'artwork' ? 'artwork' : 'logo'}-${index + 1}`, asset]
+      }))
     }
 
     const payload = {
@@ -221,6 +247,7 @@ export default async function handler(request, response) {
       assetRefs,
       designerAssetRefs,
       note,
+      assetConsent,
       aiPreviewUrl:aiPreviewUrl || null,
       aiPreviewStorage,
       aiPrompt:aiPrompt || null,

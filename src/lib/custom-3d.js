@@ -16,8 +16,9 @@ const MANIFEST_PATTERNS = Object.freeze({
 })
 
 const PRODUCT_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,79}$/i
-const LAYER_KINDS = Object.freeze(new Set(['team', 'name', 'number', 'logo']))
+const LAYER_KINDS = Object.freeze(new Set(['team', 'name', 'number', 'logo', 'artwork']))
 const PRINT_AREAS = Object.freeze(new Set(['front-center', 'front-left-chest', 'front-right-chest', 'front-lower', 'back-upper', 'back-center', 'back-lower', 'left-sleeve', 'right-sleeve']))
+const TEXT_FONTS = Object.freeze(new Set(['Barlow Condensed', 'Manrope', 'Arial', 'Georgia', 'Impact']))
 
 const text = value => String(value ?? '').trim()
 
@@ -57,13 +58,17 @@ function normalizeConfig(raw) {
     const color = /^#[0-9a-f]{6}$/i.test(String(raw.defaultText.color || '')) ? String(raw.defaultText.color).toUpperCase() : ''
     const outlineColor = /^#[0-9a-f]{6}$/i.test(String(raw.defaultText.outlineColor || '')) ? String(raw.defaultText.outlineColor).toUpperCase() : ''
     const outlineWidth = Number(raw.defaultText.outlineWidth)
+    const font = TEXT_FONTS.has(String(raw.defaultText.font || '')) ? String(raw.defaultText.font) : ''
+    const numberStyle = text(raw.defaultText.numberStyle).toLowerCase() === 'carbon' ? 'carbon' : ''
     result.defaultText = {
       ...(safeText(raw.defaultText.team) ? { team:safeText(raw.defaultText.team) } : {}),
       ...(safeText(raw.defaultText.name) ? { name:safeText(raw.defaultText.name) } : {}),
       ...(safeText(raw.defaultText.number).replace(/\D/g, '') ? { number:safeText(raw.defaultText.number).replace(/\D/g, '').slice(0, 3) } : {}),
       ...(color ? { color } : {}),
       ...(outlineColor ? { outlineColor } : {}),
-      ...(Number.isFinite(outlineWidth) ? { outlineWidth:Math.max(0, Math.min(24, outlineWidth)) } : {})
+      ...(Number.isFinite(outlineWidth) ? { outlineWidth:Math.max(0, Math.min(24, outlineWidth)) } : {}),
+      ...(font ? { font } : {}),
+      ...(numberStyle ? { numberStyle } : {})
     }
   }
   if (raw.defaultColors && typeof raw.defaultColors === 'object' && !Array.isArray(raw.defaultColors)) {
@@ -84,8 +89,11 @@ function normalizeConfig(raw) {
         placement,
         x:clamp(layer.x, -1, 1, 0),
         y:clamp(layer.y, -1, 1, 0),
-        scale:clamp(layer.scale, kind === 'logo' ? .25 : .55, 2, 1),
-        rotation:clamp(layer.rotation, kind === 'logo' ? -180 : -30, kind === 'logo' ? 180 : 30, 0)
+        scale:clamp(layer.scale, ['logo', 'artwork'].includes(kind) ? .25 : .55, 2, 1),
+        rotation:clamp(layer.rotation, ['logo', 'artwork'].includes(kind) ? -180 : -30, ['logo', 'artwork'].includes(kind) ? 180 : 30, 0),
+        ...( /^#[0-9a-f]{6}$/i.test(String(layer.color || '')) ? { color:String(layer.color).toUpperCase() } : {} ),
+        ...( /^#[0-9a-f]{6}$/i.test(String(layer.outlineColor || '')) ? { outlineColor:String(layer.outlineColor).toUpperCase() } : {} ),
+        ...( /^#[0-9a-f]{6}$/i.test(String(layer.textureColor || '')) ? { textureColor:String(layer.textureColor).toUpperCase() } : {} )
       }]
     })
   }

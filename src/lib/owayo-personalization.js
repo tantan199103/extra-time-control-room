@@ -34,7 +34,10 @@ const PLACEMENT_PRESETS = Object.freeze({
 })
 
 const PLACEMENTS = new Set(Object.keys(PLACEMENT_PRESETS))
-const LAYER_KINDS = new Set(['team', 'name', 'number', 'logo'])
+// `artwork` is a customer-supplied image layer.  It shares the same bounded
+// UV placement pipeline as a logo, but remains a distinct kind in the order
+// contract so production tooling can tell a team mark from general artwork.
+const LAYER_KINDS = new Set(['team', 'name', 'number', 'logo', 'artwork'])
 
 export const OWAYO_PRINT_AREA_GROUPS = Object.freeze([
   Object.freeze({ label:'Front', options:Object.freeze([
@@ -252,17 +255,20 @@ export function normalizeOwayoLogo(input = {}) {
 export function normalizeOwayoLayer(input = {}, index = 0) {
   const kindCandidate = clean(input?.kind, 16).toLowerCase()
   const kind = LAYER_KINDS.has(kindCandidate) ? kindCandidate : 'name'
+  const isImage = kind === 'logo' || kind === 'artwork'
   const isLogo = kind === 'logo'
   return {
     id:clean(input?.id, 80) || `${kind}-${index + 1}`,
     kind,
-    placement:normalizeOwayoPlacement(input?.placement, isLogo ? 'front-left-chest' : 'back-center'),
+    placement:normalizeOwayoPlacement(input?.placement, isLogo ? 'front-left-chest' : kind === 'artwork' ? 'front-center' : 'back-center'),
     x:clamp(input?.x, -1, 1, 0),
     y:clamp(input?.y, -1, 1, 0),
-    scale:clamp(input?.scale, isLogo ? .25 : .55, isLogo ? 2 : 1.8, 1),
-    rotation:clamp(input?.rotation, isLogo ? -180 : -30, isLogo ? 180 : 30, 0),
-    name:isLogo ? clean(input?.name, 160) : '',
-    assetIndex:isLogo ? Math.round(clamp(input?.assetIndex, 0, 7, 0)) : null
+    scale:clamp(input?.scale, isImage ? .25 : .55, isImage ? 2 : 1.8, 1),
+    rotation:clamp(input?.rotation, isImage ? -180 : -30, isImage ? 180 : 30, 0),
+    name:isImage ? clean(input?.name, 160) : '',
+    // Logo-only legacy payloads remain indexed 0–7; the combined designer
+    // workflow may carry up to eight logos plus eight artwork layers.
+    assetIndex:isImage ? Math.round(clamp(input?.assetIndex, 0, isLogo ? 7 : 15, 0)) : null
   }
 }
 

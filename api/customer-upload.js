@@ -25,17 +25,20 @@ export default async function handler(request, response) {
     await consumeQuota(client, 'customer-upload', identityHash)
     const productId = safeText(body.productId, 160)
     const fieldKey = safeText(body.fieldKey, 100)
-    const kind = String(body.kind || '').toLowerCase() === 'logo' ? 'logo' : 'photo'
+    const requestedKind = String(body.kind || '').toLowerCase()
+    const kind = ['logo', 'artwork'].includes(requestedKind) ? requestedKind : 'photo'
     const match = String(body.dataUrl || '').match(/^data:image\/(png|jpe?g|webp|svg\+xml);base64,([A-Za-z0-9+/=]+)$/i)
-    if (!productId || !fieldKey || !match) throw Object.assign(new Error(kind === 'logo' ? 'Choose a PNG, SVG, JPG or WebP logo.' : 'Choose a JPG, PNG or WebP image.'), { status:422 })
+    if (!productId || !fieldKey || !match) throw Object.assign(new Error(kind === 'logo' ? 'Choose a PNG, SVG, JPG or WebP logo.' : kind === 'artwork' ? 'Choose a PNG, SVG, JPG or WebP artwork file.' : 'Choose a JPG, PNG or WebP image.'), { status:422 })
     const input = safeSvgBytes(Buffer.from(match[2], 'base64'), match[1])
-    const limit = kind === 'logo' ? 8 * 1024 * 1024 : 2 * 1024 * 1024
-    if (!input.length || input.length > limit) throw Object.assign(new Error(`${kind === 'logo' ? 'Logo' : 'Reference image'} must be smaller than ${limit / 1024 / 1024} MB.`), { status:422 })
-    let { data:product, error:productError } = await client.from('pod_products').select('id, handle, custom_fields').eq('id',productId).eq('status','PUBLISHED').maybeSingle()
-    if (!product && !productError) ({ data:product, error:productError } = await client.from('pod_products').select('id, handle, custom_fields').eq('handle',productId).eq('status','PUBLISHED').maybeSingle())
+    const limit = kind === 'photo' ? 2 * 1024 * 1024 : 8 * 1024 * 1024
+    if (!input.length || input.length > limit) throw Object.assign(new Error(`${kind === 'logo' ? 'Logo' : kind === 'artwork' ? 'Artwork' : 'Reference image'} must be smaller than ${limit / 1024 / 1024} MB.`), { status:422 })
+    let { data:product, error:productError } = await client.from('pod_products').select('id, handle, custom_fields, ai_metadata, tags').eq('id',productId).eq('status','PUBLISHED').maybeSingle()
+    if (!product && !productError) ({ data:product, error:productError } = await client.from('pod_products').select('id, handle, custom_fields, ai_metadata, tags').eq('handle',productId).eq('status','PUBLISHED').maybeSingle())
     if (productError) throw productError
     const field = (Array.isArray(product?.custom_fields) ? product.custom_fields : []).find(item => item.key === fieldKey && item.type === kind)
-    if (!field) throw Object.assign(new Error(kind === 'logo' ? 'This listing does not allow a logo in that field.' : 'This listing does not allow a photo in that field.'), { status:422 })
+    const hasDesigner = Boolean(product?.ai_metadata?.designer) || (Array.isArray(product?.tags) && product.tags.some(tag => String(tag).toLowerCase() === '3d-designer'))
+    if (kind !== 'artwork' && !field) throw Object.assign(new Error(kind === 'logo' ? 'This listing does not allow a logo in that field.' : 'This listing does not allow a photo in that field.'), { status:422 })
+    if (kind === 'artwork' && (!hasDesigner || fieldKey !== '__designer_artwork__')) throw Object.assign(new Error('This listing does not allow private 3D artwork layers.'), { status:422 })
     let output
     try { output = await sharp(input).rotate().resize({ width:2400, height:2400, fit:'inside', withoutEnlargement:true }).webp({ quality:86 }).toBuffer() }
     catch { throw Object.assign(new Error('The selected image could not be read.'), { status:422 }) }
@@ -56,6 +59,15 @@ export default async function handler(request, response) {
         output = Buffer.from(await cleaned.arrayBuffer())
       } catch {
         throw Object.assign(new Error('The selected logo could not be cleaned safely.'), { status:422 })
+      }
+    } else {
+      try {
+        output = await sharp(input).rotate().resize({ width:2400, height:2400, fit:'inside', withoutEnlargement:true }).webp({ quality:88 }).toBuffer()
+        const cleaned = await sanitizeImagePrivacyMetadata(new Blob([output], { type:'image/webp' }))
+        output = Buffer.from(await cleaned.arrayBuffer())
+      } catch (error) {
+        if (error?.status) throw error
+        throw Object.assign(new Error('The selected artwork could not be read or cleaned safely.'), { status:422 })
       }
     }
     const path = `${product.id}/${identityHash.slice(0,16)}/${randomUUID()}.${kind === 'logo' ? 'png' : 'webp'}`

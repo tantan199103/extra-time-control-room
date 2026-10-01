@@ -1,0 +1,302 @@
+{
+  "schemaVersion": "1.0",
+  "provider": "jersevo",
+  "generatedAt": "2026-10-01T12:04:49.794Z",
+  "source": {
+    "provider": "3dmockups.app",
+    "sourceUrl": "https://www.3dmockups.app/",
+    "catalogUrl": "https://www.3dmockups.app/catalog",
+    "workflowUrl": "https://www.3dmockups.app/how-it-works",
+    "licenseStatus": "metadata-only",
+    "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license."
+  },
+  "entries": [
+    {
+      "id": "t-shirt",
+      "title": "Custom T-Shirt",
+      "category": "t-shirts",
+      "description": "A simple tee base for front, back and sleeve artwork.",
+      "material": "Heavy cotton",
+      "printAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/tshirts-basic/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "owayo",
+        "productId": "tshirts-basic",
+        "manifest": "/designer/owayo/tshirts-basic/manifest.json"
+      }
+    },
+    {
+      "id": "hoodie",
+      "title": "Custom Hoodie",
+      "category": "hoodies",
+      "description": "A hoodie base with a bounded front and back print workflow.",
+      "material": "Heavy cotton",
+      "printAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/tshirts-basic/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "owayo",
+        "productId": "tshirts-basic",
+        "manifest": "/designer/owayo/tshirts-basic/manifest.json"
+      }
+    },
+    {
+      "id": "baseball-jersey",
+      "title": "Custom Baseball Jersey",
+      "category": "jerseys",
+      "description": "Teamwear base with panel-aware logo and name/number placement.",
+      "material": "Performance knit",
+      "printAreas": [
+        "front-center",
+        "front-left-chest",
+        "front-right-chest",
+        "back-upper",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/cycling-c3/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog/baseball-jersey",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "boombah",
+        "productId": "BASEBALL3D",
+        "manifest": "/designer/boombah/products/baseball3d.json"
+      }
+    },
+    {
+      "id": "football-jersey",
+      "title": "Custom Football Jersey",
+      "category": "jerseys",
+      "description": "Teamwear base with editable colour zones, patterns and roster layers.",
+      "material": "Performance knit",
+      "printAreas": [
+        "front-center",
+        "back-upper",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/cycling-c3/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog/football-jersey",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "boombah",
+        "productId": "FOOTBALL3D",
+        "manifest": "/designer/boombah/products/football3d.json"
+      }
+    },
+    {
+      "id": "basketball-jersey",
+      "title": "Custom Basketball Jersey",
+      "category": "jerseys",
+      "description": "Reversible-ready basketball base with team text and logo panels.",
+      "material": "Performance knit",
+      "printAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/cycling-c3/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "boombah",
+        "productId": "BASKETBALL3D",
+        "manifest": "/designer/boombah/products/basketball3d.json"
+      }
+    },
+    {
+      "id": "hockey-jersey",
+      "title": "Custom Hockey Jersey",
+      "category": "jerseys",
+      "description": "Hockey base with front crest, sleeve mark and back roster areas.",
+      "material": "Performance knit",
+      "printAreas": [
+        "front-center",
+        "front-left-chest",
+        "front-right-chest",
+        "back-upper",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/hockey-h3/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "owayo",
+        "productId": "hockey-h3",
+        "manifest": "/designer/owayo/hockey-h3/manifest.json"
+      }
+    },
+    {
+      "id": "soccer-jersey",
+      "title": "Custom Soccer Jersey",
+      "category": "jerseys",
+      "description": "Breathable football/soccer base for club colours and roster details.",
+      "material": "Performance knit",
+      "printAreas": [
+        "front-center",
+        "front-left-chest",
+        "front-right-chest",
+        "back-upper",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/soccer-f3/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "owayo",
+        "productId": "soccer-f3",
+        "manifest": "/designer/owayo/soccer-f3/manifest.json"
+      }
+    },
+    {
+      "id": "shorts",
+      "title": "Custom Shorts",
+      "category": "bottoms",
+      "description": "A lower-body base for coordinated team kits.",
+      "material": "Performance knit",
+      "printAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "preview": "/designer/owayo/yoga-pants-highwaist/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "boombah",
+        "productId": "MENSPANTS3D",
+        "manifest": "/designer/boombah/products/menspants3d.json"
+      }
+    },
+    {
+      "id": "accessories",
+      "title": "Custom Accessories",
+      "category": "accessories",
+      "description": "Accessory bases are available only when their exact local model is ready.",
+      "material": "Mixed",
+      "printAreas": [
+        "front-center"
+      ],
+      "sizes": [],
+      "preview": "/designer/owayo/cycling-c3/previews/garment-render.webp",
+      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": {
+        "provider": "boombah",
+        "productId": "ACCESSORIES3D",
+        "manifest": "/designer/boombah/products/accessories3d.json"
+      }
+    }
+  ]
+}
