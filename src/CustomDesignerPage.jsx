@@ -39,7 +39,7 @@ import { custom3DDesignerConfig } from './lib/custom-3d'
 import { normalizeOwayoLayer, normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization, normalizeOwayoRoster, normalizeOwayoSizeOptions, owayoBackTextLayout, owayoPlacementPartNames, owayoPlacementPreset, owayoPlacementSurface, owayoPlacementUvTransform, resolveOwayoPreviewText, resolveOwayoSizeValue, OWAYO_PERSONALIZATION_FONTS, OWAYO_PRINT_AREA_GROUPS } from './lib/owayo-personalization'
 import { owayoFamilyByProductId, resolveOwayoManifestRequest } from './lib/owayo-designer-routing'
 import { trackStorefrontEvent } from './lib/storefront-analytics'
-import { MOCKUP_EXPORT_PRESETS, MOCKUP_SCENE_PRESETS, validateMockupAsset } from './lib/mockup-workflow'
+import { MOCKUP_SCENE_PRESETS, validateMockupAsset } from './lib/mockup-workflow'
 import './custom-designer.css'
 
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
