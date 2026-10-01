@@ -3,6 +3,8 @@ dist/
 dist-extension/
 artifacts/
 .tmp-owayo-preview-chrome/
+# Local GLB/texture inspection outputs; never package them in a deploy.
+.tmp-*
 .tools/
 .vercel/
 supabase/.temp/

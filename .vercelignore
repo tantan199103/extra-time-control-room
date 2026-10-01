@@ -26,6 +26,7 @@ dist
 dist-extension
 artifacts
 .tools
+.tmp-*
 .git
 .vercel
 supabase/.temp
