@@ -92,12 +92,15 @@ function escapeRegex(value) {
 function recolorBoombahSvg(svgText, design, colors) {
   const zones = design?.colorZones || []
   let svg = stripBoombahBrandingText(svgText, zones)
-  // Some mirrored GLBs sample the transparent portion of an Illustrator
-  // atlas around the garment shell.  Give that transparent canvas the body
-  // color so it cannot turn into WebGL black while retaining all authored
-  // trim paths above it.
-  const bodyColor = colorHex(colors?.C1, '#F8F8F4')
-  svg = svg.replace(/(<svg\b[^>]*>)/i, `$1<rect width="100%" height="100%" fill="${bodyColor}"/>`)
+  // The retail FD-5421 GLB samples the transparent portion of its
+  // Illustrator atlas around the garment shell.  Fill that atlas only when
+  // the manifest explicitly opts in; other Boombah families rely on a
+  // transparent UV background for their own material stack.
+  const backgroundCode = String(design?.template?.backgroundColorCode || '').trim()
+  if (backgroundCode) {
+    const bodyColor = colorHex(colors?.[backgroundCode], '#F8F8F4')
+    svg = svg.replace(/(<svg\b[^>]*>)/i, `$1<rect width="100%" height="100%" fill="${bodyColor}"/>`)
+  }
   const replacements = new Map()
   // Some synchronized templates keep a production colour directly in art
   // paths while the paramcolor marker retains the palette's canonical value.
@@ -641,7 +644,7 @@ async function loadBoombahTexture(design, colors, manifest) {
     // This mirrored Illustrator atlas is authored in top-left image space;
     // TextureLoader's unpack flip keeps its front/back print zones aligned
     // with the exported teamwear UVs.
-    texture.flipY = true
+    texture.flipY = false
     texture.anisotropy = 4
     texture.needsUpdate = true
     return texture

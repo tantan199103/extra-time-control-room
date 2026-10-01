@@ -103,7 +103,8 @@
       "template": {
         "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
         "path": "designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
-        "format": "svg-uv-atlas"
+        "format": "svg-uv-atlas",
+        "backgroundColorCode": "C1"
       },
       "preview": {
         "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/listing-fe628fbfa3f1ba174fe9/import/media-b73d3a16a49ef1b225e6.avif",
