@@ -131,6 +131,12 @@ export function catalogItemListStructuredData(products = [], origin = 'https://w
 }
 
 const relatedIndexCache = new WeakMap()
+// Static PDP generation can call relatedProducts once for every published
+// row.  Looking at every item in a large league/group bucket for every query
+// turns that into a quadratic build.  Keep the deterministic best-ID window
+// bounded for large live catalogues; small catalogues still inspect every
+// candidate and therefore retain the exact historical result.
+const RELATED_CANDIDATE_WINDOW = 96
 
 function addRelatedIndex(map, key, item) {
   if (!key) return
@@ -152,6 +158,12 @@ function relatedIndex(catalog) {
     addRelatedIndex(index.team, values.team, item)
     addRelatedIndex(index.group, item.productGroup, item)
   }
+  // The result contract sorts each score bucket by id.  Sorting the inverted
+  // lists once lets every PDP inspect only a bounded prefix instead of
+  // rebuilding the same ordering while scanning tens of thousands of rows.
+  for (const buckets of [index.league, index.team, index.group]) {
+    for (const bucket of buckets.values()) bucket.sort((a,b) => String(a.id).localeCompare(String(b.id)))
+  }
   relatedIndexCache.set(catalog, index)
   return index
 }
@@ -159,19 +171,26 @@ function relatedIndex(catalog) {
 export function relatedProducts(product, catalog, limit = 8) {
   const taxonomy = productTaxonomyValues(product)
   const index = relatedIndex(catalog)
-  const candidates = new Map()
-  for (const item of index.league.get(taxonomy.league) || []) candidates.set(item.id, item)
-  for (const item of index.team.get(taxonomy.team) || []) candidates.set(item.id, item)
-  for (const item of index.group.get(product.productGroup) || []) candidates.set(item.id, item)
   const cappedLimit = Math.max(0, Math.trunc(Number(limit) || 0))
   if (!cappedLimit) return []
 
-  // Keep only the best `limit` rows per score bucket. A large live catalogue
-  // can put tens of thousands of products in the same league/group bucket;
-  // sorting every candidate for every PDP made the static SEO build quadratic
-  // in catalogue size even though the storefront only renders eight rows.
+  // Keep only a bounded, already-sorted prefix from each inverted list. A
+  // large live catalogue can put tens of thousands of products in the same
+  // league/group bucket; inspecting every candidate for every PDP made the
+  // static SEO build quadratic even though the storefront only renders eight
+  // rows. Catalogues up to the window remain exact; larger catalogues retain
+  // the same score ordering with a deterministic bounded approximation.
+  const candidateWindow = Math.max(cappedLimit, Math.min(RELATED_CANDIDATE_WINDOW, Array.isArray(catalog) ? catalog.length : RELATED_CANDIDATE_WINDOW))
   const buckets = new Map()
-  for (const item of candidates.values()) {
+  const candidateRows = new Map()
+  for (const source of [
+    index.league.get(taxonomy.league) || [],
+    index.team.get(taxonomy.team) || [],
+    index.group.get(product.productGroup) || []
+  ]) {
+    for (const item of source.slice(0, candidateWindow)) candidateRows.set(item.id, item)
+  }
+  for (const item of candidateRows.values()) {
     if (item.id === product.id) continue
     const candidate = index.values.get(item.id) || productTaxonomyValues(item)
     const score = (taxonomy.league && taxonomy.league === candidate.league ? 2 : 0)
