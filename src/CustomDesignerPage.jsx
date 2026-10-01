@@ -630,13 +630,6 @@ async function loadBoombahTexture(design, colors, manifest) {
   const response = await fetch(assetUrl(design.template.uri, manifest), { cache:'force-cache' })
   if (!response.ok) throw new Error(`Template request failed (${response.status}).`)
   const svg = recolorBoombahSvg(await response.text(), design, colors)
-  console.warn('boombah-template-debug', {
-    design: design.id || design.slug || '',
-    body: (svg.match(/fill="#D9E0E4"/g) || []).length,
-    blue: (svg.match(/fill="#0076B6"/g) || []).length,
-    dark: (svg.match(/fill="#031D40"/g) || []).length,
-    bytes: svg.length
-  })
   const blobUrl = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml' }))
   try {
     const loader = new THREE.TextureLoader()
