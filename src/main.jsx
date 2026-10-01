@@ -2963,7 +2963,7 @@ function App() {
       ? Promise.resolve({ data:[], source:'navigation', error:null, total:null })
       : productSlug
       ? fetchStorefrontProduct(productSlug)
-      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:SHOP_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:homeRoute ? 12 : SHOP_PAGE_SIZE, basePath:customRoute ? '/custom' : path, search, includeCount:!homeRoute })
+      : collectionHandle ? fetchStorefrontCollectionPage(collectionHandle,{ page:catalogPage, pageSize:SHOP_PAGE_SIZE }) : fetchStorefrontCatalogPage({ page:catalogPage, pageSize:customRoute ? 100 : homeRoute ? 12 : SHOP_PAGE_SIZE, basePath:customRoute ? '/custom' : path, search, includeCount:!homeRoute })
     Promise.all([
       fetchStorefrontMenus(adminMenus),
       fetchStorefrontCollections([],collectionHandle || ''),

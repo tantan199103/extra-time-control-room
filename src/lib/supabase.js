@@ -340,7 +340,12 @@ export function applyStorefrontRouteFilters(query, { basePath = '', search = '' 
 export async function fetchStorefrontCatalogPage({ page = 1, pageSize = 24, basePath = '/shop', search = '', includeCount = false } = {}) {
   if (!supabase) return { data:[], total:0, page, pageSize, source:'unavailable', error:'Live catalogue is not configured.' }
   const safePage = Math.max(1,Math.trunc(Number(page) || 1))
-  const safeSize = Math.min(60,Math.max(12,Math.trunc(Number(pageSize) || 24)))
+  // The Custom Lab renders one complete family picker rather than a paged
+  // product grid.  Load the deterministic designer-ID set in one request so
+  // a valid family cannot look like a preview-only card simply because its
+  // listing was updated outside the first Shop-sized page.
+  const maxPageSize = isCustom3DRoute(basePath) ? 100 : 60
+  const safeSize = Math.min(maxPageSize,Math.max(12,Math.trunc(Number(pageSize) || 24)))
   // The explicit route filter below is cheap and deterministic for both the
   // ordinary catalogue and the Custom Lab. Do not short-circuit the custom
   // route from the navigation index: that index intentionally omits designer
