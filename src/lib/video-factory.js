@@ -109,7 +109,8 @@ export function buildPrompt(scene, productTitle, settings = {}) {
   const aspectRatio = settings.aspectRatio || VIDEO_FACTORY_DEFAULTS.aspectRatio
   const model = settings.model || VIDEO_FACTORY_DEFAULTS.model
   const segmentDuration = settings.segmentDuration || VIDEO_FACTORY_DEFAULTS.segmentDuration
-  return `${model}, ${segmentDuration}-second vertical ${aspectRatio} product ad. Product: ${productTitle}. ${scene.direction} Cinematic realism, premium navy and white palette, streetwear energy, exact product silhouette, exact embroidered logo, one cap throughout, no generated text, no watermark. ${scene.camera}. ${scene.sound}.`
+  const orientation = aspectRatio === '16:9' ? 'landscape' : aspectRatio === '1:1' ? 'square' : 'vertical'
+  return `${model}, ${segmentDuration}-second ${orientation} ${aspectRatio} product ad. Product: ${productTitle}. ${scene.direction} Cinematic realism, premium navy and white palette, streetwear energy, exact product silhouette, exact embroidered logo, one cap throughout, no generated text, no watermark. ${scene.camera}. ${scene.sound}.`
 }
 
 export function buildVideoCampaign(input = {}) {
@@ -145,10 +146,10 @@ export function buildVideoCampaign(input = {}) {
     totals: {
       sceneCount: scenes.length,
       duration: scenes.length * Number(settings.segmentDuration || 10),
-      readyCount: scenes.length
+      readyCount: 0
     },
     voiceover: scenes.map(scene => scene.voiceover).join(' '),
-    musicDirection: 'Instrumental hip-hop / trap at 100 BPM. Bass hit at every scene transition; clean final hit at 60s.'
+    musicDirection: `Instrumental hip-hop / trap at 100 BPM. Bass hit at every scene transition; clean final hit at ${duration}s.`
   }
 }
 

@@ -18,6 +18,8 @@ test('builds a six-scene Omni campaign with a 60 second total', () => {
   assert.equal(campaign.settings.model, 'Omni 1.1 Flash')
   assert.ok(campaign.scenes.every(scene => scene.prompt.includes('no generated text')))
   assert.equal(campaign.scenes[0].caption, 'THE CAP THAT SETS THE TONE')
+  assert.equal(campaign.totals.readyCount, 0)
+  assert.match(campaign.musicDirection, /final hit at 60s/)
 })
 
 test('exports production captions and a compact manifest', () => {
@@ -36,5 +38,7 @@ test('keeps the scene timeline aligned when a 30 second cut is selected', () => 
   assert.equal(campaign.scenes[0].time, '00–05s')
   assert.equal(campaign.scenes[5].time, '25–30s')
   assert.equal(campaign.totals.duration, 30)
+  assert.match(campaign.scenes[0].prompt, /5-second vertical 9:16/)
+  assert.match(campaign.musicDirection, /final hit at 30s/)
   assert.match(buildCaptionSrt(campaign), /00:00:25,000 --> 00:00:30,000/)
 })

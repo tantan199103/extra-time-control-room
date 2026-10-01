@@ -85,6 +85,7 @@ export default function VideoFactory() {
   const readyCount = campaign?.scenes?.filter(scene => scene.status === 'done').length || 0
   const progress = campaign ? Math.round((readyCount / campaign.scenes.length) * 100) : 0
   const selectedScene = campaign?.scenes?.find(scene => scene.id === activeScene) || campaign?.scenes?.[0]
+  const beatDuration = Math.round((Number(duration) || VIDEO_FACTORY_DEFAULTS.duration) / 6)
 
   const generateCampaign = () => {
     setBusy(true)
@@ -139,7 +140,7 @@ export default function VideoFactory() {
         <div className="vf-kicker"><Clapperboard size={15}/> JERSEVO VIDEO FACTORY / MVP</div>
         <h1>TURN A PRODUCT<br/><em>INTO A MOMENT.</em></h1>
         <p>A compact production desk for 9:16 campaigns. Feed it a product page, get a six-scene Omni prompt pack and an edit map ready for Flow.</p>
-        <div className="vf-hero__meta"><span><strong>06</strong> scenes</span><span><strong>{duration === '60' ? '10s' : '5s'}</strong> per beat</span><span><strong>{aspectRatio}</strong> native</span></div>
+        <div className="vf-hero__meta"><span><strong>06</strong> scenes</span><span><strong>{beatDuration}s</strong> per beat</span><span><strong>{aspectRatio}</strong> native</span></div>
       </div>
       <div className="vf-hero__visual"><ProductArt/><span className="vf-hero__visual-note">CURRENT TEMPLATE / NY YANKEES NAVY 9SEVENTY</span></div>
     </section>
@@ -178,7 +179,7 @@ export default function VideoFactory() {
 
     {campaign && selectedScene && <section className="vf-detail">
       <div className="vf-detail__rail"><SectionLabel icon={SlidersHorizontal}>03 / SCENE DETAIL</SectionLabel><span className="vf-detail__eyebrow">{selectedScene.accent} / {selectedScene.time}</span><h2>{selectedScene.title}</h2><p>{selectedScene.voiceover}</p><div className="vf-detail__specs"><span><Clock3 size={14}/><b>{campaign.settings.segmentDuration}s</b> duration</span><span><Film size={14}/><b>{selectedScene.camera}</b></span><span><Sparkles size={14}/><b>{selectedScene.sound}</b></span></div></div>
-      <div className="vf-prompt"><div className="vf-prompt__head"><span>OMNI PROMPT</span><button onClick={() => { navigator.clipboard?.writeText(selectedScene.prompt); setNotice('Scene prompt copied.') }}><Copy size={14}/> Copy</button></div><pre>{selectedScene.prompt}</pre><div className="vf-prompt__footer"><span>Caption overlay</span><strong>{selectedScene.caption}</strong></div></div>
+      <div className="vf-prompt"><div className="vf-prompt__head"><span>OMNI PROMPT</span><button onClick={async () => { try { await navigator.clipboard?.writeText(selectedScene.prompt); setNotice('Scene prompt copied.') } catch { setNotice('Clipboard is unavailable. Download the manifest instead.') } }}><Copy size={14}/> Copy</button></div><pre>{selectedScene.prompt}</pre><div className="vf-prompt__footer"><span>Caption overlay</span><strong>{selectedScene.caption}</strong></div></div>
     </section>}
 
     <footer className="vf-footer"><span><CheckCircle2 size={15}/> Flow-ready production system</span><span>{notice || 'Prompts are designed for a human review before generation.'}</span><span>JERSEVO / 2026</span></footer>
