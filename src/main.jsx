@@ -70,6 +70,7 @@ import './styles.css'
 import './shop-visual.css'
 import './taxonomy-hubs.css'
 import './custom-hub.css'
+import './commerce-shell.css'
 
 const AdminApp = lazy(() => import('./admin'))
 const AiStudio = lazy(() => import('./AiStudio'))
@@ -1358,7 +1359,21 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
         <div className="custom-section-head"><div><p className="custom-flow-eyebrow">1 / CHOOSE YOUR GARMENT</p><h2 id="custom-families-title">Pick a cut.<br /><em>Then make it yours.</em></h2></div><span>{families.length ? `${families.length} ready-to-design cuts` : 'Loading garment library…'}</span></div>
         <div className="custom-family-tabs" role="tablist" aria-label="Custom garment categories"><button type="button" role="tab" aria-selected={activeFamily === 'ALL'} className={activeFamily === 'ALL' ? 'is-active' : ''} onClick={() => setActiveFamily('ALL')}>ALL CUTS</button>{familyGroups.map(group => <button type="button" role="tab" aria-selected={activeFamily === group.id} className={activeFamily === group.id ? 'is-active' : ''} key={group.id} onClick={() => setActiveFamily(group.id)}>{group.label}</button>)}</div>
         {catalogError && <p className="custom-flow-error" role="status">{catalogError} Available garments remain editable in the same 3D studio.</p>}
-        <div className="custom-family-grid">{filteredFamilies.map(family => { const preview = familyPreview(family); const listing = listingByFamily.get(family.key); const price = Number(listing?.price || 0); return <button type="button" className="custom-family-card" key={family.key} onClick={() => openFamily(family)}><span className={`custom-family-card__media${preview ? '' : ' is-missing'}`}>{preview ? <img src={preview} alt={`${familyLabel(family)} custom garment preview`} width="480" height="640" loading="lazy" decoding="async" onError={handleFamilyPreviewError} /> : null}<span className="custom-family-card__segment">{family.segmentLabel}</span><span className="custom-family-card__placeholder" aria-hidden="true"><strong>{familyLabel(family)}</strong><small>{preview ? 'Preview loading' : 'Preview unavailable'}</small></span></span><span className="custom-family-card__body"><strong>{familyLabel(family)}</strong><small>{family.styleCount || 1} cuts · {family.designCount || 1} templates</small><span><b>{listing && price > 0 ? `From $${price.toFixed(0)}` : '3D PREVIEW'}</b><em>Open editor</em><ArrowRight size={15}/></span></span></button> })}</div>
+        <div className="custom-family-grid">{filteredFamilies.map(family => {
+          const preview = familyPreview(family)
+          const listing = listingByFamily.get(family.key)
+          const price = Number(listing?.price || 0)
+          const orderable = Boolean(listing && price > 0)
+          const status = orderable ? 'ORDERABLE' : preview ? 'PREVIEW ONLY' : 'COMING SOON'
+          return <button type="button" className={`custom-family-card${orderable ? ' is-orderable' : ' is-preview-only'}`} key={family.key} onClick={() => openFamily(family)}>
+            <span className={`custom-family-card__media${preview ? '' : ' is-missing'}`}>
+              {preview ? <img src={preview} alt={`${familyLabel(family)} custom garment preview`} width="480" height="640" loading="lazy" decoding="async" onError={handleFamilyPreviewError} /> : null}
+              <span className="custom-family-card__segment">{family.segmentLabel}</span>
+              <span className="custom-family-card__placeholder" aria-hidden="true"><strong>{familyLabel(family)}</strong><small>{preview ? 'Preview loading' : 'Preview unavailable'}</small></span>
+            </span>
+            <span className="custom-family-card__body"><strong>{familyLabel(family)}</strong><small>{family.styleCount || 1} cuts · {family.designCount || 1} templates</small><span><b>{orderable ? `From $${price.toFixed(0)}` : status}</b><em>{orderable ? 'Open editor' : 'Design draft'}</em><ArrowRight size={15}/></span></span>
+          </button>
+        })}</div>
         {!filteredFamilies.length && <div className="custom-flow-empty"><Sparkles size={21}/><strong>Garment library is loading.</strong><span>Open the C3 designer to start with the default production-ready cut.</span><button type="button" className="button button--dark" onClick={() => openDefaultDesigner('custom_hub_empty')}>OPEN C3 DESIGNER <ArrowRight size={15}/></button></div>}
       </section>}
 
@@ -2234,9 +2249,13 @@ function Shop({ onQuickView, products, collection = null, category = null, page 
   const routeProducts = category
     ? catalogProducts.filter(product => productMatchesCatalogCategory(product, category))
     : collection ? (pagination?.server ? catalogProducts : sortCollectionProducts(catalogProducts,collection)) : catalogProducts
+  // Invalid catalogue taxonomy must never reach a public grid. This keeps a
+  // stale league/team field from leaking a product into an unrelated route
+  // while the source row is being repaired in Admin.
+  const validRouteProducts = routeProducts.filter(product => validateCatalogTaxonomy(product).valid)
   const baseProducts = searchQuery.trim().length >= 2
-    ? routeProducts.filter(product => matchesDiscoveryQuery(product, searchQuery))
-    : routeProducts
+    ? validRouteProducts.filter(product => matchesDiscoveryQuery(product, searchQuery))
+    : validRouteProducts
   const productColours = catalogProductColours
   const productSizes = catalogProductSizes
   const derivedColours = ['ALL', ...new Set(baseProducts.flatMap(productColours).map(value => String(value).toUpperCase()))]
@@ -3236,11 +3255,11 @@ function App() {
   else if (path.startsWith('/league/')) page = routeLeague && !catalogPageHidden ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct} pageOverride={catalogPageOverride}/> : <NotFound/>
   else if (path.startsWith('/team/')) page = routeLeague && routeTeam && (!hasTeamProductTypeSegment || routeProductType) && !catalogPageHidden ? <TaxonomyLanding key={`${routeTeam.slug}:${routeProductType?.handle || 'all'}:${catalogPage}:${search}`} league={routeLeague} team={routeTeam} productType={routeProductType} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct} pageOverride={catalogPageOverride}/> : <NotFound/>
   else if (path === '/studio') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
-  else if (path === '/membership' || path === '/account/membership') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the club…</p></div>}><MembershipPage account={account} onAccountChange={setAccount}/></Suspense>
+  else if (path === '/membership' || path === '/account' || path === '/account/membership') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the club…</p></div>}><MembershipPage account={account} onAccountChange={setAccount} focusAccount={path === '/account'}/></Suspense>
   else if (path === '/checkout') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening secure checkout…</p></div>}><CheckoutPage cart={cart} account={account} onNavigate={navigate} onClearCart={clearCart} onPaymentConfirmed={completeCheckout} initialRoute={route}/></Suspense>
   else if (path === '/track-order') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening order status…</p></div>}><OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout}/></Suspense>
   else if (path.startsWith('/order/')) { const orderPublicId = decodeURIComponent(path.split('/').slice(2).join('/')); const trackingToken = new URLSearchParams(search).get('token') || ''; page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening order status…</p></div>}><OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout} initialPublicId={orderPublicId} initialToken={trackingToken}/></Suspense> }
-  else if (path === '/vault') page = (!theme?.pages?.length || theme.pages.some(page => page.path === '/vault' && page.status === 'PUBLISHED')) ? <VaultPage/> : <NotFound/>
+  else if (path === '/vault') page = <VaultPage/>
   else if (path === '/about') page = <AboutPage/>
   else if (['/privacy','/terms','/accessibility','/shipping','/returns','/warranty','/journal'].includes(path)) page=<Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the trust desk…</p></div>}><PolicyPage type={path.slice(1)} components={{ Breadcrumbs, StorefrontTrust }}/></Suspense>
   else if (path.startsWith('/product/')) page = routeProduct ? isCustom3DOnlyProduct(routeProduct) ? <div className="route-loading"><span>90+</span><p>Opening the 3D custom studio…</p></div> : <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening product details…</p></div>}><ProductPage key={routeProduct.id} product={routeProduct} products={products} onAdd={addToCart} onQuickView={setQuickViewProduct} startPersonalized={new URLSearchParams(search).get('custom') === '1'} account={account} pageConfig={pageConfig('product')} components={{ Breadcrumbs, ProductRail, Rating, SizeFinder }}/></Suspense> : catalogState.loading ? <div className="route-loading"><span>90+</span><p>Loading published listing…</p></div> : <NotFound/>

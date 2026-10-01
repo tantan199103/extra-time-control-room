@@ -46,6 +46,16 @@ test('taxonomy validator checks team ownership and jersey sport', () => {
   assert.equal(soccer.normalized.league, 'epl')
 })
 
+test('taxonomy validator blocks stale league fields when copy names another controlled team', () => {
+  const staleLeague = validateCatalogTaxonomy({
+    title: 'Newcastle United FC supporter cap',
+    taxonomy: { league: 'NFL' },
+    productGroup: 'Caps'
+  })
+  assert.equal(staleLeague.valid, false)
+  assert.ok(staleLeague.blockers.includes('TAXONOMY_TEAM_LEAGUE_MISMATCH'))
+})
+
 test('taxonomy validator separates wrestling promotions and racing series', () => {
   const wwe = validateCatalogTaxonomy({
     title: 'WWE Legends trading card box',

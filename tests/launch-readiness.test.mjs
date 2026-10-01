@@ -91,6 +91,20 @@ test('control-room CSS stays behind the lazy Admin route', async () => {
   assert.match(adminCss,/\.admin-bulk-bar/)
 })
 
+test('public trust and commerce routes ship their own runtime and CSS contracts', async () => {
+  const [shell, policy, commerce, personalizer] = await Promise.all([
+    readFile(new URL('../src/main.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/PolicyPage.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/commerce-shell.css', import.meta.url), 'utf8'),
+    readFile(new URL('../src/HomeJerseyPersonalizer.jsx', import.meta.url), 'utf8')
+  ])
+  assert.match(shell, /import '\.\/commerce-shell\.css'/)
+  assert.match(commerce, /\.checkout-page[\s,]/)
+  assert.match(commerce, /\.tracking-page[\s,]/)
+  assert.match(policy, /import React, \{ useEffect, useState \} from 'react'/)
+  assert.doesNotMatch(personalizer, /420\+ verified reviews/)
+})
+
 test('product decision code stays behind the lazy PDP route', async () => {
   const [shell, productPage] = await Promise.all([
     readFile(new URL('../src/main.jsx', import.meta.url),'utf8'),

@@ -9,7 +9,6 @@ import {
   Shirt,
   ShoppingBag,
   Sparkles,
-  Star,
   Tag
 } from 'lucide-react'
 import { apiFetch } from './lib/api-client'
@@ -624,14 +623,7 @@ export default function HomeJerseyPersonalizer({ onAdd, product, products = [] }
             <div className="home-personalizer__listing-titles">
               <span className="home-personalizer__listing-sub">{activeListing.league} · {activeListing.teamName}</span>
               <h3 className="home-personalizer__listing-name">{activeListing.title}</h3>
-              <div className="home-personalizer__rating">
-                <span className="home-personalizer__stars" aria-hidden="true">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={13} fill="#e5a914" stroke="#e5a914" />
-                  ))}
-                </span>
-                <span>4.9/5 (420+ verified reviews)</span>
-              </div>
+              <p className="home-personalizer__rating-note">Live rating appears on the published product page.</p>
             </div>
             <div className="home-personalizer__listing-pricing">
               <strong className="home-personalizer__price">${activeListing.price.toFixed(2)}</strong>

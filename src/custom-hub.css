@@ -142,6 +142,9 @@
   .custom-hub * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 
+.custom-family-card.is-preview-only .custom-family-card__body b { color:#77766e; letter-spacing:.04em; }
+.custom-family-card.is-orderable .custom-family-card__body b { color:var(--signal); }
+
 /* Owayo-inspired decision flow: choose a sport/cut first, then enter the
    designer. The visual language stays Jersevo editorial rather than copying
    an external brand shell or its marks. */

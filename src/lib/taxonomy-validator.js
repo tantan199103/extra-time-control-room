@@ -1,4 +1,5 @@
 import {
+  ALL_LEAGUE_TAXONOMY,
   LEAGUE_TAXONOMY,
   RETIRED_LEAGUE_KEYS,
   findLeague,
@@ -139,6 +140,26 @@ function productText(product, source) {
 
 function unique(values) { return [...new Set(values.filter(Boolean))] }
 
+// A source row can carry a broad or stale league value while its title still
+// names a controlled team from another league.  That is exactly how a
+// Newcastle United product can leak into an NFL query.  Detect the strongest
+// team signal before allowing a row to reach a league landing page or SEO
+// snapshot.  Team names are matched as complete phrases so words such as
+// "cap" never become a false hockey/team hit.
+function detectedTeams(haystack) {
+  const matches = []
+  const seen = new Set()
+  for (const league of ALL_LEAGUE_TAXONOMY) {
+    for (const team of league.teams || []) {
+      const key = `${league.key}:${team.slug}`
+      if (seen.has(key) || !team.name || !wordPattern(team.name).test(haystack)) continue
+      seen.add(key)
+      matches.push({ league:league.key, team:team.slug, name:team.name })
+    }
+  }
+  return matches
+}
+
 function compatibleLeagueText(declared, detected) {
   if (!declared || !detected) return true
   if (declared === detected) return true
@@ -181,6 +202,7 @@ export function validateCatalogTaxonomy(product = {}) {
     const racingContext = /\b(?:formula|racing|motorsport|grand\s+prix|race\s+car)\b/i.test(haystack)
     return !(modelContext && !racingContext)
   })
+  const teamSignals = detectedTeams(haystack)
   const blockers = []
   const warnings = []
 
@@ -205,6 +227,15 @@ export function validateCatalogTaxonomy(product = {}) {
     }
   } else if (!source.team) {
     warnings.push('TAXONOMY_TEAM_RECOMMENDED')
+  }
+
+  // A declared NFL row whose copy clearly names an EPL/La Liga/etc. team is
+  // not safe to show merely because a stale source field says `league: nfl`.
+  // Soccer is an umbrella route, so its controlled child leagues remain
+  // compatible with one another here.
+  if (league && teamSignals.length) {
+    const incompatibleTeam = teamSignals.find(signal => !compatibleLeagueText(league, signal.league))
+    if (incompatibleTeam) blockers.push('TAXONOMY_TEAM_LEAGUE_MISMATCH')
   }
 
   const expectedSport = LEAGUE_SPORT[league] || ''

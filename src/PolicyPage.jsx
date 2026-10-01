@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ArrowRight, Check, ChevronDown, CircleHelp, PackageCheck, ShieldCheck } from 'lucide-react'
 import { TRUST_PAGES } from './lib/trust-pages'
 

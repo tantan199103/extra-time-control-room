@@ -6,7 +6,7 @@ import './membership.css'
 const money = value => `$${Number(value || 0).toFixed(0)}`
 const formatDate = value => value ? new Intl.DateTimeFormat('en',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(value)) : 'Not set'
 
-export default function MembershipPage({ account, onAccountChange }) {
+export default function MembershipPage({ account, onAccountChange, focusAccount = false }) {
   const [offer,setOffer]=useState(membershipPreview)
   const [selected,setSelected]=useState(membershipPreview.prices[2].id)
   const [email,setEmail]=useState('')
@@ -20,7 +20,7 @@ export default function MembershipPage({ account, onAccountChange }) {
   const pending=current.requests?.find(item=>item.status==='PENDING')
 
   useEffect(()=>{ let alive=true; fetchMembershipOffer().then(result=>{if(!alive)return;setOffer(result.data || membershipPreview);const annual=(result.data?.prices||[]).find(item=>item.billing_interval==='YEAR');if(annual)setSelected(annual.id)});return()=>{alive=false}},[])
-  useEffect(()=>{ if(window.location.hash==='#account') requestAnimationFrame(()=>document.getElementById('account')?.scrollIntoView({behavior:'smooth'})) },[])
+  useEffect(()=>{ if(focusAccount || window.location.hash==='#account') requestAnimationFrame(()=>document.getElementById('account')?.scrollIntoView({behavior:'smooth'})) },[focusAccount])
   const plan=offer.prices.find(item=>item.id===selected) || offer.prices[0]
   const annualSaving=useMemo(()=>{
     const monthly=offer.prices.find(item=>item.billing_interval==='MONTH')

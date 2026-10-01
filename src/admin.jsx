@@ -298,6 +298,9 @@ function StripePaymentPanel() {
 }
 
 function AdminSettings() {
+  // The legacy shell owns pixel/deployment controls. Its old payment panel is
+  // hidden by admin-payment.css while this unified panel remains the only
+  // visible provider source of truth.
   return <><div className="admin-settings-legacy"><AdminSettingsLegacy/></div><StripePaymentPanel/></>
 }
 
@@ -630,8 +633,12 @@ function AdminWorkspace() {
     if (result.source === 'supabase' && !result.error) setCollectionRows(changed.collections)
     return result.error ? { error:result.error } : { updated:ids.length, failures:[], skipped:0 }
   }
-  if (loading && !productRows.length) return <main className="admin-access"><p role="status">Loading store data…</p></main>
   const isEditor = path.startsWith('/admin/products/')
+  // Orders, Membership, Settings, Theme, Menus and the Bridge can render
+  // their own shell without waiting for the 31k-row catalogue. Only views
+  // whose first screen is catalogue-dependent keep the blocking fallback.
+  const catalogueDependentRoute = path === '/admin' || path === '/admin/catalog' || isEditor || path.startsWith('/admin/collections')
+  if (loading && !productRows.length && catalogueDependentRoute) return <main className="admin-access"><p role="status">Loading catalogue-backed workspace…</p></main>
   const active = path === '/admin/bridge' ? 'bridge' : path.startsWith('/admin/orders') ? 'orders' : path.startsWith('/admin/membership') ? 'membership' : path.startsWith('/admin/customizations') ? 'customizations' : isEditor || path === '/admin/catalog' ? 'catalog' : path.startsWith('/admin/theme/menus') ? 'menus' : path.startsWith('/admin/theme') ? 'theme' : path.startsWith('/admin/collections') ? 'collections' : path === '/admin/settings' ? 'settings' : 'overview'
   let page = <AdminOverview products={productRows} catalogLoad={catalogLoad}/>
   if (path === '/admin/bridge') page = <PodBridgeReceiver products={productRows} onSaved={saveProduct}/>
