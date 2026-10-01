@@ -163,11 +163,34 @@ export function relatedProducts(product, catalog, limit = 8) {
   for (const item of index.league.get(taxonomy.league) || []) candidates.set(item.id, item)
   for (const item of index.team.get(taxonomy.team) || []) candidates.set(item.id, item)
   for (const item of index.group.get(product.productGroup) || []) candidates.set(item.id, item)
-  return [...candidates.values()].filter(item => item.id !== product.id).map(item => {
+  const cappedLimit = Math.max(0, Math.trunc(Number(limit) || 0))
+  if (!cappedLimit) return []
+
+  // Keep only the best `limit` rows per score bucket. A large live catalogue
+  // can put tens of thousands of products in the same league/group bucket;
+  // sorting every candidate for every PDP made the static SEO build quadratic
+  // in catalogue size even though the storefront only renders eight rows.
+  const buckets = new Map()
+  for (const item of candidates.values()) {
+    if (item.id === product.id) continue
     const candidate = index.values.get(item.id) || productTaxonomyValues(item)
     const score = (taxonomy.league && taxonomy.league === candidate.league ? 2 : 0)
       + (taxonomy.team && taxonomy.team === candidate.team ? 4 : 0)
       + (product.productGroup && product.productGroup === item.productGroup ? 1 : 0)
-    return { item, score }
-  }).filter(row => row.score > 0).sort((a,b) => b.score-a.score || String(a.item.id).localeCompare(String(b.item.id))).slice(0,limit).map(row => row.item)
+    if (!score) continue
+    const bucket = buckets.get(score) || []
+    bucket.push({ item, id:String(item.id) })
+    bucket.sort((a,b) => a.id.localeCompare(b.id))
+    if (bucket.length > cappedLimit) bucket.pop()
+    buckets.set(score, bucket)
+  }
+
+  const result = []
+  for (const score of [...buckets.keys()].sort((a,b) => b-a)) {
+    for (const row of buckets.get(score)) {
+      result.push(row.item)
+      if (result.length === cappedLimit) return result
+    }
+  }
+  return result
 }
