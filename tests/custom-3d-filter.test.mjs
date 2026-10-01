@@ -4,6 +4,7 @@ import { hasCustom3DDesigner, custom3DDesignerConfig, isCustom3DOnlyProduct, isR
 import { prepareStorefrontProduct } from '../src/lib/storefront-model.js'
 import { catalogCategoryByHandle, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
 import { owayoFamilyByProductId, resolveOwayoManifestRequest } from '../src/lib/owayo-designer-routing.js'
+import { DESIGNER_LISTING_IDS } from '../src/lib/designer-listing-ids.js'
 
 const customCategory = catalogCategoryByHandle('custom-jerseys')
 
@@ -63,6 +64,12 @@ test('retail 3D contracts keep the normal PDP and expose safe preset defaults', 
   assert.equal(isCustom3DOnlyProduct(product), false)
   assert.deepEqual(custom3DDesignerConfig(product).defaultText, { team:'DETROIT', name:'ST. BROWN', number:'14' })
   assert.deepEqual(custom3DDesignerConfig(product).defaultColors, { C1:'#9CA3AF', C2:'#0A3D91', C3:'#F8F8F4' })
+})
+
+test('Custom Lab query IDs cover the synchronized Owayo and Boombah source families', () => {
+  assert.ok(DESIGNER_LISTING_IDS.includes('listing-jersevo-custom-cycling-c3'))
+  assert.ok(DESIGNER_LISTING_IDS.includes('custom-football3d-teamwear'))
+  assert.equal(new Set(DESIGNER_LISTING_IDS).size, DESIGNER_LISTING_IDS.length)
 })
 
 test('legacy Boombah marker resolves to its local product manifest', () => {

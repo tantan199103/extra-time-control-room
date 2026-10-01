@@ -12,6 +12,7 @@ import { ALL_LEAGUE_TAXONOMY } from './league-taxonomy'
 import { accessoryGroupsForCategory, catalogCategoryByHandle, catalogCategoryIntentFilter } from './catalog-taxonomy'
 import { teamProductTypeByHandle } from './team-product-pages'
 import { catalogPageRouteCanDeleteProducts } from './catalog-page-overrides'
+import { DESIGNER_LISTING_IDS } from './designer-listing-ids'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -195,7 +196,7 @@ const STOREFRONT_SEARCH_FIELDS = Object.freeze([
   'taxonomy->>accessoryCategory','taxonomy->>accessoryType'
 ])
 const DESIGNER_TAG_FILTER = '{"3d-designer"}'
-const DESIGNER_PROVIDERS = Object.freeze(['owayo','boombah'])
+const DESIGNER_ID_FILTER = Object.freeze(DESIGNER_LISTING_IDS)
 // Only the private Custom Lab is allowed to hydrate designer source rows.
 // `/category/custom-jerseys` is still a public storefront category and must
 // follow the same exclusion rule as Shop, leagues, teams and collections.
@@ -231,22 +232,23 @@ function writeStorefrontPageCache(cacheKey, value) {
   try { globalThis.sessionStorage?.setItem(storefrontSessionCacheKey(cacheKey),JSON.stringify(entry)) } catch {}
 }
 
-function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {}) {
+export function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {}) {
   const params = new URLSearchParams(search)
   const parts = String(basePath || '').split('/').filter(Boolean)
   // Synchronized 3D garment families belong to the Custom Lab only. Apply
   // this before pagination so Shop, league, team and category totals do not
   // reserve slots for cards that must not be rendered there.
-  // The GIN-less tags containment query crosses the statement timeout once
-  // the public catalogue grows past ~30k rows. Provider identity is both more
-  // selective and part of the validated designer contract, so Custom loads in
-  // under the public read timeout while the tag remains the exclusion marker
-  // used by ordinary storefront routes.
+  // The GIN-less tags containment query and a JSON provider predicate both
+  // cross the statement timeout once the public catalogue grows past ~30k
+  // rows. Deterministic designer IDs keep this request index-friendly while
+  // the tag remains the exclusion marker used by ordinary storefront routes.
   if (isCustom3DRoute(basePath)) {
-    query = query.in('ai_metadata->designer->>provider',DESIGNER_PROVIDERS)
-      // Retail listings use the same editor contract but belong to the
-      // ordinary Shop/PDP graph, not the private Custom Lab source catalogue.
-      .not('ai_metadata->designer->>catalogVisibility','eq','RETAIL')
+    // Designer source IDs are deterministic and indexed.  Filtering by the
+    // JSON provider/visibility path looks elegant but scans the full catalogue
+    // and can exceed Supabase's statement timeout once the feed grows past
+    // 30k rows.  Retail PDPs intentionally use different IDs and never enter
+    // this private source catalogue.
+    query = query.in('id',DESIGNER_ID_FILTER)
   }
   else query = query.not('tags','cs',DESIGNER_TAG_FILTER)
   if (parts[0] === 'league' && parts[1]) query = query.eq('taxonomy->>league',parts[1])
