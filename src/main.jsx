@@ -1280,8 +1280,8 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   // Prices and checkout language only unlock after the current route has been
   // confirmed by the live public catalogue. Development fallbacks and stale
   // cache rows remain useful for previews, but must never imply orderability.
-  const liveCustomProducts = useMemo(() => commerceVerified
-    ? products.filter(product => product.status === 'PUBLISHED' && hasCustom3DDesigner(product))
+   const liveCustomProducts = useMemo(() => commerceVerified
+    ? products.filter(product => product.status === 'PUBLISHED' && hasCustom3DDesigner(product) && isCustom3DOnlyProduct(product))
     : [], [products, commerceVerified])
   const listingByFamily = useMemo(() => new Map(liveCustomProducts.flatMap(product => {
     const config = custom3DDesignerConfig(product)
@@ -2039,7 +2039,7 @@ function InstallAppSheet({ open, onClose, deferredPrompt, onInstalled, onPromptU
 
 function Home({ onQuickView, products, navigationProducts = [], theme, collections = [], onAdd }) {
   const featured = products.find(product => /after[- ]?90/i.test(`${product.handle || ''} ${product.name || ''}`)) || products[0]
-  const customProduct = products.find(product => hasCustom3DDesigner(product)) || featuredCustomProduct || featured
+  const customProduct = products.find(product => isCustom3DOnlyProduct(product)) || featuredCustomProduct || featured
   const homePage = resolveThemePage(theme, 'home')
   const homeContent = resolvePageContent(theme, 'home', {
     eyebrow: 'CUSTOM JERSEYS',
@@ -2859,7 +2859,7 @@ function App() {
   const [installPrompt, setInstallPrompt] = useState(null)
   const [appInstalled, setAppInstalled] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const lastScrollY = useRef(window.scrollY)
-  const customProduct = products.find(product => hasCustom3DDesigner(product)) || featuredCustomProduct
+  const customProduct = products.find(product => isCustom3DOnlyProduct(product)) || featuredCustomProduct
   const productSlug = path.startsWith('/product/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : ''
   const routeProduct = productSlug ? findStorefrontProduct(products,productSlug) : null
   const collectionHandle = path.startsWith('/collection/') || path.startsWith('/collections/') ? decodeURIComponent(path.replace(/\/+$/, '').split('/').pop() || '') : new URLSearchParams(search).get('collection')

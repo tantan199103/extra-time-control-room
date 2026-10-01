@@ -2,7 +2,7 @@ import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { products as fallbackProducts } from '../src/data.js'
 import { buildFallbackCatalog, prepareStorefrontProduct } from '../src/lib/storefront-model.js'
-import { hasCustom3DDesigner } from '../src/lib/custom-3d.js'
+import { hasCustom3DDesigner, isCustom3DOnlyProduct } from '../src/lib/custom-3d.js'
 import { ALL_LEAGUE_TAXONOMY, leaguePath, teamPath, normalizeTeamSlug } from '../src/lib/league-taxonomy.js'
 import { SHOP_COVER, leagueCover } from '../src/lib/league-covers.js'
 import { ALL_CATALOG_CATEGORY_PAGES, CATALOG_CATEGORY_PAGES, normalizeAccessoryTaxonomy, productMatchesCatalogCategory } from '../src/lib/catalog-taxonomy.js'
@@ -291,8 +291,8 @@ const validatedProducts = loadedProducts.filter(product => validateCatalogTaxono
 // the ordinary Shop/league/category SEO graph. Keep one private collection
 // for the Custom page metadata, while every public catalogue/sitemap loop
 // receives only conventional storefront products.
-const customProducts = validatedProducts.filter(product => hasCustom3DDesigner(product)).slice(0, 12)
-const products = validatedProducts.filter(product => !hasCustom3DDesigner(product))
+const customProducts = validatedProducts.filter(product => isCustom3DOnlyProduct(product)).slice(0, 12)
+const products = validatedProducts.filter(product => !isCustom3DOnlyProduct(product))
 const teamProductsByKey = new Map()
 for (const product of products) {
   const league = String(product.taxonomy?.league || '').toLowerCase()
@@ -328,7 +328,7 @@ for (const product of products) {
   // dropping these fields makes the Admin under-count accessory pages even
   // though the same products are correctly present in the public sitemap.
   const taxonomy = normalizeAccessoryTaxonomy(product.taxonomy ? { ...product, taxonomy:product.taxonomy } : product)
-  const designer = hasCustom3DDesigner(product) && product.designerConfig
+  const designer = isCustom3DOnlyProduct(product) && product.designerConfig
     ? { provider:product.designerConfig.provider, productId:product.designerConfig.productId, manifest:product.designerConfig.manifest }
     : null
   const row = { taxonomy:{league:taxonomy.league || '',team:taxonomy.team || '',category:taxonomy.category || '',...(taxonomy.accessoryCategory ? { accessoryCategory:taxonomy.accessoryCategory } : {}),...(taxonomy.accessoryType ? { accessoryType:taxonomy.accessoryType } : {})},productGroup:product.productGroup,type:product.type,customFields:product.customFields?.length ? [{key:'name'}] : [], ...(designer ? { designerConfig:designer } : {}), ...(product.taxonomy?.brand ? { brands:[product.taxonomy.brand] } : {}) }

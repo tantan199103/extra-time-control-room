@@ -1017,11 +1017,13 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
   return <div className="designer-stage__canvas" ref={hostRef} role="img" aria-label="Interactive 3D preview of the custom jersey" />
 })
 
-function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange }) {
+function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange, designerConfig }) {
   const [showAll, setShowAll] = useState(false)
-  const filteredDesigns = manifestIsBoombah(manifest) && state.styleCode
-    ? manifest.designs.filter(item => item.styleCode === state.styleCode)
-    : manifest.designs
+  const allowedDesignIds = Array.isArray(designerConfig?.allowedDesignIds) ? designerConfig.allowedDesignIds : []
+  const allowedStyleCodes = Array.isArray(designerConfig?.allowedStyleCodes) ? designerConfig.allowedStyleCodes : []
+  const allowedDesign = item => !allowedDesignIds.length || allowedDesignIds.includes(item.id) || allowedDesignIds.includes(item.slug)
+  const allowedStyle = style => !allowedStyleCodes.length || allowedStyleCodes.includes(style.code)
+  const filteredDesigns = (manifest.designs || []).filter(allowedDesign).filter(item => !manifestIsBoombah(manifest) || !state.styleCode || item.styleCode === state.styleCode)
   const designs = showAll ? filteredDesigns : filteredDesigns.slice(0, 12)
   const currentProduct = catalog?.products?.find(item => item.id === state.productId)
   const currentOwayoProduct = owayoCatalog?.products?.find(item => item.id === state.productId)
@@ -1045,7 +1047,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, u
       </div>
       {manifestIsBoombah(manifest) && catalog?.products?.length > 0 && <>
         <label className="designer-library-switch__field"><span>Sport {state.listingId && <small>· listing locked</small>}</span><select disabled={Boolean(state.listingId)} value={state.productId} onChange={event => onProductChange?.(event.target.value)}>{catalog.products.map(product => <option key={product.id} value={product.id}>{product.sport} · {stripBoombahBrandingText(product.name)}</option>)}</select></label>
-        {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => item.styleCode === event.target.value)?.id || current.design }))}>{styles.map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select></label>}
+        {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles.find(allowedStyle)?.code || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => allowedDesign(item) && item.styleCode === event.target.value)?.id || current.design }))}>{styles.filter(allowedStyle).map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select></label>}
       </>}
       {!manifestIsBoombah(manifest) && owayoCatalog?.products?.length > 0 && <div className="designer-owayo-families" aria-label="Sportswear garment families">
         <span className="designer-library-switch__field-label">Sport catalogue</span>
@@ -1089,7 +1091,7 @@ function ColorPanel({ manifest, state, update }) {
   </div>
 }
 
-function PatternPanel({ manifest, state, update }) {
+function PatternPanel({ manifest, state, update, designerConfig }) {
   const [category, setCategory] = useState('all')
   const [showAll, setShowAll] = useState(false)
   const patterns = Array.isArray(manifest?.patterns) ? manifest.patterns : []
@@ -1103,9 +1105,13 @@ function PatternPanel({ manifest, state, update }) {
   const selected = patterns.find(pattern => pattern.slug === state.pattern?.slug || pattern.id === state.pattern?.id)
   const setPattern = patch => update(current => ({ ...current, pattern:{ ...(current.pattern || {}), ...patch } }))
   if (manifestIsBoombah(manifest)) {
+    const allowedDesignIds = Array.isArray(designerConfig?.allowedDesignIds) ? designerConfig.allowedDesignIds : []
+    const allowedStyleCodes = Array.isArray(designerConfig?.allowedStyleCodes) ? designerConfig.allowedStyleCodes : []
+    const allowed = item => (!allowedDesignIds.length || allowedDesignIds.includes(item.id) || allowedDesignIds.includes(item.slug))
+      && (!allowedStyleCodes.length || allowedStyleCodes.includes(item.styleCode))
     const templates = state.styleCode
-      ? (manifest.designs || []).filter(item => item.styleCode === state.styleCode)
-      : (manifest.designs || [])
+      ? (manifest.designs || []).filter(item => item.styleCode === state.styleCode).filter(allowed)
+      : (manifest.designs || []).filter(allowed)
     const visibleTemplates = showAll ? templates : templates.slice(0, 18)
     const chooseTemplate = item => update(current => ({
       ...current,
@@ -1636,6 +1642,22 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         styleCode:designer?.defaultStyleCode || routeParams.style || draft?.styleCode || '',
         design:designer?.defaultDesignId || routeParams.design || draft?.design || ''
       }
+      if (!draft && designer?.defaultColors && typeof designer.defaultColors === 'object') {
+        seed.colors = { ...seed.colors, ...designer.defaultColors }
+      }
+      if (!draft && designer?.defaultText && typeof designer.defaultText === 'object') {
+        seed.text = { ...seed.text, ...designer.defaultText }
+        const first = seed.roster?.[0]
+        if (first) seed.roster = seed.roster.map((player, index) => index === 0 ? {
+          ...player,
+          ...(designer.defaultText.name ? { name:designer.defaultText.name } : {}),
+          ...(designer.defaultText.number ? { number:designer.defaultText.number } : {})
+        } : player)
+      }
+      if (!draft && Array.isArray(designer?.defaultLayers) && designer.defaultLayers.length) {
+        seed.layers = designer.defaultLayers.map(layer => newDesignerLayer(layer.kind, layer.placement, layer))
+        seed.layerVersion = 1
+      }
       // Normalize saved display labels (for example `M`) to the exact Owayo
       // source codes (for example `5`) before the first preview or checkout
       // payload is built. This keeps the selected variant and the roster UI in
@@ -1693,7 +1715,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       const first = allowedDesigns?.[0] || productResponse.designs?.[0]
       const designMatch = allowedDesigns?.find(item => item.id === seed.design || item.slug === seed.design)
       const styleMatch = designer?.allowedStyleCodes?.length && !designer.allowedStyleCodes.includes(seed.styleCode) ? first?.styleCode : (seed.styleCode || first?.styleCode || '')
-      history.update(current => ({ ...current, provider:'boombah', productId:product.id, styleCode:styleMatch, design:designMatch?.id || first?.id || '', colors:{ ...current.colors, ...(first?.defaultColors || {}) } }))
+       history.update(current => ({ ...current, provider:'boombah', productId:product.id, styleCode:styleMatch, design:designMatch?.id || first?.id || '', colors:draft ? current.colors : { ...current.colors, ...(first?.defaultColors || {}), ...(designer?.defaultColors || {}) } }))
     }
     bootstrap().catch(error => {
       if (cancelled) return
@@ -1902,12 +1924,17 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   if (manifestError) return <main className="designer-failure"><span>90+</span><h1>Designer assets need attention.</h1><p>{manifestError}</p><button type="button" onClick={() => window.location.reload()}>Retry</button></main>
   if (!manifest) return <main className="designer-loading" role="status"><span>90+</span><p>Loading local 3D garment assets…</p></main>
 
+  const activeDesignerConfig = custom3DDesignerConfig(listingProduct)
+  const isRetailListing = activeDesignerConfig?.catalogVisibility === 'RETAIL'
+  const backTarget = listingProduct?.handle ? `/product/${listingProduct.handle}` : '/custom'
+  const headerTitle = isRetailListing ? listingProduct.title : stripBoombahBrandingText(manifest.product.name)
+  const headerLabel = isRetailListing ? 'Customize this jersey in 3D' : 'Jersevo 3D kit builder'
   const Panel = activeTab === 'design' ? DesignPanel : activeTab === 'colors' ? ColorPanel : activeTab === 'patterns' ? PatternPanel : activeTab === 'text' ? TextPanel : LogoPanel
   return <main className="custom-designer">
     <header className="custom-designer__header">
-      <button type="button" className="custom-designer__back" onClick={() => onNavigate?.('/custom')}><ArrowLeft size={17}/> Custom lab</button>
-      <div><span>Jersevo 3D kit builder</span><strong>{stripBoombahBrandingText(manifest.product.name)}</strong></div>
-      <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${manifestIsBoombah(manifest) ? 'Teamwear' : (manifest?.product?.sportLabel || manifest?.product?.catalogGroupLabel || 'Sportswear')} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
+      <button type="button" className="custom-designer__back" onClick={() => onNavigate?.(backTarget)}><ArrowLeft size={17}/> {isRetailListing ? 'Back to product' : 'Custom lab'}</button>
+      <div><span>{headerLabel}</span><strong>{headerTitle}</strong></div>
+      <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${isRetailListing ? 'Retail jersey' : (manifestIsBoombah(manifest) ? 'Teamwear' : (manifest?.product?.sportLabel || manifest?.product?.catalogGroupLabel || 'Sportswear'))} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
     </header>
     <div className="custom-designer__workspace">
       <section className="designer-stage" aria-label="3D jersey workspace">
@@ -1929,7 +1956,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       </section>
       <aside className="designer-controls">
         <nav className="designer-tabs" aria-label="Design tools">{TABS.map(tab => { const Icon = tab.icon; return <button type="button" key={tab.id} className={activeTab === tab.id ? 'is-active' : ''} onClick={() => setActiveTab(tab.id)}><Icon size={17}/><span>{tab.label}</span></button> })}</nav>
-        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoCatalog={owayoCatalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct} onOwayoProductChange={loadOwayoProduct}/></div>
+        <div className="designer-controls__scroll"><Panel manifest={manifest} catalog={catalog} owayoCatalog={owayoCatalog} owayoAvailable={Boolean(owayoManifest)} state={history.state} update={history.update} designerConfig={activeDesignerConfig} onProviderChange={changeProvider} onOpenDesign={() => setActiveTab('design')} onProductChange={loadBoombahProduct} onOwayoProductChange={loadOwayoProduct}/></div>
         <Roster state={history.state} update={history.update} sizes={selectedDesign?.sizes || manifest.product.sizes || []}/>
         <footer className="designer-order">
           <div className="designer-order__price"><span>{quantity} {quantity === 1 ? 'piece' : 'pieces'}{discount ? ` · ${Math.round(discount * 100)}% team saving` : ''}</span><strong>${total.toFixed(2)}</strong><small>{discount ? `$${unitPrice.toFixed(2)} each before team pricing` : 'Artwork review included'}</small></div>

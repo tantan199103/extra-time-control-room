@@ -1,4 +1,4 @@
-import { hasCustom3DDesigner } from './custom-3d.js'
+import { isCustom3DOnlyProduct } from './custom-3d.js'
 
 /**
  * Controlled catalogue values used by the admin listing workspace.
@@ -227,7 +227,7 @@ export function productMatchesCatalogCategory(product = {}, category = {}) {
     return true
   }
   if (target === 'custom jerseys') {
-    return hasCustom3DDesigner(product)
+    return isCustom3DOnlyProduct(product)
   }
   const aliases = {
     jerseys:['jerseys','jersey','football jerseys','football jersey','basketball jerseys','basketball jersey','baseball jerseys','baseball jersey','hockey jerseys','hockey jersey','soccer jerseys','soccer jersey'],

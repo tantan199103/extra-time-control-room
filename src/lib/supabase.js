@@ -242,7 +242,12 @@ function applyStorefrontRouteFilters(query, { basePath = '', search = '' } = {})
   // selective and part of the validated designer contract, so Custom loads in
   // under the public read timeout while the tag remains the exclusion marker
   // used by ordinary storefront routes.
-  if (isCustom3DRoute(basePath)) query = query.in('ai_metadata->designer->>provider',DESIGNER_PROVIDERS)
+  if (isCustom3DRoute(basePath)) {
+    query = query.in('ai_metadata->designer->>provider',DESIGNER_PROVIDERS)
+      // Retail listings use the same editor contract but belong to the
+      // ordinary Shop/PDP graph, not the private Custom Lab source catalogue.
+      .not('ai_metadata->designer->>catalogVisibility','eq','RETAIL')
+  }
   else query = query.not('tags','cs',DESIGNER_TAG_FILTER)
   if (parts[0] === 'league' && parts[1]) query = query.eq('taxonomy->>league',parts[1])
   if (parts[0] === 'team' && parts[1] && parts[2]) {
