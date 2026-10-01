@@ -92,6 +92,12 @@ function escapeRegex(value) {
 function recolorBoombahSvg(svgText, design, colors) {
   const zones = design?.colorZones || []
   let svg = stripBoombahBrandingText(svgText, zones)
+  // Some mirrored GLBs sample the transparent portion of an Illustrator
+  // atlas around the garment shell.  Give that transparent canvas the body
+  // color so it cannot turn into WebGL black while retaining all authored
+  // trim paths above it.
+  const bodyColor = colorHex(colors?.C1, '#F8F8F4')
+  svg = svg.replace(/(<svg\b[^>]*>)/i, `$1<rect width="100%" height="100%" fill="${bodyColor}"/>`)
   const replacements = new Map()
   // Some synchronized templates keep a production colour directly in art
   // paths while the paramcolor marker retains the palette's canonical value.
@@ -632,7 +638,10 @@ async function loadBoombahTexture(design, colors, manifest) {
     const loader = new THREE.TextureLoader()
     const texture = await loader.loadAsync(blobUrl)
     texture.colorSpace = THREE.SRGBColorSpace
-    texture.flipY = false
+    // The mirrored Boombah UV atlas is authored in the same top-left image
+    // coordinate space as the SVG source.  TextureLoader's default unpack
+    // flip keeps that atlas aligned with the exported GLB UVs.
+    texture.flipY = true
     texture.anisotropy = 4
     texture.needsUpdate = true
     return texture
@@ -964,6 +973,11 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
             material.color?.set?.(0xffffff)
             material.needsUpdate = true
           })
+        }
+        globalThis.__jersevoBoombahDebug = {
+          selected: selected?.id || selected?.slug || '',
+          texture: { width: texture?.image?.width || 0, height: texture?.image?.height || 0, flipY: texture?.flipY, colorSpace: texture?.colorSpace || '' },
+          meshes: allMeshes.map(mesh => ({ name: mesh?.name || '', visible: mesh?.visible !== false, material: (Array.isArray(mesh?.material) ? mesh.material : [mesh?.material]).filter(Boolean).map(material => ({ name: material.name || '', map: Boolean(material.map), mapWidth: material.map?.image?.width || 0, color: material.color?.getHexString?.() || '', uv: mesh.geometry?.attributes?.uv?.count || 0 })) }))
         }
         runtime.garmentTexture?.dispose?.()
         runtime.garmentTexture = texture
