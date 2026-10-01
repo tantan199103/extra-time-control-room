@@ -46,7 +46,7 @@ const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
 const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
 const MOCKUP_CATALOG_URL = '/designer/3dmockups/catalog.json'
-const ASSET_CACHE_BUSTER = '1'
+const ASSET_CACHE_BUSTER = 'retail-uv-20261002'
 // The listing-specific Boombah manifest introduced a new layer contract. Use
 // a new draft namespace so a pre-manifest draft such as JERSEVO / YOUR NAME /
 // 90 cannot replace the photographed listing's DETROIT / ST BROWN / 14 seed.
@@ -635,10 +635,12 @@ async function loadBoombahTexture(design, colors, manifest) {
     const loader = new THREE.TextureLoader()
     const texture = await loader.loadAsync(blobUrl)
     texture.colorSpace = THREE.SRGBColorSpace
-    // This mirrored Illustrator atlas is authored in top-left image space;
-    // TextureLoader's unpack flip keeps its front/back print zones aligned
-    // with the exported teamwear UVs.
-    texture.flipY = true
+    // Keep the Illustrator atlas in the same orientation as the exported
+    // teamwear UVs. The GLB atlas is authored in bottom-left UV space, so
+    // TextureLoader's default (unflipped) orientation is the one that keeps
+    // the gray body panels on the garment rather than sampling the transparent
+    // black atlas background.
+    texture.flipY = false
     texture.anisotropy = 4
     texture.needsUpdate = true
     return texture
@@ -1039,6 +1041,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     const height = dimensions[1]
     const selected = manifest?.designs?.find(item => item.slug === design || item.id === design)
     const normalizedLayers = migrateDesignerLayers({ layerVersion:1, layers })
+    console.debug('[designer-layer-debug]', JSON.stringify({ text, normalizedLayers, surfaces:normalizedLayers.map(layer => [layer.kind, layer.placement, owayoPlacementSurface(layer.placement)]) }))
     const showGarmentPersonalization = supportsBoombahGarmentPersonalization(manifest, selected)
     if (!showGarmentPersonalization) {
       applyOwayoLayers(runtime, new Map())
@@ -1089,6 +1092,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
 
 function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange, designerConfig }) {
   const [showAll, setShowAll] = useState(false)
+  const [familyQuery, setFamilyQuery] = useState('')
   const [mockupCategory, setMockupCategory] = useState('all')
   const [showAllMockups, setShowAllMockups] = useState(false)
   const allowedDesignIds = Array.isArray(designerConfig?.allowedDesignIds) ? designerConfig.allowedDesignIds : []
@@ -1107,7 +1111,10 @@ function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvai
   useEffect(() => {
     if (currentOwayoProduct?.group) setOwayoGroup(currentOwayoProduct.group)
   }, [currentOwayoProduct?.group])
-  const visibleOwayoProducts = (owayoCatalog?.products || []).filter(product => (product.group || product.sport) === owayoGroup)
+  const normalizedFamilyQuery = familyQuery.trim().toLowerCase()
+  const visibleOwayoProducts = (owayoCatalog?.products || [])
+    .filter(product => (product.group || product.sport) === owayoGroup)
+    .filter(product => !normalizedFamilyQuery || [product.title, product.sportLabel, product.groupLabel, product.id].filter(Boolean).join(' ').toLowerCase().includes(normalizedFamilyQuery))
   const activeOwayoGroup = availableOwayoGroups.find(group => group.id === owayoGroup)
   const styles = manifestIsBoombah(manifest) ? (manifest.product.styles || []) : []
   const mockupEntries = Array.isArray(mockupCatalog?.entries) ? mockupCatalog.entries : []
@@ -1133,22 +1140,29 @@ function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvai
           {availableOwayoGroups.map(group => <button type="button" role="tab" aria-selected={group.id === owayoGroup} key={group.id} className={group.id === owayoGroup ? 'is-active' : ''} onClick={() => setOwayoGroup(group.id)}><span>{group.label}</span><small>{group.live ?? (owayoCatalog.products || []).filter(product => product.group === group.id && product.assetsReady).length}/{group.products ?? (owayoCatalog.products || []).filter(product => product.group === group.id).length}</small></button>)}
         </div>
         <span className="designer-library-switch__field-label">{activeOwayoGroup?.label || 'Garment'} models</span>
+        <label className="designer-library-switch__search">
+          <span className="sr-only">Search garment models</span>
+          <input type="search" value={familyQuery} onChange={event => setFamilyQuery(event.target.value)} placeholder="Search model or fit…" aria-label="Search garment models" />
+        </label>
         <div className="designer-owayo-families__list">
           {visibleOwayoProducts.map(product => <button type="button" key={product.id} disabled={!product.assetsReady || Boolean(state.listingId)} className={`${product.assetsReady ? 'is-live' : ''}${state.productId === product.id ? ' is-active' : ''}`} title={product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Exact model assets are being synchronized'} onClick={() => product.assetsReady && onOwayoProductChange?.(product.id)}><span>{product.title.replace(/^Jersevo\s+Custom\s+/i, '')}</span><small>{product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Syncing exact model'}</small></button>)}
+          {!visibleOwayoProducts.length && <p className="designer-library-empty">No garment models match that search.</p>}
         </div>
       </div>}
       {(currentProduct || currentOwayoProduct) && <p className="designer-library-switch__note">{manifestIsBoombah(manifest) ? currentProduct?.designs : currentOwayoProduct?.designCount} mirrored templates · exact model loads on selection</p>}
     </div>
     {mockupEntries.length > 0 && <section className="designer-mockup-reference" aria-label="Mockup reference library">
-      <div className="designer-mockup-reference__head"><span>3DMockups catalogue reference</span><small>{mockupEntries.length} public bases · {mockupEntries.filter(entry => entry.adapter?.status === 'mapped').length} mapped to Jersevo models</small></div>
+      <div className="designer-mockup-reference__head"><span>3DMockups catalogue reference</span><small>{mockupEntries.length} public bases · {mockupEntries.filter(entry => (entry.adapter?.status || entry.assetStatus) === 'mapped').length} mapped to Jersevo models</small></div>
       <label className="designer-library-switch__field designer-mockup-reference__filter"><span>Browse category</span><select value={mockupCategory} onChange={event => { setMockupCategory(event.target.value); setShowAllMockups(false) }}><option value="all">All categories</option>{mockupCategories.map(category => <option key={category} value={category}>{category.replace(/-/g, ' ')}</option>)}</select></label>
       <div className="designer-mockup-reference__grid">
         {visibleMockupEntries.map(entry => {
-          const mapped = entry.adapter?.status === 'mapped' && entry.adapter?.productId
+          const mapped = (entry.adapter?.status || entry.assetStatus) === 'mapped' && entry.adapter?.productId
           const provider = entry.adapter?.provider
-          return <button type="button" key={entry.id} disabled={Boolean(state.listingId) || !mapped} title={mapped ? entry.adapter?.mappingNote || 'Open the mapped Jersevo model' : 'Reference metadata only; a licensed Jersevo model is not available yet'} onClick={() => provider === 'owayo' ? onOwayoProductChange?.(entry.adapter.productId) : onProductChange?.(entry.adapter.productId)}>
+          const areas = Array.isArray(entry.sourcePrintAreas) && entry.sourcePrintAreas.length ? entry.sourcePrintAreas : entry.printAreas
+          const detail = [entry.material, entry.sizes?.length ? `${entry.sizes.length} sizes` : '', areas?.length ? `${areas.length} print areas` : ''].filter(Boolean).join(' · ')
+          return <button type="button" key={entry.id} disabled={Boolean(state.listingId) || !mapped} title={mapped ? entry.adapter?.mappingNote || entry.mappingNote || 'Open the mapped Jersevo model' : entry.mappingNote || 'Reference metadata only; a licensed Jersevo model is not available yet'} onClick={() => provider === 'owayo' ? onOwayoProductChange?.(entry.adapter.productId) : onProductChange?.(entry.adapter.productId)}>
             {entry.preview ? <img src={entry.preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-mockup-reference__placeholder">3D</span>}
-            <span><strong>{entry.title}</strong><small>{mapped ? `Jersevo ${provider}` : 'Reference only'}</small></span>
+            <span><strong>{entry.title}</strong><small>{mapped ? `Jersevo ${provider}` : 'Reference only'}{detail ? ` · ${detail}` : ''}</small></span>
           </button>
         })}
       </div>
@@ -1795,15 +1809,27 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       // Resolve the family before loading the garment. The old bootstrap always
       // fetched C3, so a plain `?product=cycling-c5` silently rendered a C3
       // mesh even though the C5 listing had its own synchronized manifest.
-      const [boombahResult, owayoCatalogResult, mockupCatalogResult] = await Promise.allSettled([
-        readJson(BOOMBAH_CATALOG_URL),
-        readJson(OWAYO_CATALOG_URL),
-        readJson(MOCKUP_CATALOG_URL)
+      // The selected garment is the critical path.  Keep the two provider
+      // indexes in parallel, but do not make the editor wait for the
+      // reference-only 3DMockups metadata before opening the stage.  That
+      // small catalogue is useful for discovery, never required to render a
+      // Jersevo-owned model, and can arrive after first paint.
+      const boombahPromise = readJson(BOOMBAH_CATALOG_URL)
+      const owayoCatalogPromise = readJson(OWAYO_CATALOG_URL)
+      const mockupCatalogPromise = readJson(MOCKUP_CATALOG_URL)
+      const [boombahResult, owayoCatalogResult] = await Promise.allSettled([
+        boombahPromise,
+        owayoCatalogPromise
       ])
       if (cancelled) return
       const boombahCatalog = boombahResult.status === 'fulfilled' ? boombahResult.value : null
       const catalogFamilies = owayoCatalogResult.status === 'fulfilled' ? owayoCatalogResult.value : null
-      const mockupReferenceCatalog = mockupCatalogResult.status === 'fulfilled' ? mockupCatalogResult.value : null
+      // Resolve this independently so a slow/unavailable reference catalogue
+      // never blocks the selected manifest.  Promise rejection is intentionally
+      // swallowed: the editor remains fully usable without reference metadata.
+      mockupCatalogPromise.then(value => {
+        if (!cancelled) setMockupCatalog(value)
+      }).catch(() => {})
       const requestedFamilyId = designer?.provider === 'owayo'
         ? designer.productId
         : routeParams.product || draft?.productId || ''
@@ -1816,7 +1842,6 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       if (owayo) setOwayoManifest(owayo)
       if (boombahCatalog) setCatalog(boombahCatalog)
       if (catalogFamilies) setOwayoCatalog(catalogFamilies)
-      if (mockupReferenceCatalog) setMockupCatalog(mockupReferenceCatalog)
       if (!owayo && !boombahCatalog) throw new Error('Sportswear and teamwear designer assets are temporarily unavailable.')
       const requestedProvider = String(
         designer?.provider
@@ -1899,7 +1924,7 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       if (!productManifest) throw new Error('The Boombah catalog has no product manifest.')
       let productResponse
       try {
-        productResponse = await readJson(productManifest)
+        productResponse = await readJson(productManifest, ASSET_CACHE_BUSTER)
       } catch (error) {
         if (!owayo) throw error
         setManifest(owayo)

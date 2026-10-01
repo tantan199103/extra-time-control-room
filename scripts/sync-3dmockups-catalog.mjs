@@ -117,6 +117,35 @@ const entries = [
   }
 ]
 
+// This is a manually verified metadata snapshot, not an asset scraper.  The
+// source pages are retained for provenance while all previews/models remain
+// Jersevo-owned or separately licensed assets.
+const SOURCE_VERIFIED_AT = '2026-10-02'
+const sourceMeta = {
+  'walking-tee': { sourceUrl:'https://www.3dmockups.app/catalog/walking-tshirt', sourceSlug:'walking-tshirt' },
+  'tee-on-hanger': { sourceUrl:'https://www.3dmockups.app/catalog/tshirt-on-hanger', sourceSlug:'tshirt-on-hanger' },
+  'button-shirt': { sourceUrl:'https://www.3dmockups.app/catalog/button-shirt', sourceSlug:'button-shirt', sourcePrintAreas:['front','back','sleeves','collar'] },
+  'hoodie': { sourcePrintAreas:['front','back','sleeves','hood','pocket'] },
+  'youth-crew-tee': { sourceUrl:'https://www.3dmockups.app/catalog/youth-crew-tee', sourceSlug:'youth-crew-tee', sourcePrintAreas:['front','back','sleeves','collar'] },
+  'baseball-jersey': { sourcePrintAreas:['front','back','left-sleeve','right-sleeve'] },
+  'football-jersey': { sourcePrintAreas:['front','back','sleeves','yoke','shoulders'] },
+  'basketball-jersey': { printAreas:['front-center','back-center'], sourcePrintAreas:['front','back','left-sleeve','right-sleeve','sides'] },
+  'cotton-shorts': { sourcePrintAreas:['front','back','pocket'] },
+  'wide-leg-pants': { sourceUrl:'https://www.3dmockups.app/catalog/wide-leg-pants', sourceSlug:'wide-leg-pants' },
+  'wide-leg-unisex': { sourceUrl:'https://www.3dmockups.app/catalog/wide-leg-pants-unisex', sourceSlug:'wide-leg-pants-unisex' },
+  'cotton-sweatshirt': { sourceUrl:'https://www.3dmockups.app/catalog/cotton-sweatshirt', sourceSlug:'cotton-sweatshirt' },
+  'oversized-cotton-hoodie': { sourceUrl:'https://www.3dmockups.app/catalog/oversized-cotton-hoodie', sourceSlug:'oversized-cotton-hoodie' },
+  'crop-top': { sourceUrl:'https://www.3dmockups.app/catalog/crop-top', sourceSlug:'crop-top' },
+  'custom-socks': { sourcePrintAreas:['front','back'] },
+  'baseball-cap': { sourceUrl:'https://www.3dmockups.app/catalog/baseball-cap', sourceSlug:'baseball-cap' }
+}
+for (const entry of entries) {
+  Object.assign(entry, sourceMeta[entry.id] || {})
+  entry.sourceSlug ||= entry.id
+  entry.sourceVerifiedAt = SOURCE_VERIFIED_AT
+  entry.sourceEvidence = 'Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.'
+}
+
 for (const entry of entries) {
   if (entry.adapter?.provider && !entry.adapter.preview) entry.adapter.preview = await manifestPreview(entry.adapter.manifest)
 }

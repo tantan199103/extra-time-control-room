@@ -127,6 +127,10 @@
 .designer-library-switch__field span { color: #697169; font-size: 9px; font-weight: 800; }
 .designer-library-switch__field select { width: 100%; min-height: 38px; padding: 0 9px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 10px var(--body); }
 .designer-library-switch__field-label { display: block; margin-top: 10px; color: #697169; font-size: 9px; font-weight: 800; }
+.designer-library-switch__search { display: block; margin-top: 6px; }
+.designer-library-switch__search input { width: 100%; min-height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 10px var(--body); }
+.designer-library-switch__search input:focus { outline: 2px solid var(--designer-yellow); outline-offset: 1px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .designer-owayo-families__groups { display: flex; gap: 4px; margin: 6px -2px 0; padding: 2px; overflow-x: auto; scrollbar-width: thin; }
 .designer-owayo-families__groups button { flex: 0 0 auto; min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border: 1px solid var(--designer-line); background: #fff; color: var(--designer-ink); font: 800 9px var(--body); cursor: pointer; }
 .designer-owayo-families__groups button small { color: #7b827a; font-size: 7px; }

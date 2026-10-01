@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "provider": "jersevo",
-  "generatedAt": "2026-10-01T16:13:02.988Z",
+  "generatedAt": "2026-10-01T18:19:00.287Z",
   "source": {
     "provider": "3dmockups.app",
     "sourceUrl": "https://www.3dmockups.app/",
@@ -24,7 +24,26 @@
         "left-sleeve",
         "right-sleeve"
       ],
+      "sourcePrintAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
       "sizes": [
+        "2XS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL",
+        "6XL"
+      ],
+      "adapterSizes": [
         "2XS",
         "XS",
         "S",
@@ -39,6 +58,14 @@
       ],
       "preview": "/designer/owayo/tshirts-basic/previews/garment-render.webp",
       "sourceUrl": "https://www.3dmockups.app/catalog/oversized-tshirt",
+      "sourceSlug": "oversized-tee",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo T-Shirt Basic equivalent; source model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -61,7 +88,18 @@
         "front-center",
         "back-center"
       ],
+      "sourcePrintAreas": [
+        "front-center",
+        "back-center"
+      ],
       "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL"
+      ],
+      "adapterSizes": [
         "S",
         "M",
         "L",
@@ -70,6 +108,14 @@
       ],
       "preview": "/designer/owayo/tshirts-basic/previews/garment-render.webp",
       "sourceUrl": "https://www.3dmockups.app/catalog/bella-canvas-3001",
+      "sourceSlug": "bella-canvas-3001-tee",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo T-Shirt Basic equivalent; manufacturer model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -94,6 +140,13 @@
         "left-sleeve",
         "right-sleeve"
       ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
+        "sleeves",
+        "hood",
+        "pocket"
+      ],
       "sizes": [
         "2XS",
         "XS",
@@ -107,8 +160,17 @@
         "5XL",
         "6XL"
       ],
+      "adapterSizes": [],
       "preview": "",
       "sourceUrl": "https://www.3dmockups.app/catalog/hoodie",
+      "sourceSlug": "hoodie",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -126,63 +188,7 @@
         "left-sleeve",
         "right-sleeve"
       ],
-      "sizes": [
-        "2XS",
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL",
-        "2XL",
-        "3XL",
-        "4XL",
-        "5XL",
-        "6XL"
-      ],
-      "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
-      "sourceProvider": "3dmockups.app",
-      "licenseStatus": "metadata-only",
-      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
-      "adapter": null
-    },
-    {
-      "id": "tee-on-hanger",
-      "title": "Tee on Hanger",
-      "category": "t-shirts",
-      "description": "Flat presentation tee for product artwork review.",
-      "material": "Cotton",
-      "printAreas": [
-        "front-center",
-        "back-center"
-      ],
-      "sizes": [
-        "2XS",
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL",
-        "2XL",
-        "3XL",
-        "4XL",
-        "5XL",
-        "6XL"
-      ],
-      "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
-      "sourceProvider": "3dmockups.app",
-      "licenseStatus": "metadata-only",
-      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
-      "adapter": null
-    },
-    {
-      "id": "button-shirt",
-      "title": "Button Shirt",
-      "category": "t-shirts",
-      "description": "Camp-collar short-sleeve shirt with a relaxed drape.",
-      "material": "Performance fabric",
-      "printAreas": [
+      "sourcePrintAreas": [
         "front-center",
         "back-center",
         "left-sleeve",
@@ -201,8 +207,107 @@
         "5XL",
         "6XL"
       ],
+      "adapterSizes": [],
       "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceUrl": "https://www.3dmockups.app/catalog/walking-tshirt",
+      "sourceSlug": "walking-tshirt",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": null
+    },
+    {
+      "id": "tee-on-hanger",
+      "title": "Tee on Hanger",
+      "category": "t-shirts",
+      "description": "Flat presentation tee for product artwork review.",
+      "material": "Cotton",
+      "printAreas": [
+        "front-center",
+        "back-center"
+      ],
+      "sourcePrintAreas": [
+        "front-center",
+        "back-center"
+      ],
+      "sizes": [
+        "2XS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL",
+        "6XL"
+      ],
+      "adapterSizes": [],
+      "preview": "",
+      "sourceUrl": "https://www.3dmockups.app/catalog/tshirt-on-hanger",
+      "sourceSlug": "tshirt-on-hanger",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": null
+    },
+    {
+      "id": "button-shirt",
+      "title": "Button Shirt",
+      "category": "t-shirts",
+      "description": "Camp-collar short-sleeve shirt with a relaxed drape.",
+      "material": "Performance fabric",
+      "printAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
+        "sleeves",
+        "collar"
+      ],
+      "sizes": [
+        "2XS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL",
+        "6XL"
+      ],
+      "adapterSizes": [],
+      "preview": "",
+      "sourceUrl": "https://www.3dmockups.app/catalog/button-shirt",
+      "sourceSlug": "button-shirt",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -223,7 +328,29 @@
         "left-sleeve",
         "right-sleeve"
       ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
+        "left-sleeve",
+        "right-sleeve"
+      ],
       "sizes": [
+        "YXS",
+        "YS",
+        "YM",
+        "YL",
+        "YXL",
+        "Y2XL",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL"
+      ],
+      "adapterSizes": [
         "YXS",
         "YS",
         "YM",
@@ -241,6 +368,14 @@
       ],
       "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/baseball3d/top/fd-base-ss2-1000-0e1e2d6f71f5.jpg",
       "sourceUrl": "https://www.3dmockups.app/catalog/baseball-jersey",
+      "sourceSlug": "baseball-jersey",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo Boombah baseball equivalent; source model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -266,7 +401,30 @@
         "left-sleeve",
         "right-sleeve"
       ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
+        "sleeves",
+        "yoke",
+        "shoulders"
+      ],
       "sizes": [
+        "YXS",
+        "YS",
+        "YM",
+        "YL",
+        "YXL",
+        "Y2XL",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL"
+      ],
+      "adapterSizes": [
         "YXS",
         "YS",
         "YM",
@@ -284,6 +442,14 @@
       ],
       "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/football3d/top/fd-foot-100rs-1000-7c5c83f95d6e.jpg",
       "sourceUrl": "https://www.3dmockups.app/catalog/football-jersey",
+      "sourceSlug": "football-jersey",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo Boombah football equivalent; source model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -304,9 +470,14 @@
       "material": "Performance knit",
       "printAreas": [
         "front-center",
-        "back-center",
+        "back-center"
+      ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
         "left-sleeve",
-        "right-sleeve"
+        "right-sleeve",
+        "sides"
       ],
       "sizes": [
         "YXS",
@@ -324,8 +495,32 @@
         "4XL",
         "5XL"
       ],
+      "adapterSizes": [
+        "YXS",
+        "YS",
+        "YM",
+        "YL",
+        "YXL",
+        "Y2XL",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL"
+      ],
       "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/basketball3d/top/fd-bask-pgj-1000-ade8a9182acf.jpg",
       "sourceUrl": "https://www.3dmockups.app/catalog/basketball-jersey",
+      "sourceSlug": "basketball-jersey",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo Boombah basketball equivalent; source model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -348,6 +543,12 @@
         "front-center",
         "back-center"
       ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
+        "sleeves",
+        "collar"
+      ],
       "sizes": [
         "YXS",
         "YS",
@@ -357,8 +558,25 @@
         "Y2XL",
         "Y3XL"
       ],
+      "adapterSizes": [
+        "YXS",
+        "YS",
+        "YM",
+        "YL",
+        "YXL",
+        "Y2XL",
+        "Y3XL"
+      ],
       "preview": "/designer/owayo/tshirts-basic/previews/garment-render.webp",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceUrl": "https://www.3dmockups.app/catalog/youth-crew-tee",
+      "sourceSlug": "youth-crew-tee",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo T-Shirt Basic equivalent; youth source model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -381,6 +599,11 @@
         "front-center",
         "back-center"
       ],
+      "sourcePrintAreas": [
+        "front",
+        "back",
+        "pocket"
+      ],
       "sizes": [
         "2XS",
         "XS",
@@ -394,8 +617,17 @@
         "5XL",
         "6XL"
       ],
+      "adapterSizes": [],
       "preview": "",
       "sourceUrl": "https://www.3dmockups.app/catalog/cotton-shorts",
+      "sourceSlug": "cotton-shorts",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -411,33 +643,7 @@
         "front-center",
         "back-center"
       ],
-      "sizes": [
-        "2XS",
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL",
-        "2XL",
-        "3XL",
-        "4XL",
-        "5XL",
-        "6XL"
-      ],
-      "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
-      "sourceProvider": "3dmockups.app",
-      "licenseStatus": "metadata-only",
-      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
-      "adapter": null
-    },
-    {
-      "id": "wide-leg-unisex",
-      "title": "Wide-Leg Unisex",
-      "category": "bottoms",
-      "description": "Relaxed unisex wide-leg trouser base.",
-      "material": "Woven fabric",
-      "printAreas": [
+      "sourcePrintAreas": [
         "front-center",
         "back-center"
       ],
@@ -454,8 +660,60 @@
         "5XL",
         "6XL"
       ],
+      "adapterSizes": [],
       "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceUrl": "https://www.3dmockups.app/catalog/wide-leg-pants",
+      "sourceSlug": "wide-leg-pants",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": null
+    },
+    {
+      "id": "wide-leg-unisex",
+      "title": "Wide-Leg Unisex",
+      "category": "bottoms",
+      "description": "Relaxed unisex wide-leg trouser base.",
+      "material": "Woven fabric",
+      "printAreas": [
+        "front-center",
+        "back-center"
+      ],
+      "sourcePrintAreas": [
+        "front-center",
+        "back-center"
+      ],
+      "sizes": [
+        "2XS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL",
+        "6XL"
+      ],
+      "adapterSizes": [],
+      "preview": "",
+      "sourceUrl": "https://www.3dmockups.app/catalog/wide-leg-pants-unisex",
+      "sourceSlug": "wide-leg-pants-unisex",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -473,33 +731,7 @@
         "left-sleeve",
         "right-sleeve"
       ],
-      "sizes": [
-        "2XS",
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL",
-        "2XL",
-        "3XL",
-        "4XL",
-        "5XL",
-        "6XL"
-      ],
-      "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
-      "sourceProvider": "3dmockups.app",
-      "licenseStatus": "metadata-only",
-      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
-      "adapter": null
-    },
-    {
-      "id": "oversized-cotton-hoodie",
-      "title": "Oversized Cotton Hoodie",
-      "category": "hoodies",
-      "description": "Oversized cotton hoodie for a relaxed streetwear fit.",
-      "material": "Heavy cotton",
-      "printAreas": [
+      "sourcePrintAreas": [
         "front-center",
         "back-center",
         "left-sleeve",
@@ -518,8 +750,64 @@
         "5XL",
         "6XL"
       ],
+      "adapterSizes": [],
       "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceUrl": "https://www.3dmockups.app/catalog/cotton-sweatshirt",
+      "sourceSlug": "cotton-sweatshirt",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
+      "sourceProvider": "3dmockups.app",
+      "licenseStatus": "metadata-only",
+      "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
+      "adapter": null
+    },
+    {
+      "id": "oversized-cotton-hoodie",
+      "title": "Oversized Cotton Hoodie",
+      "category": "hoodies",
+      "description": "Oversized cotton hoodie for a relaxed streetwear fit.",
+      "material": "Heavy cotton",
+      "printAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sourcePrintAreas": [
+        "front-center",
+        "back-center",
+        "left-sleeve",
+        "right-sleeve"
+      ],
+      "sizes": [
+        "2XS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL",
+        "6XL"
+      ],
+      "adapterSizes": [],
+      "preview": "",
+      "sourceUrl": "https://www.3dmockups.app/catalog/oversized-cotton-hoodie",
+      "sourceSlug": "oversized-cotton-hoodie",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -535,6 +823,10 @@
         "front-center",
         "back-center"
       ],
+      "sourcePrintAreas": [
+        "front-center",
+        "back-center"
+      ],
       "sizes": [
         "XS",
         "S",
@@ -542,8 +834,17 @@
         "L",
         "XL"
       ],
+      "adapterSizes": [],
       "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceUrl": "https://www.3dmockups.app/catalog/crop-top",
+      "sourceSlug": "crop-top",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -558,13 +859,30 @@
       "printAreas": [
         "front-center"
       ],
+      "sourcePrintAreas": [
+        "front",
+        "back"
+      ],
       "sizes": [
         "Youth",
         "Intermediate",
         "Adult"
       ],
+      "adapterSizes": [
+        "Y",
+        "I",
+        "A"
+      ],
       "preview": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/previews/socks3d/top/bm-sock-teamsock-1001-c08a627c17e2.jpg",
       "sourceUrl": "https://www.3dmockups.app/catalog/custom-socks",
+      "sourceSlug": "custom-socks",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "mapped",
+      "mappingNote": "Jersevo Boombah team-sock equivalent; source model is not copied.",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",
@@ -586,9 +904,21 @@
       "printAreas": [
         "front-center"
       ],
+      "sourcePrintAreas": [
+        "front-center"
+      ],
       "sizes": [],
+      "adapterSizes": [],
       "preview": "",
-      "sourceUrl": "https://www.3dmockups.app/catalog",
+      "sourceUrl": "https://www.3dmockups.app/catalog/baseball-cap",
+      "sourceSlug": "baseball-cap",
+      "sourceVerifiedAt": "2026-10-02",
+      "sourceEvidence": "Public 3DMockups catalog metadata manually verified; no third-party model, texture, template or preview copied.",
+      "basePrice": null,
+      "premiumPrice": null,
+      "currency": "USD",
+      "assetStatus": "reference-only",
+      "mappingNote": "",
       "sourceProvider": "3dmockups.app",
       "licenseStatus": "metadata-only",
       "assetPolicy": "Do not copy or redistribute third-party models, textures, templates or branding without a written license.",

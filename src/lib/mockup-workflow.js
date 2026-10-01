@@ -139,6 +139,8 @@ export function normalizeMockupCatalogEntry(input = {}) {
   const productId = clean(input.productId || adapterInput.productId, 80)
   const statusCandidate = clean(adapterInput.status || input.adapterStatus || (provider && productId ? 'mapped' : 'reference-only'), 32).toLowerCase()
   const status = ['mapped', 'reference-only', 'pending-license'].includes(statusCandidate) ? statusCandidate : 'reference-only'
+  const sourcePrintAreas = (Array.isArray(input.sourcePrintAreas) ? input.sourcePrintAreas : (Array.isArray(input.printAreas) ? input.printAreas : []))
+    .map(value => slug(value)).filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).slice(0, 16)
   return {
     id,
     title:clean(input.title || id, 160),
@@ -146,9 +148,19 @@ export function normalizeMockupCatalogEntry(input = {}) {
     description:clean(input.description, 500),
     material:clean(input.material, 120),
     printAreas:(Array.isArray(input.printAreas) ? input.printAreas : ['front-center']).map(printArea).filter((value, index, all) => all.indexOf(value) === index).slice(0, 9),
+    sourcePrintAreas,
     sizes:Array.isArray(input.sizes) ? input.sizes.map(value => clean(value, 32)).filter(Boolean).slice(0, 40) : [],
+    adapterSizes:Array.isArray(adapterInput.sizes) ? adapterInput.sizes.map(value => clean(value, 32)).filter(Boolean).slice(0, 40) : [],
     preview,
     sourceUrl,
+    sourceSlug:clean(input.sourceSlug || '', 120),
+    sourceVerifiedAt:clean(input.sourceVerifiedAt || '', 40),
+    sourceEvidence:clean(input.sourceEvidence || '', 300),
+    basePrice:Number.isFinite(Number(input.basePrice)) ? Number(input.basePrice) : null,
+    premiumPrice:Number.isFinite(Number(input.premiumPrice)) ? Number(input.premiumPrice) : null,
+    currency:clean(input.currency || 'USD', 8).toUpperCase(),
+    assetStatus:status,
+    mappingNote:clean(adapterInput.mappingNote || input.mappingNote, 240),
     sourceProvider:clean(input.sourceProvider || THREEDMOCKUPS_REFERENCE.provider, 80),
     licenseStatus:clean(input.licenseStatus || THREEDMOCKUPS_REFERENCE.licenseStatus, 80),
     assetPolicy:clean(input.assetPolicy || THREEDMOCKUPS_REFERENCE.assetPolicy, 300),
