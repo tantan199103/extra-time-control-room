@@ -4,11 +4,10 @@
  * Import the public, non-asset catalogue shape used by 3DMockups.
  *
  * This deliberately does not download their GLB files, textures, templates,
- * scene files or brand artwork.  Each entry is adapted to a Jersevo-owned
- * Owayo/Boombah manifest so the existing /custom/design editor remains the
- * only editing surface.
+ * scene files or brand artwork. A reference entry becomes selectable only
+ * when it is mapped to a local, Jersevo-owned or separately licensed manifest.
  */
-import { access, mkdir, writeFile } from 'node:fs/promises'
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { normalizeMockupCatalog, THREEDMOCKUPS_REFERENCE } from '../src/lib/mockup-workflow.js'
@@ -17,68 +16,117 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = resolve(root, 'public/designer/3dmockups/catalog.json')
 const shouldWrite = process.argv.includes('--write')
 
-const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+const apparelSizes = ['2XS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL']
+const jerseySizes = ['YXS', 'YS', 'YM', 'YL', 'YXL', 'Y2XL', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']
+const localManifest = (provider, productId, manifest, mappingNote, { preview = '', sizes = jerseySizes, exactModel = false } = {}) => ({
+  provider, productId, manifest, status:'mapped', exactModel, mappingNote, preview, sizes
+})
+const referenceOnly = { status:'reference-only', mappingNote:'Reference metadata only. A licensed Jersevo model is required before this item can open in the editor.' }
+
+async function manifestPreview(manifest) {
+  if (!manifest || !manifest.startsWith('/designer/')) return ''
+  try {
+    const value = JSON.parse(await readFile(resolve(root, 'public', manifest.slice(1)), 'utf8'))
+    const candidate = (Array.isArray(value.designs) ? value.designs : []).find(item => item?.preview)
+    const preview = typeof candidate?.preview === 'string' ? candidate.preview : candidate?.preview?.uri
+    return /^https:\/\/[^/]+\.supabase\.co\//i.test(String(preview || '')) ? String(preview) : ''
+  } catch {
+    return ''
+  }
+}
 const entries = [
   {
-    id:'t-shirt', title:'Custom T-Shirt', category:'t-shirts', material:'Heavy cotton',
-    description:'A simple tee base for front, back and sleeve artwork.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/tshirts-basic/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'owayo', productId:'tshirts-basic', manifest:'/designer/owayo/tshirts-basic/manifest.json' }
+    id:'oversized-tee', title:'Oversized Tee', category:'t-shirts', material:'Heavy cotton',
+    description:'Drop-shoulder heavyweight tee with front, back and sleeve all-over print areas.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:apparelSizes,
+    sourceUrl:'https://www.3dmockups.app/catalog/oversized-tshirt',
+    adapter:localManifest('owayo','tshirts-basic','/designer/owayo/tshirts-basic/manifest.json','Jersevo T-Shirt Basic equivalent; source model is not copied.', { preview:'/designer/owayo/tshirts-basic/previews/garment-render.webp', sizes:apparelSizes })
   },
   {
-    id:'hoodie', title:'Custom Hoodie', category:'hoodies', material:'Heavy cotton',
-    description:'A hoodie base with a bounded front and back print workflow.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/tshirts-basic/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'owayo', productId:'tshirts-basic', manifest:'/designer/owayo/tshirts-basic/manifest.json' }
+    id:'bella-canvas-3001-tee', title:'Bella + Canvas 3001 Tee', category:'t-shirts', material:'Retail cotton',
+    description:'Retail-fit tee with localized print areas.', printAreas:['front-center','back-center'], sizes:['S','M','L','XL','2XL'], sourceUrl:'https://www.3dmockups.app/catalog/bella-canvas-3001',
+    adapter:localManifest('owayo','tshirts-basic','/designer/owayo/tshirts-basic/manifest.json','Jersevo T-Shirt Basic equivalent; manufacturer model is not copied.', { preview:'/designer/owayo/tshirts-basic/previews/garment-render.webp', sizes:['S','M','L','XL','2XL'] })
   },
   {
-    id:'baseball-jersey', title:'Custom Baseball Jersey', category:'jerseys', material:'Performance knit',
-    description:'Teamwear base with panel-aware logo and name/number placement.', printAreas:['front-center','front-left-chest','front-right-chest','back-upper','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/cycling-c3/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog/baseball-jersey',
-    adapter:{ provider:'boombah', productId:'BASEBALL3D', manifest:'/designer/boombah/products/baseball3d.json' }
+    id:'hoodie', title:'Hoodie', category:'hoodies', material:'Fleece',
+    description:'Pullover hoodie with kangaroo pocket and fleece lining.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog/hoodie', adapter:referenceOnly
   },
   {
-    id:'football-jersey', title:'Custom Football Jersey', category:'jerseys', material:'Performance knit',
-    description:'Teamwear base with editable colour zones, patterns and roster layers.', printAreas:['front-center','back-upper','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/cycling-c3/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog/football-jersey',
-    adapter:{ provider:'boombah', productId:'FOOTBALL3D', manifest:'/designer/boombah/products/football3d.json' }
+    id:'walking-tee', title:'Walking Tee', category:'t-shirts', material:'Performance fabric',
+    description:'Lightweight tee base for all-over graphics.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
   },
   {
-    id:'basketball-jersey', title:'Custom Basketball Jersey', category:'jerseys', material:'Performance knit',
-    description:'Reversible-ready basketball base with team text and logo panels.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/cycling-c3/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'boombah', productId:'BASKETBALL3D', manifest:'/designer/boombah/products/basketball3d.json' }
+    id:'tee-on-hanger', title:'Tee on Hanger', category:'t-shirts', material:'Cotton',
+    description:'Flat presentation tee for product artwork review.', printAreas:['front-center','back-center'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
   },
   {
-    id:'hockey-jersey', title:'Custom Hockey Jersey', category:'jerseys', material:'Performance knit',
-    description:'Hockey base with front crest, sleeve mark and back roster areas.', printAreas:['front-center','front-left-chest','front-right-chest','back-upper','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/hockey-h3/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'owayo', productId:'hockey-h3', manifest:'/designer/owayo/hockey-h3/manifest.json' }
+    id:'button-shirt', title:'Button Shirt', category:'t-shirts', material:'Performance fabric',
+    description:'Camp-collar short-sleeve shirt with a relaxed drape.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
   },
   {
-    id:'soccer-jersey', title:'Custom Soccer Jersey', category:'jerseys', material:'Performance knit',
-    description:'Breathable football/soccer base for club colours and roster details.', printAreas:['front-center','front-left-chest','front-right-chest','back-upper','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/soccer-f3/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'owayo', productId:'soccer-f3', manifest:'/designer/owayo/soccer-f3/manifest.json' }
+    id:'baseball-jersey', title:'Baseball Jersey', category:'jerseys', material:'Performance knit',
+    description:'Full-button baseball jersey with teamwear name, number and logo panels.', printAreas:['front-center','front-left-chest','front-right-chest','back-upper','back-center','left-sleeve','right-sleeve'], sizes:jerseySizes, sourceUrl:'https://www.3dmockups.app/catalog/baseball-jersey',
+    adapter:localManifest('boombah','BASEBALL3D','/designer/boombah/products/baseball3d.json','Jersevo Boombah baseball equivalent; source model is not copied.')
   },
   {
-    id:'shorts', title:'Custom Shorts', category:'bottoms', material:'Performance knit',
-    description:'A lower-body base for coordinated team kits.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes,
-    preview:'/designer/owayo/yoga-pants-highwaist/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'boombah', productId:'MENSPANTS3D', manifest:'/designer/boombah/products/menspants3d.json' }
+    id:'football-jersey', title:'Football Jersey', category:'jerseys', material:'Performance knit',
+    description:'Football jersey with editable colour zones, patterns and roster layers.', printAreas:['front-center','back-upper','back-center','left-sleeve','right-sleeve'], sizes:jerseySizes, sourceUrl:'https://www.3dmockups.app/catalog/football-jersey',
+    adapter:localManifest('boombah','FOOTBALL3D','/designer/boombah/products/football3d.json','Jersevo Boombah football equivalent; source model is not copied.')
   },
   {
-    id:'accessories', title:'Custom Accessories', category:'accessories', material:'Mixed',
-    description:'Accessory bases are available only when their exact local model is ready.', printAreas:['front-center'], sizes:[],
-    preview:'/designer/owayo/cycling-c3/previews/garment-render.webp', sourceUrl:'https://www.3dmockups.app/catalog',
-    adapter:{ provider:'boombah', productId:'ACCESSORIES3D', manifest:'/designer/boombah/products/accessories3d.json' }
+    id:'basketball-jersey', title:'Basketball Jersey', category:'jerseys', material:'Performance knit',
+    description:'Sleeveless basketball jersey with team text, logo and roster panels.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:jerseySizes, sourceUrl:'https://www.3dmockups.app/catalog/basketball-jersey',
+    adapter:localManifest('boombah','BASKETBALL3D','/designer/boombah/products/basketball3d.json','Jersevo Boombah basketball equivalent; source model is not copied.')
+  },
+  {
+    id:'youth-crew-tee', title:'Youth Crew Tee', category:'t-shirts', material:'Soft cotton',
+    description:'Youth crew-neck tee with a compact size run.', printAreas:['front-center','back-center'], sizes:['YXS','YS','YM','YL','YXL','Y2XL','Y3XL'], sourceUrl:'https://www.3dmockups.app/catalog',
+    adapter:localManifest('owayo','tshirts-basic','/designer/owayo/tshirts-basic/manifest.json','Jersevo T-Shirt Basic equivalent; youth source model is not copied.', { preview:'/designer/owayo/tshirts-basic/previews/garment-render.webp', sizes:['YXS','YS','YM','YL','YXL','Y2XL','Y3XL'] })
+  },
+  {
+    id:'cotton-shorts', title:'Cotton Shorts', category:'bottoms', material:'Cotton',
+    description:'Elastic-waist shorts with side pockets and all-over print.', printAreas:['front-center','back-center'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog/cotton-shorts', adapter:referenceOnly
+  },
+  {
+    id:'wide-leg-pants', title:'Wide-Leg Pants', category:'bottoms', material:'Flowing woven fabric',
+    description:'High-rise, full-length wide-leg pants.', printAreas:['front-center','back-center'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
+  },
+  {
+    id:'wide-leg-unisex', title:'Wide-Leg Unisex', category:'bottoms', material:'Woven fabric',
+    description:'Relaxed unisex wide-leg trouser base.', printAreas:['front-center','back-center'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
+  },
+  {
+    id:'cotton-sweatshirt', title:'Cotton Sweatshirt', category:'hoodies', material:'Brushed fleece',
+    description:'Crewneck sweatshirt with ribbed collar and cuffs.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
+  },
+  {
+    id:'oversized-cotton-hoodie', title:'Oversized Cotton Hoodie', category:'hoodies', material:'Heavy cotton',
+    description:'Oversized cotton hoodie for a relaxed streetwear fit.', printAreas:['front-center','back-center','left-sleeve','right-sleeve'], sizes:apparelSizes, sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
+  },
+  {
+    id:'crop-top', title:'Crop Top', category:'t-shirts', material:'Cotton',
+    description:'Cropped fitted top with all-over print.', printAreas:['front-center','back-center'], sizes:['XS','S','M','L','XL'], sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
+  },
+  {
+    id:'custom-socks', title:'Custom Socks', category:'accessories', material:'Nylon and spandex',
+    description:'Crew socks printed from toe to cuff.', printAreas:['front-center'], sizes:['Youth','Intermediate','Adult'], sourceUrl:'https://www.3dmockups.app/catalog/custom-socks',
+    adapter:localManifest('boombah','SOCKS3D','/designer/boombah/products/socks3d.json','Jersevo Boombah team-sock equivalent; source model is not copied.', { sizes:['Y','I','A'] })
+  },
+  {
+    id:'baseball-cap', title:'Baseball Cap', category:'accessories', material:'Structured cap',
+    description:'Structured cap base for a future approved accessory model.', printAreas:['front-center'], sizes:[], sourceUrl:'https://www.3dmockups.app/catalog', adapter:referenceOnly
   }
 ]
+
+for (const entry of entries) {
+  if (entry.adapter?.provider && !entry.adapter.preview) entry.adapter.preview = await manifestPreview(entry.adapter.manifest)
+}
 
 const catalog = normalizeMockupCatalog({
   generatedAt:new Date().toISOString(),
   entries:entries.map(entry => ({
     ...entry,
+    preview:entry.adapter?.preview || '',
+    adapter:entry.adapter?.provider ? entry.adapter : undefined,
     sourceProvider:THREEDMOCKUPS_REFERENCE.provider,
     licenseStatus:THREEDMOCKUPS_REFERENCE.licenseStatus,
     assetPolicy:THREEDMOCKUPS_REFERENCE.assetPolicy
@@ -98,5 +146,11 @@ if (shouldWrite) {
   await writeFile(output, `${JSON.stringify(catalog, null, 2)}\n`, 'utf8')
 }
 
-console.log(JSON.stringify({ output, wrote:shouldWrite, entries:catalog.entries.length, source:catalog.source }, null, 2))
-
+console.log(JSON.stringify({
+  output,
+  wrote:shouldWrite,
+  entries:catalog.entries.length,
+  mapped:catalog.entries.filter(entry => entry.adapter?.status === 'mapped').length,
+  referenceOnly:catalog.entries.filter(entry => !entry.adapter || entry.adapter.status === 'reference-only').length,
+  source:catalog.source
+}, null, 2))

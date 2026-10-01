@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import test from 'node:test'
 import {
   MOCKUP_PRINT_AREAS,
@@ -36,3 +38,13 @@ test('workflow print areas and scene presets are deterministic', () => {
   assert.equal(normalizeMockupAsset({ kind:'artwork', mimeType:'IMAGE/PNG', size:42 }).mime, 'image/png')
 })
 
+test('3DMockups snapshot covers the public catalog without republishing source previews', async () => {
+  const snapshot = JSON.parse(await readFile(resolve('public/designer/3dmockups/catalog.json'), 'utf8'))
+  assert.equal(snapshot.entries.length, 18)
+  assert.equal(snapshot.entries.filter(entry => entry.adapter?.status === 'mapped').length, 7)
+  assert.equal(snapshot.entries.filter(entry => !entry.adapter).length, 11)
+  assert.ok(snapshot.entries.every(entry => !/3dmockups\.app/i.test(entry.preview || '')))
+  assert.ok(snapshot.entries.find(entry => entry.id === 'hoodie' && !entry.adapter))
+  assert.ok(snapshot.entries.find(entry => entry.id === 'baseball-jersey' && entry.adapter?.provider === 'boombah'))
+  assert.equal(snapshot.source.licenseStatus, 'metadata-only')
+})

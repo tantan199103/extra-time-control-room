@@ -47,9 +47,11 @@ const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
 const MOCKUP_CATALOG_URL = '/designer/3dmockups/catalog.json'
 const ASSET_CACHE_BUSTER = '1'
-// Listing-specific presets must not be silently overwritten by an older
-// generic teamwear draft left in local storage.
-const DRAFT_KEY = 'jersevo-3d-designer-draft-v2'
+// The listing-specific Boombah manifest introduced a new layer contract. Use
+// a new draft namespace so a pre-manifest draft such as JERSEVO / YOUR NAME /
+// 90 cannot replace the photographed listing's DETROIT / ST BROWN / 14 seed.
+// Drafts created after this version continue to autosave normally.
+const DRAFT_KEY = 'jersevo-3d-designer-draft-v3'
 const COLOR_SWATCHES = [
   '#111311', '#F8F8F4', '#F3ED45', '#2876FF', '#EF3340', '#F97316',
   '#7C3AED', '#EC4899', '#12B981', '#00A6A6', '#82C91E', '#7DD3FC',
@@ -1081,6 +1083,8 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
 
 function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvailable, state, update, onProviderChange, onProductChange, onOwayoProductChange, designerConfig }) {
   const [showAll, setShowAll] = useState(false)
+  const [mockupCategory, setMockupCategory] = useState('all')
+  const [showAllMockups, setShowAllMockups] = useState(false)
   const allowedDesignIds = Array.isArray(designerConfig?.allowedDesignIds) ? designerConfig.allowedDesignIds : []
   const allowedStyleCodes = Array.isArray(designerConfig?.allowedStyleCodes) ? designerConfig.allowedStyleCodes : []
   const allowedDesign = item => !allowedDesignIds.length || allowedDesignIds.includes(item.id) || allowedDesignIds.includes(item.slug)
@@ -1100,6 +1104,12 @@ function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvai
   const visibleOwayoProducts = (owayoCatalog?.products || []).filter(product => (product.group || product.sport) === owayoGroup)
   const activeOwayoGroup = availableOwayoGroups.find(group => group.id === owayoGroup)
   const styles = manifestIsBoombah(manifest) ? (manifest.product.styles || []) : []
+  const mockupEntries = Array.isArray(mockupCatalog?.entries) ? mockupCatalog.entries : []
+  const mockupCategories = [...new Set(mockupEntries.map(entry => entry.category).filter(Boolean))]
+  const filteredMockupEntries = mockupCategory === 'all'
+    ? mockupEntries
+    : mockupEntries.filter(entry => entry.category === mockupCategory)
+  const visibleMockupEntries = showAllMockups ? filteredMockupEntries : filteredMockupEntries.slice(0, 6)
   return <div className="designer-panel designer-panel--design">
     <div className="designer-library-switch" aria-label="Designer library">
       <div className="designer-library-switch__head"><span>Design library</span><small>{manifestIsBoombah(manifest) ? 'Teamwear 3D' : `${currentOwayoProduct?.groupLabel || currentOwayoProduct?.sportLabel || 'Sportswear'} 3D`}</small></div>
@@ -1123,15 +1133,21 @@ function DesignPanel({ manifest, catalog, owayoCatalog, mockupCatalog, owayoAvai
       </div>}
       {(currentProduct || currentOwayoProduct) && <p className="designer-library-switch__note">{manifestIsBoombah(manifest) ? currentProduct?.designs : currentOwayoProduct?.designCount} mirrored templates · exact model loads on selection</p>}
     </div>
-    {mockupCatalog?.entries?.length > 0 && <section className="designer-mockup-reference" aria-label="Mockup reference library">
-      <div className="designer-mockup-reference__head"><span>Mockup workflow library</span><small>Metadata mapped to Jersevo assets · {mockupCatalog.entries.length} bases</small></div>
+    {mockupEntries.length > 0 && <section className="designer-mockup-reference" aria-label="Mockup reference library">
+      <div className="designer-mockup-reference__head"><span>3DMockups catalogue reference</span><small>{mockupEntries.length} public bases · {mockupEntries.filter(entry => entry.adapter?.status === 'mapped').length} mapped to Jersevo models</small></div>
+      <label className="designer-library-switch__field designer-mockup-reference__filter"><span>Browse category</span><select value={mockupCategory} onChange={event => { setMockupCategory(event.target.value); setShowAllMockups(false) }}><option value="all">All categories</option>{mockupCategories.map(category => <option key={category} value={category}>{category.replace(/-/g, ' ')}</option>)}</select></label>
       <div className="designer-mockup-reference__grid">
-        {mockupCatalog.entries.slice(0, 4).map(entry => <button type="button" key={entry.id} disabled={Boolean(state.listingId) || !entry.adapter?.productId} onClick={() => entry.adapter?.provider === 'owayo' ? onOwayoProductChange?.(entry.adapter.productId) : onProductChange?.(entry.adapter.productId)}>
-          {entry.preview ? <img src={entry.preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-mockup-reference__placeholder">3D</span>}
-          <span><strong>{entry.title}</strong><small>{entry.category} · {entry.adapter?.provider || 'pending'}</small></span>
-        </button>)}
+        {visibleMockupEntries.map(entry => {
+          const mapped = entry.adapter?.status === 'mapped' && entry.adapter?.productId
+          const provider = entry.adapter?.provider
+          return <button type="button" key={entry.id} disabled={Boolean(state.listingId) || !mapped} title={mapped ? entry.adapter?.mappingNote || 'Open the mapped Jersevo model' : 'Reference metadata only; a licensed Jersevo model is not available yet'} onClick={() => provider === 'owayo' ? onOwayoProductChange?.(entry.adapter.productId) : onProductChange?.(entry.adapter.productId)}>
+            {entry.preview ? <img src={entry.preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-mockup-reference__placeholder">3D</span>}
+            <span><strong>{entry.title}</strong><small>{mapped ? `Jersevo ${provider}` : 'Reference only'}</small></span>
+          </button>
+        })}
       </div>
-      <p className="designer-library-switch__note">Only public catalogue metadata is referenced. Models, textures and templates come from Jersevo-owned or separately licensed manifests.</p>
+      {filteredMockupEntries.length > 6 && <button type="button" className="designer-design-more designer-mockup-reference__more" onClick={() => setShowAllMockups(value => !value)}>{showAllMockups ? 'Show featured references' : `Show all ${filteredMockupEntries.length} references`}</button>}
+      <p className="designer-library-switch__note">Public catalog metadata is used for discovery. Models, textures and templates come from Jersevo-owned or separately licensed manifests.</p>
     </section>}
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">

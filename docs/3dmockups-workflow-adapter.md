@@ -12,6 +12,7 @@ Jerseys, Bottoms and Accessories, and a publish/fulfillment path. The homepage
 describes “pick a garment → customize on the 3D model → launch a shop →
 produce and ship on demand”; the catalog exposes product category, size, print
 coverage and starting-price information.
+The live catalog currently exposes 18 reference products.
 
 Sources reviewed:
 
@@ -40,8 +41,12 @@ Jersevo keeps one catalogue and one editor route:
 The shared contract is `src/lib/mockup-workflow.js`. It defines supported
 asset kinds, print areas, material/scene/export presets, provenance fields and
 validation helpers. `public/designer/3dmockups/catalog.json` is a metadata-only
-adapter that maps representative public catalogue categories to Jersevo-owned
-or separately licensed manifests.
+adapter for those 18 public entries. Seven entries currently map to Jersevo
+models: tees use the local Owayo T-Shirt Basic family; baseball, football and
+basketball use local Boombah teamwear families; socks use the local Boombah
+sock family. The remaining 11 entries are reference-only until an approved
+Jersevo model is available. A reference-only card cannot open a different
+garment by accident.
 
 ## Asset and rights boundary
 
@@ -52,7 +57,10 @@ adapter does **not** download or package their GLB files, textures, templates,
 scene files or brand artwork. `scripts/sync-3dmockups-catalog.mjs` imports only
 public metadata and records `licenseStatus: "metadata-only"` plus the source
 policy. A future licensed import must provide an explicit owner/license
-manifest before a model can enter `public/designer/`.
+manifest before a model can enter `public/designer/`. Preview policy is
+enforced in the normalizer: only a local `/designer/` path or a Jersevo
+Supabase storage URL can be written into the public snapshot. A third-party
+preview URL is dropped even if it appears in a future source payload.
 
 Customer Artwork uploads are separate private references. The server:
 

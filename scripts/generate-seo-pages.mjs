@@ -14,7 +14,7 @@ import { cleanSeoText, seoDescription } from '../src/lib/seo-text.js'
 import { productSeoMetadata, productStructuredData, relatedProducts, safeJson } from '../src/lib/product-seo.js'
 import { TRUST_PAGES } from '../src/lib/trust-pages.js'
 import { catalogPageOverrideFor, normalizeCatalogPageOverrides } from '../src/lib/catalog-page-overrides.js'
-import { productBootstrap, renderProductContent, renderSitemap, renderSitemapIndex } from './seo-render.mjs'
+import { renderProductContent, renderSitemap, renderSitemapIndex } from './seo-render.mjs'
 import { fetchPublishedProductRows, fetchSeoRows } from './seo-catalog-snapshot.mjs'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
@@ -356,14 +356,18 @@ await writePagesInBatches(products, async product => {
   const type = teamProductTypeForProduct(product)
   const typePath = type ? teamProductTypePath(product.taxonomy?.league,product.taxonomy?.team,type) : ''
   const breadcrumbOptions = { includeTeamProductType:Boolean(typePath && teamProductTypeRouteSet.has(typePath)) }
+  // The fallback already contains the crawlable product copy, media, prices
+  // and related links. The client fetches the authoritative product row from
+  // the server on a direct PDP request, so embedding a second 30 KB JSON
+  // payload in every static page only makes the SEO build and deployment
+  // needlessly large.
   const html = pageHtml(shell, {
     path,
     title:metadata.title,
     description:metadata.description,
     image:product.image,
     fallback:renderProductContent(product,related,breadcrumbOptions),
-    schema:productStructuredData(product,PUBLIC_ORIGIN,breadcrumbOptions),
-    bootstrap:productBootstrap(product,related)
+    schema:productStructuredData(product,PUBLIC_ORIGIN,breadcrumbOptions)
   })
   const entry = await writePage(path, html)
   if (entry) {
@@ -380,8 +384,7 @@ await writePagesInBatches(blockedProducts, async product => {
     description:'This product page is not currently available for organic search.',
     image:product.image,
     noindex:true,
-    fallback:renderProductContent(product),
-    bootstrap:productBootstrap(product)
+    fallback:renderProductContent(product)
   }))
 }, 128, 'noindex PDPs')
 
