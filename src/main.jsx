@@ -74,6 +74,7 @@ import './commerce-shell.css'
 
 const AdminApp = lazy(() => import('./admin'))
 const AiStudio = lazy(() => import('./AiStudio'))
+const VideoFactory = lazy(() => import('./VideoFactory'))
 const MembershipPage = lazy(() => import('./MembershipPage'))
 const CheckoutPage = lazy(() => import('./CheckoutPage'))
 const OrderTrackingPage = lazy(() => import('./OrderTrackingPage'))
@@ -2665,7 +2666,8 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
       '/teams':['Find your team | Jersevo','Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.'],
       '/collections':['Shop collections | Jersevo','Explore currently published Jersevo collections and shop fan gear by sport, team and product type.'],
       '/custom':['Custom jerseys and personalized fan gear | Jersevo','Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.'],
-      '/custom/design':['3D custom sportswear designer | Jersevo','Design custom sportswear in 3D, change colors, add names, numbers and a team logo, then organize every player in one roster.']
+      '/custom/design':['3D custom sportswear designer | Jersevo','Design custom sportswear in 3D, change colors, add names, numbers and a team logo, then organize every player in one roster.'],
+      '/video-factory':['Video Factory — Jersevo','Build a six-scene, Flow-ready product campaign from a Jersevo product page.']
     }[path])
     const taxonomySeoTitle = productType ? taxonomyTitle : taxonomyTitle ? `${taxonomyTitle} fan gear` : ''
     const title = product ? withBrand(productTitle) : editableTitle ? withBrand(editableTitle) : collection ? withBrand(collectionTitle) : category ? withBrand(category.label) : taxonomySeoTitle ? withBrand(taxonomySeoTitle) : routeMeta?.[0] || (path === '/' ? 'Custom Jerseys & Personalized Fan Gear | Jersevo' : path === '/shop' ? 'Shop fan gear by sport, team and product | Jersevo' : path === '/sports' ? 'Shop sports and leagues | Jersevo' : path === '/teams' ? 'Find your team | Jersevo' : path === '/collections' ? 'Shop collections | Jersevo' : path === '/membership' ? '90+ Club membership — Extra Time' : path === '/vault' ? 'The Vault — Extra Time' : 'Extra Time — Football memories, made wearable')
@@ -3255,6 +3257,7 @@ function App() {
   else if (path.startsWith('/league/')) page = routeLeague && !catalogPageHidden ? <TaxonomyLanding key={`${routeLeague.key}:${catalogPage}:${search}`} league={routeLeague} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct} pageOverride={catalogPageOverride}/> : <NotFound/>
   else if (path.startsWith('/team/')) page = routeLeague && routeTeam && (!hasTeamProductTypeSegment || routeProductType) && !catalogPageHidden ? <TaxonomyLanding key={`${routeTeam.slug}:${routeProductType?.handle || 'all'}:${catalogPage}:${search}`} league={routeLeague} team={routeTeam} productType={routeProductType} page={catalogPage} pagination={catalogMeta} products={products} discoveryProducts={navigationProducts.length ? navigationProducts : products} loading={taxonomyLoading || navigationLoading} onQuickView={setQuickViewProduct} pageOverride={catalogPageOverride}/> : <NotFound/>
   else if (path === '/studio') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening AI edit…</p></div>}><AiStudio key={search} products={products}/></Suspense>
+  else if (path === '/video-factory') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening Video Factory…</p></div>}><VideoFactory /></Suspense>
   else if (path === '/membership' || path === '/account' || path === '/account/membership') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the club…</p></div>}><MembershipPage account={account} onAccountChange={setAccount} focusAccount={path === '/account'}/></Suspense>
   else if (path === '/checkout') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening secure checkout…</p></div>}><CheckoutPage cart={cart} account={account} onNavigate={navigate} onClearCart={clearCart} onPaymentConfirmed={completeCheckout} initialRoute={route}/></Suspense>
   else if (path === '/track-order') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening order status…</p></div>}><OrderTrackingPage onNavigate={navigate} onPaymentConfirmed={completeCheckout}/></Suspense>

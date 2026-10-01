@@ -46,6 +46,10 @@
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     },
     {
+      "source": "/video-factory",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
       "source": "/custom",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
     },
@@ -151,6 +155,7 @@
     { "source": "/category/:path*", "destination": "/index.html" },
     { "source": "/collections/:path*", "destination": "/index.html" },
     { "source": "/about", "destination": "/index.html" },
+    { "source": "/video-factory", "destination": "/index.html" },
     { "source": "/shipping", "destination": "/index.html" },
     { "source": "/returns", "destination": "/index.html" },
     { "source": "/journal", "destination": "/index.html" },

@@ -209,9 +209,10 @@ const STOREFRONT_PAGE_CACHE_TTL = 10 * 60 * 1000
 const STOREFRONT_STALE_CACHE_TTL = 6 * 60 * 60 * 1000
 
 function storefrontSessionCacheKey(cacheKey) {
-  // v3 invalidates pages cached before the Custom Lab switched from the
+  // v4 invalidates pages cached before the listing-specific 3D defaults were
+  // corrected, so an old Custom Lab response cannot re-seed the editor.
   // broad custom_fields predicate to the explicit 3D designer contract.
-  return `jersevo:catalog:v3:${encodeURIComponent(cacheKey)}`
+  return `jersevo:catalog:v4:${encodeURIComponent(cacheKey)}`
 }
 
 function readStorefrontPageCache(cacheKey, { allowStale = false } = {}) {

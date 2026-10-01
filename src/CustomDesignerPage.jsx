@@ -1041,7 +1041,6 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     const height = dimensions[1]
     const selected = manifest?.designs?.find(item => item.slug === design || item.id === design)
     const normalizedLayers = migrateDesignerLayers({ layerVersion:1, layers })
-    console.debug('[designer-layer-debug]', JSON.stringify({ text, normalizedLayers, surfaces:normalizedLayers.map(layer => [layer.kind, layer.placement, owayoPlacementSurface(layer.placement)]) }))
     const showGarmentPersonalization = supportsBoombahGarmentPersonalization(manifest, selected)
     if (!showGarmentPersonalization) {
       applyOwayoLayers(runtime, new Map())
@@ -1791,9 +1790,12 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
       let resolvedListing = routeParams.listing
         ? products.find(product => product.id === routeParams.listing || product.handle === routeParams.listing) || null
         : null
-      if (routeParams.listing && !resolvedListing) {
+      if (routeParams.listing) {
+        // A listing-specific manifest carries the exact photographed defaults.
+        // Always re-read that single row so a stale catalog page/session cache
+        // cannot silently re-seed the editor with an older layer layout.
         const listingResult = await fetchStorefrontProduct(routeParams.listing, { includeRelated:false })
-        resolvedListing = listingResult?.data?.[0] || null
+        resolvedListing = listingResult?.data?.[0] || resolvedListing
       }
       if (cancelled) return
       if (routeParams.listing && !resolvedListing) throw new Error('The selected listing is no longer available for the 3D editor.')

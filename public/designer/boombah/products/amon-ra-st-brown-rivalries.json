@@ -101,7 +101,7 @@
         "format": "glb-draco"
       },
       "template": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
+        "uri": "/designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
         "path": "designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
         "format": "svg-uv-atlas"
       },
