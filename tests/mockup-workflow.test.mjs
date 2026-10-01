@@ -5,6 +5,7 @@ import test from 'node:test'
 import {
   MOCKUP_PRINT_AREAS,
   MOCKUP_SCENE_PRESETS,
+  isJersevoOwnedMockupAsset,
   normalizeMockupCatalog,
   normalizeMockupCatalogEntry,
   normalizeMockupAsset,
@@ -36,6 +37,14 @@ test('workflow print areas and scene presets are deterministic', () => {
   assert.equal(MOCKUP_SCENE_PRESETS.find(item => item.id === 'transparent').background, 'transparent')
   assert.equal(normalizeMockupCatalogEntry({ title:'Hoodie', printAreas:['back-center','back-center'] }).printAreas.length, 1)
   assert.equal(normalizeMockupAsset({ kind:'artwork', mimeType:'IMAGE/PNG', size:42 }).mime, 'image/png')
+})
+
+test('mockup previews accept local/Jersevo storage only', () => {
+  assert.equal(isJersevoOwnedMockupAsset({ source:'/designer/owayo/preview.webp' }), true)
+  assert.equal(isJersevoOwnedMockupAsset({ source:'https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/preview.webp' }), true)
+  assert.equal(isJersevoOwnedMockupAsset({ source:'https://other-project.supabase.co/storage/v1/object/public/product-media/designer/preview.webp' }), false)
+  assert.equal(isJersevoOwnedMockupAsset({ source:'//other-project.supabase.co/storage/v1/object/public/product-media/designer/preview.webp' }), false)
+  assert.equal(isJersevoOwnedMockupAsset({ source:'https://3dmockups.app/catalog/preview.webp' }), false)
 })
 
 test('3DMockups snapshot covers the public catalog without republishing source previews', async () => {

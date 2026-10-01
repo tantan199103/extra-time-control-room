@@ -183,7 +183,26 @@ export function normalizeMockupCatalog(input = {}) {
 
 export function isJersevoOwnedMockupAsset(asset = {}) {
   const source = clean(asset.source, 400)
-  return source.startsWith('/') || /jersevo\.com|supabase\.co/i.test(source)
+  // A leading single slash is a local public asset.  Protocol-relative URLs
+  // (`//host/...`) are deliberately not treated as local because they can
+  // silently point the editor at an untrusted origin.
+  if (source.startsWith('/') && !source.startsWith('//')) return true
+  let url
+  try { url = new URL(source) } catch { return false }
+  if (url.protocol !== 'https:') return false
+  const host = url.hostname.toLowerCase()
+  if (host === 'jersevo.com' || host.endsWith('.jersevo.com')) return true
+  // Keep previews on the configured Jersevo Supabase project.  The fallback
+  // is the current production project so the metadata sync script (which is
+  // intentionally independent of Vite's env loader) preserves known assets.
+  const configuredHost = (() => {
+    try {
+      const value = import.meta.env?.VITE_SUPABASE_URL || (typeof process !== 'undefined' ? process.env?.VITE_SUPABASE_URL : '') || ''
+      return new URL(value).hostname.toLowerCase()
+    } catch { return '' }
+  })()
+  const allowedSupabaseHost = configuredHost || 'ofetusgarxcwloxxkhnr.supabase.co'
+  return host === allowedSupabaseHost && /^\/storage\/v1\/object\/public\/product-media\//i.test(url.pathname)
 }
 
 export function mockupPlacement(value) {
