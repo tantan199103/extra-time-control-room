@@ -54,7 +54,7 @@ const ASSET_CACHE_BUSTER = 'retail-uv-20261002'
 // listing-specific retail defaults were tuned to the photographed jersey;
 // bumping the namespace prevents the earlier compact text draft from masking
 // those defaults on the next visit.
-const DRAFT_KEY = 'jersevo-3d-designer-draft-v4'
+const DRAFT_KEY = 'jersevo-3d-designer-draft-v5'
 const COLOR_SWATCHES = [
   '#111311', '#F8F8F4', '#F3ED45', '#2876FF', '#EF3340', '#F97316',
   '#7C3AED', '#EC4899', '#12B981', '#00A6A6', '#82C91E', '#7DD3FC',
