@@ -101,7 +101,15 @@ export function stripBoombahBrandingText(value, colorZones = []) {
       .trim()
   }
   let svg = source.replace(/encoding=["']iso-8859-1["']/i, 'encoding="utf-8"')
-  for (const id of ['production_colors', 'guides', 'artwork_targets']) svg = hideGroup(svg, id)
+  // Production SVGs contain several non-artwork layers alongside the UV
+  // atlas.  Leaving any of these visible makes the 3D garment render yellow
+  // target boxes, cut lines or vendor notes instead of the photographed
+  // product.  Keep only the `Art` paths and the paramcolor markers.
+  for (const id of [
+    'production_colors', 'guides', 'artwork_targets', 'Targets',
+    'CUT_LINE', 'CUT_LINE_1_', 'Thru-cut', 'SEW_LINE', 'Info_B',
+    'LWPOLYLINE_77_', 'LWPOLYLINE_80_'
+  ]) svg = hideGroup(svg, id)
   svg = hideNamedBrandElements(svg)
   const removedCodes = colorZones
     .filter(zone => zone?.removed || zone?.editable === false && isBoombahBrandingName(zone?.name))

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "provider": "boombah",
+  "source": {
+    "ownerConfirmedByOperator": true,
+    "site": "https://www.jersevo.com/product/amon-ra-st-brown-14-detroit-lions-2026-rivalries-stitched-limited-nfl-jersey-gray-806394",
+    "syncedAt": "2026-10-01T00:00:00.000Z",
+    "listingId": "listing-fe628fbfa3f1ba174fe9",
+    "note": "Listing-specific presentation manifest. The base mesh and UV atlas are mirrored teamwear assets; the artwork palette and personalization defaults are derived from the published listing photos."
+  },
+  "storage": {
+    "bucket": "product-media",
+    "root": "designer/boombah",
+    "mirrored": true,
+    "hotlinked": false
+  },
+  "branding": {
+    "removed": "Vendor marks, production guides, cut lines and artwork targets"
+  },
+  "catalog": "/designer/boombah/catalog.json",
+  "product": {
+    "id": "FOOTBALL3D",
+    "name": "Detroit Lions Rivalries Limited Jersey",
+    "sport": "Football",
+    "sportLabel": "Football",
+    "description": "Listing-matched gray football jersey with Honolulu Blue trim, black shoulder details and carbon-twill number treatment.",
+    "sizes": [
+      { "name": "Youth Extra Small", "code": "YXS" },
+      { "name": "Youth Small", "code": "YS" },
+      { "name": "Youth Medium", "code": "YM" },
+      { "name": "Youth Large", "code": "YL" },
+      { "name": "Youth X-Large", "code": "YXL" },
+      { "name": "Youth 2X-Large", "code": "Y2XL" },
+      { "name": "Small", "code": "S" },
+      { "name": "Medium", "code": "M" },
+      { "name": "Large", "code": "L" },
+      { "name": "XL", "code": "XL" },
+      { "name": "2XL", "code": "2XL" },
+      { "name": "3XL", "code": "3XL" },
+      { "name": "4XL", "code": "4XL" },
+      { "name": "5XL", "code": "5XL" }
+    ],
+    "styles": [
+      {
+        "id": "retail-amon-ra-st-brown-rivalries-style",
+        "section": "top",
+        "code": "100RS",
+        "name": "Rivalries Limited Jersey",
+        "description": "Listing-matched retail presentation",
+        "designIds": ["retail-amon-ra-st-brown-rivalries"]
+      }
+    ],
+    "colorCodes": [
+      { "code": "C1", "name": "Jersey body", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+      { "code": "C2", "name": "Shoulder and cowl detail", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+      { "code": "C3", "name": "Neck trim", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+      { "code": "C4", "name": "Cuff detail", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+      { "code": "C5", "name": "Vendor mark", "palette": "fdColors", "editable": false, "removed": true, "mesh": "FD-5421-main" }
+    ],
+    "defaultColors": {
+      "C1": "#D9E0E4",
+      "C2": "#20252A",
+      "C3": "#0076B6",
+      "C4": "#20252A"
+    }
+  },
+  "designs": [
+    {
+      "id": "retail-amon-ra-st-brown-rivalries",
+      "slug": "retail-amon-ra-st-brown-rivalries",
+      "name": "Detroit Lions · 2026 Rivalries",
+      "section": "top",
+      "styleCode": "100RS",
+      "styleName": "Rivalries Limited Jersey",
+      "styleNo": "RETAIL",
+      "garment": "FD-FOOT-100RS-RETAIL",
+      "modelId": "FD-5421",
+      "description": "Gray body, Honolulu Blue neck trim, black shoulder panels and listing-matched DETROIT / ST BROWN 14 typography.",
+      "defaultColors": {
+        "C1": "#D9E0E4",
+        "C2": "#20252A",
+        "C3": "#0076B6",
+        "C4": "#20252A"
+      },
+      "colorZones": [
+        { "code": "C1", "name": "Jersey body", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+        { "code": "C2", "name": "Shoulder and cowl detail", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+        { "code": "C3", "name": "Neck trim", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+        { "code": "C4", "name": "Cuff detail", "palette": "fdColors", "editable": true, "removed": false, "mesh": "FD-5421-main" },
+        { "code": "C5", "name": "Vendor mark", "palette": "fdColors", "editable": false, "removed": true, "mesh": "FD-5421-main" }
+      ],
+      "artworkColorMap": {
+        "#031D40": "C1",
+        "#D54B27": "C2",
+        "#98A3AD": "C3",
+        "#1E3363": "C4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-5421-17941472a9b6.glb",
+        "path": "designer/boombah/models/fd-5421-17941472a9b6.glb",
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
+        "path": "designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",
+        "format": "svg-uv-atlas"
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/listing-fe628fbfa3f1ba174fe9/import/media-b73d3a16a49ef1b225e6.avif",
+        "path": "product-media/listing-fe628fbfa3f1ba174fe9/import/media-b73d3a16a49ef1b225e6.avif",
+        "alt": "Gray Detroit Lions Rivalries jersey with DETROIT 14 front and ST BROWN 14 back"
+      }
+    }
+  ],
+  "stats": { "styles": 1, "designs": 1, "models": 1 }
+}

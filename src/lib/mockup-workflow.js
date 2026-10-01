@@ -60,7 +60,8 @@ export const THREEDMOCKUPS_REFERENCE = Object.freeze({
   catalogUrl:'https://www.3dmockups.app/catalog',
   workflowUrl:'https://www.3dmockups.app/how-it-works',
   licenseStatus:'metadata-only',
-  assetPolicy:'Do not copy or redistribute third-party models, textures, templates or branding without a written license.'
+  assetPolicy:'Do not copy or redistribute third-party models, textures, templates or branding without a written license.',
+  previewPolicy:'Only Jersevo-owned or separately licensed previews may be displayed in the editor.'
 })
 
 const clean = (value, max = 160) => String(value ?? '')
@@ -126,10 +127,18 @@ export function validateMockupAsset(input = {}, { kind = input.kind || 'artwork'
 export function normalizeMockupCatalogEntry(input = {}) {
   const id = slug(input.id || input.slug || input.title)
   const category = slug(input.category || 'garments') || 'garments'
-  const preview = clean(input.preview || input.previewUrl, 400)
+  // Never allow a source-hosted preview to leak into the public adapter.  A
+  // source image can be visually useful during research, but displaying it in
+  // the Jersevo editor would look like a redistribution of the provider's
+  // protected asset.  Local paths and Jersevo storage URLs are safe.
+  const previewCandidate = clean(input.preview || input.previewUrl, 400)
+  const preview = isJersevoOwnedMockupAsset({ source:previewCandidate }) ? previewCandidate : ''
   const sourceUrl = clean(input.sourceUrl || THREEDMOCKUPS_REFERENCE.catalogUrl, 400)
-  const provider = clean(input.provider || input.adapter?.provider, 40).toLowerCase()
-  const productId = clean(input.productId || input.adapter?.productId, 80)
+  const adapterInput = input.adapter && typeof input.adapter === 'object' && !Array.isArray(input.adapter) ? input.adapter : {}
+  const provider = clean(input.provider || adapterInput.provider, 40).toLowerCase()
+  const productId = clean(input.productId || adapterInput.productId, 80)
+  const statusCandidate = clean(adapterInput.status || input.adapterStatus || (provider && productId ? 'mapped' : 'reference-only'), 32).toLowerCase()
+  const status = ['mapped', 'reference-only', 'pending-license'].includes(statusCandidate) ? statusCandidate : 'reference-only'
   return {
     id,
     title:clean(input.title || id, 160),
@@ -143,7 +152,14 @@ export function normalizeMockupCatalogEntry(input = {}) {
     sourceProvider:clean(input.sourceProvider || THREEDMOCKUPS_REFERENCE.provider, 80),
     licenseStatus:clean(input.licenseStatus || THREEDMOCKUPS_REFERENCE.licenseStatus, 80),
     assetPolicy:clean(input.assetPolicy || THREEDMOCKUPS_REFERENCE.assetPolicy, 300),
-    adapter:provider && productId ? { provider, productId, manifest:clean(input.adapter?.manifest, 240) } : null
+    adapter:provider && productId ? {
+      provider,
+      productId,
+      manifest:clean(adapterInput.manifest, 240),
+      status,
+      exactModel:Boolean(adapterInput.exactModel),
+      mappingNote:clean(adapterInput.mappingNote, 240)
+    } : null
   }
 }
 
@@ -173,4 +189,3 @@ export function isJersevoOwnedMockupAsset(asset = {}) {
 export function mockupPlacement(value) {
   return MOCKUP_PRINT_AREAS.find(item => item.id === printArea(value)) || MOCKUP_PRINT_AREAS[0]
 }
-
