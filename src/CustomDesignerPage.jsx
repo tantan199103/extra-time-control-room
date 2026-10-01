@@ -50,8 +50,11 @@ const ASSET_CACHE_BUSTER = '1'
 // The listing-specific Boombah manifest introduced a new layer contract. Use
 // a new draft namespace so a pre-manifest draft such as JERSEVO / YOUR NAME /
 // 90 cannot replace the photographed listing's DETROIT / ST BROWN / 14 seed.
-// Drafts created after this version continue to autosave normally.
-const DRAFT_KEY = 'jersevo-3d-designer-draft-v3'
+// Drafts created after this version continue to autosave normally.  The
+// listing-specific retail defaults were tuned to the photographed jersey;
+// bumping the namespace prevents the earlier compact text draft from masking
+// those defaults on the next visit.
+const DRAFT_KEY = 'jersevo-3d-designer-draft-v4'
 const COLOR_SWATCHES = [
   '#111311', '#F8F8F4', '#F3ED45', '#2876FF', '#EF3340', '#F97316',
   '#7C3AED', '#EC4899', '#12B981', '#00A6A6', '#82C91E', '#7DD3FC',
@@ -92,15 +95,6 @@ function escapeRegex(value) {
 function recolorBoombahSvg(svgText, design, colors) {
   const zones = design?.colorZones || []
   let svg = stripBoombahBrandingText(svgText, zones)
-  // The retail FD-5421 GLB samples the transparent portion of its
-  // Illustrator atlas around the garment shell.  Fill that atlas only when
-  // the manifest explicitly opts in; other Boombah families rely on a
-  // transparent UV background for their own material stack.
-  const backgroundCode = String(design?.template?.backgroundColorCode || '').trim()
-  if (backgroundCode) {
-    const bodyColor = colorHex(colors?.[backgroundCode], '#F8F8F4')
-    svg = svg.replace(/(<svg\b[^>]*>)/i, `$1<rect width="100%" height="100%" fill="${bodyColor}"/>`)
-  }
   const replacements = new Map()
   // Some synchronized templates keep a production colour directly in art
   // paths while the paramcolor marker retains the palette's canonical value.
@@ -636,6 +630,13 @@ async function loadBoombahTexture(design, colors, manifest) {
   const response = await fetch(assetUrl(design.template.uri, manifest), { cache:'force-cache' })
   if (!response.ok) throw new Error(`Template request failed (${response.status}).`)
   const svg = recolorBoombahSvg(await response.text(), design, colors)
+  console.warn('boombah-template-debug', {
+    design: design.id || design.slug || '',
+    body: (svg.match(/fill="#D9E0E4"/g) || []).length,
+    blue: (svg.match(/fill="#0076B6"/g) || []).length,
+    dark: (svg.match(/fill="#031D40"/g) || []).length,
+    bytes: svg.length
+  })
   const blobUrl = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml' }))
   try {
     const loader = new THREE.TextureLoader()
@@ -644,7 +645,7 @@ async function loadBoombahTexture(design, colors, manifest) {
     // This mirrored Illustrator atlas is authored in top-left image space;
     // TextureLoader's unpack flip keeps its front/back print zones aligned
     // with the exported teamwear UVs.
-    texture.flipY = false
+    texture.flipY = true
     texture.anisotropy = 4
     texture.needsUpdate = true
     return texture
