@@ -34,7 +34,6 @@
     "sync:owayo:families": "node scripts/sync-owayo-family-assets.mjs",
     "create:owayo:families": "node scripts/create-owayo-family-listings.mjs",
     "sync:boombah:designer": "node --env-file-if-exists=.env.local scripts/sync-boombah-designer-assets.mjs --write --owner-confirmed",
-    "sync:3dmockups:catalog": "node scripts/sync-3dmockups-catalog.mjs --write",
     "create:boombah:listings": "node --env-file-if-exists=.env.local scripts/create-boombah-listings.mjs",
     "route:taass": "node scripts/route-taass-catalog.mjs",
     "audit:taass": "node scripts/audit-taass-coverage.mjs",
