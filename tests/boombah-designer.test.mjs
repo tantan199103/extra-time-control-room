@@ -74,7 +74,7 @@ test('listing-specific Tripo jersey opens on the photographed front without dupl
   assert.equal(manifest.source?.listingId, 'listing-fe628fbfa3f1ba174fe9')
   assert.equal(design.model.source, 'tripo')
   assert.equal(design.model.texturePolicy, 'baked')
-  assert.equal(design.model.defaultRotationY, 0)
+  assert.equal(design.model.defaultRotationY, Math.PI / 2)
   assert.deepEqual(design.model.inputViews, ['front', 'left', 'back', 'right'])
 })
 
