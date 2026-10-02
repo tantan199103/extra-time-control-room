@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 600" role="img" aria-label="Neutral garment preview">
+  <defs>
+    <linearGradient id="fabric" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#eef1ec"/>
+      <stop offset="1" stop-color="#c9d0c8"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#8a9489" stop-opacity=".15"/>
+    </linearGradient>
+  </defs>
+  <path d="M151 71 77 112 18 210l73 40 29-57v294c0 21 17 38 38 38h164c21 0 38-17 38-38V193l29 57 73-40-59-98-74-41c-17 18-40 29-67 29s-50-11-67-29Z" fill="url(#fabric)" stroke="#9aa49a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M151 71c17 18 40 29 89 29s72-11 89-29" fill="none" stroke="#aab3aa" stroke-width="7" stroke-linecap="round"/>
+  <path d="M239 101v386M92 250l-1 237M388 250l1 237" fill="none" stroke="#a6afa5" stroke-width="3" opacity=".55"/>
+  <path d="M55 204 95 225M425 204l-40 21" fill="none" stroke="#f9faf8" stroke-width="7" opacity=".7"/>
+  <path d="M122 193h234v250H122z" fill="url(#shade)" opacity=".23"/>
+</svg>

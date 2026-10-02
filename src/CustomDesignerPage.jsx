@@ -49,8 +49,8 @@ import './custom-designer.css'
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
 const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
-const ASSET_CACHE_BUSTER = 'retail-tripo-listing-front-v2-20261002'
-const BRANDING_CACHE_VERSION = 'branding-clean-v2-20261002'
+const ASSET_CACHE_BUSTER = 'retail-tripo-listing-front-v3-20261002'
+const BRANDING_CACHE_VERSION = 'branding-clean-v3-20261002'
 // The listing-specific Boombah manifest introduced a new layer contract. Use
 // a new draft namespace so a pre-manifest draft such as JERSEVO / YOUR NAME /
 // 90 cannot replace the photographed listing's DETROIT / ST BROWN / 14 seed.
@@ -58,7 +58,7 @@ const BRANDING_CACHE_VERSION = 'branding-clean-v2-20261002'
 // listing-specific retail defaults were tuned to the photographed jersey;
 // bumping the namespace prevents the earlier compact text draft from masking
 // those defaults on the next visit.
-const DRAFT_KEY = 'jersevo-3d-designer-draft-v6'
+const DRAFT_KEY = 'jersevo-3d-designer-draft-v7'
 const TABS = [
   { id:'design', label:'Design', icon:Shirt },
   { id:'colors', label:'Colors', icon:Palette },
@@ -81,12 +81,37 @@ function assetUrl(uri, manifest) {
 // the actual model uses the cleaned template/texture pipeline below instead.
 function designerPreviewUrl(uri, manifest) {
   const raw = uri && typeof uri === 'object' ? uri.uri || uri.url || '' : uri
-  // Never expose supplier-hosted or garment-render rasters. Those files are
-  // photography/exports from the upstream configurator and can carry a sewn
-  // label even when the editable mask has been cleaned. Local Jersevo design
-  // previews remain available for the artwork grid.
-  if (manifestIsBoombah(manifest) || /^https?:/i.test(String(raw || '')) || !/^\/designer\/owayo\//i.test(String(raw || '')) || /(?:^|\/)garment-[^/]*\./i.test(String(raw || ''))) return ''
-  return assetUrl(raw, manifest)
+  const value = String(raw || '').trim()
+  if (!value || manifestIsBoombah(manifest)) return ''
+  // Only operator-mirrored Owayo assets may be shown in the picker. Do not
+  // render upstream supplier URLs or arbitrary remote images from a stale
+  // manifest.
+  const mirrored = /^https:\/\/ofetusgarxcwloxxkhnr\.supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/owayo\//i.test(value)
+  const local = /^\/designer\/owayo\//i.test(value)
+  if (/^https?:/i.test(value) && !mirrored) return ''
+  if (!mirrored && !local) return ''
+  // The synchronized `/previews/` objects are flat texture swatches (not
+  // garment renders) and some older rows still carry a supplier mark. Never
+  // put those rasters in the UI; the clean neutral garment fallback below is
+  // deterministic and avoids both crop errors and source branding.
+  if (/(?:^|\/)previews\//i.test(value) || /(?:^|\/)garment-[^/]*\./i.test(value)) return ''
+  if (mirrored && !/(?:^|\/)patterns\//i.test(value)) return ''
+  return assetUrl(value, manifest)
+}
+
+const NEUTRAL_GARMENT_PREVIEW = '/designer/owayo/neutral-garment.svg'
+
+function NeutralGarmentPreview({ className = '', pattern = false }) {
+  if (pattern) return <span className={`designer-design-grid__placeholder is-pattern ${className}`} aria-label="Pattern preview"><Grid3X3 size={24} strokeWidth={1.5} aria-hidden="true" /></span>
+  if (className.includes('designer-library-models')) return <span className={`designer-library-models__placeholder ${className}`} aria-label="Garment preview"><img src={NEUTRAL_GARMENT_PREVIEW} alt="" aria-hidden="true" loading="lazy" decoding="async" /></span>
+  return <span className={`designer-design-grid__placeholder ${className}`} aria-label="Garment preview"><img src={NEUTRAL_GARMENT_PREVIEW} alt="" aria-hidden="true" loading="lazy" decoding="async" /></span>
+}
+
+function DesignerPreviewImage({ src, className = '', pattern = false }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [src])
+  if (!src || failed) return <NeutralGarmentPreview className={className} pattern={pattern} />
+  return <img className={className} src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
 }
 
 function manifestIsBoombah(manifest) {
@@ -294,7 +319,9 @@ function migrateDesignerLayers(state = {}) {
 
 function initialDesignerState() {
   const firstPlayerId = id()
-  const text = { team:'JERSEVO', name:'YOUR NAME', number:'90', x:0, y:0, scale:1, color:'#F8F8F4', font:'Barlow Condensed', outlineColor:'#111311', outlineWidth:8, rotation:0, placement:'back-center', sameOnAll:false, layer:0 }
+  // Start with an unbranded garment. Personalization is opt-in from the Text
+  // panel; placeholder copy must not look like supplier artwork in the stage.
+  const text = { team:'', name:'', number:'', x:0, y:0, scale:1, color:'#F8F8F4', font:'Barlow Condensed', outlineColor:'#111311', outlineWidth:8, rotation:0, placement:'back-center', sameOnAll:false, layer:0 }
   return {
     provider:'owayo',
     listingId:'',
@@ -310,7 +337,7 @@ function initialDesignerState() {
     layerVersion:1,
     layers:legacyDesignerLayers(text),
     previewPlayerId:firstPlayerId,
-    roster:[{ id:firstPlayerId, name:'Your name', number:'90', size:'M' }]
+    roster:[{ id:firstPlayerId, name:'', number:'', size:'M' }]
   }
 }
 
@@ -1372,7 +1399,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProduct
       </div>
       <div className="designer-library-models" aria-label="Available garment models">
         {visibleLibraryProducts.map(product => <button type="button" key={`${product.provider}-${product.id}`} disabled={Boolean(state.listingId) || !product.ready} className={`${product.ready ? 'is-live' : ''}${currentLibraryProduct?.provider === product.provider && currentLibraryProduct?.id === product.id ? ' is-active' : ''}`} title={stripBoombahBrandingText(`${product.providerLabel} · ${product.cut}`)} onClick={() => product.provider === 'owayo' ? onOwayoProductChange?.(product.id) : onProductChange?.(product.id)}>
-          <span className="designer-library-models__art">{designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest) ? <img src={designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest)} alt="" loading="lazy" decoding="async"/> : <span className="designer-library-models__placeholder" aria-label="Garment preview"><Shirt size={22} strokeWidth={1.5}/></span>}</span>
+          <span className="designer-library-models__art"><DesignerPreviewImage src={designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest)} className="designer-library-models__preview" /></span>
           <span className="designer-library-models__meta"><strong>{stripBoombahBrandingText(product.title)}</strong><small><b>{stripBoombahBrandingText(product.providerLabel)}</b> · {stripBoombahBrandingText(product.cut)}{product.detail ? ` · ${stripBoombahBrandingText(product.detail)}` : ''}</small><small>{product.designs} designs · {product.sizes} sizes</small></span>
           {currentLibraryProduct?.provider === product.provider && currentLibraryProduct?.id === product.id && <Check size={15}/>}
         </button>)}
@@ -1391,7 +1418,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProduct
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">
       {designs.map(item => <button type="button" className={state.design === item.slug || state.design === item.id ? 'is-active' : ''} key={item.slug || item.id} onClick={() => update(current => ({ ...current, design:item.slug || item.id, styleCode:item.styleCode || current.styleCode, colors:{ ...current.colors, ...normalizeColorMap(item.defaultColors) } }))}>
-        <span className="designer-design-grid__art">{designerPreviewUrl(item.preview, manifest) ? <img src={designerPreviewUrl(item.preview, manifest)} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder" aria-label="Garment preview"><Shirt size={24} strokeWidth={1.5}/></span>}</span>
+        <span className="designer-design-grid__art"><DesignerPreviewImage src={designerPreviewUrl(item.preview, manifest)} className="designer-design-grid__preview" /></span>
         <span>{item.name}</span>{(state.design === item.slug || state.design === item.id) && <Check size={15}/>}
       </button>)}
     </div>
@@ -1586,7 +1613,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
         <div className="designer-pattern-grid">
           {visibleTemplates.map(item => {
             const preview = designerPreviewUrl(item.preview, manifest)
-            return <button type="button" key={item.id || item.slug} className={(state.design === item.id || state.design === item.slug) ? 'is-active' : ''} onClick={() => chooseTemplate(item)}><span>{preview ? <img src={preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder" aria-label="Garment preview"><Shirt size={24} strokeWidth={1.5}/></span>}</span><strong>{stripBoombahBrandingText(item.name)}</strong><small>{stripBoombahBrandingText(item.styleName || item.garment || '')}</small>{(state.design === item.id || state.design === item.slug) && <Check size={14}/>}</button>
+            return <button type="button" key={item.id || item.slug} className={(state.design === item.id || state.design === item.slug) ? 'is-active' : ''} onClick={() => chooseTemplate(item)}><span><DesignerPreviewImage src={preview} className="designer-pattern-grid__preview" pattern /></span><strong>{stripBoombahBrandingText(item.name)}</strong><small>{stripBoombahBrandingText(item.styleName || item.garment || '')}</small>{(state.design === item.id || state.design === item.slug) && <Check size={14}/>}</button>
           })}
         </div>
         {!templates.length && <p className="designer-library-empty">No synchronized artwork templates match this garment cut.</p>}
@@ -1632,11 +1659,11 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
       <label className="designer-library-switch__field"><span>Apply to garment color</span><select value={state.pattern?.colorCode || colorCodes[0] || 'A'} onChange={event => setPattern({ colorCode:event.target.value })}>{colorCodes.map(code => <option key={code} value={code}>{manifest.product.colorCodes.find(item => item.colorCode === code)?.Farbname || `Color ${code}`}</option>)}</select></label>
     </div>
     <label className="designer-library-switch__search designer-pattern-search"><span>Search patterns</span><input type="search" value={query} onChange={event => { setQuery(event.target.value); setShowAll(false) }} placeholder="Search geometry, mesh, hand drawn…"/></label>
-    {selected && <div className="designer-pattern-selected">{designerPreviewUrl(selected.preview, manifest) ? <img src={designerPreviewUrl(selected.preview, manifest)} alt=""/> : <span className="designer-design-grid__placeholder" aria-label="Pattern preview"><Grid3X3 size={20} strokeWidth={1.5}/></span>}<div><strong>{selected.name}</strong><small>{selected.categoryNames?.join(' · ')}</small></div><button type="button" onClick={resetPattern}>Clear</button></div>}
+    {selected && <div className="designer-pattern-selected"><DesignerPreviewImage src={designerPreviewUrl(selected.preview, manifest)} pattern /><div><strong>{selected.name}</strong><small>{selected.categoryNames?.join(' · ')}</small></div><button type="button" onClick={resetPattern}>Clear</button></div>}
     <div className="designer-pattern-grid">
       {visible.map(item => {
         const preview = designerPreviewUrl(item.preview, manifest)
-        return <button type="button" key={item.id} className={(state.pattern?.slug === item.slug || state.pattern?.id === item.id) ? 'is-active' : ''} onClick={() => chooseOwayoPattern(item)}><span>{preview ? <img src={preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder" aria-label="Pattern preview"><Grid3X3 size={20} strokeWidth={1.5}/></span>}</span><strong>{item.name}</strong><small>{item.categoryNames?.[0] || 'Pattern'}</small>{(state.pattern?.slug === item.slug || state.pattern?.id === item.id) && <Check size={14}/>}</button>
+        return <button type="button" key={item.id} className={(state.pattern?.slug === item.slug || state.pattern?.id === item.id) ? 'is-active' : ''} onClick={() => chooseOwayoPattern(item)}><span><DesignerPreviewImage src={preview} className="designer-pattern-grid__preview" pattern /></span><strong>{item.name}</strong><small>{item.categoryNames?.[0] || 'Pattern'}</small>{(state.pattern?.slug === item.slug || state.pattern?.id === item.id) && <Check size={14}/>}</button>
       })}
     </div>
     {!filtered.length && <p className="designer-library-empty">No patterns match that search.</p>}

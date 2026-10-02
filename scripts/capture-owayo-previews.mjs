@@ -98,7 +98,7 @@ async function captureOne(cdp, { id, design, named }) {
   await sleep(2800)
   await cdp.command('Runtime.evaluate', { expression: `(() => {
     const style = document.createElement('style')
-    style.textContent = '.designer-stage__hint,.designer-stage__tools,.designer-stage__history,.designer-stage__meta{display:none!important}'
+    style.textContent = '.designer-stage__hint,.designer-stage__tools,.designer-stage__history,.designer-stage__meta,.designer-stage__scene{display:none!important}'
     document.head.appendChild(style)
     return true
   })()`, returnByValue: true })
@@ -115,7 +115,7 @@ async function captureOne(cdp, { id, design, named }) {
   const metadata = await source.metadata()
   const usableHeight = Math.max(1, Math.round((metadata.height || 1) * 0.88))
   await source.extract({ left: 0, top: 0, width: metadata.width || 1, height: usableHeight })
-    .resize({ width: 720, height: 960, fit: 'cover', position: 'centre', background: '#f5f6f3' })
+    .resize({ width: 720, height: 960, fit: 'contain', background: '#f5f6f3' })
     .webp({ quality: 84 })
     .toFile(webpPath)
   await rm(pngPath, { force: true })

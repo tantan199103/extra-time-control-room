@@ -161,7 +161,7 @@ async function renderDesignPreview(mask, product) {
     data[offset + 2] = color[2]
   }
   return sharp(data, { raw:info })
-    .resize(360, 200, { fit:'cover', position:'north' })
+    .resize(360, 240, { fit:'contain', background:{ r:244, g:245, b:242, alpha:1 } })
     .webp({ quality:82, effort:5 })
     .toBuffer()
 }

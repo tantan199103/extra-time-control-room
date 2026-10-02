@@ -233,7 +233,12 @@ async function renderPreview(mask, product) {
     if (!color) continue
     decoded.data[offset] = color[0]; decoded.data[offset + 1] = color[1]; decoded.data[offset + 2] = color[2]
   }
-  return sharp(decoded.data, { raw:decoded.info }).resize(480, 520, { fit:'cover', position:'north' }).webp({ quality:82, effort:5 }).toBuffer()
+  // Keep the complete garment panel in a stable portrait frame. The previous
+  // cover/north crop exposed only the chest texture in the design picker.
+  return sharp(decoded.data, { raw:decoded.info })
+    .resize(480, 520, { fit:'contain', background:{ r:244, g:245, b:242, alpha:1 } })
+    .webp({ quality:82, effort:5 })
+    .toBuffer()
 }
 
 async function makeStorage(client, path, buffer, contentType) {

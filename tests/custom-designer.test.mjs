@@ -153,6 +153,11 @@ test('mobile 3D controls stay inside the compact stage', async () => {
 
 test('designer fallbacks never present a supplier or Jersevo-branded thumbnail', async () => {
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  const neutral = await readFile(resolve(publicRoot, 'designer/owayo/neutral-garment.svg'), 'utf8')
+  assert.match(neutral, /Neutral garment preview/i)
+  assert.doesNotMatch(neutral, /owayo|boombah|jersevo/i)
+  assert.ok(source.includes('previews/'))
+  assert.ok(source.includes('patterns'))
   assert.doesNotMatch(source, /designer-(?:library-models|design-grid)__placeholder[^<]*>Jersevo\s+3D/i)
   assert.match(source, /designer-library-models__placeholder[^>]*aria-label="Garment preview"/)
   assert.match(source, /designer-design-grid__placeholder[^>]*aria-label="Garment preview"/)
