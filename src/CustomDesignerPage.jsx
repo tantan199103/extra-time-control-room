@@ -100,17 +100,23 @@ function designerPreviewUrl(uri, manifest) {
 }
 
 const NEUTRAL_GARMENT_PREVIEW = '/designer/owayo/neutral-garment.svg'
+const NEUTRAL_SLEEVELESS_PREVIEW = '/designer/owayo/neutral-garment-sleeveless.svg'
 
-function NeutralGarmentPreview({ className = '', pattern = false }) {
-  if (pattern) return <span className={`designer-design-grid__placeholder is-pattern ${className}`} aria-label="Pattern preview"><Grid3X3 size={24} strokeWidth={1.5} aria-hidden="true" /></span>
-  if (className.includes('designer-library-models')) return <span className={`designer-library-models__placeholder ${className}`} aria-label="Garment preview"><img src={NEUTRAL_GARMENT_PREVIEW} alt="" aria-hidden="true" loading="lazy" decoding="async" /></span>
-  return <span className={`designer-design-grid__placeholder ${className}`} aria-label="Garment preview"><img src={NEUTRAL_GARMENT_PREVIEW} alt="" aria-hidden="true" loading="lazy" decoding="async" /></span>
+function neutralPreviewAsset(variant = '') {
+  return /sleeveless|singlet|tank/i.test(String(variant || '')) ? NEUTRAL_SLEEVELESS_PREVIEW : NEUTRAL_GARMENT_PREVIEW
 }
 
-function DesignerPreviewImage({ src, className = '', pattern = false }) {
+function NeutralGarmentPreview({ className = '', pattern = false, variant = '' }) {
+  if (pattern) return <span className={`designer-design-grid__placeholder is-pattern ${className}`} aria-label="Pattern preview"><Grid3X3 size={24} strokeWidth={1.5} aria-hidden="true" /></span>
+  const preview = neutralPreviewAsset(variant)
+  if (className.includes('designer-library-models')) return <span className={`designer-library-models__placeholder ${className}`} aria-label="Garment preview"><img src={preview} alt="" aria-hidden="true" loading="lazy" decoding="async" /></span>
+  return <span className={`designer-design-grid__placeholder ${className}`} aria-label="Garment preview"><img src={preview} alt="" aria-hidden="true" loading="lazy" decoding="async" /></span>
+}
+
+function DesignerPreviewImage({ src, className = '', pattern = false, variant = '' }) {
   const [failed, setFailed] = useState(false)
   useEffect(() => setFailed(false), [src])
-  if (!src || failed) return <NeutralGarmentPreview className={className} pattern={pattern} />
+  if (!src || failed) return <NeutralGarmentPreview className={className} pattern={pattern} variant={variant} />
   return <img className={className} src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
 }
 
@@ -1399,7 +1405,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProduct
       </div>
       <div className="designer-library-models" aria-label="Available garment models">
         {visibleLibraryProducts.map(product => <button type="button" key={`${product.provider}-${product.id}`} disabled={Boolean(state.listingId) || !product.ready} className={`${product.ready ? 'is-live' : ''}${currentLibraryProduct?.provider === product.provider && currentLibraryProduct?.id === product.id ? ' is-active' : ''}`} title={stripBoombahBrandingText(`${product.providerLabel} · ${product.cut}`)} onClick={() => product.provider === 'owayo' ? onOwayoProductChange?.(product.id) : onProductChange?.(product.id)}>
-          <span className="designer-library-models__art"><DesignerPreviewImage src={designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest)} className="designer-library-models__preview" /></span>
+          <span className="designer-library-models__art"><DesignerPreviewImage src={designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest)} className="designer-library-models__preview" variant={product.detail} /></span>
           <span className="designer-library-models__meta"><strong>{stripBoombahBrandingText(product.title)}</strong><small><b>{stripBoombahBrandingText(product.providerLabel)}</b> · {stripBoombahBrandingText(product.cut)}{product.detail ? ` · ${stripBoombahBrandingText(product.detail)}` : ''}</small><small>{product.designs} designs · {product.sizes} sizes</small></span>
           {currentLibraryProduct?.provider === product.provider && currentLibraryProduct?.id === product.id && <Check size={15}/>}
         </button>)}
@@ -1418,7 +1424,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProduct
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">
       {designs.map(item => <button type="button" className={state.design === item.slug || state.design === item.id ? 'is-active' : ''} key={item.slug || item.id} onClick={() => update(current => ({ ...current, design:item.slug || item.id, styleCode:item.styleCode || current.styleCode, colors:{ ...current.colors, ...normalizeColorMap(item.defaultColors) } }))}>
-        <span className="designer-design-grid__art"><DesignerPreviewImage src={designerPreviewUrl(item.preview, manifest)} className="designer-design-grid__preview" /></span>
+        <span className="designer-design-grid__art"><DesignerPreviewImage src={designerPreviewUrl(item.preview, manifest)} className="designer-design-grid__preview" variant={manifest?.product?.sleeve} /></span>
         <span>{item.name}</span>{(state.design === item.slug || state.design === item.id) && <Check size={15}/>}
       </button>)}
     </div>
