@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 import { assertCustomerAsset } from './_logo-request.js'
 import { normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
-import { findBoombahPattern } from '../src/lib/designer-options.js'
+import { findBoombahPattern, findUsSportsTeamFamily } from '../src/lib/designer-options.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
@@ -41,7 +41,10 @@ export function normalizeDesignerSpec(value) {
   const patternColors = Object.fromEntries(Object.entries(patternColorsSource).slice(0, 12).map(([key, raw]) => [safeText(key, 20), /^#[0-9a-f]{6}$/i.test(String(raw || '')) ? String(raw).toUpperCase() : '']).filter(([key, raw]) => key && raw))
   const patternSlug = safeText(patternSource.slug, 100).toLowerCase()
   const patternId = safeText(patternSource.id, 40)
+  const patternFamilyId = findUsSportsTeamFamily(safeText(patternSource.familyId, 80).toLowerCase())?.id || ''
   const patternZoneCode = safeText(patternSource.zoneCode, 20).toUpperCase()
+  const colorFamilyIdSource = safeText(value.colorFamilyId, 80).toLowerCase()
+  const colorFamilyId = findUsSportsTeamFamily(colorFamilyIdSource)?.id || ''
   const validPattern = provider === 'boombah'
     ? Boolean(findBoombahPattern(patternSlug))
     : /^[a-z0-9][a-z0-9-]{0,99}$/.test(patternSlug)
@@ -72,11 +75,13 @@ export function normalizeDesignerSpec(value) {
     garment:safeText(value.garment, 160),
     designSlug:safeText(value.designSlug, 80),
     designName:safeText(value.designName, 120),
+    colorFamilyId,
     assetPolicy:safeText(value.assetPolicy, 80) || 'private-customer-assets',
     colors,
     pattern:patternSource.slug && validPattern ? {
       id:patternId,
       slug:patternSlug,
+      familyId:patternFamilyId,
       colorCode:safeText(patternSource.colorCode, 20).toUpperCase() || 'A',
       zoneCode:/^[A-Z0-9_-]{1,20}$/.test(patternZoneCode) ? patternZoneCode : '',
       versionId:safeText(patternSource.versionId, 40),
