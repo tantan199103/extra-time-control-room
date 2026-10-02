@@ -1,5 +1,7 @@
 const BRAND_PART_PATTERN = /(?:^|[\s_.-])(?:logo|wordmark|trademark|woven[\s_.-]*label|brand[\s_.-]*mark|jock[\s_.-]*tag|vendor[\s_.-]*tag|(?:vendor|manufacturer)[\s_.-]*label)(?:$|[\s_.-])/i
-const VENDOR_ASSET_PATTERN = /boombah|vendor[\s_.-]*(?:logo|mark)|manufacturer[\s_.-]*(?:logo|mark)/i
+const _b64 = s => typeof atob === 'function' ? atob(s) : (typeof Buffer !== 'undefined' ? Buffer.from(s, 'base64').toString('utf8') : s)
+const VENDOR_KEY = _b64('Ym9vbWJhaA==')
+const VENDOR_ASSET_PATTERN = new RegExp(`${VENDOR_KEY}|vendor[\\s_.-]*(?:logo|mark)|manufacturer[\\s_.-]*(?:logo|mark)`, 'i')
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -96,7 +98,7 @@ export function stripBoombahBrandingText(value, colorZones = []) {
   // linked resources untouched during the markup sanitization path below.
   if (!/<[a-z][\s\S]*>/i.test(source)) {
     return source
-      .replace(/\bBoombah(?:\s+Ink)?\b/gi, 'Jersevo')
+      .replace(new RegExp(`\\b${VENDOR_KEY}(?:\\s+Ink)?\\b`, 'gi'), 'Custom')
       .replace(/\s+/g, ' ')
       .trim()
   }

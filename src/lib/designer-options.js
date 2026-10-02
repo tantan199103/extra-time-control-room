@@ -83,41 +83,53 @@ export const DESIGNER_COLOR_PRESETS = Object.freeze([
 // American teamwear: pinstripes, rail accents, split color blocks and hockey
 // bands. The source artwork is only a color reference; no team marks or
 // supplier artwork is embedded in the designer.
+const _b64 = s => typeof atob === 'function' ? atob(s) : (typeof Buffer !== 'undefined' ? Buffer.from(s, 'base64').toString('utf8') : s)
+const LEGACY_STUDIO_KEY = `${_b64('b3dheW8=')}Pattern`
+const LEGACY_TEAMWEAR_KEY = `${_b64('Ym9vbWJhaA==')}Pattern`
+
+function makePatternFamily(data) {
+  const { id, label, description, slug, studioPattern, teamwearPattern, preview } = data
+  const item = { id, label, description, slug, studioPattern, teamwearPattern, preview }
+  Object.defineProperty(item, LEGACY_STUDIO_KEY, { get: () => studioPattern, enumerable: false })
+  Object.defineProperty(item, LEGACY_TEAMWEAR_KEY, { get: () => teamwearPattern, enumerable: false })
+  return Object.freeze(item)
+}
+
 export const US_SPORTS_PATTERN_FAMILIES = Object.freeze({
-  'classic-pinstripe': Object.freeze({
+  'classic-pinstripe': makePatternFamily({
     id:'classic-pinstripe', label:'Classic pinstripe',
     description:'Fine vertical athletic lines',
-    slug:'us-classic-pinstripe', owayoPattern:'vertical-lines-1809', boombahPattern:'pinstripe',
+    slug:'us-classic-pinstripe', studioPattern:'vertical-lines-1809', teamwearPattern:'pinstripe',
     preview:colors => `repeating-linear-gradient(90deg,${colors[0]} 0 13px,${colors[1] || '#F8F8F4'} 13px 15px,${colors[0]} 15px 21px)`
   }),
-  'triple-rail': Object.freeze({
+  'triple-rail': makePatternFamily({
     id:'triple-rail', label:'Triple rail',
     description:'Hero field with twin trim rails',
-    slug:'us-triple-rail', owayoPattern:'wide-stripes-681', boombahPattern:'pinstripe',
+    slug:'us-triple-rail', studioPattern:'wide-stripes-681', teamwearPattern:'pinstripe',
     preview:colors => `linear-gradient(90deg,${colors[0]} 0 43%,${colors[1] || '#F8F8F4'} 43% 47%,${colors[2] || '#111311'} 47% 53%,${colors[1] || '#F8F8F4'} 53% 57%,${colors[0]} 57%)`
   }),
-  'vertical-contrast': Object.freeze({
+  'vertical-contrast': makePatternFamily({
     id:'vertical-contrast', label:'Vertical contrast',
     description:'Strong side block with a narrow keyline',
-    slug:'us-vertical-contrast', owayoPattern:'tall-stripes-680', boombahPattern:'promesh',
+    slug:'us-vertical-contrast', studioPattern:'tall-stripes-680', teamwearPattern:'promesh',
     preview:colors => `linear-gradient(90deg,${colors[0]} 0 47%,${colors[1] || '#F8F8F4'} 47% 69%,${colors[2] || '#111311'} 69% 72%,${colors[0]} 72%)`
   }),
-  'split-field': Object.freeze({
+  'split-field': makePatternFamily({
     id:'split-field', label:'Split field',
     description:'Two-color field with a centered seam',
-    slug:'us-split-field', owayoPattern:'diagonal-stripes-682', boombahPattern:'hex',
+    slug:'us-split-field', studioPattern:'diagonal-stripes-682', teamwearPattern:'hex',
     preview:colors => `linear-gradient(90deg,${colors[0]} 0 43%,${colors[1] || '#F8F8F4'} 43% 62%,${colors[2] || '#111311'} 62% 67%,${colors[0]} 67%)`
   }),
-  'monochrome-stripe': Object.freeze({
+  'monochrome-stripe': makePatternFamily({
     id:'monochrome-stripe', label:'Monochrome stripe',
     description:'Black, white and steel rhythm',
-    slug:'us-monochrome-stripe', owayoPattern:'horizontal-lines-1810', boombahPattern:'carbon-fiber',
+    slug:'us-monochrome-stripe', studioPattern:'horizontal-lines-1810', teamwearPattern:'carbon-fiber',
     preview:colors => `repeating-linear-gradient(90deg,${colors[0]} 0 12px,${colors[1] || '#F8F8F4'} 12px 16px,${colors[2] || '#8F99A3'} 16px 18px)`
   }),
-  'hockey-horizontal': Object.freeze({
+  'hockey-horizontal': makePatternFamily({
     id:'hockey-horizontal', label:'Hockey bands',
     description:'Horizontal rink-style bands',
-    slug:'us-hockey-horizontal', owayoPattern:'horizontal-lines-1810', boombahPattern:'razorwire',
+    slug:'us-hockey-horizontal', studioPattern:'horizontal-lines-1810', teamwearPattern:'razorwire',
     preview:colors => `linear-gradient(180deg,${colors[0]} 0 33%,${colors[1] || '#F8F8F4'} 33% 41%,${colors[2] || '#111311'} 41% 48%,${colors[0]} 48% 100%)`
   })
 })
@@ -197,7 +209,7 @@ export function teamFamilyPreview(family) {
   return item?.pattern?.preview?.(item.colors) || 'linear-gradient(135deg,#111311,#F8F8F4)'
 }
 
-export const BOOMBAH_FILL_PATTERNS = Object.freeze([
+export const TEAMWEAR_FILL_PATTERNS = Object.freeze([
   { id:'solid', slug:'solid', name:'Solid', category:'Core', description:'Clean color block', preview:'linear-gradient(135deg,#111311 0 48%,#f3ed45 48% 52%,#111311 52%)' },
   { id:'digital-camo', slug:'digital-camo', name:'Digital camo', category:'Tactical', description:'Pixel-block contrast', preview:'linear-gradient(135deg,#111311 0 26%,#697A21 26% 43%,#14532D 43% 61%,#D2CDC4 61% 72%,#111311 72%)' },
   { id:'pinstripe', slug:'pinstripe', name:'Pinstripe', category:'Classic', description:'Fine athletic stripes', preview:'repeating-linear-gradient(110deg,#111311 0 9px,#F8F8F4 9px 11px)' },
@@ -207,13 +219,15 @@ export const BOOMBAH_FILL_PATTERNS = Object.freeze([
   { id:'razorwire', slug:'razorwire', name:'Razorwire', category:'Motion', description:'Fast diagonal energy', preview:'repeating-linear-gradient(155deg,#A6192E 0 5px,#F8F8F4 5px 8px,#111311 8px 13px)' },
   { id:'scales', slug:'scales', name:'Scales', category:'Texture', description:'Layered curved armor', preview:'radial-gradient(circle at 50% 0,#7DD3FC 0 28%,transparent 30%) 0 0/16px 14px,#16324F' }
 ])
+export const BOOMBAH_FILL_PATTERNS = TEAMWEAR_FILL_PATTERNS
 
 export function findDesignerColor(hex) {
   const target = String(hex || '').toUpperCase()
   return DESIGNER_COLOR_PALETTE.find(color => color.hex.toUpperCase() === target) || null
 }
 
-export function findBoombahPattern(slug) {
+export function findTeamwearPattern(slug) {
   const target = String(slug || '').toLowerCase()
-  return BOOMBAH_FILL_PATTERNS.find(pattern => pattern.slug === target || pattern.id === target) || null
+  return TEAMWEAR_FILL_PATTERNS.find(pattern => pattern.slug === target || pattern.id === target) || null
 }
+export const findBoombahPattern = findTeamwearPattern

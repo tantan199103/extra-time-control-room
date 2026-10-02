@@ -105,7 +105,14 @@
 .designer-stage__loading { position: absolute; z-index: 4; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; background: rgba(242,243,240,.92); color: var(--designer-ink); }
 .designer-stage__loading span { display: grid; place-items: center; width: 82px; height: 82px; border: 1px solid var(--designer-ink); border-radius: 50%; font: 800 34px var(--headline); animation: designer-pulse 1.2s ease-in-out infinite alternate; }
 .designer-stage__loading p { margin: 0; font-size: 11px; font-weight: 700; }
-.designer-stage__loading.is-error span { border-color: #c63c3c; color: #c63c3c; animation: none; }
+.designer-stage__loading.is-error { place-content: end center; padding-bottom: 18px; background: transparent; pointer-events: none; }
+.designer-stage__loading.is-error span { width: 34px; height: 34px; border-color: #c63c3c; color: #c63c3c; font-size: 19px; animation: none; background: rgba(255,255,255,.9); }
+.designer-stage__loading.is-error p { margin: 0; padding: 6px 9px; background: rgba(255,255,255,.9); color: #6a6f68; font-size: 9px; }
+.designer-stage__fallback { position: absolute; z-index: 2; inset: 12% 18% 10%; display: grid; place-items: center; align-content: center; gap: 8px; pointer-events: none; }
+.designer-stage__fallback img { width: min(58%, 360px); height: min(72%, 430px); object-fit: contain; opacity: .82; filter: saturate(.86) contrast(.98); }
+.designer-stage__fallback p { display: grid; gap: 3px; margin: -2px 0 0; text-align: center; color: #616a61; font-size: 10px; }
+.designer-stage__fallback p strong { color: var(--designer-ink); font: 800 13px var(--headline); }
+.designer-stage__fallback p span { font-size: 9px; }
 
 .designer-controls { width: 100%; min-width: 0; max-width: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; overflow: hidden; background: #fbfcfa; }
 .designer-tabs { min-width: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-bottom: 1px solid var(--designer-line); }
@@ -132,9 +139,10 @@
 .designer-library-models button.is-live { border-color: var(--designer-ink); }
 .designer-library-models button.is-active { box-shadow: inset 3px 0 0 var(--designer-yellow); background: #f1f4ef; }
 .designer-library-models button:disabled { cursor: not-allowed; opacity: .55; }
-.designer-library-models__art { width: 100%; min-width: 0; aspect-ratio: 4 / 5; height: auto; align-self: stretch; display: grid; place-items: center; overflow: hidden; background: #e6e9e4; }
+.designer-library-models__art { width: 100%; min-width: 0; aspect-ratio: 16 / 9; height: auto; align-self: center; display: grid; place-items: center; overflow: hidden; background: #e6e9e4; }
 .designer-library-models__placeholder { width: 100%; height: 100%; display: grid; place-items: center; }
 .designer-library-models__art img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; display: block; object-fit: contain; object-position: center; }
+.designer-library-models__art img.is-flat-preview { object-fit: contain; }
 .designer-library-models__placeholder { width: 100%; height: 100%; display: grid; place-items: center; color: #71776f; }
 .designer-library-models__meta { min-width: 0; display: grid; align-content: center; gap: 3px; padding: 7px 7px 7px 8px; }
 .designer-library-models__meta strong { overflow: hidden; font-size: 9px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
@@ -171,6 +179,7 @@
 .designer-design-grid button.is-active { border-color: var(--designer-ink); box-shadow: inset 0 -3px 0 var(--designer-yellow); }
 .designer-design-grid__art { width: 100%; aspect-ratio: 16 / 9; display: grid; place-items: center; overflow: hidden; background: #e4e6e1; }
 .designer-design-grid__art img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; display: block; object-fit: contain; object-position: center; filter: contrast(.96) brightness(1.08); transform: none; }
+.designer-design-grid__art img.is-flat-preview { object-fit: contain; }
 .designer-design-grid__placeholder { width: 100%; height: 100%; display: grid; place-items: center; color: #6d756d; }
 .designer-design-grid button > span:last-of-type { display: block; overflow: hidden; padding: 9px 9px 10px; font-size: 9px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .designer-design-grid button > svg { position: absolute; top: 7px; right: 7px; padding: 3px; background: var(--designer-yellow); color: var(--designer-ink); box-sizing: content-box; }

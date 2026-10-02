@@ -44,6 +44,12 @@ export const NODE_BACKEND_ROUTES = Object.freeze(new Set([
   '/api/payment-webhook',
   '/api/order-track',
   '/api/render-artwork',
+  '/api/artwork-assets-presign',
+  '/api/artwork-assets-complete',
+  '/api/artwork-assets-delete',
+  '/api/artwork-jobs',
+  '/api/artwork-preflight',
+  '/api/quick-customization-order',
   '/api/payment-config',
   '/api/google-merchant-feed'
 ]))

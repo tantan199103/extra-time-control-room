@@ -31,9 +31,9 @@ test('a provider-scoped manifest and 3D marker qualify an Owayo listing', () => 
   assert.equal(hasCustom3DDesigner(owayo), true)
   assert.equal(isCustom3DOnlyProduct(owayo), true)
   assert.deepEqual(custom3DDesignerConfig(owayo), {
-    provider: 'owayo',
+    provider: 'studio',
     productId: 'cycling-c3',
-    manifest: '/designer/owayo/cycling-c3/manifest.json',
+    manifest: '/designer/studio/cycling-c3/manifest.json',
     defaultDesignId: '',
     defaultStyleCode: '',
     allowedStyleCodes: [],
@@ -82,9 +82,9 @@ test('legacy Boombah marker resolves to its local product manifest', () => {
     variants: []
   })
   assert.equal(hasCustom3DDesigner(product), true)
-  assert.equal(product.designerConfig.provider, 'boombah')
+  assert.equal(product.designerConfig.provider, 'teamwear')
   assert.equal(product.designerConfig.productId, 'FASTPITCH3D')
-  assert.equal(product.designerConfig.manifest, '/designer/boombah/products/fastpitch3d.json')
+  assert.equal(product.designerConfig.manifest, '/designer/teamwear/products/fastpitch3d.json')
   assert.equal(productMatchesCatalogCategory(product, customCategory), true)
 })
 

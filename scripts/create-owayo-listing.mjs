@@ -21,9 +21,10 @@ import { createHash } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import sharp from 'sharp'
 import { buildListingInput, normalizeCustomFields, seoReviewGate, slugify, validateListing } from '../src/lib/catalog-model.js'
+import { QUICK_PRINT_AREAS } from '../src/lib/print-areas.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const MANIFEST_PATH = resolve(ROOT, 'public/designer/owayo/cycling-c3/manifest.json')
+const MANIFEST_PATH = resolve(ROOT, 'public/designer/studio/cycling-c3/manifest.json')
 const REPORT_PATH = resolve(ROOT, 'artifacts/owayo-listing-import-report.json')
 const PRODUCT_ID = 'listing-jersevo-custom-cycling-jersey-c3'
 const HANDLE = 'jersevo-custom-cycling-jersey-c3'
@@ -161,6 +162,7 @@ export function buildOwayoListing(manifest) {
     image: '',
     color: '',
     sku: 'JERSEVO-C3-CUSTOM',
+    printAreas: QUICK_PRINT_AREAS,
     artworkLock: 100,
     personalization: fields.map(field => field.label),
     media,
@@ -204,6 +206,7 @@ export function buildOwayoListing(manifest) {
         allowedDesignIds: (manifest.designs || []).map(item => item.slug).filter(Boolean),
         patternCount: patterns.length,
         designCount: designs.length,
+        printAreas: QUICK_PRINT_AREAS,
         sizeMap: sizes
       },
       sourcePricing: {

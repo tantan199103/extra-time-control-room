@@ -3,6 +3,7 @@ export const isAdminUser = user => Boolean(user?.id && user?.app_metadata?.extra
 
 import { normalizeAccessoryTaxonomy } from './catalog-taxonomy.js'
 import { validateCatalogTaxonomy } from './taxonomy-validator.js'
+import { normalizePrintAreas } from './print-areas.js'
 
 const CUSTOM_TYPES = new Set(['text', 'number', 'textarea', 'select', 'photo', 'logo'])
 const LOGO_TREATMENTS = new Set(['EXACT', 'FABRIC', 'VINTAGE', 'MONOCHROME'])
@@ -242,6 +243,7 @@ export function normalizeProduct(row, persisted = true) {
     ? configuredFields
     : legacyPersonalizationFields(row.personalization, row.type)
   const customFields = normalizeCustomFields(customFieldSource)
+  const printAreas = normalizePrintAreas(row.print_areas ?? row.printAreas)
   return {
     ...row,
     name: normalizedTitle,
@@ -263,6 +265,7 @@ export function normalizeProduct(row, persisted = true) {
     productGroup: row.product_group ?? row.productGroup ?? '',
     taxonomy: normalizeAccessoryTaxonomy({ ...row, taxonomy:row.taxonomy && typeof row.taxonomy === 'object' ? row.taxonomy : {} }),
     customFields,
+    printAreas,
     personalization: customFields.map(field => field.label),
     seo: row.seo && typeof row.seo === 'object' ? row.seo : {},
     seoStatus: SEO_STATUSES.includes(String(row.seo_status || row.seoStatus || row.seo?.status || '').toUpperCase())
@@ -429,6 +432,7 @@ export function buildListingInput(product) {
     artwork_lock: Number(product.artworkLock ?? 100), personalization: customFields.map(field => field.label),
     media: product.media || [], content_blocks: product.contentBlocks || [], tags:[...new Set((product.tags || []).map(cleanTag).filter(Boolean))],
     product_group: product.productGroup || '', taxonomy: product.taxonomy || {}, custom_fields:customFields,
+    print_areas: normalizePrintAreas(product.printAreas),
     seo: {
       ...(product.seo || {}),
       status: String(product.seoStatus || product.seo?.status || 'BLOCKED').toUpperCase(),

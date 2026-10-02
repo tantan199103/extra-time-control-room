@@ -11,12 +11,12 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const publicRoot = resolve(root, 'public')
 
 test('Boombah designer catalog is mirrored and provider-scoped', async () => {
-  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/boombah/catalog.json'), 'utf8'))
-  assert.equal(catalog.provider, 'boombah')
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/teamwear/catalog.json'), 'utf8'))
+  assert.equal(catalog.provider, 'teamwear')
   assert.equal(catalog.storage.hotlinked, false)
   assert.ok(catalog.products.length >= 1)
   for (const product of catalog.products) {
-    assert.match(product.manifest, /^\/designer\/boombah\/products\/[a-z0-9-]+\.json$/)
+    assert.match(product.manifest, /^\/designer\/(?:teamwear|boombah)\/products\/[a-z0-9-]+\.json$/)
   }
 })
 
@@ -28,15 +28,15 @@ test('verified 3D coverage includes all 21 product families exposed by the build
 })
 
 test('Boombah product manifests keep model, template and preview URLs internal', async () => {
-  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/boombah/catalog.json'), 'utf8'))
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/teamwear/catalog.json'), 'utf8'))
   const manifest = JSON.parse(await readFile(resolve(publicRoot, catalog.products[0].manifest.slice(1)), 'utf8'))
-  assert.equal(manifest.provider, 'boombah')
+  assert.equal(manifest.provider, 'teamwear')
   assert.equal(manifest.storage.hotlinked, false)
   assert.ok(manifest.designs.length > 0)
   for (const design of manifest.designs.slice(0, 12)) {
-    assert.match(design.model.uri, /supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/boombah\//)
-    assert.match(design.template.uri, /supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/boombah\//)
-    if (design.preview) assert.match(design.preview.uri, /supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/boombah\//)
+    assert.match(design.model.uri, /supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/(?:teamwear|boombah)\//)
+    assert.match(design.template.uri, /supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/(?:teamwear|boombah)\//)
+    if (design.preview) assert.match(design.preview.uri, /supabase\.co\/storage\/v1\/object\/public\/product-media\/designer\/(?:teamwear|boombah)\//)
   }
 })
 
@@ -69,7 +69,7 @@ test('Boombah GLB branding matcher targets logo parts and vendor texture names w
 })
 
 test('listing-specific Tripo jersey opens on the photographed front without duplicate default layers', async () => {
-  const manifest = JSON.parse(await readFile(resolve(publicRoot, 'designer/boombah/products/amon-ra-st-brown-rivalries.json'), 'utf8'))
+  const manifest = JSON.parse(await readFile(resolve(publicRoot, 'designer/teamwear/products/amon-ra-st-brown-rivalries.json'), 'utf8'))
   const design = manifest.designs.find(item => item.id === 'retail-amon-ra-st-brown-rivalries')
   assert.equal(manifest.source?.listingId, 'listing-fe628fbfa3f1ba174fe9')
   assert.equal(design.model.source, 'tripo')
@@ -99,9 +99,9 @@ test('GLB cleanup inspects image and source metadata, while preserving baked atl
 })
 
 test('mirrored Boombah manifests retain an explicit branding-cleanup contract', async () => {
-  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/boombah/catalog.json'), 'utf8'))
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/teamwear/catalog.json'), 'utf8'))
   const manifest = JSON.parse(await readFile(resolve(publicRoot, catalog.products.find(item => item.id === 'SHOES3D').manifest.slice(1)), 'utf8'))
-  assert.equal(manifest.branding.removed.includes('Boombah'), true)
+  assert.equal(manifest.branding.removed.includes('Vendor marks'), true)
   assert.equal(manifest.storage.hotlinked, false)
   assert.ok(manifest.designs.some(design => design.modelId && design.model?.uri && design.template?.uri))
 })
@@ -111,7 +111,7 @@ test('designer order normalization accepts mirrored Boombah provider without all
     source:'JERSEVO_3D_DESIGNER',
     version:2,
     provider:'boombah',
-    manifest:'/designer/boombah/products/fastpitch3d.json',
+    manifest:'/designer/teamwear/products/fastpitch3d.json',
     productId:'FASTPITCH3D',
     model:'FD-163W',
     styleCode:'SS',
@@ -121,8 +121,8 @@ test('designer order normalization accepts mirrored Boombah provider without all
     text:{ team:'JERSEVO', name:'RIDER', number:'90' },
     roster:[{ name:'RIDER', number:'90', size:'M' }]
   })
-  assert.equal(spec.provider, 'boombah')
-  assert.equal(spec.manifest, '/designer/boombah/products/fastpitch3d.json')
+  assert.equal(spec.provider, 'teamwear')
+  assert.equal(spec.manifest, '/designer/teamwear/products/fastpitch3d.json')
   assert.equal(spec.productId, 'FASTPITCH3D')
-  assert.equal(normalizeDesignerSpec({ ...spec, manifest:'https://evil.example/manifest.json' }).manifest, '/designer/boombah/products/fastpitch3d.json')
+  assert.equal(normalizeDesignerSpec({ ...spec, manifest:'https://evil.example/manifest.json' }).manifest, '/designer/teamwear/products/fastpitch3d.json')
 })

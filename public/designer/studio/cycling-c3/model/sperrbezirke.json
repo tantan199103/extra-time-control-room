@@ -1,0 +1,17 @@
+{
+  "Back": {
+    "VonUntenCm": 4
+  },
+  "FrontLeftPart": {
+    "VonUntenCm": 8
+  },
+  "FrontRightPart": {
+    "VonUntenCm": 8
+  },
+  "LeftArm": {
+    "VonUntenCm": 5.5
+  },
+  "RightArm": {
+    "VonUntenCm": 5.5
+  }
+}

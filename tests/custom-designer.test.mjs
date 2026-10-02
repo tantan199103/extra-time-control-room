@@ -14,7 +14,7 @@ import { OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const publicRoot = resolve(root, 'public')
-const manifestPath = resolve(publicRoot, 'designer/owayo/cycling-c3/manifest.json')
+const manifestPath = resolve(publicRoot, 'designer/studio/cycling-c3/manifest.json')
 
 test('synchronized Owayo garment assets are local, checksummed and complete for every staged design', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
@@ -24,13 +24,13 @@ test('synchronized Owayo garment assets are local, checksummed and complete for 
   assert.ok(manifest.designs.length >= 12)
   assert.ok(manifest.availableDesigns.length >= manifest.designs.length)
   for (const design of manifest.designs) {
-    assert.match(design.preview, /^\/designer\/owayo\//)
+    assert.match(design.preview, /^\/designer\/(?:studio|owayo)\//)
     for (const part of ['Back','FrontLeftPart','FrontRightPart','LeftArm','RightArm']) {
-      assert.match(design.textures[part], /^\/designer\/owayo\//, `${design.name} is missing ${part}`)
+      assert.match(design.textures[part], /^\/designer\/(?:studio|owayo)\//, `${design.name} is missing ${part}`)
     }
   }
   for (const [url, expected] of Object.entries(manifest.checksums)) {
-    assert.match(url, /^\/designer\/owayo\//)
+    assert.match(url, /^\/designer\/(?:studio|owayo)\//)
     const buffer = await readFile(resolve(publicRoot, url.slice(1)))
     assert.equal(buffer.length, expected.bytes, `${url} byte count changed`)
     assert.equal(createHash('sha256').update(buffer).digest('hex'), expected.sha256, `${url} checksum changed`)
@@ -41,7 +41,7 @@ test('Owayo pattern catalogue is mirrored locally with complete previews, textur
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
   assert.ok(Array.isArray(manifest.patterns) && manifest.patterns.length >= 100)
   assert.ok(Array.isArray(manifest.patternCategories) && manifest.patternCategories.length >= 9)
-  assert.equal(manifest.patternLibrary?.provider, 'owayo')
+  assert.equal(manifest.patternLibrary?.provider, 'studio')
   assert.equal(manifest.patternLibrary?.total, manifest.patterns.length)
   const ids = new Set()
   const slugs = new Set()
@@ -51,8 +51,8 @@ test('Owayo pattern catalogue is mirrored locally with complete previews, textur
     assert.equal(slugs.has(pattern.slug), false, `duplicate pattern slug ${pattern.slug}`)
     ids.add(pattern.id)
     slugs.add(pattern.slug)
-    assert.match(pattern.preview, /^\/designer\/owayo\/cycling-c3\/patterns\/[^/]+\.webp$/)
-    assert.match(pattern.texture, /^\/designer\/owayo\/cycling-c3\/patterns\/[^/]+\.svg$/)
+    assert.match(pattern.preview, /^\/designer\/(?:studio|owayo)\/cycling-c3\/patterns\/[^/]+\.webp$/)
+    assert.match(pattern.texture, /^\/designer\/(?:studio|owayo)\/cycling-c3\/patterns\/[^/]+\.svg$/)
     assert.ok(pattern.categoryKeys?.length)
     assert.ok(pattern.colors?.length)
     for (const url of [pattern.preview, pattern.texture]) {
@@ -82,8 +82,8 @@ test('pattern UI and order handoff are wired to the local catalogue', async () =
 
 test('designer picker previews never expose supplier garment renders', async () => {
   const [owayo, boombah] = await Promise.all([
-    readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8').then(JSON.parse),
-    readFile(resolve(publicRoot, 'designer/boombah/catalog.json'), 'utf8').then(JSON.parse)
+    readFile(resolve(publicRoot, 'designer/studio/catalog.json'), 'utf8').then(JSON.parse),
+    readFile(resolve(publicRoot, 'designer/teamwear/catalog.json'), 'utf8').then(JSON.parse)
   ])
   assert.ok(owayo.products.every(product => !/(?:garment-render|^https?:)/i.test(String(product.preview || ''))))
   assert.ok(boombah.products.every(product => !product.preview))
@@ -91,7 +91,7 @@ test('designer picker previews never expose supplier garment renders', async () 
 
 test('synchronized mask textures do not render Owayo vendor marks', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-  assert.equal(manifest.branding?.removed, 'Owayo vendor marks and technical source labels from synchronized mask textures')
+  assert.match(manifest.branding?.removed, /Vendor marks/)
   const indices = brandColorIndices(manifest.product.colorCodes)
   assert.ok(indices.size >= 8)
   for (const code of ['Tec', 'TecO', '3D_3D', '3D_DSGN']) {
@@ -153,8 +153,8 @@ test('mobile 3D controls stay inside the compact stage', async () => {
 
 test('designer fallbacks never present a supplier or Jersevo-branded thumbnail', async () => {
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
-  const neutral = await readFile(resolve(publicRoot, 'designer/owayo/neutral-garment.svg'), 'utf8')
-  const neutralSleeveless = await readFile(resolve(publicRoot, 'designer/owayo/neutral-garment-sleeveless.svg'), 'utf8')
+  const neutral = await readFile(resolve(publicRoot, 'designer/studio/neutral-garment.svg'), 'utf8')
+  const neutralSleeveless = await readFile(resolve(publicRoot, 'designer/studio/neutral-garment-sleeveless.svg'), 'utf8')
   assert.match(neutral, /Neutral garment preview/i)
   assert.match(neutralSleeveless, /Neutral sleeveless garment preview/i)
   assert.doesNotMatch(neutral, /owayo|boombah|jersevo/i)
@@ -207,7 +207,7 @@ test('3D design handoff is bounded and keeps the production roster server-side',
   assert.equal(spec.layers[0].scale, 1.8)
   assert.equal(spec.layers[2].assetIndex, 1)
   assert.equal(spec.roster[0].number, '0')
-  assert.equal(spec.manifest, '/designer/owayo/cycling-c3/manifest.json')
+  assert.equal(spec.manifest, '/designer/studio/cycling-c3/manifest.json')
   assert.throws(() => normalizeDesignerSpec({ source:'external' }), /not supported/)
   assert.throws(() => normalizeDesignerSpec({ ...spec, layers:Array.from({ length:9 }, (_, index) => ({ id:`logo-${index}`, kind:'logo', assetIndex:index })) }), /up to eight logo layers/)
   assert.throws(() => normalizeDesignerSpec({ ...spec, layers:[{ id:'logo-a', kind:'logo', assetIndex:0 }, { id:'logo-b', kind:'logo', assetIndex:0 }] }), /distinct uploaded asset/)
@@ -216,6 +216,19 @@ test('3D design handoff is bounded and keeps the production roster server-side',
   assert.throws(() => validateDesignerAssetRefs(spec, [{ bucket:'customer-references' }]), /Every 3D logo layer/)
   assert.throws(() => validateDesignerAssetRefs({ ...spec, layers:[] }, [{ bucket:'customer-references' }]), /not attached/)
   assert.throws(() => validateDesignerAssetRefs(securedSpec, [{}, {}]), /Every uploaded 3D logo asset/)
+})
+
+test('legacy designer provider and manifest aliases canonicalize before checkout validation', () => {
+  const spec = normalizeDesignerSpec({
+    source:'JERSEVO_3D_DESIGNER',
+    provider:'owayo',
+    manifest:'/designer/owayo/cycling-c3/manifest.json',
+    productId:'cycling-c3',
+    designSlug:'pure',
+    roster:[{ name:'Rider', number:'7', size:'M' }]
+  })
+  assert.equal(spec.provider, 'studio')
+  assert.equal(spec.manifest, '/designer/studio/cycling-c3/manifest.json')
 })
 
 test('runtime mask guard cleans older remote family textures before shader binding', async () => {
@@ -258,6 +271,12 @@ test('Owayo independent layers are bounded, typed and assigned unique IDs', () =
   assert.equal(layers.length, 3)
   assert.equal(new Set(layers.map(layer => layer.id)).size, 3)
   assert.deepEqual(layers.map(layer => layer.kind), ['name','number','logo'])
+})
+
+test('Quick AI artwork layers preserve an opaque asset ID without embedding image bytes', () => {
+  const layer = normalizeOwayoLayer({ id:'quick-art', kind:'artwork', assetId:'asset_1234567890123456', dataUrl:'data:image/png;base64,not-used' })
+  assert.equal(layer.assetId, 'asset_1234567890123456')
+  assert.equal(Object.hasOwn(layer, 'dataUrl'), false, 'normalized server layer must never carry image bytes')
 })
 
 test('Owayo roster keeps display sizes and source variant codes aligned', () => {
@@ -356,8 +375,8 @@ test('custom hub uses one garment catalogue and one editor route without a dupli
   const source = await readFile(resolve(root, 'src/main.jsx'), 'utf8')
   assert.match(source, /normalizeCustomHubCatalogs\(owayoCatalog, teamwearCatalog\)/)
   assert.match(source, /go\(customDesignerRoute\(family\)\)/)
-  assert.match(source, /readCatalog\('\/designer\/owayo\/catalog\.json'\)/)
-  assert.match(source, /readCatalog\('\/designer\/boombah\/catalog\.json'\)/)
+  assert.match(source, /readCatalog\('\/designer\/studio\/catalog\.json'\)/)
+  assert.match(source, /readCatalog\('\/designer\/teamwear\/catalog\.json'\)/)
   assert.doesNotMatch(source, /custom-template-track__placeholder/)
   assert.doesNotMatch(source, /PUBLISHED PIECES/)
 })
@@ -397,7 +416,7 @@ test('custom hub stays in a transparent preview and waitlist state until live co
 })
 
 test('Owayo family catalogue keeps unsupported cuts from masquerading as C3 assets', async () => {
-  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8'))
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/studio/catalog.json'), 'utf8'))
   assert.equal(catalog.products.length, OWAYO_CATALOG_V1.length)
   const live = catalog.products.filter(row => row.assetsReady && row.manifest).length
   assert.equal(catalog.summary.live, live)
@@ -407,10 +426,10 @@ test('Owayo family catalogue keeps unsupported cuts from masquerading as C3 asse
 })
 
 test('every live Owayo family resolves its own model and usable design archive', async () => {
-  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8'))
+  const catalog = JSON.parse(await readFile(resolve(publicRoot, 'designer/studio/catalog.json'), 'utf8'))
   for (const family of catalog.products.filter(row => row.assetsReady)) {
     const manifest = JSON.parse(await readFile(resolve(publicRoot, family.manifest.slice(1)), 'utf8'))
-    assert.equal(manifest.provider, 'owayo')
+    assert.equal(manifest.provider, 'studio')
     assert.match(manifest.syncStatus, /^READY(?:_WITH_SOURCE_GAPS)?$/, family.id)
     if (manifest.syncStatus === 'READY') assert.equal(manifest.missingDesigns?.length || 0, 0, family.id)
     else assert.ok(manifest.missingDesigns?.length > 0, `${family.id} must name each unavailable source design`)

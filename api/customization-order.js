@@ -3,6 +3,7 @@ import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readB
 import { assertCustomerAsset } from './_logo-request.js'
 import { normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
 import { findBoombahPattern, findUsSportsTeamFamily } from '../src/lib/designer-options.js'
+import { assertQuickArtworkAsset } from './_artwork.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
@@ -23,15 +24,26 @@ const clamp = (value, min, max, fallback = min) => {
   return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback
 }
 
+function canonicalDesignerProvider(value) {
+  const provider = safeText(value, 30).toLowerCase()
+  return provider === 'owayo' ? 'studio' : provider === 'boombah' ? 'teamwear' : provider
+}
+
+function canonicalDesignerManifest(value) {
+  return safeText(value, 180)
+    .replace(/^\/designer\/owayo\//, '/designer/studio/')
+    .replace(/^\/designer\/boombah\//, '/designer/teamwear/')
+}
+
 export function normalizeDesignerSpec(value) {
   if (value == null) return null
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw Object.assign(new Error('The 3D design specification is invalid.'), { status:422 })
   if (safeText(value.source, 60) !== 'JERSEVO_3D_DESIGNER') throw Object.assign(new Error('The 3D design source is not supported.'), { status:422 })
-  const provider = safeText(value.provider, 30).toLowerCase() || 'owayo'
-  if (!['owayo', 'boombah'].includes(provider)) throw Object.assign(new Error('The 3D design provider is not supported.'), { status:422 })
-  const requestedManifest = safeText(value.manifest, 180)
-  const defaultManifest = provider === 'boombah' ? '/designer/boombah/products/fastpitch3d.json' : '/designer/owayo/cycling-c3/manifest.json'
-  const manifest = /^\/designer\/(?:owayo\/[-a-z0-9/]+|boombah\/products\/[a-z0-9-]+)\.json$/i.test(requestedManifest) ? requestedManifest : defaultManifest
+  const provider = canonicalDesignerProvider(value.provider) || 'studio'
+  if (!['studio', 'teamwear'].includes(provider)) throw Object.assign(new Error('The 3D design provider is not supported.'), { status:422 })
+  const requestedManifest = canonicalDesignerManifest(value.manifest)
+  const defaultManifest = provider === 'teamwear' ? '/designer/teamwear/products/fastpitch3d.json' : '/designer/studio/cycling-c3/manifest.json'
+  const manifest = /^\/designer\/(?:studio\/[-a-z0-9/]+|teamwear\/products\/[a-z0-9-]+)\.json$/i.test(requestedManifest) ? requestedManifest : defaultManifest
   const colorsSource = value.colors && typeof value.colors === 'object' && !Array.isArray(value.colors) ? value.colors : {}
   const colors = Object.fromEntries(Object.entries(colorsSource).slice(0, 12).map(([key, raw]) => [safeText(key, 20), /^#[0-9a-f]{6}$/i.test(String(raw || '')) ? String(raw).toUpperCase() : '']).filter(([key, raw]) => key && raw))
   const textSource = value.text && typeof value.text === 'object' && !Array.isArray(value.text) ? value.text : {}
@@ -45,7 +57,7 @@ export function normalizeDesignerSpec(value) {
   const patternZoneCode = safeText(patternSource.zoneCode, 20).toUpperCase()
   const colorFamilyIdSource = safeText(value.colorFamilyId, 80).toLowerCase()
   const colorFamilyId = findUsSportsTeamFamily(colorFamilyIdSource)?.id || ''
-  const validPattern = provider === 'boombah'
+  const validPattern = (provider === 'teamwear' || provider === 'boombah')
     ? Boolean(findBoombahPattern(patternSlug))
     : /^[a-z0-9][a-z0-9-]{0,99}$/.test(patternSlug)
   const rosterSource = Array.isArray(value.roster) ? value.roster : []
@@ -132,10 +144,10 @@ function validateListingDesigner(product, designer) {
   if (!designer) return
   const config = product?.ai_metadata?.designer
   if (!config || typeof config !== 'object') throw Object.assign(new Error('This listing is not connected to a 3D designer.'), { status:422 })
-  const provider = safeText(config.provider, 30).toLowerCase()
+  const provider = canonicalDesignerProvider(config.provider)
   if (provider !== designer.provider) throw Object.assign(new Error('The selected 3D provider does not belong to this listing.'), { status:422 })
   if (safeText(config.productId, 80) !== designer.productId) throw Object.assign(new Error('The selected 3D product does not belong to this listing.'), { status:422 })
-  if (safeText(config.manifest, 180) !== designer.manifest) throw Object.assign(new Error('The selected 3D manifest does not belong to this listing.'), { status:422 })
+  if (canonicalDesignerManifest(config.manifest) !== designer.manifest) throw Object.assign(new Error('The selected 3D manifest does not belong to this listing.'), { status:422 })
   const allowedDesigns = Array.isArray(config.allowedDesignIds) ? config.allowedDesignIds.map(value => String(value)) : []
   if (allowedDesigns.length && !allowedDesigns.includes(designer.designSlug)) throw Object.assign(new Error('The selected 3D artwork is not available for this listing.'), { status:422 })
   const allowedStyles = Array.isArray(config.allowedStyleCodes) ? config.allowedStyleCodes.map(value => String(value)) : []
@@ -191,18 +203,25 @@ export default async function handler(request, response) {
     const incomingDesignerAssetRefs = Array.isArray(body.designerAssetRefs) ? body.designerAssetRefs : []
     if (incomingDesignerAssetRefs.length > 16) throw Object.assign(new Error('A design can contain up to sixteen uploaded image assets.'), { status:422 })
     if (incomingDesignerAssetRefs.length && !schema.some(field => field.type === 'logo') && !body.designer) throw Object.assign(new Error('This listing does not accept designer image layers.'), { status:422 })
-    const designerAssetRefs = incomingDesignerAssetRefs.map((raw, index) => {
+    const designerAssetRefs = []
+    for (const raw of incomingDesignerAssetRefs) {
       try {
-        // The normalized designer spec below determines whether this index is
-        // a logo (private PNG) or artwork (private WebP).  We validate the
-        // path once more after parsing the spec; this first check only limits
-        // the storage object to the current customer session.
-        return assertCustomerAsset(product.id, identityHash, raw, { kind:'' })
+        // Quick AI artwork is already a verified private asset. Resolve its
+        // opaque ID server-side instead of making the browser download a
+        // signed URL and upload the same bytes into customer-references.
+        if (raw && typeof raw === 'object' && !Array.isArray(raw) && raw.artworkAssetId) {
+          designerAssetRefs.push(await assertQuickArtworkAsset(client, raw.artworkAssetId, identityHash))
+        } else {
+          // The normalized designer spec below determines whether this index
+          // is a logo (private PNG) or artwork (private WebP). Validate the
+          // legacy customer-reference path once more after parsing the spec.
+          designerAssetRefs.push(assertCustomerAsset(product.id, identityHash, raw, { kind:'' }))
+        }
       } catch (error) {
         if (error?.status) throw error
         throw Object.assign(new Error('A 3D image layer does not belong to this request.'), { status:422 })
       }
-    })
+    }
     const aiPreviewId = safeText(body.aiPreviewId,180)
     const aiPreviewUrl = safeText(body.aiPreviewUrl, 1600)
     if (aiPreviewUrl && !/^https:\/\//i.test(aiPreviewUrl)) throw Object.assign(new Error('AI preview must be a secure stored URL.'), { status:422 })
@@ -234,12 +253,26 @@ export default async function handler(request, response) {
     const designer = normalizeDesignerSpec(body.designer)
     const imageLayers = designer?.layers?.filter(layer => ['logo', 'artwork'].includes(layer.kind)) || []
     if (imageLayers.length && !assetConsent) throw Object.assign(new Error('Confirm that you own or have permission to use every uploaded logo or artwork asset.'), { status:422 })
+    // Never persist a client-claimed Quick AI ID. Replace it with the ID from
+    // the session-owned verified storage reference (or remove it for legacy
+    // customer-reference uploads).
+    imageLayers.forEach(layer => {
+      const verifiedRef = designerAssetRefs[layer.assetIndex]
+      if (verifiedRef?.assetId) layer.assetId = verifiedRef.assetId
+      else delete layer.assetId
+    })
     // Verify the extension of every uploaded object against its declared layer
     // kind. This prevents a WebP artwork from being replayed as a logo PNG (or
     // vice versa) while keeping the refs opaque to the client.
     imageLayers.forEach(layer => {
       const ref = designerAssetRefs[layer.assetIndex]
-      try { assertCustomerAsset(product.id, identityHash, ref, { kind:layer.kind === 'logo' ? 'logo' : 'artwork' }) }
+      try {
+        if (ref?.bucket === 'customer-artwork') {
+          if (layer.kind !== 'artwork' || !ref.assetId) throw Object.assign(new Error('A Quick AI asset can only be attached to an artwork layer.'), { status:422 })
+        } else {
+          assertCustomerAsset(product.id, identityHash, ref, { kind:layer.kind === 'logo' ? 'logo' : 'artwork' })
+        }
+      }
       catch (error) { throw error?.status ? error : Object.assign(new Error('A 3D image asset does not match its layer.'), { status:422 }) }
     })
     validateDesignerAssetRefs(designer, designerAssetRefs)

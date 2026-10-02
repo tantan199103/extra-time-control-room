@@ -1,0 +1,3189 @@
+{
+  "schemaVersion": 2,
+  "provider": "teamwear",
+  "storage": {
+    "bucket": "product-media",
+    "root": "designer/teamwear",
+    "mirrored": true,
+    "hotlinked": false
+  },
+  "models": [
+    {
+      "id": "BM-11015",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-11015-2b25dc6b1f4d.glb",
+      "path": "designer/teamwear/models/bm-11015-2b25dc6b1f4d.glb",
+      "sha256": "2b25dc6b1f4d5202297c7d837ee2b26ceb07a9574096871e8e3e333b1fa5ca77",
+      "bytes": 1765284,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-281W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-281w-c222d8b6cc9e.glb",
+      "path": "designer/teamwear/models/bm-281w-c222d8b6cc9e.glb",
+      "sha256": "c222d8b6cc9e8215ea3928ba5b480720fa7f28279e505cd12dc3878a8b99c57c",
+      "bytes": 728800,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3413",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3413-205d1aade65e.glb",
+      "path": "designer/teamwear/models/bm-3413-205d1aade65e.glb",
+      "sha256": "205d1aade65e4a037367aed888e974cb8255fffb1fd4a044c495f72285b16183",
+      "bytes": 401796,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3414",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3414-8de269279163.glb",
+      "path": "designer/teamwear/models/bm-3414-8de269279163.glb",
+      "sha256": "8de2692791631e74cae19a063e1a5e3b00c7e0b56249e0263f371b3f5d017b38",
+      "bytes": 401808,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3416",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3416-4163ffa2b675.glb",
+      "path": "designer/teamwear/models/bm-3416-4163ffa2b675.glb",
+      "sha256": "4163ffa2b675e922872c0f049b32d7eb18b565c83ce89b0856f81905025e8b2d",
+      "bytes": 455480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3417",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3417-9bc9e4473b14.glb",
+      "path": "designer/teamwear/models/bm-3417-9bc9e4473b14.glb",
+      "sha256": "9bc9e4473b14c6dadf7ac7f56837fc9ce3a9c5fdfb1f123a251c72a567d8a132",
+      "bytes": 378632,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3421",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3421-5e42b4e3a4da.glb",
+      "path": "designer/teamwear/models/bm-3421-5e42b4e3a4da.glb",
+      "sha256": "5e42b4e3a4da5d5cdf6ff6c6f70478b5ff0ad8d2ea5047e961043334dbdf122f",
+      "bytes": 401808,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3423",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3423-ccd4efa91af6.glb",
+      "path": "designer/teamwear/models/bm-3423-ccd4efa91af6.glb",
+      "sha256": "ccd4efa91af62ca82848583b3d5c365d78369607f5f76963f11c71e8e3f4a9fd",
+      "bytes": 401808,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3424",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3424-992fc324119d.glb",
+      "path": "designer/teamwear/models/bm-3424-992fc324119d.glb",
+      "sha256": "992fc324119dc6cf8a068ad7ef178673c0153a988af8dcfe0ace87ed55eec4bd",
+      "bytes": 378632,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3426",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3426-e4ae57959bfd.glb",
+      "path": "designer/teamwear/models/bm-3426-e4ae57959bfd.glb",
+      "sha256": "e4ae57959bfd78afd3f52bb88ae0128bf9257e19cbd46f12b7e2d0e9e56846c1",
+      "bytes": 378632,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3427",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3427-78193e2f11eb.glb",
+      "path": "designer/teamwear/models/bm-3427-78193e2f11eb.glb",
+      "sha256": "78193e2f11ebae1e0965e0e677c8fcdc65a7aa5b24f34ca49c42a93e44f40baf",
+      "bytes": 455480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3429",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3429-01bcd0640e11.glb",
+      "path": "designer/teamwear/models/bm-3429-01bcd0640e11.glb",
+      "sha256": "01bcd0640e11925cf5bbd73c540f06effc0fd3890e945e3f6c5242f5a1fbf8f0",
+      "bytes": 455480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3460",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3460-9e8f3a2fefcb.glb",
+      "path": "designer/teamwear/models/bm-3460-9e8f3a2fefcb.glb",
+      "sha256": "9e8f3a2fefcb298dc1519bd7520166f55bdf481be44e713ccb7f6f557bc924c2",
+      "bytes": 182516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3461",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3461-6ca10b837742.glb",
+      "path": "designer/teamwear/models/bm-3461-6ca10b837742.glb",
+      "sha256": "6ca10b837742a1f2b5898e4d7fefdfd4773859993a58db09efe9407e1a1a7cfa",
+      "bytes": 188440,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3462",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3462-441e883b4460.glb",
+      "path": "designer/teamwear/models/bm-3462-441e883b4460.glb",
+      "sha256": "441e883b4460e077c82c40e2a88ca81cf7274c700841cecd57ccf2cba6433887",
+      "bytes": 188752,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3463",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3463-407f56e6d08c.glb",
+      "path": "designer/teamwear/models/bm-3463-407f56e6d08c.glb",
+      "sha256": "407f56e6d08cb83c8b82e9809d5d61867d56fb5739e8a7605b697e845d3e05c4",
+      "bytes": 254332,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3464",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3464-0ca647d27960.glb",
+      "path": "designer/teamwear/models/bm-3464-0ca647d27960.glb",
+      "sha256": "0ca647d27960ae4ab9249691e60210bde9da897f3e2f824f4c1c3a8394d613d5",
+      "bytes": 258288,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3465",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3465-a9c1c2e43323.glb",
+      "path": "designer/teamwear/models/bm-3465-a9c1c2e43323.glb",
+      "sha256": "a9c1c2e43323c06fd3f33feed6782203d7863aa156685bf4ae1066e1ef10a2c4",
+      "bytes": 260040,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3466",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3466-1960e44956c0.glb",
+      "path": "designer/teamwear/models/bm-3466-1960e44956c0.glb",
+      "sha256": "1960e44956c0235255c44f34d854104d43694007d312733256899032db60d5d8",
+      "bytes": 259196,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3467",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3467-9e6f21d6d00e.glb",
+      "path": "designer/teamwear/models/bm-3467-9e6f21d6d00e.glb",
+      "sha256": "9e6f21d6d00ef79d97aa2249d733046a238ea21129848f8ceff9c2ea77ccb3b3",
+      "bytes": 81712,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3468",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3468-19eaf1418ca3.glb",
+      "path": "designer/teamwear/models/bm-3468-19eaf1418ca3.glb",
+      "sha256": "19eaf1418ca381375eb37e16836ef9e03101dfa151eccb02c813e9648037eda3",
+      "bytes": 90892,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-3469",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-3469-97fcfaa0fbe8.glb",
+      "path": "designer/teamwear/models/bm-3469-97fcfaa0fbe8.glb",
+      "sha256": "97fcfaa0fbe869c1d423ea83aa5455e454a8284d1d6788f2c25eb54b88d8bcf3",
+      "bytes": 93624,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4055W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4055w-d5d3d406c082.glb",
+      "path": "designer/teamwear/models/bm-4055w-d5d3d406c082.glb",
+      "sha256": "d5d3d406c082fbe94d35ec7711074ae43835425303aa3f5575aade863f6ba97b",
+      "bytes": 2509348,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4413W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4413w-0f20d1c95154.glb",
+      "path": "designer/teamwear/models/bm-4413w-0f20d1c95154.glb",
+      "sha256": "0f20d1c95154ed954ccb88656a8e9581ad5e4c4e8e8e0f3a7e2ed6d348e9638d",
+      "bytes": 595252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4415W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4415w-5e7642738030.glb",
+      "path": "designer/teamwear/models/bm-4415w-5e7642738030.glb",
+      "sha256": "5e764273803057add4e9b929b31d99d450934cd18636b9cf9b9aa4896fb4d862",
+      "bytes": 440240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4416W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4416w-7d8d7ef40351.glb",
+      "path": "designer/teamwear/models/bm-4416w-7d8d7ef40351.glb",
+      "sha256": "7d8d7ef403510d2d2ee31c3f294ff932e84d8d35f79327cc441b32e8875aec6f",
+      "bytes": 433592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4421W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4421w-ef71af4196ae.glb",
+      "path": "designer/teamwear/models/bm-4421w-ef71af4196ae.glb",
+      "sha256": "ef71af4196ae4bf05c1ce31ff16e05c244978a1795a0406710bd7285e1dd53da",
+      "bytes": 595252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4423W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4423w-9db2feb12ab3.glb",
+      "path": "designer/teamwear/models/bm-4423w-9db2feb12ab3.glb",
+      "sha256": "9db2feb12ab3cb187606d4f1fbec9ba8b64ef93ccd1635b0f228c343e0f62544",
+      "bytes": 595252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4424W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4424w-b0b6bb37960a.glb",
+      "path": "designer/teamwear/models/bm-4424w-b0b6bb37960a.glb",
+      "sha256": "b0b6bb37960a22ae6f55c45f3714ebe2457a75e3158334bc5d3e642c2b9381bf",
+      "bytes": 433592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4426W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4426w-ae328b6e1456.glb",
+      "path": "designer/teamwear/models/bm-4426w-ae328b6e1456.glb",
+      "sha256": "ae328b6e14568785d8a2eb0c4eebe0ced37feba9c9212c36f195f29396d17328",
+      "bytes": 433592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4427W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4427w-3c1308a8dace.glb",
+      "path": "designer/teamwear/models/bm-4427w-3c1308a8dace.glb",
+      "sha256": "3c1308a8dace8af75c048f0e762bc1a70b81f5e4784af268a2e1daccedd01f7a",
+      "bytes": 440240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-4429W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-4429w-1edf7dd32345.glb",
+      "path": "designer/teamwear/models/bm-4429w-1edf7dd32345.glb",
+      "sha256": "1edf7dd32345009dea5c4203af148574f05fab69a156add29d30245e208bffe2",
+      "bytes": 440240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5017",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5017-1e8cff8b3484.glb",
+      "path": "designer/teamwear/models/bm-5017-1e8cff8b3484.glb",
+      "sha256": "1e8cff8b3484aa33e2ba8220cce9112c0ddc8d1a907f85b1c088f723ee2dd048",
+      "bytes": 551568,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5017Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5017y-11367de82a23.glb",
+      "path": "designer/teamwear/models/bm-5017y-11367de82a23.glb",
+      "sha256": "11367de82a2361ae844e44d54aedc22c8fee59db237aed800eee37b26a60986e",
+      "bytes": 450480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5019",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5019-d1b0792b5b03.glb",
+      "path": "designer/teamwear/models/bm-5019-d1b0792b5b03.glb",
+      "sha256": "d1b0792b5b03d5c4250722afc993fd4c78c896ea15f35179ea05c82e1080cf0f",
+      "bytes": 441260,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5019Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5019y-6d58acb4efdc.glb",
+      "path": "designer/teamwear/models/bm-5019y-6d58acb4efdc.glb",
+      "sha256": "6d58acb4efdc30b6d8d50f4d7e8ff1dcdb24f221830f109080ff0331da24bf13",
+      "bytes": 597740,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5022",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5022-b8281b7fdba8.glb",
+      "path": "designer/teamwear/models/bm-5022-b8281b7fdba8.glb",
+      "sha256": "b8281b7fdba861e5aaa515d13217094c4240b266e70564d560fcfc9b146ee8a5",
+      "bytes": 593788,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5022Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5022y-e7fd6c2b255a.glb",
+      "path": "designer/teamwear/models/bm-5022y-e7fd6c2b255a.glb",
+      "sha256": "e7fd6c2b255a207cc4699220bb23bf8b8b72bf7c9f9c8916cfb32214e6bba10b",
+      "bytes": 590572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5025",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5025-1dced3d8001d.glb",
+      "path": "designer/teamwear/models/bm-5025-1dced3d8001d.glb",
+      "sha256": "1dced3d8001d6627ffe7044a0cbff8d376f93492fd7383692ada1cfdcdca177e",
+      "bytes": 230732,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5025Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5025y-4a59dd9aa824.glb",
+      "path": "designer/teamwear/models/bm-5025y-4a59dd9aa824.glb",
+      "sha256": "4a59dd9aa8243f2541f4a1f46e36832acbca75b5d18102086bfd3c3c6d91ddce",
+      "bytes": 230736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5027",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5027-9cb14386fa54.glb",
+      "path": "designer/teamwear/models/bm-5027-9cb14386fa54.glb",
+      "sha256": "9cb14386fa54493f7ad175b13777b2443ca4981a7d85b72241153d39bbb944ce",
+      "bytes": 447872,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5027Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5027y-53b554cd190c.glb",
+      "path": "designer/teamwear/models/bm-5027y-53b554cd190c.glb",
+      "sha256": "53b554cd190c5d9f359b520102313eafeb25ad8d7268521b4c11fdbc3bdc32cf",
+      "bytes": 583104,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5028",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5028-7b7cdf01a2ce.glb",
+      "path": "designer/teamwear/models/bm-5028-7b7cdf01a2ce.glb",
+      "sha256": "7b7cdf01a2ce734255904f06afc2df4b7cb5c9f5df41a4881550f5ce4d15577f",
+      "bytes": 367440,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5028Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5028y-088f84c9701f.glb",
+      "path": "designer/teamwear/models/bm-5028y-088f84c9701f.glb",
+      "sha256": "088f84c9701f10c603aba6c1f14d7ade83584e69e4c34d905be5bdd82f3d8cd2",
+      "bytes": 364452,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5032",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5032-3663d80b9c00.glb",
+      "path": "designer/teamwear/models/bm-5032-3663d80b9c00.glb",
+      "sha256": "3663d80b9c000d8e7fc172c4114fe35b8cea9a94c516a57bb853ea6ea6cfc52e",
+      "bytes": 412472,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5032Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5032y-f451c81534c4.glb",
+      "path": "designer/teamwear/models/bm-5032y-f451c81534c4.glb",
+      "sha256": "f451c81534c4c632010ba7dc1322d84edd35c8e2dc68a8a138f0042bd8efa20c",
+      "bytes": 409320,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5033",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5033-2b58ba8ba8a0.glb",
+      "path": "designer/teamwear/models/bm-5033-2b58ba8ba8a0.glb",
+      "sha256": "2b58ba8ba8a02ad65e1150e54e987559d80479f7d93caf2c07ea958b57c441e2",
+      "bytes": 538860,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5033Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5033y-8129bcea4853.glb",
+      "path": "designer/teamwear/models/bm-5033y-8129bcea4853.glb",
+      "sha256": "8129bcea4853e8787ed3010b585ea970f482846b96715acfe8b51c1f8023b724",
+      "bytes": 538880,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5039W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5039w-af3a5617e825.glb",
+      "path": "designer/teamwear/models/bm-5039w-af3a5617e825.glb",
+      "sha256": "af3a5617e825abb46819534ad807f0e04c54ddc94982aa4ebd9ee4b24e53f555",
+      "bytes": 482836,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5041W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5041w-4d3f87fa52bc.glb",
+      "path": "designer/teamwear/models/bm-5041w-4d3f87fa52bc.glb",
+      "sha256": "4d3f87fa52bc60dfb7cb66f56fc5a9de582a8aaf315c9b1dde743697c339fd9a",
+      "bytes": 497552,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5050W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5050w-d4cd685feb84.glb",
+      "path": "designer/teamwear/models/bm-5050w-d4cd685feb84.glb",
+      "sha256": "d4cd685feb84f26aeffdd24861631514936daabbe398bd37cc600d21f30dd26a",
+      "bytes": 462200,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5060",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5060-e764d126e619.glb",
+      "path": "designer/teamwear/models/bm-5060-e764d126e619.glb",
+      "sha256": "e764d126e61974f21c23c8d66fc48a2e6220555387ed9f2f294bb231b0215e40",
+      "bytes": 509736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5060G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5060g-821eeae78e52.glb",
+      "path": "designer/teamwear/models/bm-5060g-821eeae78e52.glb",
+      "sha256": "821eeae78e52b9271f51822f2430535e0d12f573a74ad2fdf552cf680f488d66",
+      "bytes": 258100,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5060W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5060w-456c9490bd1a.glb",
+      "path": "designer/teamwear/models/bm-5060w-456c9490bd1a.glb",
+      "sha256": "456c9490bd1af4f060101904db1a83a869d30c1e38f53c197fe9e16cf182398e",
+      "bytes": 236264,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5070W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5070w-673a565ae188.glb",
+      "path": "designer/teamwear/models/bm-5070w-673a565ae188.glb",
+      "sha256": "673a565ae188232f43fe556bf66124b9d7e32d9bf49694208e9e93537ad298c2",
+      "bytes": 386972,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5077",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5077-f7bdae4b1290.glb",
+      "path": "designer/teamwear/models/bm-5077-f7bdae4b1290.glb",
+      "sha256": "f7bdae4b1290d834d39856e47a9306263f6ccf89538442d248ba78e3f465f042",
+      "bytes": 545436,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5077Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5077y-9d5f6b42d9fc.glb",
+      "path": "designer/teamwear/models/bm-5077y-9d5f6b42d9fc.glb",
+      "sha256": "9d5f6b42d9fc2333f66c69926405d28b74892d9d24fa8118866db220933649cb",
+      "bytes": 1340508,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5082",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5082-5b30cf8737b2.glb",
+      "path": "designer/teamwear/models/bm-5082-5b30cf8737b2.glb",
+      "sha256": "5b30cf8737b20bc90421bdb30b9f9aa4b7e3876d43ede2071a158e72a41f7c80",
+      "bytes": 593360,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5082G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5082g-ea4ad4c3ea47.glb",
+      "path": "designer/teamwear/models/bm-5082g-ea4ad4c3ea47.glb",
+      "sha256": "ea4ad4c3ea478af28914e97469a51a3118054526e64ee5022a7d32ad2db3430c",
+      "bytes": 630572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5082W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5082w-ec1b04a81823.glb",
+      "path": "designer/teamwear/models/bm-5082w-ec1b04a81823.glb",
+      "sha256": "ec1b04a81823e50f61869e815bdf9b3eb08bbbec996cdc284fe357eb0b22cac7",
+      "bytes": 630572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5084",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5084-6496c2eae026.glb",
+      "path": "designer/teamwear/models/bm-5084-6496c2eae026.glb",
+      "sha256": "6496c2eae026c6cd706845dc7e77127c4a96e7bb4748daf5f6395af0143621c3",
+      "bytes": 489372,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5084G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5084g-1e0b990da824.glb",
+      "path": "designer/teamwear/models/bm-5084g-1e0b990da824.glb",
+      "sha256": "1e0b990da8246b08d89e09442871567900ed8e3524c790a611243005d21c9cca",
+      "bytes": 503764,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5084W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5084w-3b4629d2fc24.glb",
+      "path": "designer/teamwear/models/bm-5084w-3b4629d2fc24.glb",
+      "sha256": "3b4629d2fc2407131fb16edcfe2c095462c1990dd3afd09fa32b787de3d52f52",
+      "bytes": 504116,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5085",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5085-cae4f2987b58.glb",
+      "path": "designer/teamwear/models/bm-5085-cae4f2987b58.glb",
+      "sha256": "cae4f2987b5841fe95c043cfa594924d46baa3425465f02b3755ed3144d72f91",
+      "bytes": 520132,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5085G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5085g-c658edcf421a.glb",
+      "path": "designer/teamwear/models/bm-5085g-c658edcf421a.glb",
+      "sha256": "c658edcf421a9787a9919f6be3ea0816a0e8e13609adcb4e41bfe612eac7dc1a",
+      "bytes": 639480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5085W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5085w-8109b21d2fbc.glb",
+      "path": "designer/teamwear/models/bm-5085w-8109b21d2fbc.glb",
+      "sha256": "8109b21d2fbc60e0ac83e2672e20b0e8517f8d1a62de51f6405fed69d67d4150",
+      "bytes": 639480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5087",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5087-fb272a0985ea.glb",
+      "path": "designer/teamwear/models/bm-5087-fb272a0985ea.glb",
+      "sha256": "fb272a0985ea39ecad89da552c04564a4d1ab9beab6239c33a88da4bcbe348eb",
+      "bytes": 620912,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5087G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5087g-63e595b9b22e.glb",
+      "path": "designer/teamwear/models/bm-5087g-63e595b9b22e.glb",
+      "sha256": "63e595b9b22e60483cc7922d979f59c5d8017b921cc866ea1d8fa30da210c58d",
+      "bytes": 564700,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5087W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5087w-1ac9a9244f0d.glb",
+      "path": "designer/teamwear/models/bm-5087w-1ac9a9244f0d.glb",
+      "sha256": "1ac9a9244f0d855da31cdd257295b54040cae2ab6d087a6d04ba390ce679cdfd",
+      "bytes": 564700,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5088-c28891ed8445.glb",
+      "path": "designer/teamwear/models/bm-5088-c28891ed8445.glb",
+      "sha256": "c28891ed8445dd5b81d1d90ab72be90de7c335b4e2701f7efd88a1a763414138",
+      "bytes": 657436,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5088g-32ce85089bcc.glb",
+      "path": "designer/teamwear/models/bm-5088g-32ce85089bcc.glb",
+      "sha256": "32ce85089bcc8e52ffb5873bc7cda6550d14de57f71df0a69213340d81a179d7",
+      "bytes": 623560,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5088w-ea1afd3a7b11.glb",
+      "path": "designer/teamwear/models/bm-5088w-ea1afd3a7b11.glb",
+      "sha256": "ea1afd3a7b115fb07fb8b70231e1d1b8385f0ff008ebce6259fb636d128e8a7a",
+      "bytes": 623560,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5088Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5088y-af79ac8e82ca.glb",
+      "path": "designer/teamwear/models/bm-5088y-af79ac8e82ca.glb",
+      "sha256": "af79ac8e82cab3ad1ca4ef24aa88d71a4249f48cda2051f069be197931926728",
+      "bytes": 1131008,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5089",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5089-97e61287448a.glb",
+      "path": "designer/teamwear/models/bm-5089-97e61287448a.glb",
+      "sha256": "97e61287448acb6a1774202f95ee5993569c20c7ef22d6dfa166a7e6678db8ae",
+      "bytes": 470564,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5089G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5089g-b11afd68fd4d.glb",
+      "path": "designer/teamwear/models/bm-5089g-b11afd68fd4d.glb",
+      "sha256": "b11afd68fd4db4f4d8fbe16bf852ab25f8c0811eb99c038c6d1f6b91b9525031",
+      "bytes": 608312,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5089W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5089w-e59acae87aac.glb",
+      "path": "designer/teamwear/models/bm-5089w-e59acae87aac.glb",
+      "sha256": "e59acae87aac1011d394ebf24c8b04ce5f0a3b643f355a55b3b31c2b3fa1fd85",
+      "bytes": 608312,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5090G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5090g-7ca693b68092.glb",
+      "path": "designer/teamwear/models/bm-5090g-7ca693b68092.glb",
+      "sha256": "7ca693b680927c61a28b99339832ba93baab9d8a668cce8cbb4857d62c28a326",
+      "bytes": 619860,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5090W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5090w-43f4bbde12c5.glb",
+      "path": "designer/teamwear/models/bm-5090w-43f4bbde12c5.glb",
+      "sha256": "43f4bbde12c5296108cbc3f25bbb844aaef641233d27b61d39362b5fa183b9a5",
+      "bytes": 619860,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5091",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5091-3f4765a71d7a.glb",
+      "path": "designer/teamwear/models/bm-5091-3f4765a71d7a.glb",
+      "sha256": "3f4765a71d7a0c0331c5aaac6873062c9771c0b61850b081e1bf865e31e73496",
+      "bytes": 619692,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5091G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5091g-8cf863771165.glb",
+      "path": "designer/teamwear/models/bm-5091g-8cf863771165.glb",
+      "sha256": "8cf863771165f3d402d3762ab4a6353fe1325c9bc519aa9d7c6c7bc26a696479",
+      "bytes": 608184,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5091W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5091w-a2da04db2b9b.glb",
+      "path": "designer/teamwear/models/bm-5091w-a2da04db2b9b.glb",
+      "sha256": "a2da04db2b9ba4547a93bcc88470ccc0a7e861b97d7ee3d46ec2cb15e1628de5",
+      "bytes": 608184,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5092",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5092-8223241c4797.glb",
+      "path": "designer/teamwear/models/bm-5092-8223241c4797.glb",
+      "sha256": "8223241c4797100d566841eefd2a11e2dd7df872c0eecb1c2a4ab5251f9296a2",
+      "bytes": 568028,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5092G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5092g-861a95fc2849.glb",
+      "path": "designer/teamwear/models/bm-5092g-861a95fc2849.glb",
+      "sha256": "861a95fc28494470efe86adc6f3e658018d809943f73cb133f3d6a95f0552c25",
+      "bytes": 585228,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5092W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5092w-d161e024a86c.glb",
+      "path": "designer/teamwear/models/bm-5092w-d161e024a86c.glb",
+      "sha256": "d161e024a86c13831ceb25b2c7c671a038fb7e410041739eac73e1837a319878",
+      "bytes": 587620,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5093-a98fe6583e98.glb",
+      "path": "designer/teamwear/models/bm-5093-a98fe6583e98.glb",
+      "sha256": "a98fe6583e98f28a8497e49b28db63600232efbaf36c0122182ac0585e9b5b7c",
+      "bytes": 563516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5093g-48a9b1496114.glb",
+      "path": "designer/teamwear/models/bm-5093g-48a9b1496114.glb",
+      "sha256": "48a9b149611417ee5294211524fc233ab217c8e3131ce29095ebe0ef44885cea",
+      "bytes": 571724,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5093w-0983238f9737.glb",
+      "path": "designer/teamwear/models/bm-5093w-0983238f9737.glb",
+      "sha256": "0983238f9737892044e6acc2c1117445f016a3fa4e05b21bba598fd7a59b9c8b",
+      "bytes": 571724,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5093Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5093y-178780e31c0f.glb",
+      "path": "designer/teamwear/models/bm-5093y-178780e31c0f.glb",
+      "sha256": "178780e31c0fcb4d0290133b285c9dbef05c175caa920eda05c5d4c1f3b5dbbc",
+      "bytes": 862956,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5095W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5095w-6a7e9dfad304.glb",
+      "path": "designer/teamwear/models/bm-5095w-6a7e9dfad304.glb",
+      "sha256": "6a7e9dfad30498d1fa1ff354ff09cc1e10a34bb6a3df34a0177f34689e0c2eeb",
+      "bytes": 664356,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5096G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5096g-fc34f178d60f.glb",
+      "path": "designer/teamwear/models/bm-5096g-fc34f178d60f.glb",
+      "sha256": "fc34f178d60f26383a43e3ef144a27d74e77a5252b15d6fa70d07e451ae5fd4c",
+      "bytes": 559916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5096W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5096w-84cb94cd835c.glb",
+      "path": "designer/teamwear/models/bm-5096w-84cb94cd835c.glb",
+      "sha256": "84cb94cd835c2574080f978966954efc75893f73dfe9f065b617708077845ed0",
+      "bytes": 559916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5097G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5097g-7a9fcb56d2ff.glb",
+      "path": "designer/teamwear/models/bm-5097g-7a9fcb56d2ff.glb",
+      "sha256": "7a9fcb56d2ff511f3abc69de335b2f5449567e9405820736d70de070f4c326be",
+      "bytes": 525692,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5097W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5097w-d67e015909e5.glb",
+      "path": "designer/teamwear/models/bm-5097w-d67e015909e5.glb",
+      "sha256": "d67e015909e5fb8dd92d692f8d09388e020a7d85eebdacf526fa6fdbf878a14e",
+      "bytes": 525692,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5105",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5105-215841b57831.glb",
+      "path": "designer/teamwear/models/bm-5105-215841b57831.glb",
+      "sha256": "215841b57831fd7b0eb0bac4e892495950cf837064839b2e76bb09c462b0a17f",
+      "bytes": 792984,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5105Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5105y-420ec8f177a3.glb",
+      "path": "designer/teamwear/models/bm-5105y-420ec8f177a3.glb",
+      "sha256": "420ec8f177a3cc3613ea4c4fe617a44e7e9b8f2bba429d410d1537ea44ceceb4",
+      "bytes": 1175756,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5107",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5107-b92b8fd8160f.glb",
+      "path": "designer/teamwear/models/bm-5107-b92b8fd8160f.glb",
+      "sha256": "b92b8fd8160f4933dc4aed63e763e5f24e18c225231db2764a121898d8865929",
+      "bytes": 458540,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5107Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5107y-a061e9f2fbcb.glb",
+      "path": "designer/teamwear/models/bm-5107y-a061e9f2fbcb.glb",
+      "sha256": "a061e9f2fbcbafebfd8f33bd244f5d5af25ed7aa3e857f554c1d55529a375777",
+      "bytes": 1369320,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5177",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5177-efeddc3accd7.glb",
+      "path": "designer/teamwear/models/bm-5177-efeddc3accd7.glb",
+      "sha256": "efeddc3accd727b13099e41b4420063ee306a2e450df1744ab6c6c92e8f65dfb",
+      "bytes": 368568,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5177Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5177y-22cfa173d02f.glb",
+      "path": "designer/teamwear/models/bm-5177y-22cfa173d02f.glb",
+      "sha256": "22cfa173d02fb76f0affa22cc7de7ab0294f752c6316cdcc91b4f318639cedee",
+      "bytes": 1350684,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5273",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5273-b1e9f71091f6.glb",
+      "path": "designer/teamwear/models/bm-5273-b1e9f71091f6.glb",
+      "sha256": "b1e9f71091f611df9acefb718e6eb4c0f82249327a0de95f13d1bcf19928715b",
+      "bytes": 133400,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5273Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5273y-c186a27a0584.glb",
+      "path": "designer/teamwear/models/bm-5273y-c186a27a0584.glb",
+      "sha256": "c186a27a05847ceea7eede828f4956b3d08b58c87f2cfddc08ec25c44c406544",
+      "bytes": 133404,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5283",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5283-3d40c0703ad2.glb",
+      "path": "designer/teamwear/models/bm-5283-3d40c0703ad2.glb",
+      "sha256": "3d40c0703ad215211dc8255e4cd92c06abfe3ac5c6c41f61e143f8e47b4b1659",
+      "bytes": 144572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5283Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5283y-bca0952570d0.glb",
+      "path": "designer/teamwear/models/bm-5283y-bca0952570d0.glb",
+      "sha256": "bca0952570d001d08db7ad2a8d4b7e8eff60ee4f4f658e9a1723056fe4508236",
+      "bytes": 144576,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5284",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5284-1cf3df015490.glb",
+      "path": "designer/teamwear/models/bm-5284-1cf3df015490.glb",
+      "sha256": "1cf3df015490c4cd58b643de6eafe95687b01691bd1aa0fe9e29285ce56df92d",
+      "bytes": 151392,
+      "format": "glb-draco"
+    },
+    {
+      "id": "BM-5284Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/bm-5284y-a41a8a862867.glb",
+      "path": "designer/teamwear/models/bm-5284y-a41a8a862867.glb",
+      "sha256": "a41a8a86286794bee4552fe8591f568898845ae0c852d78da4cc59f54fe7f59f",
+      "bytes": 151396,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B17T",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-bb-b17t-143744f16e86.glb",
+      "path": "designer/teamwear/models/cbg-bb-b17t-143744f16e86.glb",
+      "sha256": "143744f16e869a34cfddf1ca1877a909a1da8a79637a76ab49e1e0d826d06875",
+      "bytes": 1706220,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B3I",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-bb-b3i-d8eae394a24e.glb",
+      "path": "designer/teamwear/models/cbg-bb-b3i-d8eae394a24e.glb",
+      "sha256": "d8eae394a24e97d476fd6f447ecf0cea14f9fdb5e901b3a455b8dfcef98bfacf",
+      "bytes": 1656944,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B4H",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-bb-b4h-5a1d69dd714e.glb",
+      "path": "designer/teamwear/models/cbg-bb-b4h-5a1d69dd714e.glb",
+      "sha256": "5a1d69dd714ebfbe413d8dbc497d4b8b0f7e63ce1aaa7534b9b19efcfd5b6ecf",
+      "bytes": 1661444,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-BB-B7B",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-bb-b7b-a897225ec8fa.glb",
+      "path": "designer/teamwear/models/cbg-bb-b7b-a897225ec8fa.glb",
+      "sha256": "a897225ec8fa31b230e8226c116d892d7b49d4c5091bcfd44b953109fbf0c977",
+      "bytes": 1603812,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-SB-B17T",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-sb-b17t-b9867cbad9d2.glb",
+      "path": "designer/teamwear/models/cbg-sb-b17t-b9867cbad9d2.glb",
+      "sha256": "b9867cbad9d2152b2f30abe7391e6e0880668c3d57f542c9ac43d7db47b47d21",
+      "bytes": 1706208,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-SB-B4H",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-sb-b4h-8f99fd90da9f.glb",
+      "path": "designer/teamwear/models/cbg-sb-b4h-8f99fd90da9f.glb",
+      "sha256": "8f99fd90da9fde3715987baf64fd9ec96abda0ac73287e14d57c47f44b06b83f",
+      "bytes": 1661856,
+      "format": "glb-draco"
+    },
+    {
+      "id": "CBG-SB-B7B",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/cbg-sb-b7b-be339bc0d3a8.glb",
+      "path": "designer/teamwear/models/cbg-sb-b7b-be339bc0d3a8.glb",
+      "sha256": "be339bc0d3a8bfa741c916e1cf8efc35116260b0b95af253e34e75897119bf39",
+      "bytes": 1599188,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-105",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-105-61ae431679b5.glb",
+      "path": "designer/teamwear/models/fd-105-61ae431679b5.glb",
+      "sha256": "61ae431679b50001390ef51a82a75816fdea0f73b0135f9f5552fd4a4af5ca43",
+      "bytes": 84132,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-11004",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-11004-3f7e35d0ef12.glb",
+      "path": "designer/teamwear/models/fd-11004-3f7e35d0ef12.glb",
+      "sha256": "3f7e35d0ef120772e2c5d14a64c3bbd9934caa4f34cedc47cd44a17495226a7a",
+      "bytes": 350964,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-11005",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-11005-246060e9a15f.glb",
+      "path": "designer/teamwear/models/fd-11005-246060e9a15f.glb",
+      "sha256": "246060e9a15ffa59f3bbb2de5699c5a9c32b1e2d932c3313861f8eb8261352af",
+      "bytes": 175936,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-115",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-115-e6b1c240eb47.glb",
+      "path": "designer/teamwear/models/fd-115-e6b1c240eb47.glb",
+      "sha256": "e6b1c240eb47f061553afc073b57e2e2e9c7913371a043e71cd8eaf46116a7f2",
+      "bytes": 42916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-121",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-121-ecceecd8e7ba.glb",
+      "path": "designer/teamwear/models/fd-121-ecceecd8e7ba.glb",
+      "sha256": "ecceecd8e7bae3ba2355b1d83231d424ff55fbc13be4be0d637b35eb9a6030f3",
+      "bytes": 557736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-137",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-137-5e4f295e8106.glb",
+      "path": "designer/teamwear/models/fd-137-5e4f295e8106.glb",
+      "sha256": "5e4f295e8106a33930996d83e00f6812e8aeaaa78200bce567b2ae7eebdf9c45",
+      "bytes": 398592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-161",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-161-1c4805b86c08.glb",
+      "path": "designer/teamwear/models/fd-161-1c4805b86c08.glb",
+      "sha256": "1c4805b86c082ff2f1effa64d97aff07b2c2d89f82c98d6401e2b254494c5914",
+      "bytes": 235700,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-161W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-161w-fa8aa2329de8.glb",
+      "path": "designer/teamwear/models/fd-161w-fa8aa2329de8.glb",
+      "sha256": "fa8aa2329de8aaaae1a41f2edfa312586fc3b81a8bf1d1462757d60ed5b57cf9",
+      "bytes": 679716,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-163",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-163-bd9081da7607.glb",
+      "path": "designer/teamwear/models/fd-163-bd9081da7607.glb",
+      "sha256": "bd9081da76079a6659dda16a11ac1adab69ea37caa4e835a2aaadd62a117f779",
+      "bytes": 349920,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-163W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-163w-d6fc82567e7c.glb",
+      "path": "designer/teamwear/models/fd-163w-d6fc82567e7c.glb",
+      "sha256": "d6fc82567e7cdbbf177c6e44bf1083ecff35a3dca4d26d2e1e750e524db60311",
+      "bytes": 369032,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-170W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-170w-d1d050059cad.glb",
+      "path": "designer/teamwear/models/fd-170w-d1d050059cad.glb",
+      "sha256": "d1d050059cad95c1adce949c224762333c8b675d325203daaff7d9aa1c73fbb6",
+      "bytes": 213180,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-1873",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-1873-2c7616b1ecba.glb",
+      "path": "designer/teamwear/models/fd-1873-2c7616b1ecba.glb",
+      "sha256": "2c7616b1ecba4568d6acce4ae9f57283aa24fa5ddb402bb396c9ebf6e8aa9dc0",
+      "bytes": 720416,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-1873W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-1873w-584051f76b88.glb",
+      "path": "designer/teamwear/models/fd-1873w-584051f76b88.glb",
+      "sha256": "584051f76b88133190eac1d4b013c97d0696a85d90f373c26c885188659d06a3",
+      "bytes": 941104,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-1874",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-1874-aad852107b73.glb",
+      "path": "designer/teamwear/models/fd-1874-aad852107b73.glb",
+      "sha256": "aad852107b73c7d5368997dcc3ac089d1a2860301db4ddf6e8dd065f9c1f211a",
+      "bytes": 494096,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-1874W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-1874w-8c561302ab4d.glb",
+      "path": "designer/teamwear/models/fd-1874w-8c561302ab4d.glb",
+      "sha256": "8c561302ab4d327de683b978a2e95ea2ee644de7246bb387da650c1f14cb8ac5",
+      "bytes": 980468,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-204",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-204-6b59df3d7fa5.glb",
+      "path": "designer/teamwear/models/fd-204-6b59df3d7fa5.glb",
+      "sha256": "6b59df3d7fa563090d589e965ce670646ab89f0ffe7325f356e64a838fc777bb",
+      "bytes": 1833964,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-205",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-205-e5b54e961e7a.glb",
+      "path": "designer/teamwear/models/fd-205-e5b54e961e7a.glb",
+      "sha256": "e5b54e961e7a8b10c09bbba50768a5e1acf0bd3139f1669e44ffb8423346dd04",
+      "bytes": 498032,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-206",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-206-01d44e5e0e67.glb",
+      "path": "designer/teamwear/models/fd-206-01d44e5e0e67.glb",
+      "sha256": "01d44e5e0e6755f4ecbd520251448970a0fd181fb04d93c443a3090a46821d35",
+      "bytes": 344620,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-207",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-207-847235924189.glb",
+      "path": "designer/teamwear/models/fd-207-847235924189.glb",
+      "sha256": "847235924189345be5f4b0a53f0a0b46199c8e07ad5f83b2c590acfdafe623ec",
+      "bytes": 435128,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-2076W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2076w-9a24207b8ab6.glb",
+      "path": "designer/teamwear/models/fd-2076w-9a24207b8ab6.glb",
+      "sha256": "9a24207b8ab627d822392df9528710c7c24fa83596824f800bff3d2cd02e39e0",
+      "bytes": 635812,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-212",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-212-558b72d4a358.glb",
+      "path": "designer/teamwear/models/fd-212-558b72d4a358.glb",
+      "sha256": "558b72d4a358df4cdec98fbc87a5a7712bbd4ef1eb88dce4174855b89969dd58",
+      "bytes": 571008,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-215W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-215w-09c9dcbd52e6.glb",
+      "path": "designer/teamwear/models/fd-215w-09c9dcbd52e6.glb",
+      "sha256": "09c9dcbd52e67c4b938c1a870a7743ec98f0486723db9c07ace0e51825029ac2",
+      "bytes": 616020,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-217",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+      "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+      "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+      "bytes": 378008,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-217W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217w-9a711092a672.glb",
+      "path": "designer/teamwear/models/fd-217w-9a711092a672.glb",
+      "sha256": "9a711092a672dd7ef90a302ff6325ed8bf53352adaf6273a83819ada7fcf865d",
+      "bytes": 350644,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-218",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-218-5315890eb909.glb",
+      "path": "designer/teamwear/models/fd-218-5315890eb909.glb",
+      "sha256": "5315890eb9097fb5dcd59871fc144e51f4a43dd2e3b0a0115e58a742cfc05672",
+      "bytes": 434788,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-219W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-219w-b9d4a7e7c9ca.glb",
+      "path": "designer/teamwear/models/fd-219w-b9d4a7e7c9ca.glb",
+      "sha256": "b9d4a7e7c9ca9d86bad7c5a92166533880960a078a89f3ca4a9e4e30e90377d6",
+      "bytes": 496580,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-220W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-220w-92d16a5c85c1.glb",
+      "path": "designer/teamwear/models/fd-220w-92d16a5c85c1.glb",
+      "sha256": "92d16a5c85c171bdcbb07640f8bec2be37772852e5f083683e160160f7863bbf",
+      "bytes": 471752,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-221W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-221w-9d4291ce1255.glb",
+      "path": "designer/teamwear/models/fd-221w-9d4291ce1255.glb",
+      "sha256": "9d4291ce1255c9f6bfebfde5eb4135b8d24976bfd6a9855386cbf50a6b9c281c",
+      "bytes": 632572,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-223",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-223-8317b45943fa.glb",
+      "path": "designer/teamwear/models/fd-223-8317b45943fa.glb",
+      "sha256": "8317b45943fa3ceba67465b4df7e33349f1ad1d5ef142861caef0f5f234dec20",
+      "bytes": 445960,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-228",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-228-f184909c9d21.glb",
+      "path": "designer/teamwear/models/fd-228-f184909c9d21.glb",
+      "sha256": "f184909c9d21991b80c32db2f5249d178a160466c0934c3fa76b759f35dda60e",
+      "bytes": 298328,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-229",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-229-d67510b16b24.glb",
+      "path": "designer/teamwear/models/fd-229-d67510b16b24.glb",
+      "sha256": "d67510b16b24f4c41fd261971ed846812f9f819a68442493cc530f760f0a8bd2",
+      "bytes": 502876,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-230",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-230-1d8000524d41.glb",
+      "path": "designer/teamwear/models/fd-230-1d8000524d41.glb",
+      "sha256": "1d8000524d419e0938627ed3229cb6b88cc3c8dfa1e5beec2b913e11543cfddc",
+      "bytes": 640192,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-2302",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2302-492c52e7875a.glb",
+      "path": "designer/teamwear/models/fd-2302-492c52e7875a.glb",
+      "sha256": "492c52e7875aad24af1e62b931a17037b5d5266bd51ae197c61cfaad101eb84d",
+      "bytes": 941444,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-2302W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2302w-cede655a3b3e.glb",
+      "path": "designer/teamwear/models/fd-2302w-cede655a3b3e.glb",
+      "sha256": "cede655a3b3e72b289067e338765f6d7f7ccd4f4936799be57f711e964e41d75",
+      "bytes": 953140,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-2304",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+      "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+      "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+      "bytes": 941440,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-2304W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304w-32fe45f87823.glb",
+      "path": "designer/teamwear/models/fd-2304w-32fe45f87823.glb",
+      "sha256": "32fe45f87823c5e3d6c4cb21772198a1700f4cdba671269b85c278ca18c72cd9",
+      "bytes": 984580,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-233",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-233-08ff682e5f5a.glb",
+      "path": "designer/teamwear/models/fd-233-08ff682e5f5a.glb",
+      "sha256": "08ff682e5f5ab39237cd8a1222e76b62537d3c743ff8be8acded10ea74d0d549",
+      "bytes": 558040,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-234",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-234-29317ab4b935.glb",
+      "path": "designer/teamwear/models/fd-234-29317ab4b935.glb",
+      "sha256": "29317ab4b93553e5a57bcbe17cd109a67cca569b93caff97e75f9a6967cbbab3",
+      "bytes": 455784,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-240W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-240w-95c1a798e5f9.glb",
+      "path": "designer/teamwear/models/fd-240w-95c1a798e5f9.glb",
+      "sha256": "95c1a798e5f9cb346da28e2a9bd336070af64b625b832f49d86e6e9bdb0e8efb",
+      "bytes": 327584,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-243W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-243w-be713367cbf9.glb",
+      "path": "designer/teamwear/models/fd-243w-be713367cbf9.glb",
+      "sha256": "be713367cbf939ae28d754f80d3b100cf3f8a83b24704bd0628f2952f12bab44",
+      "bytes": 761948,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-246W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-246w-8b82cc21af8d.glb",
+      "path": "designer/teamwear/models/fd-246w-8b82cc21af8d.glb",
+      "sha256": "8b82cc21af8d586e657954a4e2a542844f36ea37ab13b919be69d275fb27c898",
+      "bytes": 281448,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3003",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3003-ae0555ab1fb2.glb",
+      "path": "designer/teamwear/models/fd-3003-ae0555ab1fb2.glb",
+      "sha256": "ae0555ab1fb2a204a9e002068014eb43d1aaa4094e9922377cf20a54b44c43b4",
+      "bytes": 1201896,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3003W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3003w-0ccd489293c3.glb",
+      "path": "designer/teamwear/models/fd-3003w-0ccd489293c3.glb",
+      "sha256": "0ccd489293c30c8bc68bd54deae9b3d60cf072da7fe7ad6c4e70747b90e0b23c",
+      "bytes": 1385144,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3016W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3016w-105d60e5f855.glb",
+      "path": "designer/teamwear/models/fd-3016w-105d60e5f855.glb",
+      "sha256": "105d60e5f8558fee9aeb0382f9ac2c7c9a8c2a744c4d513d03f36fcf106fdc37",
+      "bytes": 1583464,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3018",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3018-8457663c1759.glb",
+      "path": "designer/teamwear/models/fd-3018-8457663c1759.glb",
+      "sha256": "8457663c1759bb181f0226e5f9d4ec869d2d85874400efaa845d6001ba0875c3",
+      "bytes": 1171984,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3018W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3018w-9af90b2f7ce8.glb",
+      "path": "designer/teamwear/models/fd-3018w-9af90b2f7ce8.glb",
+      "sha256": "9af90b2f7ce8644c50ce35538210c74d497ce38fb3ab2ef22f70216a909050b3",
+      "bytes": 2435528,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3096",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3096-53c5107a62df.glb",
+      "path": "designer/teamwear/models/fd-3096-53c5107a62df.glb",
+      "sha256": "53c5107a62dfde5c18c9514fb3f8956e39c2f501d4990acd2d4030343e38cf41",
+      "bytes": 488160,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3096W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3096w-46be4d74139b.glb",
+      "path": "designer/teamwear/models/fd-3096w-46be4d74139b.glb",
+      "sha256": "46be4d74139ba62f0fd0346ceab48b12aa765f1e3f31d6dcaab3620be2fbd14e",
+      "bytes": 240792,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3099W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3099w-2a42d1e17f59.glb",
+      "path": "designer/teamwear/models/fd-3099w-2a42d1e17f59.glb",
+      "sha256": "2a42d1e17f598cd7a59f312e476fa93074a50fdc0debce921ca90378154797aa",
+      "bytes": 1817520,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3107",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3107-2320bdafad53.glb",
+      "path": "designer/teamwear/models/fd-3107-2320bdafad53.glb",
+      "sha256": "2320bdafad53500972fb2619fafef5c77cb28b083ba7af1bfd573ba84c9ab15e",
+      "bytes": 1735748,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3127W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3127w-a99f0d52297b.glb",
+      "path": "designer/teamwear/models/fd-3127w-a99f0d52297b.glb",
+      "sha256": "a99f0d52297b221dcc60bd13c3147d0aa562a4bbaf16823912b60c6db8f76b42",
+      "bytes": 1748648,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3129",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3129-16b1890d372f.glb",
+      "path": "designer/teamwear/models/fd-3129-16b1890d372f.glb",
+      "sha256": "16b1890d372fea96316a55e4df370a517012a980546b24b9eb513734b59da9d9",
+      "bytes": 814816,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3132",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3132-9709b95ac434.glb",
+      "path": "designer/teamwear/models/fd-3132-9709b95ac434.glb",
+      "sha256": "9709b95ac4349d80c8c5e145cabb239d4166add9216c602c4f1dc623135c5001",
+      "bytes": 2227884,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3143",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3143-bb706bccbdbe.glb",
+      "path": "designer/teamwear/models/fd-3143-bb706bccbdbe.glb",
+      "sha256": "bb706bccbdbe3f6fe0eecb2ca0d1f5448562afeede86d9b897d9d49b916621ec",
+      "bytes": 383944,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3145",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3145-a75981b79f08.glb",
+      "path": "designer/teamwear/models/fd-3145-a75981b79f08.glb",
+      "sha256": "a75981b79f08bbdf4d9d20c4ceb56e4bebfe1ef94cd9c404caafc31425c81175",
+      "bytes": 2224336,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3154",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3154-d6d5f6295b83.glb",
+      "path": "designer/teamwear/models/fd-3154-d6d5f6295b83.glb",
+      "sha256": "d6d5f6295b8309f8068e0a0f7e3a24e47f6c7e1c6aa9409daa7581962341761c",
+      "bytes": 983780,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3154W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3154w-143cc1cd2aaf.glb",
+      "path": "designer/teamwear/models/fd-3154w-143cc1cd2aaf.glb",
+      "sha256": "143cc1cd2aafd93854c0fca148d2f34aba5e0973fc5589135eec309bff00f453",
+      "bytes": 1081592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3181",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3181-dbb950119910.glb",
+      "path": "designer/teamwear/models/fd-3181-dbb950119910.glb",
+      "sha256": "dbb950119910ee1267c102957c0698a92429e3f5596c99cbede93db04ac49a64",
+      "bytes": 289772,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3181W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3181w-fe306dd13891.glb",
+      "path": "designer/teamwear/models/fd-3181w-fe306dd13891.glb",
+      "sha256": "fe306dd138918386e9711a80e765ed89b9ed8e3445160d4fc344b8ec19b93ef1",
+      "bytes": 203400,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3182",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3182-58516278ca3b.glb",
+      "path": "designer/teamwear/models/fd-3182-58516278ca3b.glb",
+      "sha256": "58516278ca3bc21211786f669e119c4c6b4df857dbabd6623b3c0f7eb92c6af2",
+      "bytes": 594688,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3182W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3182w-088dda1ade01.glb",
+      "path": "designer/teamwear/models/fd-3182w-088dda1ade01.glb",
+      "sha256": "088dda1ade0174925edcc2be087495688aa3f3ca63ffb0e717d9bbd55149d35c",
+      "bytes": 529016,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3183W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3183w-f742ae94f08a.glb",
+      "path": "designer/teamwear/models/fd-3183w-f742ae94f08a.glb",
+      "sha256": "f742ae94f08a03a211ec8c1ae9eee7cc41190766714279e8e0a7157fc840afb7",
+      "bytes": 546140,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3184W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3184w-7a722edd318a.glb",
+      "path": "designer/teamwear/models/fd-3184w-7a722edd318a.glb",
+      "sha256": "7a722edd318a5dae082018e5a63765bcfdc994bd7a5937752a339aa9a00fab14",
+      "bytes": 969844,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3185W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3185w-daa21b59854c.glb",
+      "path": "designer/teamwear/models/fd-3185w-daa21b59854c.glb",
+      "sha256": "daa21b59854cbbff7de765eff6891e20046db0bd7237112b4a480de45a6a73d9",
+      "bytes": 2830540,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3197",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3197-96d7d461d464.glb",
+      "path": "designer/teamwear/models/fd-3197-96d7d461d464.glb",
+      "sha256": "96d7d461d464bde0dcdd1f772c9f348f549b2d1b83d60b525f23ea201cc1ab43",
+      "bytes": 413676,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3237",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3237-0079ef08fbd0.glb",
+      "path": "designer/teamwear/models/fd-3237-0079ef08fbd0.glb",
+      "sha256": "0079ef08fbd0dbe8b3827f1b7580c3a484d100f5025227317320b2996791db90",
+      "bytes": 269072,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3325",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3325-dfc4839de099.glb",
+      "path": "designer/teamwear/models/fd-3325-dfc4839de099.glb",
+      "sha256": "dfc4839de099c0fe35aa7990f297c27519e8928de7537a21291e5cea9513fe70",
+      "bytes": 125472,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3417",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3417-24b68eb82a21.glb",
+      "path": "designer/teamwear/models/fd-3417-24b68eb82a21.glb",
+      "sha256": "24b68eb82a216a3fde8dce427fac4a5e077c6416fd32e2a3b7becdbe92aee77c",
+      "bytes": 364928,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3431",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3431-e28721c89e7d.glb",
+      "path": "designer/teamwear/models/fd-3431-e28721c89e7d.glb",
+      "sha256": "e28721c89e7d40bf9f47d3d010674d79203c69266a10716896c4f5838c0c1971",
+      "bytes": 254332,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3437",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3437-bb9e90ecb490.glb",
+      "path": "designer/teamwear/models/fd-3437-bb9e90ecb490.glb",
+      "sha256": "bb9e90ecb490b23eaa78ce9048176d035439cd51676774c27ba448c12d76b1bb",
+      "bytes": 189696,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3438",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3438-0120cb25532c.glb",
+      "path": "designer/teamwear/models/fd-3438-0120cb25532c.glb",
+      "sha256": "0120cb25532cfafae48ccaa9b9e3dc9bb360459c7a9f47b3b7e21c755e8a18e8",
+      "bytes": 181640,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3444",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3444-937d91f3e03a.glb",
+      "path": "designer/teamwear/models/fd-3444-937d91f3e03a.glb",
+      "sha256": "937d91f3e03a9b8c69dcb98417abcfc46dd47fabc165ebc301c70183c880bdb4",
+      "bytes": 87076,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3448",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3448-ce4a9b3e1cc2.glb",
+      "path": "designer/teamwear/models/fd-3448-ce4a9b3e1cc2.glb",
+      "sha256": "ce4a9b3e1cc23625b96c07bc600aa1546c400523e8ef690be12610ddd3b7e453",
+      "bytes": 164380,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-3449",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-3449-7034f241dde0.glb",
+      "path": "designer/teamwear/models/fd-3449-7034f241dde0.glb",
+      "sha256": "7034f241dde064d17706db751afe1f981c9da306d14058c160b3a0ff5302b1aa",
+      "bytes": 107496,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-400",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-400-c2a0c249700f.glb",
+      "path": "designer/teamwear/models/fd-400-c2a0c249700f.glb",
+      "sha256": "c2a0c249700f20606afa0d92e6e1acbebcc277942817f49a7593a3500f9863c5",
+      "bytes": 211064,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4017",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4017-0197256b6880.glb",
+      "path": "designer/teamwear/models/fd-4017-0197256b6880.glb",
+      "sha256": "0197256b6880ec481c628c5dec5d21975bff5c2f96b7ad340c86c58757361052",
+      "bytes": 230500,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4057",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4057-05b00c1f2f43.glb",
+      "path": "designer/teamwear/models/fd-4057-05b00c1f2f43.glb",
+      "sha256": "05b00c1f2f4349f1e957e813e7ee108bc8b0dd6d5bdf70ebc0105198e63e5789",
+      "bytes": 628260,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4062W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4062w-b3994ae7afd7.glb",
+      "path": "designer/teamwear/models/fd-4062w-b3994ae7afd7.glb",
+      "sha256": "b3994ae7afd700da135947aa32d77fb26e430a0268c6bcbbec5be611e4c7bc8d",
+      "bytes": 747488,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4089W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4089w-3311ccb59c86.glb",
+      "path": "designer/teamwear/models/fd-4089w-3311ccb59c86.glb",
+      "sha256": "3311ccb59c8698beeeb1aa296efe9cd0b15e51642fb49bb8236c253b6e57f449",
+      "bytes": 1190060,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-410",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-410-b3911bb71a18.glb",
+      "path": "designer/teamwear/models/fd-410-b3911bb71a18.glb",
+      "sha256": "b3911bb71a189cd835d2e4cea07bf314747a5f5e6145233b1f1e0b8b9298dcd0",
+      "bytes": 869648,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4110",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4110-d96e2a401099.glb",
+      "path": "designer/teamwear/models/fd-4110-d96e2a401099.glb",
+      "sha256": "d96e2a40109986b622a32be659708835562905b73ad9716575a796bb2f6585a4",
+      "bytes": 625812,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4110W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4110w-665bf6745d0d.glb",
+      "path": "designer/teamwear/models/fd-4110w-665bf6745d0d.glb",
+      "sha256": "665bf6745d0d847b599caca479905f39a3b8b13bdd514cfc897e7beca44f5f08",
+      "bytes": 4049740,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-412",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-412-faba8b3539f1.glb",
+      "path": "designer/teamwear/models/fd-412-faba8b3539f1.glb",
+      "sha256": "faba8b3539f18205ffeaae729599c99379f7eb6c873d2d60bd3ed4ef79a46adf",
+      "bytes": 928996,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4125",
+      "unavailable": true
+    },
+    {
+      "id": "FD-4125W",
+      "unavailable": true
+    },
+    {
+      "id": "FD-4126",
+      "unavailable": true
+    },
+    {
+      "id": "FD-4127",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4127-ac996d7c9396.glb",
+      "path": "designer/teamwear/models/fd-4127-ac996d7c9396.glb",
+      "sha256": "ac996d7c93965939e09e43f54532f441b1d48ecb23ea73ea1ce79054dd07a28a",
+      "bytes": 1896576,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4127W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4127w-24e326f0097a.glb",
+      "path": "designer/teamwear/models/fd-4127w-24e326f0097a.glb",
+      "sha256": "24e326f0097af725c05817e53dcb5afcc7706e560f9bda415e8d02c5f319dc22",
+      "bytes": 1255316,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4128",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4128-b27f756995d4.glb",
+      "path": "designer/teamwear/models/fd-4128-b27f756995d4.glb",
+      "sha256": "b27f756995d43579bd190cc834cea58be992510578e739003945047142b1b4a0",
+      "bytes": 1885760,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-413",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-413-011ea7ce26ac.glb",
+      "path": "designer/teamwear/models/fd-413-011ea7ce26ac.glb",
+      "sha256": "011ea7ce26ac4e6b18c142d64dcf4a70a3d4c063e00b59871a6d17afc0f0ff46",
+      "bytes": 767228,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-415",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-415-187a1d334e9d.glb",
+      "path": "designer/teamwear/models/fd-415-187a1d334e9d.glb",
+      "sha256": "187a1d334e9d8fbc9c6af4c547b2953d2b9856545c5a83df737edd479fc842be",
+      "bytes": 705740,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-420",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-420-ab4fcd39abf6.glb",
+      "path": "designer/teamwear/models/fd-420-ab4fcd39abf6.glb",
+      "sha256": "ab4fcd39abf6f37afe6f5addbafd8413c794d3c294f69c8afa2b687cb4be36b6",
+      "bytes": 122772,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4301",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4301-1d1c99a4b347.glb",
+      "path": "designer/teamwear/models/fd-4301-1d1c99a4b347.glb",
+      "sha256": "1d1c99a4b347d46c9ab03fd06ebe07214f7a76f38391a32bd49556d260cf5e8a",
+      "bytes": 199948,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4301W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4301w-02cf6ddec3f6.glb",
+      "path": "designer/teamwear/models/fd-4301w-02cf6ddec3f6.glb",
+      "sha256": "02cf6ddec3f6f56eced2a38ec2c477d506d6ad6a66ade4aa1df0e18193b6dd4a",
+      "bytes": 108488,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4302",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4302-b2cb6f593ed7.glb",
+      "path": "designer/teamwear/models/fd-4302-b2cb6f593ed7.glb",
+      "sha256": "b2cb6f593ed745023c25919ac6dd820dadb7b455c3d46a1f05b03775b9616fda",
+      "bytes": 1042412,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4302W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4302w-8d98a3fefe56.glb",
+      "path": "designer/teamwear/models/fd-4302w-8d98a3fefe56.glb",
+      "sha256": "8d98a3fefe5605409b426119e2c5dfec93b003087722b68b644ef09948e20134",
+      "bytes": 1017124,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4303",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4303-38bddb615ce3.glb",
+      "path": "designer/teamwear/models/fd-4303-38bddb615ce3.glb",
+      "sha256": "38bddb615ce346dd236b3c9e82736bd2fd50de36390f92238ec193bc51ae843a",
+      "bytes": 166584,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4303W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4303w-adc67a58621f.glb",
+      "path": "designer/teamwear/models/fd-4303w-adc67a58621f.glb",
+      "sha256": "adc67a58621fca7b1327d94a734c0eb05bc6c387875189451c5a1eace699899b",
+      "bytes": 97896,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4305",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+      "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+      "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+      "bytes": 1277816,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4305W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305w-6bef76dd867c.glb",
+      "path": "designer/teamwear/models/fd-4305w-6bef76dd867c.glb",
+      "sha256": "6bef76dd867cc76af69cc5445e2360ff01994fac8fa9578a6cf4c526076641d6",
+      "bytes": 1867072,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4416W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4416w-c6684d8e350a.glb",
+      "path": "designer/teamwear/models/fd-4416w-c6684d8e350a.glb",
+      "sha256": "c6684d8e350ae18cda061f2b8efc3036fce641695c928856ddb23bb6bee977d3",
+      "bytes": 415984,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-4500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4500-8b63ec1ba3a3.glb",
+      "path": "designer/teamwear/models/fd-4500-8b63ec1ba3a3.glb",
+      "sha256": "8b63ec1ba3a39e02d619f5142b6dba74bb34968b1ac9347c2b9890478233856f",
+      "bytes": 4358964,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-477",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-477-4264d5d2bea2.glb",
+      "path": "designer/teamwear/models/fd-477-4264d5d2bea2.glb",
+      "sha256": "4264d5d2bea2a30bf03f2e40ee99134940c1953d92dc1518dcf5ed74df8435f1",
+      "bytes": 367276,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-477W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-477w-8e9727e2f7db.glb",
+      "path": "designer/teamwear/models/fd-477w-8e9727e2f7db.glb",
+      "sha256": "8e9727e2f7dba71e9d823369284bf020eed181722c3aa34174ff3a924b845d68",
+      "bytes": 337212,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-486",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-486-930dd240217e.glb",
+      "path": "designer/teamwear/models/fd-486-930dd240217e.glb",
+      "sha256": "930dd240217ee85198b68891341221214842e5ab825cf5571085c88bf901b38b",
+      "bytes": 4208156,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-486W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-486w-0c62a3557d12.glb",
+      "path": "designer/teamwear/models/fd-486w-0c62a3557d12.glb",
+      "sha256": "0c62a3557d125e5ed029567435af0c66a67218382b90775e7bd4f91979b7bfaf",
+      "bytes": 1745160,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-487",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-487-57be6afb091c.glb",
+      "path": "designer/teamwear/models/fd-487-57be6afb091c.glb",
+      "sha256": "57be6afb091c7dcdfb93a6350fc7241d532017358bbcabc15253166b37ff2571",
+      "bytes": 1603752,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-500-1bcdb8faab62.glb",
+      "path": "designer/teamwear/models/fd-500-1bcdb8faab62.glb",
+      "sha256": "1bcdb8faab62c3d99e953254c402d305a8b66500d6239124b3342b3cde0462dc",
+      "bytes": 235892,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5029G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5029g-080f88f71265.glb",
+      "path": "designer/teamwear/models/fd-5029g-080f88f71265.glb",
+      "sha256": "080f88f71265d295048a10e06edbb16b29932aac9c72f7b5800f94ed2f15bc2a",
+      "bytes": 675956,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5029W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5029w-4193596a982f.glb",
+      "path": "designer/teamwear/models/fd-5029w-4193596a982f.glb",
+      "sha256": "4193596a982ff2ebe8be6613cf31f4783cdb87e442236a573ce9733cac7b8a5a",
+      "bytes": 675956,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5060",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5060-7004d03ab293.glb",
+      "path": "designer/teamwear/models/fd-5060-7004d03ab293.glb",
+      "sha256": "7004d03ab293d63fdcb0bf03696a2826adf8727f007b6bafab18d36c2e5b7232",
+      "bytes": 509912,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5060G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5060g-571b76385eb6.glb",
+      "path": "designer/teamwear/models/fd-5060g-571b76385eb6.glb",
+      "sha256": "571b76385eb6276fd00290f679520594975e42d22e5ce313c17b6d7efdac3af2",
+      "bytes": 234068,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5060W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5060w-7f6287a514d9.glb",
+      "path": "designer/teamwear/models/fd-5060w-7f6287a514d9.glb",
+      "sha256": "7f6287a514d92a185bd35e93c3bb33b1d8008f579d0ad40ffadc065bac28cbcf",
+      "bytes": 234092,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5060Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5060y-b84ae5e6d1da.glb",
+      "path": "designer/teamwear/models/fd-5060y-b84ae5e6d1da.glb",
+      "sha256": "b84ae5e6d1da33b98265a351a6187314704ea1bbca0f77635bfe07ca8cb771d3",
+      "bytes": 509768,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5070G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5070g-fb862d843a3f.glb",
+      "path": "designer/teamwear/models/fd-5070g-fb862d843a3f.glb",
+      "sha256": "fb862d843a3f9f845da1b85c1f0282c4c17844b369fe9a41414a09b866accf83",
+      "bytes": 959760,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5070W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5070w-fc1fd2bdbf5f.glb",
+      "path": "designer/teamwear/models/fd-5070w-fc1fd2bdbf5f.glb",
+      "sha256": "fc1fd2bdbf5fb55a25b7451995e7e8b859f0b7dc8f8df44db29ec4b2cd8f1991",
+      "bytes": 959760,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5077",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5077-8ec6228373c1.glb",
+      "path": "designer/teamwear/models/fd-5077-8ec6228373c1.glb",
+      "sha256": "8ec6228373c1d5861cb0b06f839e794cb634327774d22ac3eaa7ebf614c8050e",
+      "bytes": 464760,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5077Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5077y-60c90bcfc408.glb",
+      "path": "designer/teamwear/models/fd-5077y-60c90bcfc408.glb",
+      "sha256": "60c90bcfc4086afcfb5a0fe8dd65dc91a3f5e0c02ee3cc2684abba1bd49dfdf6",
+      "bytes": 455536,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5110",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5110-f8aa6052ffb6.glb",
+      "path": "designer/teamwear/models/fd-5110-f8aa6052ffb6.glb",
+      "sha256": "f8aa6052ffb60631f90270f52ad7f5b6f42790a36ce380cab7e0f073f626f0ae",
+      "bytes": 471084,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5110W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5110w-4ff4b577342f.glb",
+      "path": "designer/teamwear/models/fd-5110w-4ff4b577342f.glb",
+      "sha256": "4ff4b577342f04231d6d52211b268b3e47c507b931ab0eb90f4e48ab5dbc2821",
+      "bytes": 897124,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5120",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5120-0ba41223ee1b.glb",
+      "path": "designer/teamwear/models/fd-5120-0ba41223ee1b.glb",
+      "sha256": "0ba41223ee1b04c9e986c0087dc61f3e7b6dc87c21bf256a592e838cb20b28a5",
+      "bytes": 1568952,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5120W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5120w-b8ae1719a3e4.glb",
+      "path": "designer/teamwear/models/fd-5120w-b8ae1719a3e4.glb",
+      "sha256": "b8ae1719a3e4b33ffba0dadc9036c5d4c53fa1efd8fbd0db7cf69e4091a0c96d",
+      "bytes": 1112240,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5121",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5121-55301aca0a90.glb",
+      "path": "designer/teamwear/models/fd-5121-55301aca0a90.glb",
+      "sha256": "55301aca0a905c58e71ef521d177d10f8080675b11733feb4946efb8ef349fc7",
+      "bytes": 3406544,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5141",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5141-0298fb829f95.glb",
+      "path": "designer/teamwear/models/fd-5141-0298fb829f95.glb",
+      "sha256": "0298fb829f9518d828ed819301c13fadf3a2773926979da55adaace245dcb5b5",
+      "bytes": 377520,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5142",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5142-c354919f7b5c.glb",
+      "path": "designer/teamwear/models/fd-5142-c354919f7b5c.glb",
+      "sha256": "c354919f7b5c324343113fb1792e0d186ab362717c7954a2d13d8b2c7772da2e",
+      "bytes": 243332,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5142W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5142w-cdfdae810e32.glb",
+      "path": "designer/teamwear/models/fd-5142w-cdfdae810e32.glb",
+      "sha256": "cdfdae810e322547d5874b8f5a65d99652814a9ad19943015bfa0a2256517954",
+      "bytes": 2144136,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5158W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5158w-59d49732c154.glb",
+      "path": "designer/teamwear/models/fd-5158w-59d49732c154.glb",
+      "sha256": "59d49732c154571f822d61d032f8099471bff78aae3d087edfe276e0d2dc2916",
+      "bytes": 693232,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5162",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5162-10e1ce3d4c06.glb",
+      "path": "designer/teamwear/models/fd-5162-10e1ce3d4c06.glb",
+      "sha256": "10e1ce3d4c06fd49d85b63878f44329589b52bf9e1cfd33e2ede323f3becc032",
+      "bytes": 3406200,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5162W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5162w-637ece90d036.glb",
+      "path": "designer/teamwear/models/fd-5162w-637ece90d036.glb",
+      "sha256": "637ece90d0360244bc193c674a4a4129d4b800fdceb595d074d2a99479a14576",
+      "bytes": 399136,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5165W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5165w-4f1d4a2fa0cc.glb",
+      "path": "designer/teamwear/models/fd-5165w-4f1d4a2fa0cc.glb",
+      "sha256": "4f1d4a2fa0cc179e5e15c89a86b942c049c930e04b05381a4370580feacd7ef5",
+      "bytes": 1291416,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5169W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5169w-5db3d320d237.glb",
+      "path": "designer/teamwear/models/fd-5169w-5db3d320d237.glb",
+      "sha256": "5db3d320d2373bbdef1fbe71a72efe90952ad42b894236ae05a96e4c57ee5af7",
+      "bytes": 1022336,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5170G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5170g-6a2e62a03340.glb",
+      "path": "designer/teamwear/models/fd-5170g-6a2e62a03340.glb",
+      "sha256": "6a2e62a033403c22155dd45077f07f21cb826b3aedafa5e12f90cb19e2efb676",
+      "bytes": 229576,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5170W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5170w-870ef995af07.glb",
+      "path": "designer/teamwear/models/fd-5170w-870ef995af07.glb",
+      "sha256": "870ef995af071757ba1a5d99b3f6fe88ef34e20173d37f7a3d0b757dc2f25b47",
+      "bytes": 229576,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5171G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5171g-f3cb80aa7c9a.glb",
+      "path": "designer/teamwear/models/fd-5171g-f3cb80aa7c9a.glb",
+      "sha256": "f3cb80aa7c9aa106db868e212015d759dabb840083710920e8ec6a7afd499a04",
+      "bytes": 227516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5171W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5171w-e5092f88a36e.glb",
+      "path": "designer/teamwear/models/fd-5171w-e5092f88a36e.glb",
+      "sha256": "e5092f88a36e3c6a0b8e10aff16695bc6417be065d934097b67bbf4986e73eb1",
+      "bytes": 227516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5251",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5251-81277368dd69.glb",
+      "path": "designer/teamwear/models/fd-5251-81277368dd69.glb",
+      "sha256": "81277368dd69ff541fbafbee47b581c039713d3cef59398c3b05ad2e33af5aa1",
+      "bytes": 324564,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5252",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5252-0a451e4cb5bd.glb",
+      "path": "designer/teamwear/models/fd-5252-0a451e4cb5bd.glb",
+      "sha256": "0a451e4cb5bdc2f7ddf2e57de11dbed89570e3ccf1ebfb0a0ab7bbbf4d7832f8",
+      "bytes": 487288,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5252W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5252w-186f10ffca7e.glb",
+      "path": "designer/teamwear/models/fd-5252w-186f10ffca7e.glb",
+      "sha256": "186f10ffca7ebb28604bf457e40890f66b793a8d8df8d427f7a18968bc10c23e",
+      "bytes": 312800,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5273",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5273-ce294e2c3689.glb",
+      "path": "designer/teamwear/models/fd-5273-ce294e2c3689.glb",
+      "sha256": "ce294e2c368935a86dc52a5b87215f2f807fbf23900e37c36195be123833b17e",
+      "bytes": 132912,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5273Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5273y-f4b59268c90e.glb",
+      "path": "designer/teamwear/models/fd-5273y-f4b59268c90e.glb",
+      "sha256": "f4b59268c90e74497ee08cc27f71192e28dd8ae48ea6125f7b8fab7a4d807b51",
+      "bytes": 132916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5421",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5421-17941472a9b6.glb",
+      "path": "designer/teamwear/models/fd-5421-17941472a9b6.glb",
+      "sha256": "17941472a9b6b66a1c2264af956826cbb5d6f6447d83ab03f402ef4a1af06c3a",
+      "bytes": 389816,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5422",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5422-d144d2483c7f.glb",
+      "path": "designer/teamwear/models/fd-5422-d144d2483c7f.glb",
+      "sha256": "d144d2483c7fab14090fa3b7cd9c76d212450672fa521e9b3a03f7dc889ad7aa",
+      "bytes": 384068,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5423",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5423-0d0d14aa9976.glb",
+      "path": "designer/teamwear/models/fd-5423-0d0d14aa9976.glb",
+      "sha256": "0d0d14aa9976d96297245f41744206b00e94dffc500fe9ffa78062059a58e670",
+      "bytes": 242044,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5424",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5424-21eee4c768e1.glb",
+      "path": "designer/teamwear/models/fd-5424-21eee4c768e1.glb",
+      "sha256": "21eee4c768e18836030f7ed41125d54d0c74333ea02f66f02f871e48c8d99b40",
+      "bytes": 228816,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5425",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5425-d10b8b390c8d.glb",
+      "path": "designer/teamwear/models/fd-5425-d10b8b390c8d.glb",
+      "sha256": "d10b8b390c8d2d7480721a63c0ca15ed001c1d92639175f061da1aae58f5c07f",
+      "bytes": 273832,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5426",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5426-60c41ce3b7e3.glb",
+      "path": "designer/teamwear/models/fd-5426-60c41ce3b7e3.glb",
+      "sha256": "60c41ce3b7e36061289aab33d404448d9b10888541a5a814dd3841395644cbd3",
+      "bytes": 364604,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5427",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5427-af410f3c61de.glb",
+      "path": "designer/teamwear/models/fd-5427-af410f3c61de.glb",
+      "sha256": "af410f3c61ded05e4977b9e3c7f09c4360db4ada030a2ee95948086d363fb2b5",
+      "bytes": 241736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5428",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5428-40fbaa40a716.glb",
+      "path": "designer/teamwear/models/fd-5428-40fbaa40a716.glb",
+      "sha256": "40fbaa40a7160ac4f5847fbcb56d621c847de025cb349d1697edb569091e5c1e",
+      "bytes": 403912,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5430",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5430-def86c92cfb6.glb",
+      "path": "designer/teamwear/models/fd-5430-def86c92cfb6.glb",
+      "sha256": "def86c92cfb684956f9613bf616d655215d33e774e414756a0e4600eb4d9cf2f",
+      "bytes": 658472,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-5431",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-5431-443f47d8042c.glb",
+      "path": "designer/teamwear/models/fd-5431-443f47d8042c.glb",
+      "sha256": "443f47d8042cdcc04844ad3b19732cf1a8ae4dd10525ad941d52fc676a9c6a47",
+      "bytes": 413676,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-597W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-597w-8315a635ff97.glb",
+      "path": "designer/teamwear/models/fd-597w-8315a635ff97.glb",
+      "sha256": "8315a635ff9759eec70d98ccc12767356d461c1182ce57a8267d2decd67cd97c",
+      "bytes": 885252,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6002W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6002w-5013cb274264.glb",
+      "path": "designer/teamwear/models/fd-6002w-5013cb274264.glb",
+      "sha256": "5013cb2742649bf943ad1fa7845d314a90e72c800a5ffab93d3ef9e12d49a3e9",
+      "bytes": 1837232,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6003",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6003-40aa4b4331d0.glb",
+      "path": "designer/teamwear/models/fd-6003-40aa4b4331d0.glb",
+      "sha256": "40aa4b4331d07742355e4ec8087cce57c84a907f5131f0b4e8b4a3efcb234cd1",
+      "bytes": 470440,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6004W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6004w-3f60a629234e.glb",
+      "path": "designer/teamwear/models/fd-6004w-3f60a629234e.glb",
+      "sha256": "3f60a629234e672d646db365d0bf8d84546b63278daeb1d7aa6130b45c696246",
+      "bytes": 1292752,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6009",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6009-1732eb96a561.glb",
+      "path": "designer/teamwear/models/fd-6009-1732eb96a561.glb",
+      "sha256": "1732eb96a561c1cfce96c2598bfec468eab69e828e4cf390ea5fe97273af2678",
+      "bytes": 440384,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6009W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6009w-1a671a79468b.glb",
+      "path": "designer/teamwear/models/fd-6009w-1a671a79468b.glb",
+      "sha256": "1a671a79468bd2f5c55b60d6611bb3f7de66e39429a57b8d381ed33de967e60a",
+      "bytes": 366916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6010",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6010-0362f97ed02a.glb",
+      "path": "designer/teamwear/models/fd-6010-0362f97ed02a.glb",
+      "sha256": "0362f97ed02afda8a4f0644f8999a5fcc92117d03661bf599a58ba9c7f85a06e",
+      "bytes": 972164,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6010W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6010w-cd39e584184b.glb",
+      "path": "designer/teamwear/models/fd-6010w-cd39e584184b.glb",
+      "sha256": "cd39e584184b6a0fd49034dec5f864548382a7c9e649ce3725af56cef3c8c774",
+      "bytes": 543372,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6011",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6011-d829d591fa95.glb",
+      "path": "designer/teamwear/models/fd-6011-d829d591fa95.glb",
+      "sha256": "d829d591fa952230eb4914cc4c926ef3065064a195203a250a1eddf61d33e633",
+      "bytes": 443496,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6011W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6011w-ecdc802945c2.glb",
+      "path": "designer/teamwear/models/fd-6011w-ecdc802945c2.glb",
+      "sha256": "ecdc802945c23dfc3278e48ee03847b57bd8da2881d0e0456e3a90913acc03e9",
+      "bytes": 712880,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6041",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6041-b36ef90ca91e.glb",
+      "path": "designer/teamwear/models/fd-6041-b36ef90ca91e.glb",
+      "sha256": "b36ef90ca91e279254bb5f7c2463d51a0b377ae296b6d0ff996e5d597850362e",
+      "bytes": 595356,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6042W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6042w-2089d666d569.glb",
+      "path": "designer/teamwear/models/fd-6042w-2089d666d569.glb",
+      "sha256": "2089d666d5691ffe7f6fbf87c4fdfd32fed6132b3bf3ec0be42a3fc9dd64a36f",
+      "bytes": 560900,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6052",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6052-8984815563c1.glb",
+      "path": "designer/teamwear/models/fd-6052-8984815563c1.glb",
+      "sha256": "8984815563c188417b37bfb6787dca914bdd06e7032e59e3efcfe6cfd0b72e65",
+      "bytes": 274480,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6052W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6052w-4c3d46ee8b27.glb",
+      "path": "designer/teamwear/models/fd-6052w-4c3d46ee8b27.glb",
+      "sha256": "4c3d46ee8b270fee6e668bdbf19d9b4f24b701642f6341d96b3b86b0bfd41dd6",
+      "bytes": 1275292,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6061",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6061-80a49f2da899.glb",
+      "path": "designer/teamwear/models/fd-6061-80a49f2da899.glb",
+      "sha256": "80a49f2da899aa1a45d4f90053479d096d5b9ede58b9161ceb76d4ba0046a1c3",
+      "bytes": 609896,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6061W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6061w-9a159cdbf022.glb",
+      "path": "designer/teamwear/models/fd-6061w-9a159cdbf022.glb",
+      "sha256": "9a159cdbf0227582da48370373155a3a6610d69bcf6bdd2b7bc4022ffb4898e8",
+      "bytes": 3072844,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6062",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6062-01b368e788ba.glb",
+      "path": "designer/teamwear/models/fd-6062-01b368e788ba.glb",
+      "sha256": "01b368e788ba5bf9abe1cb2aea6efaa4cd842b438e8c5735c935ef6941593e66",
+      "bytes": 1975456,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6062W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6062w-f8c4077779f4.glb",
+      "path": "designer/teamwear/models/fd-6062w-f8c4077779f4.glb",
+      "sha256": "f8c4077779f41da3f6fbcda8128580b5062422decc7eeafbe5a1d2f789dd5376",
+      "bytes": 852844,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6063",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6063-b14417d90e41.glb",
+      "path": "designer/teamwear/models/fd-6063-b14417d90e41.glb",
+      "sha256": "b14417d90e4141ba768d7c7195847cb0b3adccebcba8f72bd6d72022598a1826",
+      "bytes": 144608,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6063W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6063w-9a8502e15074.glb",
+      "path": "designer/teamwear/models/fd-6063w-9a8502e15074.glb",
+      "sha256": "9a8502e15074b5ea47057a4422e4b13a9a1ff9b9c327452f28e178380f02c64d",
+      "bytes": 188068,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6064",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6064-53d7cc2e47f9.glb",
+      "path": "designer/teamwear/models/fd-6064-53d7cc2e47f9.glb",
+      "sha256": "53d7cc2e47f9ba6a1400df7f94f477bfc60afb22664f4db896217128d8aa3ddb",
+      "bytes": 515320,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6064W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6064w-76cd80b11416.glb",
+      "path": "designer/teamwear/models/fd-6064w-76cd80b11416.glb",
+      "sha256": "76cd80b11416944d3368eaab360821876db176c25652a4c2d1bbbfa4f38927d7",
+      "bytes": 661916,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6066",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6066-f2cf4447aaa4.glb",
+      "path": "designer/teamwear/models/fd-6066-f2cf4447aaa4.glb",
+      "sha256": "f2cf4447aaa4505c1044273f3e5b167e2ab40c1940f7a8c7a26ab0cf6b73763d",
+      "bytes": 324524,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6066W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6066w-8d484162874b.glb",
+      "path": "designer/teamwear/models/fd-6066w-8d484162874b.glb",
+      "sha256": "8d484162874bcee7bf80a089c75c96a40b7866bbcec6e9d41418a9554d858968",
+      "bytes": 289780,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6067",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6067-5773ea39b1a5.glb",
+      "path": "designer/teamwear/models/fd-6067-5773ea39b1a5.glb",
+      "sha256": "5773ea39b1a582a782197cbecfb720750c2b79ade71358b449c2fd63e58acc7d",
+      "bytes": 653376,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6067W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6067w-60fda5cba58d.glb",
+      "path": "designer/teamwear/models/fd-6067w-60fda5cba58d.glb",
+      "sha256": "60fda5cba58de14630ce114f2dacd309a25b2a59574c2035e571622488141305",
+      "bytes": 529164,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6072",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6072-f3a0d9ba5ea6.glb",
+      "path": "designer/teamwear/models/fd-6072-f3a0d9ba5ea6.glb",
+      "sha256": "f3a0d9ba5ea664399b03c25bcfb2a0e460ee91cba3c478c5466e72cbfb91e5e0",
+      "bytes": 650160,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6072W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6072w-cfbc26cbd072.glb",
+      "path": "designer/teamwear/models/fd-6072w-cfbc26cbd072.glb",
+      "sha256": "cfbc26cbd0724e2e54cf30e93ee2e714fcf697a95221edccebd5c867925697d3",
+      "bytes": 1455592,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-609",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-609-08c4a5a602c1.glb",
+      "path": "designer/teamwear/models/fd-609-08c4a5a602c1.glb",
+      "sha256": "08c4a5a602c106e75700a6d9d4771099d8e165f7e7de2d5c0867894aa5ced5fc",
+      "bytes": 201132,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-609W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-609w-b858177b094f.glb",
+      "path": "designer/teamwear/models/fd-609w-b858177b094f.glb",
+      "sha256": "b858177b094f1644ff95b9d784b542954cb8078e471d0f920c81f70fcc0c9ff0",
+      "bytes": 372284,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-611",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-611-aebb64b537a5.glb",
+      "path": "designer/teamwear/models/fd-611-aebb64b537a5.glb",
+      "sha256": "aebb64b537a56349cadb6ba44e24e869f6c3aa0642b07c273655debf610fd2a4",
+      "bytes": 461364,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-6112W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-6112w-c04bd354b48c.glb",
+      "path": "designer/teamwear/models/fd-6112w-c04bd354b48c.glb",
+      "sha256": "c04bd354b48c256564bcc0b4b2d6a43a5e718eec382831a45582f28b8ad016d8",
+      "bytes": 855932,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-618",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-618-7a2cb9da226b.glb",
+      "path": "designer/teamwear/models/fd-618-7a2cb9da226b.glb",
+      "sha256": "7a2cb9da226b38554be112b45b6d37c81cf168e32f1d2c4d362a30536f79a2c8",
+      "bytes": 357736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-622",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-622-4ceb3f608764.glb",
+      "path": "designer/teamwear/models/fd-622-4ceb3f608764.glb",
+      "sha256": "4ceb3f6087645aa8335343eff7646e9daf4e17a693e87240148768000296c042",
+      "bytes": 955720,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-622W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-622w-1d52a1ee503b.glb",
+      "path": "designer/teamwear/models/fd-622w-1d52a1ee503b.glb",
+      "sha256": "1d52a1ee503b2a83f4a5cd6502cae93dbcc1597fd6136e7569b280cc95ad7cc3",
+      "bytes": 762508,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-650",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-650-983e5416ef7b.glb",
+      "path": "designer/teamwear/models/fd-650-983e5416ef7b.glb",
+      "sha256": "983e5416ef7bb83fe7be2214d5f9636979862191ed2ad4009c06457b4707a12a",
+      "bytes": 1276376,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-682",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-682-b1ab7d675f61.glb",
+      "path": "designer/teamwear/models/fd-682-b1ab7d675f61.glb",
+      "sha256": "b1ab7d675f618cf09bd8f057246a2f30bbfacfac0840520425de66e5c250d878",
+      "bytes": 618168,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-682W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-682w-85c474f91b49.glb",
+      "path": "designer/teamwear/models/fd-682w-85c474f91b49.glb",
+      "sha256": "85c474f91b4932991d7006791ff56b9707892b3bf2ce2c566738b0fa2c4fda93",
+      "bytes": 1056944,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-692",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-692-254601c5f2d1.glb",
+      "path": "designer/teamwear/models/fd-692-254601c5f2d1.glb",
+      "sha256": "254601c5f2d1738663e3c2aa8cad951cdd6dd58be9ac575cbe9ade317065be7d",
+      "bytes": 473728,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-692W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-692w-8d55af92c232.glb",
+      "path": "designer/teamwear/models/fd-692w-8d55af92c232.glb",
+      "sha256": "8d55af92c232f54b6eec266bb16298d065f9bdd8f863a3918978c3f2e657f95a",
+      "bytes": 958996,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7017",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7017-cd8f753762d9.glb",
+      "path": "designer/teamwear/models/fd-7017-cd8f753762d9.glb",
+      "sha256": "cd8f753762d904a309b23e29084848e07715f9cf2db52352bb911077e49d8edc",
+      "bytes": 299120,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7017W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7017w-f44630266f92.glb",
+      "path": "designer/teamwear/models/fd-7017w-f44630266f92.glb",
+      "sha256": "f44630266f92d70ce45921e98de74187a04ea5d5ec90e3a9e47c517e2ca82039",
+      "bytes": 505932,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7020",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7020-636e0a79df1e.glb",
+      "path": "designer/teamwear/models/fd-7020-636e0a79df1e.glb",
+      "sha256": "636e0a79df1e841f3736ba3a49a56428201b01f0c22d733f4dd5c67e03e09071",
+      "bytes": 778348,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7020W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7020w-0f66689fabe9.glb",
+      "path": "designer/teamwear/models/fd-7020w-0f66689fabe9.glb",
+      "sha256": "0f66689fabe919bf6294f3dde06670c97460316e6c3fefe17780f4089161a0a6",
+      "bytes": 569076,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7021",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7021-6991259db677.glb",
+      "path": "designer/teamwear/models/fd-7021-6991259db677.glb",
+      "sha256": "6991259db6772085277c60339cbb0e915f01863433c99c0566276e5ffff3a819",
+      "bytes": 380316,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7021W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7021w-09c1efa87db5.glb",
+      "path": "designer/teamwear/models/fd-7021w-09c1efa87db5.glb",
+      "sha256": "09c1efa87db53489dab0fb95b349686e843ca0cdf50139e440eeb50b1610e8dc",
+      "bytes": 363796,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7033",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7033-b2ff6f013e7d.glb",
+      "path": "designer/teamwear/models/fd-7033-b2ff6f013e7d.glb",
+      "sha256": "b2ff6f013e7df1be22ecd33d0d90902be4a42b64c7748405b1c5ac9fcafffef7",
+      "bytes": 825092,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7033W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7033w-3f875b721873.glb",
+      "path": "designer/teamwear/models/fd-7033w-3f875b721873.glb",
+      "sha256": "3f875b721873b4f96b14b22ad04da022293c642514415288c8ce032300c9c747",
+      "bytes": 941104,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7034",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7034-9514e1622366.glb",
+      "path": "designer/teamwear/models/fd-7034-9514e1622366.glb",
+      "sha256": "9514e1622366e236b91ab6a0875d0f68c9d3a87e2c75bd58b8b690090b192006",
+      "bytes": 494096,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7034W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7034w-3a063ddc6e24.glb",
+      "path": "designer/teamwear/models/fd-7034w-3a063ddc6e24.glb",
+      "sha256": "3a063ddc6e24301f341fe39730efa9bd95322a02f4ef7f6cac75bdee0fe96917",
+      "bytes": 959000,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7035",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7035-ca28bb4574ec.glb",
+      "path": "designer/teamwear/models/fd-7035-ca28bb4574ec.glb",
+      "sha256": "ca28bb4574ec779f7d1b912aec359ddc17bfc314bd533cb07de6aa3689ddfdd6",
+      "bytes": 380484,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7035W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7035w-86a6e9d92a63.glb",
+      "path": "designer/teamwear/models/fd-7035w-86a6e9d92a63.glb",
+      "sha256": "86a6e9d92a63c3feb17106bc92f8a70f6d849eee635e387d390165e0aab134a4",
+      "bytes": 363096,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7051",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7051-01561f5cbba2.glb",
+      "path": "designer/teamwear/models/fd-7051-01561f5cbba2.glb",
+      "sha256": "01561f5cbba2d037c60f8757185f5286b51db1c370c0ba9a573f3acc88e18657",
+      "bytes": 408140,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7051W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7051w-7044debd3631.glb",
+      "path": "designer/teamwear/models/fd-7051w-7044debd3631.glb",
+      "sha256": "7044debd3631542aac68144383bb70717700d173fa0853255b7972f0b72fd24c",
+      "bytes": 396364,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7067",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7067-7608122f6839.glb",
+      "path": "designer/teamwear/models/fd-7067-7608122f6839.glb",
+      "sha256": "7608122f683968200573cfb06b419d7d1afde104dd69c5946293de8a5f3fecc2",
+      "bytes": 196160,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-706W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-706w-0b9b3aa64488.glb",
+      "path": "designer/teamwear/models/fd-706w-0b9b3aa64488.glb",
+      "sha256": "0b9b3aa6448876b1fe05e32dc1e92b48ad0dc7c58714bd18217431288431fad6",
+      "bytes": 3838780,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7071",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7071-07f06e3f05b0.glb",
+      "path": "designer/teamwear/models/fd-7071-07f06e3f05b0.glb",
+      "sha256": "07f06e3f05b0240fc403677bacb443bbfdb6c07ff2cc006999bdcb2ff657c267",
+      "bytes": 527304,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7072",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7072-b343a29ff329.glb",
+      "path": "designer/teamwear/models/fd-7072-b343a29ff329.glb",
+      "sha256": "b343a29ff329b13db517db3b2573ca12f0607f47a222074d19967256fdf75636",
+      "bytes": 706424,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7072W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7072w-777566003bc4.glb",
+      "path": "designer/teamwear/models/fd-7072w-777566003bc4.glb",
+      "sha256": "777566003bc47f526aebd36a0a2c2c14179a2feba1c258616bc40079cbc1e026",
+      "bytes": 941104,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7073",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7073-5497652583c7.glb",
+      "path": "designer/teamwear/models/fd-7073-5497652583c7.glb",
+      "sha256": "5497652583c70b5e7c9d9c627b41826b14826d09588485f30deaac8a0777ee06",
+      "bytes": 494096,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7073W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7073w-67bb2c4b9a56.glb",
+      "path": "designer/teamwear/models/fd-7073w-67bb2c4b9a56.glb",
+      "sha256": "67bb2c4b9a561cb9a3ab9836794eb1bc88b6843212aed7f8977a202f9af8771b",
+      "bytes": 959000,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7075",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7075-e12114c1c147.glb",
+      "path": "designer/teamwear/models/fd-7075-e12114c1c147.glb",
+      "sha256": "e12114c1c147d3e54cba5648126315caf596d5441219a4a8b5348b732dffee79",
+      "bytes": 590312,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-7077",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-7077-6136f82530b8.glb",
+      "path": "designer/teamwear/models/fd-7077-6136f82530b8.glb",
+      "sha256": "6136f82530b813ea971d6f6ca3c647cf0b6f8796a18548e5c3f2b43f14a071dc",
+      "bytes": 215896,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-750W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-750w-4c1f250e71e0.glb",
+      "path": "designer/teamwear/models/fd-750w-4c1f250e71e0.glb",
+      "sha256": "4c1f250e71e05d60181c00b08fb91faf62302ebe7d1f94c383f5248099da384b",
+      "bytes": 869624,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-751W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-751w-78fcc5ebcf99.glb",
+      "path": "designer/teamwear/models/fd-751w-78fcc5ebcf99.glb",
+      "sha256": "78fcc5ebcf99acfeec328ac967cdb553f192a551f88a05deb34424a573993845",
+      "bytes": 561332,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-752W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-752w-efb07f2aad25.glb",
+      "path": "designer/teamwear/models/fd-752w-efb07f2aad25.glb",
+      "sha256": "efb07f2aad256d2d80a6b63c7247e33fa7837e18e2357ce005a9e5b6ccf42a9b",
+      "bytes": 1058732,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-762W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-762w-f127f1625d81.glb",
+      "path": "designer/teamwear/models/fd-762w-f127f1625d81.glb",
+      "sha256": "f127f1625d81fee4451dec0b46e2e275e0ad6dc11050e6c7b261936967655b5d",
+      "bytes": 211660,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-828",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-828-a319fb2fb7d2.glb",
+      "path": "designer/teamwear/models/fd-828-a319fb2fb7d2.glb",
+      "sha256": "a319fb2fb7d22dba286b48d1e1607a64da6e657800ad4d6b9466a7bdf9a556c0",
+      "bytes": 402280,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-829W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-829w-46d6d7c578dd.glb",
+      "path": "designer/teamwear/models/fd-829w-46d6d7c578dd.glb",
+      "sha256": "46d6d7c578dd04669b39653a0db23dd9f08eca1c4200b8a5114d9b41c82a4b92",
+      "bytes": 331812,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-872",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-872-b69b81436129.glb",
+      "path": "designer/teamwear/models/fd-872-b69b81436129.glb",
+      "sha256": "b69b8143612928e7a5942fb2da2de971215c9a7acd2ce02a79a72d27eead983b",
+      "bytes": 825088,
+      "format": "glb-draco"
+    },
+    {
+      "id": "FD-872W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-872w-deb434143a02.glb",
+      "path": "designer/teamwear/models/fd-872w-deb434143a02.glb",
+      "sha256": "deb434143a02a362bdba3648ac555f80d5f3739fef39a0102999362ef8ae5a03",
+      "bytes": 844024,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0606500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0606500-a3066ac085f5.glb",
+      "path": "designer/teamwear/models/m0606500-a3066ac085f5.glb",
+      "sha256": "a3066ac085f54061a19ee6d27f4232da9020b244422c5280427e3da135816ebf",
+      "bytes": 951260,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0606500W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0606500w-d3c351e8c710.glb",
+      "path": "designer/teamwear/models/m0606500w-d3c351e8c710.glb",
+      "sha256": "d3c351e8c710fae7fea24e61e7ebd751752f4e01d8def70eb9065417ce40ac7a",
+      "bytes": 949528,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0606510",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0606510-f82b8a402a42.glb",
+      "path": "designer/teamwear/models/m0606510-f82b8a402a42.glb",
+      "sha256": "f82b8a402a42650e96de3282449db5a0c2b222cd91d0ccef125c9c1d005317f3",
+      "bytes": 1203672,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0606510W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0606510w-500365fa9d75.glb",
+      "path": "designer/teamwear/models/m0606510w-500365fa9d75.glb",
+      "sha256": "500365fa9d75b6bc104a4720a4dd4388e0057aadd9d158853efbd60598310af1",
+      "bytes": 1203688,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0606540W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0606540w-e6e4d2977a9e.glb",
+      "path": "designer/teamwear/models/m0606540w-e6e4d2977a9e.glb",
+      "sha256": "e6e4d2977a9ea0f9b0e38dee1cc85897b920a60ed7311a556bde987f10e33129",
+      "bytes": 1204708,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0606550W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0606550w-293705815b90.glb",
+      "path": "designer/teamwear/models/m0606550w-293705815b90.glb",
+      "sha256": "293705815b90f912e4e744155864fd5a5090318abe751a5bed345f0022ab76fd",
+      "bytes": 1455064,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0706500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0706500-bfd56685768d.glb",
+      "path": "designer/teamwear/models/m0706500-bfd56685768d.glb",
+      "sha256": "bfd56685768d921c471d09d340840de98687adf691eb872118c86cdbb35e7999",
+      "bytes": 1360964,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0706500W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0706500w-d243bf857481.glb",
+      "path": "designer/teamwear/models/m0706500w-d243bf857481.glb",
+      "sha256": "d243bf85748127b877c934fb0b96a2597eed5df877d54ebe64a9557674d0b37a",
+      "bytes": 1361052,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0706510",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0706510-5c017a1f54cd.glb",
+      "path": "designer/teamwear/models/m0706510-5c017a1f54cd.glb",
+      "sha256": "5c017a1f54cdb257864abea80b32875ce6a50791539c6f427a3665efdc0685b6",
+      "bytes": 1614712,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0706510W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0706510w-b666a4c9ac3d.glb",
+      "path": "designer/teamwear/models/m0706510w-b666a4c9ac3d.glb",
+      "sha256": "b666a4c9ac3de5c992bb437cf4536b35ba40f375b13da3b7bda553442d8a6b69",
+      "bytes": 1614656,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0706540W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0706540w-335ace09c4a1.glb",
+      "path": "designer/teamwear/models/m0706540w-335ace09c4a1.glb",
+      "sha256": "335ace09c4a1b6c7909a383f6275e5eb4b4b0abec44ce1720edbb8e4236e311b",
+      "bytes": 1613404,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0706550W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0706550w-4af7364b4287.glb",
+      "path": "designer/teamwear/models/m0706550w-4af7364b4287.glb",
+      "sha256": "4af7364b428785eabdad6cd4921c7f987d5f4c0fe38b772999f7ad810c1b207e",
+      "bytes": 1863736,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0806500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0806500-6f1b82817dde.glb",
+      "path": "designer/teamwear/models/m0806500-6f1b82817dde.glb",
+      "sha256": "6f1b82817ddea9965e4e3656c79b4a6774d1ccd9ef3f1864d7dc116b3e352752",
+      "bytes": 1580292,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0806500W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0806500w-bea6e0356522.glb",
+      "path": "designer/teamwear/models/m0806500w-bea6e0356522.glb",
+      "sha256": "bea6e03565220e4d0911637c26a3b5a8da93a93bf87142f9d2f851efdeaf7186",
+      "bytes": 1580312,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0806510",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0806510-0f3332ebdc42.glb",
+      "path": "designer/teamwear/models/m0806510-0f3332ebdc42.glb",
+      "sha256": "0f3332ebdc42c843c943f891498b29b1c68d6400d4d3ff3fd811fe22145545f0",
+      "bytes": 1836516,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0806510W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0806510w-c1804b41539f.glb",
+      "path": "designer/teamwear/models/m0806510w-c1804b41539f.glb",
+      "sha256": "c1804b41539f22c779d38b054bed23588ad1777428e54c0f6dd0634c73277167",
+      "bytes": 1836528,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0806540W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0806540w-bb64b3b524dd.glb",
+      "path": "designer/teamwear/models/m0806540w-bb64b3b524dd.glb",
+      "sha256": "bb64b3b524dd6f27262f606cbfc1282add2b5c5b19056fa1358dd40d5f9a7679",
+      "bytes": 1832892,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M0806550W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m0806550w-436d75fec1c9.glb",
+      "path": "designer/teamwear/models/m0806550w-436d75fec1c9.glb",
+      "sha256": "436d75fec1c9d082a44b9d972ba8f38b5a7da821fd7daa81af61379c6e7b0492",
+      "bytes": 2083220,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2306500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2306500-d92b9b9ebc5f.glb",
+      "path": "designer/teamwear/models/m2306500-d92b9b9ebc5f.glb",
+      "sha256": "d92b9b9ebc5f1997ae31882801a6928c0e280f4455e5826bf33689d8f42417e5",
+      "bytes": 1518028,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2306500W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2306500w-9200a8722066.glb",
+      "path": "designer/teamwear/models/m2306500w-9200a8722066.glb",
+      "sha256": "9200a8722066e7913291eef98e2f89c527c606a14286b68b8fae27d0970df9b6",
+      "bytes": 1518016,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2306510",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2306510-200962bcbbf4.glb",
+      "path": "designer/teamwear/models/m2306510-200962bcbbf4.glb",
+      "sha256": "200962bcbbf4297635eed7e17710abeec7887006fe3dcdf34f912a854d6d770e",
+      "bytes": 1764552,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2306510W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2306510w-9de4ba4feb4f.glb",
+      "path": "designer/teamwear/models/m2306510w-9de4ba4feb4f.glb",
+      "sha256": "9de4ba4feb4fc0494f9c2f7c48429ea23a6817f2d06a24a0880790fa3ff336b1",
+      "bytes": 1764568,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2306540W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2306540w-d13193289592.glb",
+      "path": "designer/teamwear/models/m2306540w-d13193289592.glb",
+      "sha256": "d1319328959263cb0b651a2696f571b2756f64a922a9837a4575dad1f57af112",
+      "bytes": 1770472,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2306550W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2306550w-e8f47eb49da0.glb",
+      "path": "designer/teamwear/models/m2306550w-e8f47eb49da0.glb",
+      "sha256": "e8f47eb49da06dee730de6e7e1c8e730ec4a112dd8777706c8dab8b0ab8cf746",
+      "bytes": 2007652,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2606500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2606500-fd69402062bd.glb",
+      "path": "designer/teamwear/models/m2606500-fd69402062bd.glb",
+      "sha256": "fd69402062bdd42c26b3d594ed881754370223d9e10c279da518478145bbd7ae",
+      "bytes": 914008,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2606500W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2606500w-2514147a67ec.glb",
+      "path": "designer/teamwear/models/m2606500w-2514147a67ec.glb",
+      "sha256": "2514147a67ec1636b96d2409f131b713cf4b2b5e6e08e794f957ef580a721526",
+      "bytes": 914024,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2606510",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2606510-e5f326a7f275.glb",
+      "path": "designer/teamwear/models/m2606510-e5f326a7f275.glb",
+      "sha256": "e5f326a7f275426b3229cff3bc2e09e9d450eee73701a96e6f8a14c2b44bf27a",
+      "bytes": 1160560,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2606510W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2606510w-dbee92011e6b.glb",
+      "path": "designer/teamwear/models/m2606510w-dbee92011e6b.glb",
+      "sha256": "dbee92011e6bfd1e45c654bf8af4085ba107f6666b8d85b58800ff48b5607bf1",
+      "bytes": 1160576,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2606540W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2606540w-cbaf6d69bf7c.glb",
+      "path": "designer/teamwear/models/m2606540w-cbaf6d69bf7c.glb",
+      "sha256": "cbaf6d69bf7cb2b8284db0ec317be8091d79a33ac0adc0b1bcb0caf35256e0af",
+      "bytes": 1166528,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2606550W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2606550w-93b055eceb51.glb",
+      "path": "designer/teamwear/models/m2606550w-93b055eceb51.glb",
+      "sha256": "93b055eceb5134b98e9744ca444ba5278af51fc83f3b326c9388dde81735f9ab",
+      "bytes": 1403740,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2706500",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2706500-6c2467e6e4a3.glb",
+      "path": "designer/teamwear/models/m2706500-6c2467e6e4a3.glb",
+      "sha256": "6c2467e6e4a3a0136e430ef4cd9bf3b48ab725383387dfc3c6065ce61eb81375",
+      "bytes": 1108524,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2706500W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2706500w-71dcf55c4bf3.glb",
+      "path": "designer/teamwear/models/m2706500w-71dcf55c4bf3.glb",
+      "sha256": "71dcf55c4bf3ebba2db35b60a2c7e01f28acafb2db8f5dcb4bbd9bf597a53d7c",
+      "bytes": 1108660,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2706510",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2706510-2a776bda2c5c.glb",
+      "path": "designer/teamwear/models/m2706510-2a776bda2c5c.glb",
+      "sha256": "2a776bda2c5c5ed4350e121689fdbd4bc11c99222e75903427455ebea04c627f",
+      "bytes": 1355208,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2706510W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2706510w-78eba414b4f2.glb",
+      "path": "designer/teamwear/models/m2706510w-78eba414b4f2.glb",
+      "sha256": "78eba414b4f2eea29d2131d597294b447c9f31612e936fcb97295ef6ab8408b7",
+      "bytes": 1355244,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2706540W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2706540w-2cf00f49a4e7.glb",
+      "path": "designer/teamwear/models/m2706540w-2cf00f49a4e7.glb",
+      "sha256": "2cf00f49a4e799e1b1c4eea74fe0f146820ee87b57c2d87cd254c5249aa345cc",
+      "bytes": 1361060,
+      "format": "glb-draco"
+    },
+    {
+      "id": "M2706550W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/m2706550w-a2c785f38eb9.glb",
+      "path": "designer/teamwear/models/m2706550w-a2c785f38eb9.glb",
+      "sha256": "a2c785f38eb93c4de950ec6d4b4743f2dccc674c599e14aad403e3f00381a9a0",
+      "bytes": 1598392,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-281W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-281w-3256a422b2a0.glb",
+      "path": "designer/teamwear/models/ps-281w-3256a422b2a0.glb",
+      "sha256": "3256a422b2a0d7ddab0e6026336915be8244527089f7d24b652104fa755c290e",
+      "bytes": 1664540,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-4055W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-4055w-cdd53cd76c95.glb",
+      "path": "designer/teamwear/models/ps-4055w-cdd53cd76c95.glb",
+      "sha256": "cdd53cd76c95bc029bfd907415f9e36a9d06255d1b6b4a83a0776188814077af",
+      "bytes": 1044268,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-4077W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-4077w-53433183287a.glb",
+      "path": "designer/teamwear/models/ps-4077w-53433183287a.glb",
+      "sha256": "53433183287a7eb733b7f7027b9e45317f583afa4dd6a903fcfd61f05cd1d829",
+      "bytes": 1106448,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-4078W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-4078w-0d415e9fb7d0.glb",
+      "path": "designer/teamwear/models/ps-4078w-0d415e9fb7d0.glb",
+      "sha256": "0d415e9fb7d0683027f6c115b5a58d7fdec1cc73b62e606d75abcb48e06d11d3",
+      "bytes": 1522900,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5066",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5066-7dd860c65de3.glb",
+      "path": "designer/teamwear/models/ps-5066-7dd860c65de3.glb",
+      "sha256": "7dd860c65de3e55b998c17310a2f26a15a612a6647b6eb7c68e3476165c7ab66",
+      "bytes": 785644,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5075",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5075-1bf979db69c9.glb",
+      "path": "designer/teamwear/models/ps-5075-1bf979db69c9.glb",
+      "sha256": "1bf979db69c953d492f38bc320e1dc8d7c4974b7fa97047a42b927079cafd0f7",
+      "bytes": 419596,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5075G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5075g-b7b7a325c394.glb",
+      "path": "designer/teamwear/models/ps-5075g-b7b7a325c394.glb",
+      "sha256": "b7b7a325c394412c6cc583d8e3128703d8ca4471f7f1fd2119a9d1cb78085253",
+      "bytes": 283936,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5075W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5075w-d3ef08dad711.glb",
+      "path": "designer/teamwear/models/ps-5075w-d3ef08dad711.glb",
+      "sha256": "d3ef08dad7111b6dd54eaea991491bb7d87713f215903a2a002bdcff496cf7fb",
+      "bytes": 283936,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5082",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5082-f6ca9448505b.glb",
+      "path": "designer/teamwear/models/ps-5082-f6ca9448505b.glb",
+      "sha256": "f6ca9448505b53cd53fd984826e00ddacb8f9e2969c677fcc24f5f65b390de01",
+      "bytes": 593880,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5082G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5082g-45699e8ecc43.glb",
+      "path": "designer/teamwear/models/ps-5082g-45699e8ecc43.glb",
+      "sha256": "45699e8ecc43da2b83e018fcb6afba3b0b83db834e3b57c7349f9f6765d268e0",
+      "bytes": 562484,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5082W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5082w-10bd0982d1b9.glb",
+      "path": "designer/teamwear/models/ps-5082w-10bd0982d1b9.glb",
+      "sha256": "10bd0982d1b9add2495b8cf52db16be3accbc45a5744ae2d76c186ee2a00029e",
+      "bytes": 562484,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5082Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5082y-7269b2f9146d.glb",
+      "path": "designer/teamwear/models/ps-5082y-7269b2f9146d.glb",
+      "sha256": "7269b2f9146d246a88095e327328d0b7b28802809ea70992efcc88c5755181c5",
+      "bytes": 800756,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5094G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5094g-c5ca4953292a.glb",
+      "path": "designer/teamwear/models/ps-5094g-c5ca4953292a.glb",
+      "sha256": "c5ca4953292ada2d26daa848c6b05d69b72cd90822a51d0782be488e4106ba15",
+      "bytes": 638048,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5094W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5094w-7390795efe87.glb",
+      "path": "designer/teamwear/models/ps-5094w-7390795efe87.glb",
+      "sha256": "7390795efe877cc4102dd31cf8c9c6a64d596da7a1f73a4c633730ac1428565b",
+      "bytes": 638048,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5095G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5095g-57cc24fdd298.glb",
+      "path": "designer/teamwear/models/ps-5095g-57cc24fdd298.glb",
+      "sha256": "57cc24fdd298d87df8fb6acb0cfc1c03b5bca98318406b922fd9f4038929e6d8",
+      "bytes": 583812,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5095W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5095w-a328d4815dae.glb",
+      "path": "designer/teamwear/models/ps-5095w-a328d4815dae.glb",
+      "sha256": "a328d4815daeffd8766f6f632661a05e6bbe6541afea4486849d38fe6b587f21",
+      "bytes": 453872,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5098G",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5098g-1b2f93c974de.glb",
+      "path": "designer/teamwear/models/ps-5098g-1b2f93c974de.glb",
+      "sha256": "1b2f93c974de5900d2aa860175ff34922e88e103d4c59e904c4fa1c0f5dbe07f",
+      "bytes": 403872,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5098W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5098w-afa8ad122ce9.glb",
+      "path": "designer/teamwear/models/ps-5098w-afa8ad122ce9.glb",
+      "sha256": "afa8ad122ce9dfa561eec807bd891fc85d7056f08046079b92c4b7668ba740e0",
+      "bytes": 403872,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5105",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5105-be9f966eca54.glb",
+      "path": "designer/teamwear/models/ps-5105-be9f966eca54.glb",
+      "sha256": "be9f966eca5406bb90571e9b4874d78a04101eacc49e5d9d45da6ce62604e210",
+      "bytes": 962976,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5105Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5105y-67a61ad1aaaa.glb",
+      "path": "designer/teamwear/models/ps-5105y-67a61ad1aaaa.glb",
+      "sha256": "67a61ad1aaaa9043b108b86f9462e12358f1bb80b9c3f56c665dcaeed0209e83",
+      "bytes": 962980,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5106",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5106-ba126e4dbff2.glb",
+      "path": "designer/teamwear/models/ps-5106-ba126e4dbff2.glb",
+      "sha256": "ba126e4dbff230bb88140418aadf6d726859a5955efc75a85bc1784987d0c8bc",
+      "bytes": 684472,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5106Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5106y-692a468a0c3e.glb",
+      "path": "designer/teamwear/models/ps-5106y-692a468a0c3e.glb",
+      "sha256": "692a468a0c3e982a69c05d6d2ea4d6380bcda32bad65de6ff515169459617753",
+      "bytes": 734760,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5113W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5113w-0d96b6756399.glb",
+      "path": "designer/teamwear/models/ps-5113w-0d96b6756399.glb",
+      "sha256": "0d96b6756399ab064f57e3fb0f04e3dabf89a7d3a4094d9e7fadda9ccee59096",
+      "bytes": 1336220,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5123Y",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5123y-dcb5911cae7e.glb",
+      "path": "designer/teamwear/models/ps-5123y-dcb5911cae7e.glb",
+      "sha256": "dcb5911cae7ed6a91d401cb5cc5cdebfdcbd16230452f742fa268a95cbc926cb",
+      "bytes": 1336220,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-5152",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-5152-44734736d09b.glb",
+      "path": "designer/teamwear/models/ps-5152-44734736d09b.glb",
+      "sha256": "44734736d09b1482e63edc580b46a0a768f6c4772bc91ee0c67130756effa02e",
+      "bytes": 999396,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-6036",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-6036-71c0b958e8dc.glb",
+      "path": "designer/teamwear/models/ps-6036-71c0b958e8dc.glb",
+      "sha256": "71c0b958e8dc3d36f0f7458baeff9185e907d7dd3f5893281cf3ebd575dc6a35",
+      "bytes": 1815072,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-6036W",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-6036w-c58bdcedf8e5.glb",
+      "path": "designer/teamwear/models/ps-6036w-c58bdcedf8e5.glb",
+      "sha256": "c58bdcedf8e557522960c455c9fd85651ae94b6bc34acb89344287e2a6a88957",
+      "bytes": 3075776,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PS-6044",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/ps-6044-a43a685a187c.glb",
+      "path": "designer/teamwear/models/ps-6044-a43a685a187c.glb",
+      "sha256": "a43a685a187c51a5368d7cc1bf3e48077f4e729fc95fa50b98db03a7f6f70f26",
+      "bytes": 1188296,
+      "format": "glb-draco"
+    },
+    {
+      "id": "PSY-5075",
+      "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/psy-5075-039e6f44f8d1.glb",
+      "path": "designer/teamwear/models/psy-5075-039e6f44f8d1.glb",
+      "sha256": "039e6f44f8d14f7f1ca942fd1a46a64ace84c8e1db8ad243daa11c40a0ccdaf2",
+      "bytes": 892136,
+      "format": "glb-draco"
+    }
+  ],
+  "stats": {
+    "discovered": 398,
+    "available": 395,
+    "unavailable": 3
+  }
+}

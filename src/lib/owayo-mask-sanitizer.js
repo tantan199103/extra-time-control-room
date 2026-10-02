@@ -81,11 +81,11 @@ export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4, fall
   const safeHeight = Number(height)
   const safeChannels = Number(channels)
   if (!Number.isInteger(safeWidth) || safeWidth <= 0 || !Number.isInteger(safeHeight) || safeHeight <= 0 || !Number.isInteger(safeChannels) || safeChannels < 1) {
-    throw new TypeError('Owayo mask dimensions and channel count must be positive integers.')
+    throw new TypeError('Studio mask dimensions and channel count must be positive integers.')
   }
   const size = safeWidth * safeHeight
-  if (size > Number(maxPixels)) throw new RangeError('Owayo mask is too large to sanitize in the browser.')
-  if (sourceData.length < size * safeChannels) throw new RangeError('Owayo mask data is shorter than width × height × channels.')
+  if (size > Number(maxPixels)) throw new RangeError('Studio mask is too large to sanitize in the browser.')
+  if (sourceData.length < size * safeChannels) throw new RangeError('Studio mask data is shorter than width × height × channels.')
   const data = sourceData.slice()
   const marks = brandIndices instanceof Set ? brandIndices : new Set(brandIndices || [])
   const branded = new Uint8Array(size)

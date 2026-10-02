@@ -336,7 +336,7 @@ export default function ProductPage({ product, products, onAdd, onQuickView, sta
   const commerceConfig = productCommerceConfig(product)
   const bulkOffers = commerceConfig.bulkOffers || []
   const designerProvider = String(product?.designerConfig?.provider || '').toLowerCase()
-  const designerLibraryLabel = designerProvider === 'owayo' ? 'matching multi-sport design library' : 'matching teamwear design library'
+  const designerLibraryLabel = (designerProvider === 'studio' || designerProvider === 'sports') ? 'matching multi-sport design library' : 'matching teamwear design library'
   const estimate = buildDeliveryEstimate(commerceConfig.delivery)
   const soldOut = selectedVariant ? Number(selectedVariant.inventory || 0) < 1 : false
   const selectionSummary = options.map(option => selections[option.name] ? (option.name === sizeName ? canonicalSize(selections[option.name]) : selections[option.name]) : '').filter(Boolean).join(' · ')

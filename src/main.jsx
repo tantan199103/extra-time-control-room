@@ -70,6 +70,7 @@ import './styles.css'
 import './shop-visual.css'
 import './taxonomy-hubs.css'
 import './custom-hub.css'
+import './quick-custom.css'
 import './commerce-shell.css'
 
 const AdminApp = lazy(() => import('./admin'))
@@ -80,6 +81,7 @@ const CheckoutPage = lazy(() => import('./CheckoutPage'))
 const OrderTrackingPage = lazy(() => import('./OrderTrackingPage'))
 const HomeJerseyPersonalizer = lazy(() => import('./HomeJerseyPersonalizer'))
 const CustomDesignerPage = lazy(() => import('./CustomDesignerPage'))
+const QuickCustomPage = lazy(() => import('./QuickCustomPage'))
 const ProductPage = lazy(() => import('./ProductPage'))
 const PolicyPage = lazy(() => import('./PolicyPage'))
 
@@ -1261,8 +1263,8 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
       return response.json()
     }
     Promise.allSettled([
-      readCatalog('/designer/owayo/catalog.json'),
-      readCatalog('/designer/boombah/catalog.json')
+      readCatalog('/designer/studio/catalog.json'),
+      readCatalog('/designer/teamwear/catalog.json')
     ]).then(([sportswear,teamwear]) => {
       if (!active) return
       if (sportswear.status === 'fulfilled') setOwayoCatalog(sportswear.value)
@@ -1303,7 +1305,7 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   const familyPreview = family => {
     const explicit = String(family?.preview || '').trim()
     if (explicit) return explicit
-    if (family?.provider !== 'owayo') return ''
+    if (family?.provider !== 'studio') return ''
     const id = String(family?.id || '').trim()
     if (!id) return ''
    // Older cached snapshots must not fall back to a supplier garment render:
@@ -1324,11 +1326,24 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   const openDefaultDesigner = source => {
     if (featuredFamily) { openFamily(featuredFamily, source); return }
     trackStorefrontEvent('custom_cta_clicked',{ source, family:'cycling-c3', commerce_ready:commerceReady })
-    go('/custom/design?provider=owayo&product=cycling-c3')
+    go('/custom/design?provider=studio&product=cycling-c3')
   }
 
   return (
     <main className="custom-hub custom-hub--studio">
+      <section className="custom-mode-chooser" aria-labelledby="custom-mode-title">
+        <div className="custom-mode-chooser__intro">
+          <nav className="custom-flow-crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom studio</strong></nav>
+          <p className="custom-flow-eyebrow">JERSEVO / CUSTOM WORKBENCH</p>
+          <h1 id="custom-mode-title">Từ ý tưởng<br/><em>đến thứ bạn mặc.</em></h1>
+          <p>Chọn cách bắt đầu phù hợp với bạn: tạo hình in nhanh bằng prompt và ảnh, hoặc đi sâu vào màu, pattern và 3D teamwear.</p>
+        </div>
+        <div className="custom-mode-chooser__modes">
+          <article className="custom-mode-card custom-mode-card--ai"><div className="custom-mode-card__index">01 / quick ai</div><Sparkles size={25}/><h2>Tạo hình in<br/><em>bằng AI</em></h2><p>Prompt, ảnh thú cưng, mascot và poster. Tạo variant, tách nền, upscale rồi chọn sản phẩm sau.</p><div className="custom-mode-card__meta"><span>2–5 phút</span><span>Prompt / ảnh / remix</span></div><button type="button" className="button button--acid" onClick={() => { trackStorefrontEvent('custom_mode_selected',{ mode:'quick-ai' }); go('/custom/quick') }}>BẮT ĐẦU VỚI AI <ArrowRight size={15}/></button></article>
+          <article className="custom-mode-card custom-mode-card--pro"><div className="custom-mode-card__index">02 / 3d pro studio</div><Palette size={25}/><h2>Thiết kế<br/><em>3D chi tiết</em></h2><p>Kiểm soát garment, màu, pattern, logo, text, roster và scene trong designer hiện tại.</p><div className="custom-mode-card__meta"><span>10–20 phút</span><span>Colors / patterns / 3D</span></div><button type="button" className="button button--light" onClick={() => { trackStorefrontEvent('custom_mode_selected',{ mode:'3d-pro' }); openDefaultDesigner('custom_mode_chooser') }}>MỞ 3D DESIGNER <ArrowRight size={15}/></button></article>
+        </div>
+      </section>
+      <section className="custom-recent-strip" aria-label="Quick AI guidance"><div><span className="custom-flow-eyebrow">START WHERE YOU ARE</span><strong>AI nhanh cho artwork.</strong><span>3D chi tiết cho cả bộ teamwear.</span></div><div className="custom-recent-strip__samples"><span>RETRO MASCOT</span><span>SOFT CHIBI PET</span><span>COLLEGIATE SPORTS</span><span>HALFTONE POSTER</span></div></section>
       {show('custom-hero') && <section className="custom-flow-hero" aria-labelledby="custom-hub-title">
         <div className="custom-flow-hero__copy">
           <nav className="custom-flow-crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom studio</strong></nav>
@@ -2663,6 +2678,7 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
       '/teams':['Find your team | Jersevo','Find your team across the NFL, MLB, NBA, NHL, MLS and college sports, then browse current fan gear.'],
       '/collections':['Shop collections | Jersevo','Explore currently published Jersevo collections and shop fan gear by sport, team and product type.'],
       '/custom':['Custom jerseys and personalized fan gear | Jersevo','Choose a designer-led jersey, add your name or number, and send the important details through a reviewed personalization flow.'],
+      '/custom/quick':['Quick AI artwork studio | Jersevo','Create a custom print from a prompt or personal photo, polish the artwork and place it on a verified print area.'],
       '/custom/design':['3D custom sportswear designer | Jersevo','Design custom sportswear in 3D, change colors, add names, numbers and a team logo, then organize every player in one roster.'],
       '/video-factory':['Video Factory — Jersevo','Build a six-scene, Flow-ready product campaign from a Jersevo product page.']
     }[path])
@@ -2691,7 +2707,7 @@ function useRouteMetadata({ path, page = 1, paginated = false, search = '', prod
     const productIndexable = !product || pdpMetadata.indexable
     const collectionSeoStatus = String(collection?.seo?.status || '').toUpperCase()
     const collectionIndexable = !collection || !['BLOCKED', 'NOINDEX'].includes(collectionSeoStatus) && catalogCount >= 6
-    const knownPublicRoute = ['/', '/shop', '/custom', '/custom/design', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
+    const knownPublicRoute = ['/', '/shop', '/custom', '/custom/quick', '/custom/design', '/sports', '/teams', '/collections', '/collection', '/about', '/membership', '/shipping', '/returns', '/warranty', '/privacy', '/terms', '/accessibility'].includes(path) || Boolean(product || collection || category || league)
     const editableNoindex = Boolean(catalogOverride?.hidden) || String(editableSeo.robots || '').toLowerCase().includes('noindex') || editableSeo.indexable === false
     const indexable = knownPublicRoute && (path !== '/collections' || collectionCount > 0) && !privateRoute && !unresolvedRoute && !queryNoindex && !editableNoindex && pageValid && productIndexable && collectionIndexable && (!category && !league || catalogCount >= 6)
     const routePage = trustRoute
@@ -2832,7 +2848,7 @@ function App() {
   const rawPath = route.split(/[?#]/)[0]
   const { basePath:path, page:catalogPage, paginated } = parseCatalogPagePath(rawPath)
   const search = route.includes('?') ? route.split('?')[1].split('#')[0] : ''
-  const customRoute = path === '/custom' || path === '/custom/design'
+  const customRoute = path === '/custom' || path === '/custom/design' || path === '/custom/quick'
   const catalogRequestKey = `${path}:${catalogPage}:${search}`
   const [products,setProducts] = useState(() => productBootstrap ? [productBootstrap.product,...(productBootstrap.related || [])] : (import.meta.env.DEV ? initialCatalog : []))
   const [menus,setMenus] = useState([])
@@ -3248,6 +3264,7 @@ function App() {
   else if (path === '/players') page = <Home onQuickView={setQuickViewProduct} products={products} navigationProducts={navigationProducts} theme={theme} collections={collections} onAdd={addToCart}/>
   else if (path === '/sports' || path === '/teams' || path === '/collections') page = <DiscoveryLanding key={`${path}:${search}`} kind={path.slice(1)} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} collections={collections} products={products} onSearch={() => setSearchOpen(true)}/>
   else if (path === '/custom') page = <CustomHub products={products} onQuickView={setQuickViewProduct} pageConfig={pageConfig('custom')} commerceVerified={!catalogState.loading && catalogState.routeKey === catalogRequestKey && catalogState.scope === 'page' && catalogState.source === 'supabase'}/>
+  else if (path === '/custom/quick') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening Quick AI artwork…</p></div>}><QuickCustomPage products={products} onNavigate={navigate} onAdd={addToCart}/></Suspense>
   else if (path === '/custom/design') page = <Suspense fallback={<div className="route-loading"><span>90+</span><p>Opening the 3D kit builder…</p></div>}><CustomDesignerPage key={route} products={products} onAdd={addToCart} onNavigate={navigate}/></Suspense>
   else if (path === '/shop' || path === '/collection' || path.startsWith('/collection/') || path.startsWith('/collections/')) page = <Shop key={`${path}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} collection={routeCollection} discovery={discoveryIndex(navigationProducts.length ? navigationProducts : products)} onSearch={() => setSearchOpen(true)} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')}/>
   else if (path.startsWith('/category/')) page = routeCategory && !catalogPageHidden ? <Shop key={`${routeCategory.handle}:${catalogPage}:${search}`} page={catalogPage} pagination={catalogMeta} onQuickView={setQuickViewProduct} products={products} category={routeCategory} loading={catalogState.loading || catalogState.routeKey !== catalogRequestKey} pageConfig={pageConfig('collection')} pageOverride={catalogPageOverride}/> : <NotFound/>

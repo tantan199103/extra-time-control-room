@@ -1,5 +1,7 @@
 # Designer manifests and geometry metadata are byte-checksummed in the local
-# Owayo asset manifest. Keep them LF-stable across Windows and Linux deploys.
-public/designer/owayo/**/*.json text eol=lf
-public/designer/owayo/**/*.svg text eol=lf
-public/designer/owayo/**/*.mirl.bin binary
+# Custom POD asset manifest. Keep them LF-stable across Windows and Linux deploys.
+public/designer/studio/**/*.json text eol=lf
+public/designer/studio/**/*.svg text eol=lf
+public/designer/studio/**/*.mirl.bin binary
+public/designer/teamwear/**/*.json text eol=lf
+public/designer/teamwear/**/*.svg text eol=lf

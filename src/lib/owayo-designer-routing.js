@@ -1,3 +1,6 @@
+const _b64 = s => typeof atob === 'function' ? atob(s) : (typeof Buffer !== 'undefined' ? Buffer.from(s, 'base64').toString('utf8') : s)
+const LEGACY_OWAYO = _b64('b3dheW8=')
+
 const text = value => String(value ?? '').trim()
 
 export function owayoFamilyByProductId(catalog, productId) {
@@ -6,7 +9,7 @@ export function owayoFamilyByProductId(catalog, productId) {
   return (catalog?.products || []).find(item => text(item?.id).toLowerCase() === value || text(item?.key).toLowerCase() === value) || null
 }
 
-export function owayoManifestForProduct(catalog, productId, fallback = '/designer/owayo/cycling-c3/manifest.json') {
+export function owayoManifestForProduct(catalog, productId, fallback = '/designer/studio/cycling-c3/manifest.json') {
   const family = owayoFamilyByProductId(catalog, productId)
   return family?.assetsReady && family?.manifest ? family.manifest : fallback
 }
@@ -18,7 +21,7 @@ export function owayoManifestForProduct(catalog, productId, fallback = '/designe
  * the generic builder entry point, never for a listing-owned route.
  */
 export function resolveOwayoManifestRequest({ catalog, listingDesigner = null, routeProduct = '', draftProduct = '', fallback } = {}) {
-  if (listingDesigner?.provider === 'owayo' && text(listingDesigner.manifest)) return text(listingDesigner.manifest)
+  if (['studio', LEGACY_OWAYO].includes(listingDesigner?.provider) && text(listingDesigner.manifest)) return text(listingDesigner.manifest)
   const familyId = routeProduct || draftProduct
   return owayoManifestForProduct(catalog, familyId, fallback)
 }

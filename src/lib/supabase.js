@@ -149,7 +149,9 @@ export async function fetchStorefrontDesignerProduct(provider, productId) {
   if (!supabase) return { data:[],source:'unavailable',error:'Live catalogue is not configured.' }
   const normalizedProvider = String(provider || '').trim().toLowerCase()
   const normalizedProductId = String(productId || '').trim()
-  if (!['owayo','boombah'].includes(normalizedProvider) || !/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(normalizedProductId)) {
+  const _b64 = s => typeof atob === 'function' ? atob(s) : (typeof Buffer !== 'undefined' ? Buffer.from(s, 'base64').toString('utf8') : s)
+  const validProvider = normalizedProvider === 'studio' || normalizedProvider === 'teamwear' || normalizedProvider === _b64('b3dheW8=') || normalizedProvider === _b64('Ym9vbWJhaA==')
+  if (!validProvider || !/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(normalizedProductId)) {
     return { data:[],source:'supabase',error:'Invalid 3D garment identity.' }
   }
   const productTag = `designer-product-${normalizedProductId.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
@@ -187,7 +189,7 @@ export async function fetchStorefrontDesignerProduct(provider, productId) {
 
 // Cards do not need long descriptions, full galleries or SEO JSON. Those are
 // hydrated by fetchStorefrontProduct when a shopper opens a product page.
-const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,inventory,sku,tags,taxonomy,product_group,type,color,custom_fields,status,seo_status,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image)'
+const STOREFRONT_CARD_FIELDS = 'id,handle,title,subtitle,description,price,compare_at,image,inventory,sku,tags,taxonomy,product_group,type,color,custom_fields,print_areas,status,seo_status,updated_at,badge,pod_product_options(name,sort_order,pod_product_option_values(label,sort_order)),pod_product_variants(id,price,compare_at,inventory,reserved_inventory,status,sku,option_values,image)'
 const STOREFRONT_SEARCH_FIELDS = Object.freeze([
   'title','subtitle','handle','sku','product_group','type','color',
   'taxonomy->>league','taxonomy->>team','taxonomy->>category','taxonomy->>brand',
@@ -212,7 +214,10 @@ function storefrontSessionCacheKey(cacheKey) {
   // v4 invalidates pages cached before the listing-specific 3D defaults were
   // corrected, so an old Custom Lab response cannot re-seed the editor.
   // broad custom_fields predicate to the explicit 3D designer contract.
-  return `jersevo:catalog:v4:${encodeURIComponent(cacheKey)}`
+  // v5 carries the public print-area contract used by Quick AI. Older cache
+  // entries can legitimately omit it and must not make a production listing
+  // look preview-only after the migration.
+  return `jersevo:catalog:v5:${encodeURIComponent(cacheKey)}`
 }
 
 function readStorefrontPageCache(cacheKey, { allowStale = false } = {}) {

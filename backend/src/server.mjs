@@ -43,7 +43,13 @@ const routeModules = new Map([
   ['/api/payment-cancel', 'payment-cancel.js'],
   ['/api/payment-webhook', 'payment-webhook.js'],
   ['/api/order-track', 'order-track.js'],
-  ['/api/render-artwork', 'render-artwork.js'],
+              ['/api/render-artwork', 'render-artwork.js'],
+              ['/api/artwork-assets-presign', 'artwork-assets-presign.js'],
+              ['/api/artwork-assets-complete', 'artwork-assets-complete.js'],
+              ['/api/artwork-assets-delete', 'artwork-assets-delete.js'],
+              ['/api/artwork-jobs', 'artwork-jobs.js'],
+              ['/api/artwork-preflight', 'artwork-preflight.js'],
+              ['/api/quick-customization-order', 'quick-customization-order.js'],
   ['/api/payment-config', 'payment-config.js'],
   // Public, read-only Google Merchant Center source. The handler still uses
   // the server-only Supabase key so draft and blocked catalogue rows never

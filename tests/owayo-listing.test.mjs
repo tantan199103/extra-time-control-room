@@ -7,7 +7,7 @@ import { seoReviewGate, validateListing } from '../src/lib/catalog-model.js'
 import { findActiveVariant } from '../src/lib/variant-selection.js'
 import { prepareStorefrontProduct } from '../src/lib/storefront-model.js'
 
-const manifest = JSON.parse(await readFile(resolve('public/designer/owayo/cycling-c3/manifest.json'), 'utf8'))
+const manifest = JSON.parse(await readFile(resolve('public/designer/studio/cycling-c3/manifest.json'), 'utf8'))
 
 function hydratedListing() {
   const listing = buildOwayoListing(manifest)
@@ -53,7 +53,7 @@ test('public listing copy stays Jersevo-branded while source provenance remains 
 test('storefront receives only the validated designer contract', () => {
   const listing = hydratedListing()
   const storefront = prepareStorefrontProduct(listing)
-  assert.equal(storefront.designerConfig.provider, 'owayo')
+  assert.equal(storefront.designerConfig.provider, 'studio')
   assert.equal(storefront.designerConfig.productId, 'cycling-c3')
   assert.equal(storefront.designerConfig.allowedDesignIds.length, 52)
   assert.equal('aiMetadata' in storefront, false)

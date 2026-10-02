@@ -257,6 +257,7 @@ export function normalizeOwayoLayer(input = {}, index = 0) {
   const kind = LAYER_KINDS.has(kindCandidate) ? kindCandidate : 'name'
   const isImage = kind === 'logo' || kind === 'artwork'
   const isLogo = kind === 'logo'
+  const assetId = isImage ? clean(input?.assetId, 160) : ''
   return {
     id:clean(input?.id, 80) || `${kind}-${index + 1}`,
     kind,
@@ -268,7 +269,8 @@ export function normalizeOwayoLayer(input = {}, index = 0) {
     name:isImage ? clean(input?.name, 160) : '',
     // Logo-only legacy payloads remain indexed 0–7; the combined designer
     // workflow may carry up to eight logos plus eight artwork layers.
-    assetIndex:isImage ? Math.round(clamp(input?.assetIndex, 0, isLogo ? 7 : 15, 0)) : null
+    assetIndex:isImage ? Math.round(clamp(input?.assetIndex, 0, isLogo ? 7 : 15, 0)) : null,
+    ...(assetId ? { assetId } : {})
   }
 }
 

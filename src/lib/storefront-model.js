@@ -439,7 +439,7 @@ export function flattenMenuTree(items = []) {
   return flattenMenuItems(items)
 }
 
-export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/about', '/custom', '/custom/design', '/studio', '/membership', '/account/membership', '/checkout', '/track-order', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns', '/warranty', '/journal', '/moments', '/players'])
+export const STOREFRONT_STATIC_ROUTES = new Set(['/', '/shop', '/collection', '/about', '/custom', '/custom/quick', '/custom/design', '/studio', '/membership', '/account/membership', '/checkout', '/track-order', '/vault', '/privacy', '/terms', '/accessibility', '/shipping', '/returns', '/warranty', '/journal', '/moments', '/players'])
 
 export function menuTargetProblem(target, type = 'PAGE') {
   const value = String(target || '').trim()

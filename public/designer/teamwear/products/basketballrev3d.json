@@ -1,0 +1,5027 @@
+{
+  "schemaVersion": 2,
+  "provider": "teamwear",
+  "storage": {
+    "bucket": "product-media",
+    "root": "designer/teamwear",
+    "mirrored": true,
+    "hotlinked": false
+  },
+  "branding": {
+    "removed": "Vendor marks, production colors, cut guides and artwork targets from synchronized templates"
+  },
+  "catalog": "/designer/teamwear/catalog.json",
+  "product": {
+    "id": "BASKETBALLREV3D",
+    "name": "REVERSIBLE Custom Ink Full-Dye Basketball Uniforms",
+    "sport": "Basketball",
+    "description": "Orders having less than 10 garments are subject to a minimum order fee of $25.",
+    "leadTime": "Mockup Lead Time: 2-4 business days after order is placed Ships: 2 weeks after artwork approval.",
+    "type": "FULLDYE",
+    "minOrder": 10,
+    "sections": [
+      {
+        "id": "top",
+        "name": "Tops"
+      },
+      {
+        "id": "bottom",
+        "name": "Bottoms"
+      }
+    ],
+    "styles": [
+      {
+        "id": "basketballrev3d-top-rvpn",
+        "section": "top",
+        "code": "RVPN",
+        "name": "2-ply Reversible Practice Tops",
+        "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+        "designIds": [
+          "basketballrev3d-top-fd-bask-rvpn-1000",
+          "basketballrev3d-top-fd-bask-rvpn-1001",
+          "basketballrev3d-top-fd-bask-rvpn-1002",
+          "basketballrev3d-top-fd-bask-rvpn-1003",
+          "basketballrev3d-top-fd-bask-rvpn-1004",
+          "basketballrev3d-top-fd-bask-rvpn-1005",
+          "basketballrev3d-top-fd-bask-rvpn-1006",
+          "basketballrev3d-top-fd-bask-rvpn-1007",
+          "basketballrev3d-top-fd-bask-rvpn-1008"
+        ]
+      },
+      {
+        "id": "basketballrev3d-top-rvggj",
+        "section": "top",
+        "code": "RVGGJ",
+        "name": "Reversible Galaxy Game Jersey",
+        "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+        "designIds": [
+          "basketballrev3d-top-fd-bask-rvggj-1000",
+          "basketballrev3d-top-fd-bask-rvggj-1001",
+          "basketballrev3d-top-fd-bask-rvggj-1002",
+          "basketballrev3d-top-fd-bask-rvggj-1003",
+          "basketballrev3d-top-fd-bask-rvggj-1004",
+          "basketballrev3d-top-fd-bask-rvggj-1005",
+          "basketballrev3d-top-fd-bask-rvggj-1006",
+          "basketballrev3d-top-fd-bask-rvggj-1007",
+          "basketballrev3d-top-fd-bask-rvggj-1008",
+          "basketballrev3d-top-fd-bask-rvggj-1009"
+        ]
+      },
+      {
+        "id": "basketballrev3d-bottom-rvggsh",
+        "section": "bottom",
+        "code": "RVGGSH",
+        "name": "Reversible Galaxy Game Short",
+        "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+        "designIds": [
+          "basketballrev3d-bottom-fd-bask-rvggsh-1000",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1001",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1002",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1003",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1004",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1005",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1006",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1007",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1008",
+          "basketballrev3d-bottom-fd-bask-rvggsh-1009"
+        ]
+      }
+    ],
+    "sizes": [
+      {
+        "name": "Youth X-Small",
+        "code": "YXS"
+      },
+      {
+        "name": "Youth Small",
+        "code": "YS"
+      },
+      {
+        "name": "Youth Medium",
+        "code": "YM"
+      },
+      {
+        "name": "Youth Large",
+        "code": "YL"
+      },
+      {
+        "name": "Youth X-Large",
+        "code": "YXL"
+      },
+      {
+        "name": "Youth 2X-Large",
+        "code": "Y2XL"
+      },
+      {
+        "name": "Small",
+        "code": "S"
+      },
+      {
+        "name": "Medium",
+        "code": "M"
+      },
+      {
+        "name": "Large",
+        "code": "L"
+      },
+      {
+        "name": "XL",
+        "code": "XL"
+      },
+      {
+        "name": "2XL",
+        "code": "2XL"
+      },
+      {
+        "name": "3XL",
+        "code": "3XL"
+      }
+    ],
+    "colorCodes": [
+      {
+        "code": "C1",
+        "name": "Body Color",
+        "palette": "fdColors",
+        "gradients": true,
+        "patterns": true,
+        "mesh": "FD-217-main",
+        "editable": true,
+        "removed": false
+      },
+      {
+        "code": "C2",
+        "name": "Brand Accent Color",
+        "palette": "fdColors",
+        "gradients": false,
+        "patterns": false,
+        "mesh": "FD-217-main",
+        "editable": false,
+        "removed": true
+      }
+    ],
+    "defaultColors": {
+      "C1": "#111311"
+    },
+    "colors": [
+      {
+        "code": "B",
+        "name": "Black",
+        "value": "#222123"
+      },
+      {
+        "code": "BPU",
+        "name": "Bright Purple",
+        "value": "#AC62B5"
+      },
+      {
+        "code": "BN",
+        "name": "Brown",
+        "value": "#5B3624"
+      },
+      {
+        "code": "BT",
+        "name": "Blonde Tan",
+        "value": "#E0C5A0"
+      },
+      {
+        "code": "BRN",
+        "name": "Brown",
+        "value": "#5B3624"
+      },
+      {
+        "code": "CRD",
+        "name": "Cardinal",
+        "value": "#6E1A2B"
+      },
+      {
+        "code": "C",
+        "name": "Charcoal",
+        "value": "#36363A"
+      },
+      {
+        "code": "CLR",
+        "name": "Clear",
+        "value": "#EFEFEF"
+      },
+      {
+        "code": "CB",
+        "name": "Columbia",
+        "value": "#5096C8"
+      },
+      {
+        "code": "CY",
+        "name": "Cyan",
+        "value": "#1373AF"
+      },
+      {
+        "code": "CRM",
+        "name": "Cream",
+        "value": "#F5EAD7"
+      },
+      {
+        "code": "DF",
+        "name": "Dark Flesh",
+        "value": "#C2987D"
+      },
+      {
+        "code": "DG",
+        "name": "Dark Green",
+        "value": "#154031"
+      },
+      {
+        "code": "FLM",
+        "name": "Flame",
+        "value": "#F04923"
+      },
+      {
+        "code": "FL",
+        "name": "Flesh",
+        "value": "#FCCAAD"
+      },
+      {
+        "code": "FLG",
+        "name": "Fluorescent Green",
+        "value": "#8CC74D"
+      },
+      {
+        "code": "FO",
+        "name": "Fluorescent Orange",
+        "value": "#FF6700"
+      },
+      {
+        "code": "FLPN",
+        "name": "Fluorescent Passion",
+        "value": "#D5558D"
+      },
+      {
+        "code": "FY",
+        "name": "Fluorescent Yellow",
+        "value": "#F7FA24"
+      },
+      {
+        "code": "FP",
+        "name": "Fluorescent Pink",
+        "value": "#FF5BA4"
+      },
+      {
+        "code": "FLT",
+        "name": "Fluorescent Tangerine",
+        "value": "#F78D2A"
+      },
+      {
+        "code": "GD",
+        "name": "Gold",
+        "value": "#EDA12F"
+      },
+      {
+        "code": "GY",
+        "name": "Gray",
+        "value": "#98A3AD"
+      },
+      {
+        "code": "HP",
+        "name": "Hot Pink",
+        "value": "#A5276C"
+      },
+      {
+        "code": "KG",
+        "name": "Kelly Green",
+        "value": "#007D4F"
+      },
+      {
+        "code": "KH",
+        "name": "Khaki",
+        "value": "#BAAA99"
+      },
+      {
+        "code": "LG",
+        "name": "Lime Green",
+        "value": "#88C657"
+      },
+      {
+        "code": "MG",
+        "name": "Magenta",
+        "value": "#BF2A52"
+      },
+      {
+        "code": "MRN",
+        "name": "Maroon",
+        "value": "#4D2A2F"
+      },
+      {
+        "code": "MBRN",
+        "name": "Medium Brown",
+        "value": "#7E4819"
+      },
+      {
+        "code": "MN",
+        "name": "Mint",
+        "value": "#70C388"
+      },
+      {
+        "code": "N",
+        "name": "Navy",
+        "value": "#031D40"
+      },
+      {
+        "code": "NB",
+        "name": "Neon Blue",
+        "value": "#65BFE7"
+      },
+      {
+        "code": "NC",
+        "name": "Neon Coral",
+        "value": "#FF5155"
+      },
+      {
+        "code": "OY",
+        "name": "Optic Yellow",
+        "value": "#E1EE4E"
+      },
+      {
+        "code": "OD",
+        "name": "Olive Drab",
+        "value": "#5E6738"
+      },
+      {
+        "code": "O",
+        "name": "Orange",
+        "value": "#CE5628"
+      },
+      {
+        "code": "PK",
+        "name": "Pink",
+        "value": "#DA6C94"
+      },
+      {
+        "code": "PU",
+        "name": "Purple",
+        "value": "#3E296A"
+      },
+      {
+        "code": "RD",
+        "name": "Red",
+        "value": "#AA1E28"
+      },
+      {
+        "code": "RB",
+        "name": "Royal",
+        "value": "#1E3363"
+      },
+      {
+        "code": "SP",
+        "name": "Soft Pink",
+        "value": "#ECBDD5"
+      },
+      {
+        "code": "STL",
+        "name": "Steel",
+        "value": "#7C767A"
+      },
+      {
+        "code": "TL",
+        "name": "Teal",
+        "value": "#15747E"
+      },
+      {
+        "code": "TO",
+        "name": "Texas Orange",
+        "value": "#9E4A24"
+      },
+      {
+        "code": "TW",
+        "name": "Twitch",
+        "value": "#DBF721"
+      },
+      {
+        "code": "VG",
+        "name": "Vegas Gold",
+        "value": "#BFA67B"
+      },
+      {
+        "code": "W",
+        "name": "White",
+        "value": "#FFFFFF"
+      },
+      {
+        "code": "YL",
+        "name": "Yellow",
+        "value": "#FFF200"
+      },
+      {
+        "code": "AO",
+        "name": "Amethyst Orchid",
+        "value": "#8666AC"
+      },
+      {
+        "code": "AQ",
+        "name": "Aqua",
+        "value": "#59BEC9"
+      },
+      {
+        "code": "ARGY",
+        "name": "Arctic Gray",
+        "value": "#D1D4D8"
+      },
+      {
+        "code": "AG",
+        "name": "Autumn Glory",
+        "value": "#FF8200"
+      },
+      {
+        "code": "AZ",
+        "name": "Azure",
+        "value": "#0038A8"
+      },
+      {
+        "code": "CO",
+        "name": "Cobalt",
+        "value": "#171C8F"
+      },
+      {
+        "code": "COY",
+        "name": "Coyote",
+        "value": "#8F7E35"
+      },
+      {
+        "code": "D",
+        "name": "Desert",
+        "value": "#BFBB98"
+      },
+      {
+        "code": "DU",
+        "name": "Dusty Rose",
+        "value": "#C48490"
+      },
+      {
+        "code": "EG",
+        "name": "Eggplant",
+        "value": "#694357"
+      },
+      {
+        "code": "FOL",
+        "name": "Foliage",
+        "value": "#6C7D7E"
+      },
+      {
+        "code": "FG",
+        "name": "Forest Green",
+        "value": "#2B3A20"
+      },
+      {
+        "code": "F",
+        "name": "Fuschia",
+        "value": "#A33995"
+      },
+      {
+        "code": "GM",
+        "name": "Gun Metal",
+        "value": "#505049"
+      },
+      {
+        "code": "HCR",
+        "name": "Hot Coral",
+        "value": "#FF585D"
+      },
+      {
+        "code": "IB",
+        "name": "Ice Blue",
+        "value": "#89B3C4"
+      },
+      {
+        "code": "KW",
+        "name": "Kiwi",
+        "value": "#A2D45E"
+      },
+      {
+        "code": "MUL",
+        "name": "Mulch",
+        "value": "#372E2D"
+      },
+      {
+        "code": "OKB",
+        "name": "Oak Brown",
+        "value": "#674736"
+      },
+      {
+        "code": "PC",
+        "name": "Peacock",
+        "value": "#005D5E"
+      },
+      {
+        "code": "PLM",
+        "name": "Plum",
+        "value": "#4F1E47"
+      },
+      {
+        "code": "PO",
+        "name": "Poppy",
+        "value": "#E83E36"
+      },
+      {
+        "code": "SND",
+        "name": "Sand",
+        "value": "#9B9260"
+      },
+      {
+        "code": "SNG",
+        "name": "Sangria",
+        "value": "#76002C"
+      },
+      {
+        "code": "SLT",
+        "name": "Slate",
+        "value": "#5A666F"
+      },
+      {
+        "code": "STR",
+        "name": "Storm",
+        "value": "#384954"
+      },
+      {
+        "code": "TKB",
+        "name": "Teak Brown",
+        "value": "#94795D"
+      },
+      {
+        "code": "TB",
+        "name": "Tree Bark",
+        "value": "#453C24"
+      },
+      {
+        "code": "TG",
+        "name": "Tropical Green",
+        "value": "#00837E"
+      },
+      {
+        "code": "TU",
+        "name": "Turquoise",
+        "value": "#5CB8B2"
+      },
+      {
+        "code": "V",
+        "name": "Violet",
+        "value": "#592D82"
+      },
+      {
+        "code": "WI",
+        "name": "Wine",
+        "value": "#642340"
+      },
+      {
+        "code": "WG",
+        "name": "Wolf Gray",
+        "value": "#BCC2C9"
+      },
+      {
+        "code": "L-B",
+        "name": "Black Leather",
+        "value": "#1C1C1C"
+      },
+      {
+        "code": "L-BT",
+        "name": "Blonde Tan Leather",
+        "value": "#E0C5A0"
+      },
+      {
+        "code": "L-BRN",
+        "name": "Brown Leather",
+        "value": "#5B3624"
+      },
+      {
+        "code": "L-CB",
+        "name": "Columbia Blue Leather",
+        "value": "#5096C8"
+      },
+      {
+        "code": "L-CT",
+        "name": "Cork Tan Leather",
+        "value": "#996513"
+      },
+      {
+        "code": "L-DG",
+        "name": "Dark Green Leather",
+        "value": "#154031"
+      },
+      {
+        "code": "L-GD",
+        "name": "Gold Leather",
+        "value": "#EEA32B"
+      },
+      {
+        "code": "L-MGD",
+        "name": "Metallic Gold Leather",
+        "value": "#A5660D"
+      },
+      {
+        "code": "L-GY",
+        "name": "Grey Leather",
+        "value": "#757572"
+      },
+      {
+        "code": "L-KG",
+        "name": "Kelly Green Leather",
+        "value": "#007D4F"
+      },
+      {
+        "code": "L-LG",
+        "name": "Light Green Leather",
+        "value": "#88C657"
+      },
+      {
+        "code": "L-LO",
+        "name": "Light Orange Leather",
+        "value": "#9B600C"
+      },
+      {
+        "code": "L-M",
+        "name": "Maroon Leather",
+        "value": "#4D2A2F"
+      },
+      {
+        "code": "L-MBRN",
+        "name": "Medium Brown Leather",
+        "value": "#7E4819"
+      },
+      {
+        "code": "L-MT",
+        "name": "Medium Tan Leather",
+        "value": "#79430E"
+      },
+      {
+        "code": "L-N",
+        "name": "Navy Leather",
+        "value": "#2B2F43"
+      },
+      {
+        "code": "L-O",
+        "name": "Orange Leather",
+        "value": "#D54B27"
+      },
+      {
+        "code": "L-PK",
+        "name": "Pink Leather",
+        "value": "#BB6464"
+      },
+      {
+        "code": "L-PU",
+        "name": "Purple Leather",
+        "value": "#3E296A"
+      },
+      {
+        "code": "L-RD",
+        "name": "Red Leather",
+        "value": "#74080B"
+      },
+      {
+        "code": "L-RO",
+        "name": "Red Orange Leather",
+        "value": "#962A11"
+      },
+      {
+        "code": "L-RB",
+        "name": "Royal Blue Leather",
+        "value": "#1E3363"
+      },
+      {
+        "code": "L-S",
+        "name": "Metallic Silver Leather",
+        "value": "#757572"
+      },
+      {
+        "code": "L-TO",
+        "name": "Texas Orange Leather",
+        "value": "#A73B00"
+      },
+      {
+        "code": "L-W",
+        "name": "White Leather",
+        "value": "#ECEBE3"
+      },
+      {
+        "code": "L-Y",
+        "name": "Yellow Leather",
+        "value": "#B9871A"
+      }
+    ]
+  },
+  "designs": [
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1000",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1000",
+      "name": "Design 1000",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1000",
+      "garment": "FD-BASK-RVPN-1000",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1000-8a50ae6efad6.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1000-8a50ae6efad6.svg",
+        "sha256": "8a50ae6efad689c5ea9ccfd649bc0189fb9da2100fbed4c1e4e395eaead5a6a2",
+        "bytes": 28137
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1000-bb862d4c782d.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1000-bb862d4c782d.jpg",
+        "sha256": "bb862d4c782d6c8c471e72ca1b157f13b77e1a518a72dfffeb666c99abca936a",
+        "bytes": 4834
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1001",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1001",
+      "name": "Design 1001",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1001",
+      "garment": "FD-BASK-RVPN-1001",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1001-f1eb64ee06d5.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1001-f1eb64ee06d5.svg",
+        "sha256": "f1eb64ee06d5f6533ad4a6c597fd6bbfe67a2a92a11979c747d42663f42fdb77",
+        "bytes": 36082
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1001-600b04998584.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1001-600b04998584.jpg",
+        "sha256": "600b049985842b9bfdf4dc6069bc1d144eb20f6f8e40b0b5f3fa4eab50a1432a",
+        "bytes": 10497
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1002",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1002",
+      "name": "Design 1002",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1002",
+      "garment": "FD-BASK-RVPN-1002",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1002-8c46581b7054.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1002-8c46581b7054.svg",
+        "sha256": "8c46581b70548927620006b6d20a6204398c42f755359710130552b86f65779a",
+        "bytes": 30111
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1002-3851923cd256.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1002-3851923cd256.jpg",
+        "sha256": "3851923cd2563188c125b7ed946c586616d03a2a6a8316e90d31ccbaa9068e85",
+        "bytes": 7583
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1003",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1003",
+      "name": "Design 1003",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1003",
+      "garment": "FD-BASK-RVPN-1003",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1003-1fe5c0c38c7f.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1003-1fe5c0c38c7f.svg",
+        "sha256": "1fe5c0c38c7f7ba3cab5524e0272cd8ccd7641c734d02e219221626547c8c57d",
+        "bytes": 30171
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1003-28009824c574.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1003-28009824c574.jpg",
+        "sha256": "28009824c5743944b862bcf36668e89c4185eac0ae9990a16377a837ee991e6a",
+        "bytes": 7277
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1004",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1004",
+      "name": "Design 1004",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1004",
+      "garment": "FD-BASK-RVPN-1004",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1004-19602b8b6b3a.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1004-19602b8b6b3a.svg",
+        "sha256": "19602b8b6b3a072c8e8e15871bf8091b70d41e01ad05f8321e8ab4deab5519e8",
+        "bytes": 36396
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1004-17ac9a9b07ef.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1004-17ac9a9b07ef.jpg",
+        "sha256": "17ac9a9b07ef6ef6db6f3acd1ab87fcfedd7c08f3b5b5d5ea1010f75906c54dd",
+        "bytes": 7855
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1005",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1005",
+      "name": "Design 1005",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1005",
+      "garment": "FD-BASK-RVPN-1005",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1005-37ec3be940ff.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1005-37ec3be940ff.svg",
+        "sha256": "37ec3be940ffee886c4661b1ebdb922c2c5b305bfafebf6a118d193a32c5d136",
+        "bytes": 39134
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1005-aa85e79b9ff6.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1005-aa85e79b9ff6.jpg",
+        "sha256": "aa85e79b9ff6e585418c3d15c7ea69c6d56259ebb4825034d9a20c1d41f156e0",
+        "bytes": 6951
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1006",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1006",
+      "name": "Design 1006",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1006",
+      "garment": "FD-BASK-RVPN-1006",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1006-49774e43426e.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1006-49774e43426e.svg",
+        "sha256": "49774e43426e8fd5e43d42790278ad621d6e569cda588493e4acabe16dc76fb7",
+        "bytes": 29684
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1006-d4b4929b0850.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1006-d4b4929b0850.jpg",
+        "sha256": "d4b4929b0850443e61774611061adec1aae3eb6bb6f0e3fd5b0892a3a496ea2f",
+        "bytes": 6709
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1007",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1007",
+      "name": "Design 1007",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1007",
+      "garment": "FD-BASK-RVPN-1007",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1007-50a5f6632e28.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1007-50a5f6632e28.svg",
+        "sha256": "50a5f6632e28de1675d8dba41f520fb597041b48958491e044dd2a4162b18b25",
+        "bytes": 29448
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1007-7232f5d55438.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1007-7232f5d55438.jpg",
+        "sha256": "7232f5d55438f4e083a3866b91ace692917434cac5d35cf178b9d12727eb82ec",
+        "bytes": 6625
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvpn-1008",
+      "slug": "basketballrev3d-top-fd-bask-rvpn-1008",
+      "name": "Design 1008",
+      "section": "top",
+      "styleCode": "RVPN",
+      "styleName": "2-ply Reversible Practice Tops",
+      "styleNo": "1008",
+      "garment": "FD-BASK-RVPN-1008",
+      "modelId": "FD-217",
+      "description": "Designs are sublimated to provide bold, vibrant colors that won't wear off. Design your own Customize practice jerseys for your teams to save wear and tear on the game jerseys. Our micromesh accentuates excellent moisture management and breathability. Details: Game Time Mesh | 100% Polyester | 4.3 oz. | Two fabric layers tacked together for reversible capabilities | Crew Neck | Jocktag on wearers lower left front | Loose Fit | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-217-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-217-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "path": "designer/teamwear/models/fd-217-bd40dee50cd5.glb",
+        "sha256": "bd40dee50cd56fcccccf335de47521d5c3b5f271e460b4f91b50e7c8f7ab31c9",
+        "bytes": 378008,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1008-22388295aff3.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvpn-1008-22388295aff3.svg",
+        "sha256": "22388295aff371f036799507e7070788f34f52dddeafadb73e84ec65aeb18687",
+        "bytes": 32109
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1008-13dc0ed46dc7.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvpn-1008-13dc0ed46dc7.jpg",
+        "sha256": "13dc0ed46dc7eb37033588587268c879a84c6dae8e336db3eaf2cfcb7774c7bc",
+        "bytes": 6703
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1000",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1000",
+      "name": "Design 1000",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1000",
+      "garment": "FD-BASK-RVGGJ-1000",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Collar Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1000-6f4860184181.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1000-6f4860184181.svg",
+        "sha256": "6f48601841815ab434df06ca52cc99339cea447432dcb6afc5e8e75f20385af2",
+        "bytes": 36400
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1000-ade8a9182acf.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1000-ade8a9182acf.jpg",
+        "sha256": "ade8a9182acfa8dda7b5de7406283a7414b339059455a6e98ba0249e814b37dc",
+        "bytes": 8644
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1001",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1001",
+      "name": "Design 1001",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1001",
+      "garment": "FD-BASK-RVGGJ-1001",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C8",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311",
+        "C7": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1001-029d842f6edf.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1001-029d842f6edf.svg",
+        "sha256": "029d842f6edfa275b9b39cd0e2e59b5016d6a55e3042712f1bd08303063d618a",
+        "bytes": 39414
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1001-d330205b2664.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1001-d330205b2664.jpg",
+        "sha256": "d330205b266438fb7d69bae07abeaaab293c230fb0dbe410bdfc8b7fe50d9f4f",
+        "bytes": 9178
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1002",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1002",
+      "name": "Design 1002",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1002",
+      "garment": "FD-BASK-RVGGJ-1002",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C8",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311",
+        "C7": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1002-657189e74555.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1002-657189e74555.svg",
+        "sha256": "657189e74555cde4daad75e99c1ed1cbbb83da3513c9964ec45d6ec2a602c994",
+        "bytes": 39225
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1002-69821c2e6f44.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1002-69821c2e6f44.jpg",
+        "sha256": "69821c2e6f44e170fea9b2d624b8e20b75c39592c0d634baf5f25ab2b23e0696",
+        "bytes": 9218
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1003",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1003",
+      "name": "Design 1003",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1003",
+      "garment": "FD-BASK-RVGGJ-1003",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1003-0dbae64fe4b0.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1003-0dbae64fe4b0.svg",
+        "sha256": "0dbae64fe4b0f2696e5fc8d80377eb6e515786c0b1f485a81162aa1635fed76c",
+        "bytes": 38953
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1003-861fb8df3d56.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1003-861fb8df3d56.jpg",
+        "sha256": "861fb8df3d5673e052e7e6382a498f352c2cc3c14cf9fc8898e95865c9202e58",
+        "bytes": 9073
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1004",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1004",
+      "name": "Design 1004",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1004",
+      "garment": "FD-BASK-RVGGJ-1004",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Collar Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1004-2b44fb65428e.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1004-2b44fb65428e.svg",
+        "sha256": "2b44fb65428e9f30040eb999e4fbf75f4fb23bac5370baec8535a787740cdb04",
+        "bytes": 69872
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1004-29fc203be61e.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1004-29fc203be61e.jpg",
+        "sha256": "29fc203be61e24a7ed1f6bdb80b4fc4c078428dc93707ffdf700bcef0dd362f4",
+        "bytes": 8085
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1005",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1005",
+      "name": "Design 1005",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1005",
+      "garment": "FD-BASK-RVGGJ-1005",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Collar Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1005-9a7894e2da5c.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1005-9a7894e2da5c.svg",
+        "sha256": "9a7894e2da5cd991a04cffc785d9aee761cc52ac244da3654abd9a4bebc360d2",
+        "bytes": 37508
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1005-648d617df54b.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1005-648d617df54b.jpg",
+        "sha256": "648d617df54b6d7780e950c0fe1d9bb7abb9b9e4a00c8320b68318b610581610",
+        "bytes": 8853
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1006",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1006",
+      "name": "Design 1006",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1006",
+      "garment": "FD-BASK-RVGGJ-1006",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C8",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311",
+        "C7": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1006-ec61d541eaa6.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1006-ec61d541eaa6.svg",
+        "sha256": "ec61d541eaa6186774e3cca6b87f163c531e4815b4b8bc2827c88ca7e42a427d",
+        "bytes": 49325
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1006-3858f0a4be0a.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1006-3858f0a4be0a.jpg",
+        "sha256": "3858f0a4be0ab893a1b049c52537f3a1fe6b78fe84b6f81ebc43d5a8fc73f0e0",
+        "bytes": 9311
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1007",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1007",
+      "name": "Design 1007",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1007",
+      "garment": "FD-BASK-RVGGJ-1007",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1007-ca60bdb0bf3a.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1007-ca60bdb0bf3a.svg",
+        "sha256": "ca60bdb0bf3a974877105ed64a3e1e31c17d2e0b987f48c836bf6673b6a08a22",
+        "bytes": 50970
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1007-0305f0c8f3c0.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1007-0305f0c8f3c0.jpg",
+        "sha256": "0305f0c8f3c0dcf04b78e8bddfe36d72acd1cf0daa0b3f60d7725b7e15faaa26",
+        "bytes": 8889
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1008",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1008",
+      "name": "Design 1008",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1008",
+      "garment": "FD-BASK-RVGGJ-1008",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Collar Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1008-0e105b822f6d.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1008-0e105b822f6d.svg",
+        "sha256": "0e105b822f6d1caa5b064d5ad42e262bf0c36e6bf094489c4a5163a9571ebf8d",
+        "bytes": 38207
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1008-9ccae4deed55.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1008-9ccae4deed55.jpg",
+        "sha256": "9ccae4deed5521906b8c0e099f6471cc998a324091206263c3291b0bdc8299cb",
+        "bytes": 8709
+      }
+    },
+    {
+      "id": "basketballrev3d-top-fd-bask-rvggj-1009",
+      "slug": "basketballrev3d-top-fd-bask-rvggj-1009",
+      "name": "Design 1009",
+      "section": "top",
+      "styleCode": "RVGGJ",
+      "styleName": "Reversible Galaxy Game Jersey",
+      "styleNo": "1009",
+      "garment": "FD-BASK-RVGGJ-1009",
+      "modelId": "FD-2304",
+      "description": "Details: Galaxy Knit | 100% Polyester | 3.2 oz. | Sleeveless V-Neck | Standard Athletic Fit | 2-layer reversible design | Sublimated design | Imported | Fabric Made in the USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C8",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-2304-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311",
+        "C7": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "path": "designer/teamwear/models/fd-2304-7c227bf6dcd1.glb",
+        "sha256": "7c227bf6dcd1ad1a0b0b2981459c63a7d15e1426537f3304070887acb9602439",
+        "bytes": 941440,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1009-56ff008095de.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/top/fd-bask-rvggj-1009-56ff008095de.svg",
+        "sha256": "56ff008095dedea86e8f9c560c21337c7a76afe0edf89fe04d06556816b04d66",
+        "bytes": 111459
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1009-cc8b15fde76a.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/top/fd-bask-rvggj-1009-cc8b15fde76a.jpg",
+        "sha256": "cc8b15fde76a70ff3f424ade347e9abd66fa8eeffbff21a9f5e09cf66741d161",
+        "bytes": 9924
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1000",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1000",
+      "name": "Design 1000",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1000",
+      "garment": "FD-BASK-RVGGSH-1000",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1000-fd076741cfe4.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1000-fd076741cfe4.svg",
+        "sha256": "fd076741cfe4bb2dcf0f772c20016b600d71aece4ab58bffaed920062ff392a2",
+        "bytes": 7590
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1000-0301c43c123f.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1000-0301c43c123f.jpg",
+        "sha256": "0301c43c123f4c9e4183d7f7018336cdcd483cedce39113144ae7cbc971801c5",
+        "bytes": 8951
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1001",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1001",
+      "name": "Design 1001",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1001",
+      "garment": "FD-BASK-RVGGSH-1001",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1001-0e147ac107e8.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1001-0e147ac107e8.svg",
+        "sha256": "0e147ac107e807fe913532f0d4489c2f840b7d5f983b37c8f6a04ec92790e7fc",
+        "bytes": 8199
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1001-cd9bf49143ad.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1001-cd9bf49143ad.jpg",
+        "sha256": "cd9bf49143adef32949583a473f1da8a57ffc765dd3baa81ac9f9b1da37ab459",
+        "bytes": 10962
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1002",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1002",
+      "name": "Design 1002",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1002",
+      "garment": "FD-BASK-RVGGSH-1002",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1002-b591b6298661.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1002-b591b6298661.svg",
+        "sha256": "b591b62986617258983a649c52711e5fe30ae524f63bee89d55d44d650e214f5",
+        "bytes": 8154
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1002-b9b705aad375.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1002-b9b705aad375.jpg",
+        "sha256": "b9b705aad3752135ac6631f5015849bdeb4fe6b9f62bece17e6572b013fb3f54",
+        "bytes": 10129
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1003",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1003",
+      "name": "Design 1003",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1003",
+      "garment": "FD-BASK-RVGGSH-1003",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C7",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340",
+        "C6": "#111311"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1003-9b97e1a180ae.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1003-9b97e1a180ae.svg",
+        "sha256": "9b97e1a180ae17a50b49046e77f1497cf0ea357291f1448dd6b09ffadc26c358",
+        "bytes": 13804
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1003-5a98e23b69f5.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1003-5a98e23b69f5.jpg",
+        "sha256": "5a98e23b69f5449c546880b75107b8db94b9f1a85a6473bebf244e292ee36ccb",
+        "bytes": 12957
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1004",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1004",
+      "name": "Design 1004",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1004",
+      "garment": "FD-BASK-RVGGSH-1004",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1004-9eed905de443.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1004-9eed905de443.svg",
+        "sha256": "9eed905de443a13e94ab5e876b07fc63baff76f85b8f40a5b07b4cffcf1506e3",
+        "bytes": 29568
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1004-ffcd5e7916f8.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1004-ffcd5e7916f8.jpg",
+        "sha256": "ffcd5e7916f832171f323cdb3ce2c58e46dfad5e2c8eafa36a7df4714ddf6fc5",
+        "bytes": 11546
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1005",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1005",
+      "name": "Design 1005",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1005",
+      "garment": "FD-BASK-RVGGSH-1005",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1005-2cc160490d1a.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1005-2cc160490d1a.svg",
+        "sha256": "2cc160490d1af9aca2c704090e8cf1cd598ed8613df4b81c167953d36cf69d89",
+        "bytes": 8327
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1005-8fb454a38150.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1005-8fb454a38150.jpg",
+        "sha256": "8fb454a381508afa05c74d0eb4d1c870a2aed1cf2058d28b46c1e92ce470ae5a",
+        "bytes": 11005
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1006",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1006",
+      "name": "Design 1006",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1006",
+      "garment": "FD-BASK-RVGGSH-1006",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1006-7a6a0f1bdd29.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1006-7a6a0f1bdd29.svg",
+        "sha256": "7a6a0f1bdd299c201fc32d56433ce76b88f6bdb2883eeae85db424452ab017e5",
+        "bytes": 17951
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1006-339e53ed1432.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1006-339e53ed1432.jpg",
+        "sha256": "339e53ed1432ea5753e42e1b9d5137c3978ee919ba5bf2b9a645b22d5a3c8566",
+        "bytes": 11623
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1007",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1007",
+      "name": "Design 1007",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1007",
+      "garment": "FD-BASK-RVGGSH-1007",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C6",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4",
+        "C5": "#EF3340"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1007-a1b5e48eb80e.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1007-a1b5e48eb80e.svg",
+        "sha256": "a1b5e48eb80e6bd297189743447d266dd1845c9e0153550fe5149084b77b6893",
+        "bytes": 24046
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1007-45cd09f852ec.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1007-45cd09f852ec.jpg",
+        "sha256": "45cd09f852ec707890924d21d5e0637f1286d174a27b2b8403e8da56f86a9a3d",
+        "bytes": 11149
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1008",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1008",
+      "name": "Design 1008",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1008",
+      "garment": "FD-BASK-RVGGSH-1008",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1008-8b84d38faa7c.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1008-8b84d38faa7c.svg",
+        "sha256": "8b84d38faa7c5cca66fbd445d27f01918de4e89e13f792bae5d6c2c3d3a0eb00",
+        "bytes": 8329
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1008-7e7c6aa9e787.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1008-7e7c6aa9e787.jpg",
+        "sha256": "7e7c6aa9e787c1755de0902dc48850227f184abce1a816f4a7f5725998b6ef9c",
+        "bytes": 10930
+      }
+    },
+    {
+      "id": "basketballrev3d-bottom-fd-bask-rvggsh-1009",
+      "slug": "basketballrev3d-bottom-fd-bask-rvggsh-1009",
+      "name": "Design 1009",
+      "section": "bottom",
+      "styleCode": "RVGGSH",
+      "styleName": "Reversible Galaxy Game Short",
+      "styleNo": "1009",
+      "garment": "FD-BASK-RVGGSH-1009",
+      "modelId": "FD-4305",
+      "description": "Details: Premier Knit | 100% Polyester | 5.4 oz. | Internal 2-inch elastic waistband and adjustable drawcord | Standard athletic fit | 8\" Inseam (custom 6\" and 7\" options) | 2-Layer reversible design | Sublimated design | Made in the Dominican Republic | Imported | Fabric Made in USA",
+      "sizes": [
+        {
+          "name": "Youth X-Small",
+          "code": "YXS"
+        },
+        {
+          "name": "Youth Small",
+          "code": "YS"
+        },
+        {
+          "name": "Youth Medium",
+          "code": "YM"
+        },
+        {
+          "name": "Youth Large",
+          "code": "YL"
+        },
+        {
+          "name": "Youth X-Large",
+          "code": "YXL"
+        },
+        {
+          "name": "Youth 2X-Large",
+          "code": "Y2XL"
+        },
+        {
+          "name": "Small",
+          "code": "S"
+        },
+        {
+          "name": "Medium",
+          "code": "M"
+        },
+        {
+          "name": "Large",
+          "code": "L"
+        },
+        {
+          "name": "XL",
+          "code": "XL"
+        },
+        {
+          "name": "2XL",
+          "code": "2XL"
+        },
+        {
+          "name": "3XL",
+          "code": "3XL"
+        },
+        {
+          "name": "4XL",
+          "code": "4XL"
+        },
+        {
+          "name": "5XL",
+          "code": "5XL"
+        }
+      ],
+      "colorZones": [
+        {
+          "code": "C1",
+          "name": "Body Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C2",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C3",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": true,
+          "patterns": true,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C4",
+          "name": "Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": true,
+          "removed": false
+        },
+        {
+          "code": "C5",
+          "name": "Brand Accent Color",
+          "palette": "fdColors",
+          "gradients": false,
+          "patterns": false,
+          "mesh": "FD-4305-main",
+          "editable": false,
+          "removed": true
+        }
+      ],
+      "defaultColors": {
+        "C1": "#111311",
+        "C2": "#F3ED45",
+        "C3": "#2876FF",
+        "C4": "#F8F8F4"
+      },
+      "model": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "path": "designer/teamwear/models/fd-4305-3cca43810011.glb",
+        "sha256": "3cca4381001184a8737e6e26c26d492d41e9223dd8fbb3405241789097f06b4b",
+        "bytes": 1277816,
+        "format": "glb-draco"
+      },
+      "template": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1009-0c935d42c7d2.svg",
+        "path": "designer/teamwear/templates/basketballrev3d/bottom/fd-bask-rvggsh-1009-0c935d42c7d2.svg",
+        "sha256": "0c935d42c7d2a6b76690699bf1ac43e6f573e87d154490431b76aa15d1dad2a4",
+        "bytes": 8045
+      },
+      "preview": {
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1009-f98f2ea18e82.jpg",
+        "path": "designer/teamwear/previews/basketballrev3d/bottom/fd-bask-rvggsh-1009-f98f2ea18e82.jpg",
+        "sha256": "f98f2ea18e82f2cc6d63a10fbf888e3df7ab39d02e0d75beb6141295d08ce2e7",
+        "bytes": 9765
+      }
+    }
+  ],
+  "stats": {
+    "styles": 3,
+    "designs": 29,
+    "models": 3
+  }
+}

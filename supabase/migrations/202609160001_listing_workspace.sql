@@ -9,6 +9,7 @@ alter table public.pod_products add column if not exists product_group text not 
 alter table public.pod_products add column if not exists taxonomy jsonb not null default '{}'::jsonb;
 alter table public.pod_products add column if not exists custom_fields jsonb not null default '[]'::jsonb;
 alter table public.pod_products add column if not exists ai_metadata jsonb not null default '{}'::jsonb;
+alter table public.pod_products add column if not exists print_areas jsonb not null default '[]'::jsonb;
 alter table public.pod_product_variants add column if not exists cost numeric(10,2);
 
 insert into storage.buckets(id,name,public) values('product-media','product-media',true)
@@ -37,6 +38,7 @@ declare
   opt record;
   val record;
   custom_field jsonb;
+  area jsonb;
   variant jsonb;
   oid text;
   vid text;
@@ -56,9 +58,14 @@ begin
   if (listing->>'compare_at')::numeric < (listing->>'price')::numeric then raise exception 'Compare-at price is too low'; end if;
   if jsonb_typeof(listing->'options') is distinct from 'array' or jsonb_typeof(listing->'variants') is distinct from 'array' then raise exception 'Options and variants must be arrays'; end if;
   if jsonb_typeof(listing->'media') is distinct from 'array' or jsonb_typeof(listing->'content_blocks') is distinct from 'array' or jsonb_typeof(listing->'tags') is distinct from 'array' or jsonb_typeof(listing->'custom_fields') is distinct from 'array' then raise exception 'Listing workspace fields must be arrays'; end if;
+  if jsonb_typeof(coalesce(listing->'print_areas','[]'::jsonb)) is distinct from 'array' then raise exception 'Print areas must be an array'; end if;
   if jsonb_typeof(listing->'seo') is distinct from 'object' or jsonb_typeof(listing->'taxonomy') is distinct from 'object' or jsonb_typeof(listing->'ai_metadata') is distinct from 'object' then raise exception 'Listing metadata must be objects'; end if;
   if jsonb_array_length(listing->'options') > 3 or jsonb_array_length(listing->'variants') > 250 then raise exception 'Listing size limit exceeded'; end if;
   if jsonb_array_length(listing->'media') > 100 or jsonb_array_length(listing->'content_blocks') > 100 or jsonb_array_length(listing->'custom_fields') > 30 or jsonb_array_length(listing->'tags') > 50 then raise exception 'Listing workspace limit exceeded'; end if;
+  if jsonb_array_length(coalesce(listing->'print_areas','[]'::jsonb)) > 16 then raise exception 'Print area limit exceeded'; end if;
+  for area in select value from jsonb_array_elements(coalesce(listing->'print_areas','[]'::jsonb)) loop
+    if coalesce(area->>'id','') !~ '^[a-z0-9][a-z0-9_-]{0,48}$' or coalesce((area->>'widthMm')::numeric,0) < 20 or coalesce((area->>'heightMm')::numeric,0) < 20 or coalesce((area->>'widthMm')::numeric,0) > 2000 or coalesce((area->>'heightMm')::numeric,0) > 2000 then raise exception 'Invalid print area'; end if;
+  end loop;
   if exists(select 1 from jsonb_array_elements(listing->'options') o group by lower(trim(o->>'name')) having count(*) > 1) then raise exception 'Duplicate option names'; end if;
   if exists(select 1 from jsonb_array_elements_text(listing->'tags') tag where trim(tag)='') then raise exception 'Invalid empty tag'; end if;
   if exists(select 1 from jsonb_array_elements_text(listing->'tags') tag group by lower(trim(tag)) having count(*) > 1) then raise exception 'Duplicate tags'; end if;
@@ -108,7 +115,7 @@ begin
     image=listing->>'image', color=listing->>'color', sku=coalesce(listing->>'sku',''),
     artwork_lock=coalesce((listing->>'artwork_lock')::integer,100), personalization=coalesce(listing->'personalization','[]'::jsonb),
     media=listing->'media', content_blocks=listing->'content_blocks', tags=coalesce(array(select jsonb_array_elements_text(listing->'tags')),'{}'::text[]),
-    product_group=coalesce(listing->>'product_group',''), taxonomy=listing->'taxonomy', custom_fields=listing->'custom_fields',
+    product_group=coalesce(listing->>'product_group',''), taxonomy=listing->'taxonomy', custom_fields=listing->'custom_fields', print_areas=coalesce(listing->'print_areas','[]'::jsonb),
     seo=listing->'seo', ai_metadata=listing->'ai_metadata',
     inventory=coalesce((select sum((v->>'inventory')::integer) from jsonb_array_elements(listing->'variants') v where v->>'status'='ACTIVE'),0), updated_at=clock_timestamp()
   where id=pid;

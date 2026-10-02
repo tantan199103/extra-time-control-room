@@ -441,6 +441,20 @@ await writePage('/custom/design', pageHtml(shell, {
   ]
 }))
 
+await writePage('/custom/quick', pageHtml(shell, {
+  path:'/custom/quick',
+  title:'Quick AI artwork studio | Jersevo',
+  description:'Create a print-ready artwork from a prompt, a pet photo or a reference image, then choose the garment and print surface that fits.',
+  image:absolute(SHOP_COVER.src),
+  noindex:true,
+  noindexRobots:'noindex,follow',
+  fallback:`<main class="seo-fallback"><nav aria-label="Breadcrumb"><a href="/custom">Custom</a> / <strong>Quick AI</strong></nav><h1>Create artwork before you choose a product</h1><p>Start with a prompt or a photo, explore mascot, pet and sports poster directions, then polish the artwork inside a safe print area.</p><ol><li>Describe an idea or upload a reference.</li><li>Choose a style and select a variant.</li><li>Polish the artwork and select a product surface.</li><li>Run preflight before ordering.</li></ol><p><a href="/custom">Choose another Custom route</a> · <a href="/custom/design">Open the 3D designer</a></p></main>`,
+  schema:[
+    { '@context':'https://schema.org', '@type':'WebApplication', name:'Jersevo Quick AI Artwork Studio', applicationCategory:'DesignApplication', operatingSystem:'Web browser', description:'Prompt- and image-led artwork creation with print preflight.', url:`${PUBLIC_ORIGIN}/custom/quick`, isPartOf:{ '@type':'WebSite', url:`${PUBLIC_ORIGIN}/`, name:'Jersevo' } },
+    breadcrumbSchema([{name:'Home',url:`${PUBLIC_ORIGIN}/`},{name:'Custom',url:`${PUBLIC_ORIGIN}/custom`},{name:'Quick AI',url:`${PUBLIC_ORIGIN}/custom/quick`}])
+  ]
+}))
+
 const leagueCountsForIndex = new Map()
 const teamCountsForIndex = new Map()
 for (const product of products) {
