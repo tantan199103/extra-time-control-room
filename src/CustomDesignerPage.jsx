@@ -48,7 +48,7 @@ import './custom-designer.css'
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
 const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
-const ASSET_CACHE_BUSTER = 'retail-tripo-texture-frontfix3-20261002'
+const ASSET_CACHE_BUSTER = 'retail-tripo-texture-frontfix4-20261002'
 const BRANDING_CACHE_VERSION = 'branding-clean-v2-20261002'
 // The listing-specific Boombah manifest introduced a new layer contract. Use
 // a new draft namespace so a pre-manifest draft such as JERSEVO / YOUR NAME /
