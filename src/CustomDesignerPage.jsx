@@ -1083,23 +1083,28 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
       return () => { cancelled = true }
     }
     const loader = new THREE.TextureLoader()
-    Promise.all([...runtime.partMeshes].map(async ([name, mesh]) => {
-      const uri = matchMirlTexture(name, selected.textures)
-      if (!uri) return
-      const loadedMask = await loader.loadAsync(assetUrl(uri, manifest))
-      const mask = await sanitizeOwayoMaskTexture(loadedMask, manifest)
-      if (cancelled) { mask.dispose(); return }
-      const previous = mesh.material
-       mesh.material = maskMaterial(mask, runtime.palette, runtime.patternFallback, runtime.personalizationFallback)
-      previous?.userData?.maskMap?.dispose?.()
-      previous?.dispose?.()
-    })).then(() => {
+    // Decode one mask at a time. A 2048² RGBA canvas can briefly use tens of
+    // megabytes while the vendor pixels are replaced; parallel decoding of
+    // every garment panel caused avoidable mobile memory spikes.
+    ;(async () => {
+      for (const [name, mesh] of runtime.partMeshes) {
+        if (cancelled) return
+        const uri = matchMirlTexture(name, selected.textures)
+        if (!uri) continue
+        const loadedMask = await loader.loadAsync(assetUrl(uri, manifest))
+        const mask = await sanitizeOwayoMaskTexture(loadedMask, manifest)
+        if (cancelled) { mask.dispose(); return }
+        const previous = mesh.material
+        mesh.material = maskMaterial(mask, runtime.palette, runtime.patternFallback, runtime.personalizationFallback)
+        previous?.userData?.maskMap?.dispose?.()
+        previous?.dispose?.()
+      }
       if (cancelled) return
       // Material replacement is asynchronous; re-bind the already-created
       // composited layer maps after every design/palette update.
       applyOwayoLayers(runtime, runtime.layerTextures)
       renderRef.current()
-    }).catch(error => console.error('Design texture load failed', error))
+    })().catch(error => { if (!cancelled) console.error('Design texture load failed', error) })
     return () => { cancelled = true }
   }, [manifest, design, colors, readyRevision])
 

@@ -75,9 +75,8 @@ function outsideWhiteMask(data, width, height, channels) {
  * decoded ImageData. The returned data uses Uint8ClampedArray when the input
  * did, otherwise Uint8Array.
  */
-export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4 } = {}, brandIndices = new Set()) {
+export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4, fallbackIndex = 0, maxPixels = 8_000_000 } = {}, brandIndices = new Set()) {
   const sourceData = raw instanceof Uint8ClampedArray ? raw : new Uint8Array(raw)
-  const data = sourceData.slice()
   const safeWidth = Number(width)
   const safeHeight = Number(height)
   const safeChannels = Number(channels)
@@ -85,7 +84,9 @@ export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4 } = {
     throw new TypeError('Owayo mask dimensions and channel count must be positive integers.')
   }
   const size = safeWidth * safeHeight
-  if (data.length < size * safeChannels) throw new RangeError('Owayo mask data is shorter than width × height × channels.')
+  if (size > Number(maxPixels)) throw new RangeError('Owayo mask is too large to sanitize in the browser.')
+  if (sourceData.length < size * safeChannels) throw new RangeError('Owayo mask data is shorter than width × height × channels.')
+  const data = sourceData.slice()
   const marks = brandIndices instanceof Set ? brandIndices : new Set(brandIndices || [])
   const branded = new Uint8Array(size)
   let brandedPixels = 0
@@ -95,7 +96,7 @@ export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4 } = {
       brandedPixels += 1
     }
   }
-  if (!brandedPixels) return { data, brandedPixels: 0, changedPixels: 0 }
+  if (!brandedPixels) return { data, brandedPixels: 0, changedPixels: 0, unresolvedPixels: 0, fallbackApplied: false }
 
   // Do not bleed edge/background white into a mark when a real garment colour
   // is available nearby. If the texture contains no such source, fall back to
@@ -104,8 +105,6 @@ export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4 } = {
   const outside = outsideWhiteMask(data, safeWidth, safeHeight, safeChannels)
   const source = new Int32Array(size)
   source.fill(-1)
-  const distance = new Uint32Array(size)
-  distance.fill(0xFFFFFFFF)
   const queue = new Int32Array(size)
   let head = 0
   let tail = 0
@@ -114,30 +113,38 @@ export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4 } = {
     if (branded[index]) continue
     if (outside[index] && pixelValue(data, safeChannels, index) === 255) continue
     source[index] = index
-    distance[index] = 0
     queue[tail++] = index
     normalSeedCount += 1
   }
   if (!normalSeedCount) {
+    // A malformed/all-mark texture has no trustworthy garment colour to copy.
+    // Fail closed by painting a neutral palette index instead of returning the
+    // supplier label unchanged. Index 0 is the neutral Jersevo palette entry;
+    // callers may provide another safe fallback index.
+    const candidate = Number(fallbackIndex)
+    const safeFallback = Number.isInteger(candidate) && candidate >= 0 && candidate <= 255 ? candidate : 0
+    let changedPixels = 0
     for (let index = 0; index < size; index += 1) {
-      if (branded[index]) continue
-      source[index] = index
-      distance[index] = 0
-      queue[tail++] = index
+      if (!branded[index]) continue
+      const offset = index * safeChannels
+      if (data[offset] === safeFallback) continue
+      data[offset] = safeFallback
+      // Keep alpha and auxiliary channels intact; only the palette index drives
+      // the MIRL shader and should be replaced in this fail-closed branch.
+      changedPixels += 1
     }
+    return { data, brandedPixels, changedPixels, unresolvedPixels: 0, fallbackApplied: true }
   }
 
   while (head < tail) {
     const index = queue[head++]
-    const nextDistance = distance[index] + 1
     const x = index % safeWidth
     const y = Math.floor(index / safeWidth)
     const visit = next => {
-      // Source pixels are already seeded (distance 0); mark pixels are the
-      // only ones that may be claimed by a wavefront.
-      if (!branded[next] && distance[next] === 0) return
-      if (nextDistance >= distance[next]) return
-      distance[next] = nextDistance
+      // Source pixels are seeded with their own index. A zero-based breadth-
+      // first queue makes the first source that reaches a mark the nearest;
+      // no per-pixel distance array is needed, which saves ~16 MB at 2048².
+      if (source[next] >= 0) return
       source[next] = source[index]
       queue[tail++] = next
     }
@@ -158,7 +165,7 @@ export function sanitizeOwayoMaskPixels(raw, { width, height, channels = 4 } = {
     for (let channel = 0; channel < safeChannels; channel += 1) data[index * safeChannels + channel] = data[replacement * safeChannels + channel]
     changedPixels += 1
   }
-  return { data, brandedPixels, changedPixels }
+  return { data, brandedPixels, changedPixels, unresolvedPixels: 0, fallbackApplied: false }
 }
 
 /**
@@ -171,7 +178,13 @@ export function sanitizeOwayoMaskImageData(imageData, colorCodes = [], options =
   const width = Number(imageData.width)
   const height = Number(imageData.height)
   const channels = Number(options.channels || 4)
-  const result = sanitizeOwayoMaskPixels(imageData.data, { width, height, channels }, owayoMaskBrandIndices(colorCodes, options.explicitIndices))
+  const result = sanitizeOwayoMaskPixels(imageData.data, {
+    width,
+    height,
+    channels,
+    fallbackIndex: options.fallbackIndex,
+    maxPixels: options.maxPixels
+  }, owayoMaskBrandIndices(colorCodes, options.explicitIndices))
   imageData.data.set(result.data)
   return result
 }

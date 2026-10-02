@@ -59,7 +59,37 @@ test('image-data adapter updates a canvas buffer without touching unrelated pixe
   assert.deepEqual([...imageData.data.slice(8, 12)], [9, 0, 0, 255])
 })
 
+test('nearest replacement ignores edge white background', () => {
+  const raw = new Uint8Array([
+    255, 0, 0, 255,
+    255, 0, 0, 255,
+    12, 0, 0, 255,
+    240, 0, 0, 255,
+    32, 0, 0, 255,
+    255, 0, 0, 255,
+    255, 0, 0, 255
+  ])
+  const result = sanitizeOwayoMaskPixels(raw, { width: 7, height: 1, channels: 4 }, new Set([240]))
+  assert.equal(result.fallbackApplied, false)
+  assert.equal(result.data[12], 12, 'mark should inherit the left garment colour rather than edge white')
+})
+
+test('all-mark texture fails closed to a neutral palette index', () => {
+  const raw = new Uint8Array([
+    194, 0, 0, 255,
+    195, 0, 0, 255,
+    240, 0, 0, 255,
+    194, 0, 0, 255
+  ])
+  const result = sanitizeOwayoMaskPixels(raw, { width: 4, height: 1, channels: 4, fallbackIndex: 1 }, new Set([194, 195, 240]))
+  assert.equal(result.fallbackApplied, true)
+  assert.equal(result.changedPixels, 4)
+  assert.deepEqual([...result.data.filter((_, index) => index % 4 === 0)], [1, 1, 1, 1])
+  assert.deepEqual([...result.data.filter((_, index) => index % 4 === 3)], [255, 255, 255, 255])
+})
+
 test('sanitizer validates dimensions and short buffers', () => {
   assert.throws(() => sanitizeOwayoMaskPixels(new Uint8Array(3), { width: 2, height: 2, channels: 1 }, new Set([1])), /shorter/)
   assert.throws(() => sanitizeOwayoMaskPixels(new Uint8Array(4), { width: 0, height: 2, channels: 1 }, new Set([1])), /positive integers/)
+  assert.throws(() => sanitizeOwayoMaskPixels(new Uint8Array(4), { width: 2, height: 2, channels: 1, maxPixels: 3 }, new Set([1])), /too large/)
 })
