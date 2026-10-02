@@ -183,6 +183,14 @@
   .custom-flow-hero__copy { min-height:610px; padding:28px 18px 42px; }.custom-flow-hero h1 { font-size:clamp(60px,18vw,92px); }.custom-flow-hero__lede { font-size:13px; }.custom-flow-hero__actions { align-items:stretch; flex-direction:column; }.custom-flow-hero__actions .button { justify-content:center; }.custom-flow-hero__facts { gap:12px; margin-top:30px; }.custom-flow-hero__facts strong { font-size:24px; }.custom-flow-hero__facts small { font-size:7px; }.custom-flow-hero__visual,.custom-flow-hero__visual > img { min-height:300px; }.custom-flow-hero__model { inset:5% 18% 2% 18%; }.custom-flow-hero__stamp { right:7%; bottom:12%; }.custom-flow-hero__stamp strong { font-size:58px; }.custom-flow-intro { display:block; padding-right:18px; padding-left:18px; }.custom-flow-intro > p { margin-top:28px; font-size:12px; }.custom-waitlist { padding-right:18px; padding-left:18px; }.custom-waitlist h2 { font-size:48px; }.custom-waitlist form > div { grid-template-columns:1fr; }.custom-waitlist form > div button { min-height:46px; }.custom-families,.custom-template-rail,.custom-process,.custom-live-listings { padding-right:18px; padding-left:18px; }.custom-section-head { align-items:start; flex-direction:column; gap:14px; }.custom-section-head h2,.custom-process h2 { font-size:52px; }.custom-family-grid { gap:9px; }.custom-family-card__body { padding:12px 10px; }.custom-family-card__body strong { min-height:36px; font-size:17px; }.custom-family-card__body > small { font-size:8px; }.custom-family-card__body b { font-size:10px; }.custom-family-card__body em { display:none; }.custom-family-card__body svg { width:13px; }.custom-flow-trust > div { padding-right:18px; padding-left:18px; }.custom-flow-final { padding-right:18px; padding-left:18px; }.custom-flow-final h2 { font-size:60px; }
 }
 
+.custom-mode-card__status {
+  display: block;
+  margin-top: 13px;
+  color: var(--signal);
+  font: 700 8px var(--body);
+  letter-spacing: .1em;
+}
+
 /* Saved artwork and style directions give the mode chooser a useful
    continuation point without turning it into a generic card grid. */
 .custom-recent-workbench {
@@ -367,4 +375,90 @@
   .custom-recent-draft { grid-column: 1 / -1; min-height: 235px; }
   .custom-style-sample { min-height: 190px; padding: 9px; }
   .custom-style-sample b { font-size: 16px; }
+}
+
+/* The custom hub is a decision page first: keep the first choice short,
+   keep the category rail on one line, and let off-screen cards stay out of
+   the initial render on phones. */
+.custom-family-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 300px;
+}
+.custom-family-tabs {
+  scrollbar-width: none;
+}
+.custom-family-tabs::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 900px) {
+  .custom-mode-chooser__intro {
+    min-height: 420px;
+  }
+  .custom-mode-chooser__intro h1 {
+    margin-top: 42px;
+  }
+  .custom-mode-card {
+    min-height: 350px;
+  }
+  .custom-family-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 4px;
+  }
+  .custom-family-tabs button {
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 560px) {
+  .custom-mode-chooser__intro {
+    min-height: 410px;
+    padding: 24px 18px 30px;
+  }
+  .custom-mode-chooser__intro h1 {
+    margin-top: 34px;
+    font-size: clamp(52px, 16.5vw, 78px);
+  }
+  .custom-mode-chooser__intro > p:last-child {
+    margin-top: 20px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .custom-mode-card {
+    min-height: 328px;
+    padding: 22px 18px;
+  }
+  .custom-mode-card > svg {
+    margin-top: 24px;
+  }
+  .custom-mode-card h2 {
+    margin-top: 16px;
+    font-size: 46px;
+  }
+  .custom-mode-card p {
+    margin-top: 14px;
+    font-size: 12px;
+  }
+  .custom-mode-card__meta {
+    margin-top: 18px;
+  }
+  .custom-mode-card .button {
+    width: 100%;
+    justify-content: center;
+    margin-top: 22px;
+  }
+  .custom-recent-strip__samples {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .custom-recent-strip__samples span {
+    text-align: center;
+  }
+  .custom-family-tabs {
+    margin-right: -18px;
+    margin-left: -18px;
+    padding-right: 18px;
+    padding-left: 18px;
+  }
 }

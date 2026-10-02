@@ -1393,7 +1393,7 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
       </section>
 
       {show('custom-trust') && <section className="custom-flow-trust"><div><Check size={18}/><span><strong>Artwork review</strong><small>Spelling, placement and logo quality checked before print.</small></span></div><div><UsersRound size={18}/><span><strong>One organized roster</strong><small>Keep names, numbers and sizes together in one design.</small></span></div><div><Truck size={18}/><span><strong>Tracked hand-off</strong><small>Delivery and order status stay visible after checkout.</small></span></div></section>}
-      <section className="custom-flow-final"><p className="custom-flow-eyebrow">{commerceReady ? 'READY WHEN YOU ARE' : 'PREVIEW THE STUDIO'}</p><h2>Make the piece<br /><em>only your team could wear.</em></h2><button type="button" className="button button--acid" onClick={() => featuredFamily ? openFamily(featuredFamily) : openDefaultDesigner('custom_hub_final')}>{commerceReady ? 'OPEN THE 3D DESIGNER' : 'OPEN THE 3D PREVIEW'} <ArrowRight size={16}/></button></section>
+      <section className="custom-flow-final"><p className="custom-flow-eyebrow">{commerceReady ? 'READY WHEN YOU ARE' : 'PREVIEW THE STUDIO'}</p><h2>Make the piece<br /><em>only your team could wear.</em></h2><button type="button" className="button button--acid" onClick={() => featuredFamily ? openFamily(featuredFamily) : openDefaultDesigner('custom_hub_final')}>{commerceReady ? 'OPEN THE 3D DESIGNER' : 'PREVIEW IN 3D'} <ArrowRight size={16}/></button></section>
     </main>
   )
 }
@@ -3281,7 +3281,7 @@ function App() {
   return (
     <>
       <Header bagCount={bagCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} openInstall={() => setInstallOpen(true)} appInstalled={appInstalled} menus={menus} collections={collections} customProduct={customProduct} account={account} products={navigationProducts.length ? navigationProducts : products}/>
-      {catalogState.error && path !== '/' && <div className={`catalog-runtime-notice ${catalogState.source === 'cache' ? 'is-cached' : ''}`} role="status"><span>{catalogState.source === 'cache' ? 'Showing recently loaded products while the live catalogue reconnects. Price and stock are checked again at checkout.' : 'The catalogue connection was interrupted. Refresh the product list to continue.'}</span><button type="button" onClick={() => setCatalogRefresh(value => value + 1)}>Refresh products</button></div>}
+      {catalogState.error && path !== '/' && <div className={`catalog-runtime-notice ${catalogState.source === 'cache' ? 'is-cached' : ''}`} role="status"><span>{catalogState.source === 'cache' ? 'Showing recently loaded products while the live catalogue reconnects. Price and stock are checked again at checkout.' : path.startsWith('/custom') ? 'Live prices are temporarily unavailable. You can still choose a garment and save a design; refresh before ordering.' : 'The catalogue connection was interrupted. Refresh the product list to continue.'}</span><button type="button" onClick={() => setCatalogRefresh(value => value + 1)}>Refresh products</button></div>}
       {page}
       <Footer openSizeGuide={() => setSizeGuideOpen(true)} menus={menus} customProduct={customProduct}/>
       <FixedFooterMenu path={path} bagCount={bagCount} openCart={() => setCartOpen(true)} menus={menus} customProduct={customProduct} products={navigationProducts.length ? navigationProducts : products} hidden={footerActuallyHidden}/>
