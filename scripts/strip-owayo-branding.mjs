@@ -1,20 +1,21 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 /**
- * Owayo's design masks use palette indices for the printed artwork.  These
- * indices are the vendor marks (front, back and sleeve logo variants), not
- * customer artwork.  Keep the list explicit so technical marks such as
- * ULTRADRY and the 3D design label are not silently removed.
+ * Owayo's design masks use palette indices for the printed artwork. These
+ * indices are vendor marks (front/back/sleeve logos, Ultra Dry and the
+ * technical 3D design label), not customer artwork. Keep the list explicit so
+ * a synchronized mask can never leak the source provider's identity.
  */
 export const OWAYO_BRAND_COLOR_CODES = new Set([
   'OOF', 'OOFK', 'HF',
   'OOB', 'OOBK', 'HB',
   'OOL', 'OOLK', 'HLA',
-  'OOR', 'OORK', 'HRA'
+  'OOR', 'OORK', 'HRA',
+  'TEC', 'TECO', '3D_3D', '3D_DSGN'
 ])
 
 export function brandColorIndices(colorCodes = []) {
@@ -166,38 +167,54 @@ export async function stripOwayoBranding(buffer, colorCodes, { optimize = false 
 
 async function cli() {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-  const manifestPath = resolve(root, 'public/designer/owayo/cycling-c3/manifest.json')
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
   const write = process.argv.includes('--write')
-  const targets = Object.entries(manifest.checksums || {})
-    .filter(([url]) => /\/designs\/[^/]+\/[^/]+\.png$/i.test(url))
+  const all = process.argv.includes('--all')
+  const manifestPaths = all ? await findManifestPaths(resolve(root, 'public/designer/owayo')) : [resolve(root, 'public/designer/owayo/cycling-c3/manifest.json')]
   let changedAssets = 0
   let changedPixels = 0
-  for (const [url] of targets) {
-    const file = resolve(root, 'public', url.slice(1))
-    const input = await readFile(file)
-    const result = await stripOwayoBranding(input, manifest.product?.colorCodes, { optimize:true })
-    if (!result.changedPixels) continue
-    changedAssets += 1
-    changedPixels += result.changedPixels
-    if (write) {
-      await writeFile(file, result.buffer)
-      manifest.checksums[url] = {
-        bytes:result.buffer.length,
-        sha256:createHash('sha256').update(result.buffer).digest('hex')
+  for (const manifestPath of manifestPaths) {
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+    const targets = Object.entries(manifest.checksums || {})
+      .filter(([url]) => /\/designs\/[^/]+\/[^/]+\.png$/i.test(url))
+    let manifestChanged = false
+    for (const [url] of targets) {
+      const file = resolve(root, 'public', url.slice(1))
+      const input = await readFile(file)
+      const result = await stripOwayoBranding(input, manifest.product?.colorCodes, { optimize:true })
+      if (!result.changedPixels) continue
+      changedAssets += 1
+      changedPixels += result.changedPixels
+      manifestChanged = true
+      if (write) {
+        await writeFile(file, result.buffer)
+        manifest.checksums[url] = {
+          bytes:result.buffer.length,
+          sha256:createHash('sha256').update(result.buffer).digest('hex')
+        }
       }
+      process.stdout.write(`${write ? 'Stripped' : 'Would strip'} ${url} (${result.changedPixels} pixels)\n`)
     }
-    process.stdout.write(`${write ? 'Stripped' : 'Would strip'} ${url} (${result.changedPixels} pixels)\n`)
-  }
-  if (write) {
-    manifest.branding = {
-      removed:'Owayo vendor marks from synchronized mask textures',
-      colorCodes:[...OWAYO_BRAND_COLOR_CODES],
-      colorIndices:[...brandColorIndices(manifest.product?.colorCodes)]
+    if (write && manifestChanged) {
+      manifest.branding = {
+        removed:'Owayo vendor marks and technical source labels from synchronized mask textures',
+        colorCodes:[...OWAYO_BRAND_COLOR_CODES],
+        colorIndices:[...brandColorIndices(manifest.product?.colorCodes)]
+      }
+      await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
     }
-    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
   }
   process.stdout.write(`${write ? 'Updated' : 'Found'} ${changedAssets} assets, ${changedPixels} pixels.\n`)
+}
+
+async function findManifestPaths(directory) {
+  const entries = await readdir(directory, { withFileTypes:true })
+  const paths = []
+  for (const entry of entries) {
+    const file = resolve(directory, entry.name)
+    if (entry.isDirectory()) paths.push(...await findManifestPaths(file))
+    else if (entry.isFile() && entry.name === 'manifest.json') paths.push(file)
+  }
+  return paths
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await cli()

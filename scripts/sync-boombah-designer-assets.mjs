@@ -468,7 +468,9 @@ async function sync() {
       defaultStyleName:first?.styleName || '',
       defaultGarment:first?.garment || '',
       defaultModelId:first?.modelId || '',
-      preview:first?.preview?.uri || '',
+      // Source JPG renders may carry a sewn vendor label. The public picker
+      // uses a neutral placeholder until a cleaned Jersevo render is produced.
+      preview:'',
       sizeCount:first?.sizes?.length || 0,
       capabilities:{
         colors:Boolean(first?.colorZones?.some(zone => zone.editable !== false)),

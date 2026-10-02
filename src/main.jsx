@@ -1306,13 +1306,10 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
     if (family?.provider !== 'owayo') return ''
     const id = String(family?.id || '').trim()
     if (!id) return ''
-    // Older cached catalog snapshots did not carry `preview`. Prefer the
-    // same-origin model capture generated for this exact family; falling back
-    // to the source texture is only a last resort for a family still waiting
-    // for its capture asset.
-    if (id !== 'cycling-c7') return `/designer/owayo/${id}/previews/garment-render.webp`
-    const design = /^cycling-(?:m|ml|f|fl)/i.test(id) ? 'derny' : 'etape'
-    return `https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/owayo/${id}/previews/${design}.webp`
+   // Older cached snapshots must not fall back to a supplier garment render:
+   // those captures can contain an upstream sewn label. The neutral card
+   // placeholder is safer until a clean Jersevo preview is available.
+   return ''
   }
   const handleFamilyPreviewError = event => {
     event.currentTarget.hidden = true

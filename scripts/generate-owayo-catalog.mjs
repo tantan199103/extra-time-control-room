@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { OWAYO_CATALOG_GROUPS, OWAYO_CATALOG_V1, owayoCatalogSummary } from '../src/lib/owayo-catalog.js'
@@ -27,16 +26,13 @@ const products = await Promise.all(OWAYO_CATALOG_V1.map(async product => {
     // previews are useful during syncing, but a local URL avoids browser
     // privacy/network blockers and keeps the picker reliable after a cache.
     const previewName = manifestPreview ? String(manifestPreview).split('/').pop() : ''
-    // Product-family cards need a garment render, not the raw UV texture used
-    // by the 3D material loader. Capture output is generated from the exact
-    // synchronized model/design and is intentionally preferred when present.
-    const renderPreviewName = 'garment-render.webp'
-    const localRenderPath = resolve(root, 'public', `designer/owayo/${product.id}/previews/${renderPreviewName}`)
+    // Product-family cards must never expose the supplier's garment render:
+    // those rasters can contain a sewn-in Ultra Dry/provider mark. Prefer a
+    // local Jersevo design preview; if no clean preview exists, leave the
+    // value empty and let the designer render its neutral placeholder.
     const localPreviewPath = previewName ? resolve(root, 'public', `designer/owayo/${product.id}/previews/${previewName}`) : ''
-    let preview = manifestPreview
-    if (existsSync(localRenderPath)) {
-      preview = `/designer/owayo/${product.id}/previews/${renderPreviewName}`
-    } else if (localPreviewPath) {
+    let preview = ''
+    if (localPreviewPath) {
       try {
         await access(localPreviewPath)
         preview = `/designer/owayo/${product.id}/previews/${previewName}`

@@ -80,11 +80,23 @@ test('pattern UI and order handoff are wired to the local catalogue', async () =
   assert.doesNotMatch(source, /Switch to Sportswear patterns/)
 })
 
+test('designer picker previews never expose supplier garment renders', async () => {
+  const [owayo, boombah] = await Promise.all([
+    readFile(resolve(publicRoot, 'designer/owayo/catalog.json'), 'utf8').then(JSON.parse),
+    readFile(resolve(publicRoot, 'designer/boombah/catalog.json'), 'utf8').then(JSON.parse)
+  ])
+  assert.ok(owayo.products.every(product => !/(?:garment-render|^https?:)/i.test(String(product.preview || ''))))
+  assert.ok(boombah.products.every(product => !product.preview))
+})
+
 test('synchronized mask textures do not render Owayo vendor marks', async () => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-  assert.equal(manifest.branding?.removed, 'Owayo vendor marks from synchronized mask textures')
+  assert.equal(manifest.branding?.removed, 'Owayo vendor marks and technical source labels from synchronized mask textures')
   const indices = brandColorIndices(manifest.product.colorCodes)
   assert.ok(indices.size >= 8)
+  for (const code of ['Tec', 'TecO', '3D_3D', '3D_DSGN']) {
+    assert.equal(indices.has(Number(manifest.product.colorCodes.find(item => item.colorCode === code)?.ColorCodeNr)), true, `${code} must be sanitized`)
+  }
   const textureUrls = new Set()
   for (const design of manifest.designs) {
     for (const url of Object.values(design.textures || {})) {
@@ -165,6 +177,15 @@ test('3D design handoff is bounded and keeps the production roster server-side',
   assert.throws(() => validateDesignerAssetRefs(spec, [{ bucket:'customer-references' }]), /Every 3D logo layer/)
   assert.throws(() => validateDesignerAssetRefs({ ...spec, layers:[] }, [{ bucket:'customer-references' }]), /not attached/)
   assert.throws(() => validateDesignerAssetRefs(securedSpec, [{}, {}]), /Every uploaded 3D logo asset/)
+})
+
+test('runtime mask guard cleans older remote family textures before shader binding', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /OWAYO_MASK_BRAND_CODES, sanitizeOwayoMaskImageData/)
+  assert.match(source, /function sanitizeOwayoMaskTexture\(texture, manifest\)/)
+  assert.match(source, /const loadedMask = await loader\.loadAsync/)
+  assert.match(source, /sanitizeOwayoMaskTexture\(loadedMask, manifest\)/)
+  assert.match(source, /sanitizeOwayoMaskImageData\(imageData, manifest\.product\.colorCodes\)/)
 })
 
 test('Owayo personalization preview is deterministic and roster-backed', () => {

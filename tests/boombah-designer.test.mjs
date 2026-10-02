@@ -62,9 +62,30 @@ test('Boombah GLB branding matcher targets logo parts and vendor texture names w
   assert.equal(isBoombahLogoPartName('outsole-logo-003.003'), true)
   assert.equal(isBoombahLogoPartName('Jock_Tag_B_3_'), true)
   assert.equal(isBoombahBrandingName('Boombah_woven_label'), true)
+  assert.equal(isBoombahBrandingName('BoombahRoyalJPG'), true)
   assert.equal(isBoombahBrandingName('boombahBlack (1)'), true)
   assert.equal(isBoombahLogoPartName('Boombah cuello_3112'), false)
   assert.equal(isBoombahLogoPartName('FD-163W-main'), false)
+})
+
+test('designer never renders upstream Boombah raster previews with vendor marks', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /function designerPreviewUrl\(uri, manifest\)/)
+  assert.match(source, /manifestIsBoombah\(manifest\).*garment-\[/s)
+  assert.match(source, /\^https\?:/)
+  assert.match(source, /designerPreviewUrl\(item\.preview, manifest\)/)
+  assert.match(source, /designer-design-grid__placeholder/)
+  const patterns = source.slice(source.indexOf('function PatternPanel'), source.indexOf('function PatternPanel') + 8500)
+  assert.match(patterns, /designerPreviewUrl\(item\.preview, manifest\)/)
+  assert.doesNotMatch(patterns, /src=\{assetUrl\(item\.preview, manifest\)\}/)
+})
+
+test('GLB cleanup inspects image and source metadata, while preserving baked atlases', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.match(source, /texture\?\.image\?\.name/)
+  assert.match(source, /texture\?\.source\?\.data\?\.name/)
+  assert.match(source, /neutralizeVendorTextures: !manifestUsesBakedGlb\(manifest\)/)
+  assert.match(source, /A baked listing texture can contain the complete approved garment/)
 })
 
 test('mirrored Boombah manifests retain an explicit branding-cleanup contract', async () => {

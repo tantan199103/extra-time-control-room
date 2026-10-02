@@ -254,7 +254,7 @@ async function sync() {
       defaultColors: product.ColorCodeFarbVorbelegungen || []
     },
     branding: {
-      removed: 'Owayo vendor marks from synchronized mask textures',
+      removed: 'Owayo vendor marks and technical source labels from synchronized mask textures',
       colorCodes: [...OWAYO_BRAND_COLOR_CODES],
       colorIndices: [...brandColorIndices(product.colorCodes)]
     },

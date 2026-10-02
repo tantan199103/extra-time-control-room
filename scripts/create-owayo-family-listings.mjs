@@ -84,12 +84,15 @@ export function buildOwayoFamilyListing(family, manifest) {
   const category = family.group === 'tshirts' ? 'Custom T-Shirts' : `${sportLabel} Jerseys`
   const sportTag = slugify(family.group || family.sport || 'sportswear', 'sportswear')
   const description = `${title} is a made-to-order ${sportLabel.toLowerCase()} garment for players, clubs and teams. Choose a production-ready design, tune the color story, add a pattern where supported, then place names, numbers and an approved logo in the matching 3D studio. The roster keeps each player's size and personalization together for artwork review. This ${family.sleeve} ${family.fit} cut is prepared from the exact synchronized garment model, with pricing from $${Number(family.priceUsd).toFixed(2)} before quantity savings. ${designs.length} design templates${patterns.length ? ` and ${patterns.length} pattern options` : ''} are available in the editor.`
-  const garmentRenderUrl = `/designer/owayo/${family.id}/previews/garment-render.webp`
-  const hasGarmentRender = fs.existsSync(resolve(root, 'public', garmentRenderUrl.slice(1)))
-  const designMedia = (manifest.designs || []).slice(0, hasGarmentRender ? 3 : 4).map((design, index) => ({ id:`media-${id}-${slugify(design.slug || design.name, String(index))}`, type:'IMAGE', url:design.preview, alt:`${title} custom design preview ${index + 1}`, role:hasGarmentRender ? 'design-preview' : index === 0 ? 'front' : 'design-preview', filename:`${slugify(design.slug || design.name, `design-${index}`)}.webp`, source:'JERSEVO_DESIGNER_PREVIEW', createdAt:manifest.source?.syncedAt || null }))
-  const media = hasGarmentRender
-    ? [{ id:`media-${id}-garment-render`, type:'IMAGE', url:garmentRenderUrl, alt:`${title} 3D garment preview`, role:'front', filename:'garment-render.webp', source:'JERSEVO_3D_CAPTURE', createdAt:manifest.source?.syncedAt || null }, ...designMedia]
-    : designMedia
+  const safePreview = /^\/designer\/owayo\//i.test(String(family.preview || '')) && !/garment-render/i.test(String(family.preview || '')) ? family.preview : ''
+  const designMedia = (manifest.designs || [])
+    .filter(design => /^\/designer\/owayo\//i.test(String(design.preview || '')) && !/garment-render/i.test(String(design.preview || '')))
+    .slice(0, safePreview ? 3 : 4)
+    .map((design, index) => ({ id:`media-${id}-${slugify(design.slug || design.name, String(index))}`, type:'IMAGE', url:design.preview, alt:`${title} custom design preview ${index + 1}`, role:safePreview ? 'design-preview' : index === 0 ? 'front' : 'design-preview', filename:`${slugify(design.slug || design.name, `design-${index}`)}.webp`, source:'JERSEVO_DESIGNER_PREVIEW', createdAt:manifest.source?.syncedAt || null }))
+  const media = [
+    ...(safePreview ? [{ id:`media-${id}-family-preview`, type:'IMAGE', url:safePreview, alt:`${title} Jersevo design preview`, role:'front', filename:'design-preview.webp', source:'JERSEVO_DESIGNER_PREVIEW', createdAt:manifest.source?.syncedAt || null }] : []),
+    ...designMedia
+  ]
   const status = publish ? 'PUBLISHED' : 'DRAFT'
   const seoStatus = publish ? 'INDEXABLE' : 'BLOCKED'
   const taxonomy = { category, productGroup, sport:family.sport, audience:family.audience, fit:family.fit, sleeve:family.sleeve, personalization:'custom' }

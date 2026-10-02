@@ -303,7 +303,7 @@ async function syncFamily(family, client, sharedPatterns) {
     provider:'owayo',
     source:{ ownerConfirmedByOperator:true, catalogue:family.sourceUrl, configurator:sourcePage, productEndpoint:`${sourceOrigin}/konfigurator_php/auswahlmodul/produkt.php`, assetOrigin, syncedAt:new Date().toISOString() },
     product:{ name:product.Name, familyId:family.id, catalogGroup:family.group, catalogGroupLabel:family.groupLabel, sport:family.sport, sportLabel:family.sportLabel, publicSlug:product.Urlname, normalizedSlug:product.webproduktNormalized, orderType:product.Ordertype, cut:product.Schnitt, model:product.model, baseModel:product.Basemodel, baseDesign:product.BasisDesign, sizes:product.Sizes || [], minimumOrder:Number(product.MindestBestellung || 1), maximumOrder:Number(product.MaximalBestellung || 250), droppableParts:product.namesOfDroppableParts || [], colorCodes:product.colorCodes || [], defaultColors:product.ColorCodeFarbVorbelegungen || {} },
-    branding:{ removed:'Owayo vendor marks from synchronized mask textures', colorCodes:[...OWAYO_BRAND_COLOR_CODES], colorIndices:[...brandColorIndices(product.colorCodes)] },
+    branding:{ removed:'Owayo vendor marks and technical source labels from synchronized mask textures', colorCodes:[...OWAYO_BRAND_COLOR_CODES], colorIndices:[...brandColorIndices(product.colorCodes)] },
     model:{ format:'mirl-v1.1-uncompressed', uri:modelInfo.url, parts:support['parts.json'], restrictedZones:support['sperrbezirke.json'], seamLines:support['teilungslinien.json'] },
     designs,
     syncStatus:designs.length === 0 ? 'PARTIAL' : missingDesigns.length ? 'READY_WITH_SOURCE_GAPS' : 'READY',

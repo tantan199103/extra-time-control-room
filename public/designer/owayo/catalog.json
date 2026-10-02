@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "provider": "owayo",
-  "generatedAt": "2026-09-30T07:26:31.324Z",
+  "generatedAt": "2026-10-02T07:15:59.460Z",
   "generatedFrom": "verified-product-family-contract",
   "source": "https://www.owayo.com/",
   "publicBrand": "Jersevo",
@@ -145,7 +145,7 @@
       "sleeve": "short",
       "fit": "relaxed athletic",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys-us.htm",
-      "preview": "/designer/owayo/cycling-c3/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-c3/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -172,7 +172,7 @@
       "sleeve": "short",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro-us.htm",
-      "preview": "/designer/owayo/cycling-c5/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-c5/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -199,7 +199,7 @@
       "sleeve": "short aero mesh",
       "fit": "elastic tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_epic-us.htm",
-      "preview": "/designer/owayo/cycling-c7/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "etape",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -228,7 +228,7 @@
       "sleeve": "long",
       "fit": "relaxed athletic",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_longsleeve-us.htm",
-      "preview": "/designer/owayo/cycling-cl3/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-cl3/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -255,7 +255,7 @@
       "sleeve": "long",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_longsleeves-us.htm",
-      "preview": "/designer/owayo/cycling-cl5/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-cl5/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -282,7 +282,7 @@
       "sleeve": "long winter",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_winter-us.htm",
-      "preview": "/designer/owayo/cycling-cw5/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-cw5/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -309,7 +309,7 @@
       "sleeve": "sleeveless",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_sleeveless-us.htm",
-      "preview": "/designer/owayo/cycling-ct5/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-ct5/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -336,7 +336,7 @@
       "sleeve": "short",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies-us.htm",
-      "preview": "/designer/owayo/cycling-c5w/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-c5w/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -363,7 +363,7 @@
       "sleeve": "long",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies_longsleeves-us.htm",
-      "preview": "/designer/owayo/cycling-cl5w/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-cl5w/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -390,7 +390,7 @@
       "sleeve": "long winter",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies_winter-us.htm",
-      "preview": "/designer/owayo/cycling-cw5w/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-cw5w/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -417,7 +417,7 @@
       "sleeve": "sleeveless",
       "fit": "tight",
       "sourceUrl": "https://www.owayo.com/cycling-bikejerseys_pro_ladies_sleeveless-us.htm",
-      "preview": "/designer/owayo/cycling-ct5w/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-ct5w/previews/etape.webp",
       "previewDesign": "etape",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -444,7 +444,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys-us.htm",
-      "preview": "/designer/owayo/cycling-m6/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-m6/previews/derny.webp",
       "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -471,7 +471,7 @@
       "sleeve": "long",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys_longsleeves-us.htm",
-      "preview": "/designer/owayo/cycling-ml6/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-ml6/previews/derny.webp",
       "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -498,7 +498,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys_m5-us.htm",
-      "preview": "/designer/owayo/cycling-m5/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-m5/previews/derny.webp",
       "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -525,7 +525,7 @@
       "sleeve": "long",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/cycling-mtb_jerseys_ml5-us.htm",
-      "preview": "/designer/owayo/cycling-ml5/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-ml5/previews/derny.webp",
       "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -552,7 +552,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/cycling-shirts_f1-us.htm",
-      "preview": "/designer/owayo/cycling-f1/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-f1/previews/derny.webp",
       "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -579,7 +579,7 @@
       "sleeve": "long",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/cycling-shirts_fl1_long_sleeve-us.htm",
-      "preview": "/designer/owayo/cycling-fl1/previews/garment-render.webp",
+      "preview": "/designer/owayo/cycling-fl1/previews/derny.webp",
       "previewDesign": "derny",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -606,7 +606,7 @@
       "sleeve": "sleeveless",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/basketball-shirts-us.htm",
-      "preview": "/designer/owayo/basketball-b6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "legend",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -633,7 +633,7 @@
       "sleeve": "sleeveless",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/basketball-shirts_b7-us.htm",
-      "preview": "/designer/owayo/basketball-b7/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "legend",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -662,7 +662,7 @@
       "sleeve": "long",
       "fit": "classic",
       "sourceUrl": "https://www.owayo.com/hockey-shirts_h3-us.htm",
-      "preview": "/designer/owayo/hockey-h3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "fighter",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -694,7 +694,7 @@
       "sleeve": "long",
       "fit": "professional",
       "sourceUrl": "https://www.owayo.com/hockey-shirts_h6-us.htm",
-      "preview": "/designer/owayo/hockey-h6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "fighter",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -725,7 +725,7 @@
       "sleeve": "long",
       "fit": "extended back",
       "sourceUrl": "https://www.owayo.com/motocross-jerseys_mx6-us.htm",
-      "preview": "/designer/owayo/motocross-mx6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "flight",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -752,7 +752,7 @@
       "sleeve": "short",
       "fit": "classic straight",
       "sourceUrl": "https://www.owayo.com/soccer-shirts_f3-us.htm",
-      "preview": "/designer/owayo/soccer-f3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "cross",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -779,7 +779,7 @@
       "sleeve": "short",
       "fit": "anatomic",
       "sourceUrl": "https://www.owayo.com/design-custom-soccer-jerseys.htm",
-      "preview": "/designer/owayo/soccer-f5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "cross",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -806,7 +806,7 @@
       "sleeve": "short",
       "fit": "athletic tailored",
       "sourceUrl": "https://www.owayo.com/soccer-shirts_f6-us.htm",
-      "preview": "/designer/owayo/soccer-f6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "cross",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -833,7 +833,7 @@
       "sleeve": "short",
       "fit": "slim",
       "sourceUrl": "https://www.owayo.com/running-custom-short-sleeve-shirts-us.htm",
-      "preview": "/designer/owayo/running-r5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "rise",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -860,7 +860,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/productservice-tshirts_classic_basic_productservice-us.htm",
-      "preview": "/designer/owayo/tshirts-basic/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "pure",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -887,7 +887,7 @@
       "sleeve": "sleeveless",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/basketball-shirts_b1-us.htm",
-      "preview": "/designer/owayo/basketball-b1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "legend",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -914,7 +914,7 @@
       "sleeve": "sleeveless",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/basketball-shirts_b7w-us.htm",
-      "preview": "/designer/owayo/basketball-b7w/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "legend",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -943,7 +943,7 @@
       "sleeve": "sleeveless reversible",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/basketball-shirts_br1-us.htm",
-      "preview": "/designer/owayo/basketball-br1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "legend",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -972,7 +972,7 @@
       "sleeve": "sleeveless reversible",
       "fit": "professional",
       "sourceUrl": "https://www.owayo.com/basketball-shirts_br6-us.htm",
-      "preview": "/designer/owayo/basketball-br6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "legend",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -1001,7 +1001,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/basketball-shooting_shirts_f1-us.htm",
-      "preview": "/designer/owayo/basketball-shooting-f1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "throw",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1028,7 +1028,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/bowling-us.htm",
-      "preview": "/designer/owayo/bowling-f5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "dirt",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1055,7 +1055,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/bowling-shirts_bowling-us.htm",
-      "preview": "/designer/owayo/bowling-basic/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "dirt",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1082,7 +1082,7 @@
       "sleeve": "short",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/bowling-shirts_bowling_xp5-us.htm",
-      "preview": "/designer/owayo/bowling-xp5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "pure",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1109,7 +1109,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/darts-us.htm",
-      "preview": "/designer/owayo/darts-basic/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "dirt",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1136,7 +1136,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/darts-us.htm",
-      "preview": "/designer/owayo/darts-f5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "dirt",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1163,7 +1163,7 @@
       "sleeve": "short",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/darts-shirts_dart_xp5-us.htm",
-      "preview": "/designer/owayo/darts-xp5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "dirt",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1190,7 +1190,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/esports-shirts_e3-us.htm",
-      "preview": "/designer/owayo/esports-e3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "league",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1217,7 +1217,7 @@
       "sleeve": "short",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/esports-shirts_e6-us.htm",
-      "preview": "/designer/owayo/esports-e6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "league",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1244,7 +1244,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/esports-shirts_f1-us.htm",
-      "preview": "/designer/owayo/esports-f1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "final",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1271,7 +1271,7 @@
       "sleeve": "long",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/esports-shirts_long_sleeve_el5-us.htm",
-      "preview": "/designer/owayo/esports-long-el5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "league",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1298,7 +1298,7 @@
       "sleeve": "short",
       "fit": "classic",
       "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_f3-us.htm",
-      "preview": "/designer/owayo/fieldhockey-f3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "final",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1325,7 +1325,7 @@
       "sleeve": "short",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_d6-us.htm",
-      "preview": "/designer/owayo/fieldhockey-d6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "final",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -1354,7 +1354,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/fieldhockey-shirts_f1-us.htm",
-      "preview": "/designer/owayo/fieldhockey-f1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "pure",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1381,7 +1381,7 @@
       "sleeve": "short",
       "fit": "classic",
       "sourceUrl": "https://www.owayo.com/handball-us.htm",
-      "preview": "/designer/owayo/handball-basic/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "gladiator",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1408,7 +1408,7 @@
       "sleeve": "short",
       "fit": "athletic",
       "sourceUrl": "https://www.owayo.com/handball-shirts_d6-us.htm",
-      "preview": "/designer/owayo/handball-d6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "gladiator",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1435,7 +1435,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/handball-shirts_f1-us.htm",
-      "preview": "/designer/owayo/handball-f1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "gladiator",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1462,7 +1462,7 @@
       "sleeve": "short",
       "fit": "classic",
       "sourceUrl": "https://www.owayo.com/handball-shirts_f3-us.htm",
-      "preview": "/designer/owayo/handball-f3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "gladiator",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1489,7 +1489,7 @@
       "sleeve": "long",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/handball-shirts_f1_goalkeeper-us.htm",
-      "preview": "/designer/owayo/handball-gk-f1/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "gladiator",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1516,7 +1516,7 @@
       "sleeve": "sleeveless",
       "fit": "race",
       "sourceUrl": "https://www.owayo.com/rowing-us.htm",
-      "preview": "/designer/owayo/rowing-w6/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "limit",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -1546,7 +1546,7 @@
       "sleeve": "sleeveless",
       "fit": "race",
       "sourceUrl": "https://www.owayo.com/rowing/products/rowing-unisuits-us.htm",
-      "preview": "/designer/owayo/rowing-w6-comp/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "limit",
       "syncStatus": "READY_WITH_SOURCE_GAPS",
       "missingDesigns": [
@@ -1576,7 +1576,7 @@
       "sleeve": "long",
       "fit": "slim",
       "sourceUrl": "https://www.owayo.com/running-custom-long-sleeve-shirts-us.htm",
-      "preview": "/designer/owayo/running-long/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "rise",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1603,7 +1603,7 @@
       "sleeve": "short",
       "fit": "slim",
       "sourceUrl": "https://www.owayo.com/running-custom-short-sleeve-shirts_ladies-us.htm",
-      "preview": "/designer/owayo/running-short-ladies/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "rise",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1630,7 +1630,7 @@
       "sleeve": "sleeveless",
       "fit": "slim",
       "sourceUrl": "https://www.owayo.com/running-singlets-us.htm",
-      "preview": "/designer/owayo/running-singlets/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "rise",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1657,7 +1657,7 @@
       "sleeve": "long",
       "fit": "extended back",
       "sourceUrl": "https://www.owayo.com/motocross-jerseys_m5-us.htm",
-      "preview": "/designer/owayo/motocross-m5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "flight",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1684,7 +1684,7 @@
       "sleeve": "long",
       "fit": "extended back",
       "sourceUrl": "https://www.owayo.com/motocross-jerseys_ml5-us.htm",
-      "preview": "/designer/owayo/motocross-ml5/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "flight",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1711,7 +1711,7 @@
       "sleeve": "short",
       "fit": "classic",
       "sourceUrl": "https://www.owayo.com/custom-volleyball-jerseys.htm",
-      "preview": "/designer/owayo/volleyball-f3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "cross",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1738,7 +1738,7 @@
       "sleeve": "short",
       "fit": "classic",
       "sourceUrl": "https://www.owayo.com/custom-floorball-jerseys.htm",
-      "preview": "/designer/owayo/floorball-f3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "cross",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1765,7 +1765,7 @@
       "sleeve": "short",
       "fit": "regular",
       "sourceUrl": "https://www.owayo.com/custom-table-tennis-jerseys.htm",
-      "preview": "/designer/owayo/tabletennis-f3/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "cross",
       "syncStatus": "READY",
       "missingDesigns": []
@@ -1792,7 +1792,7 @@
       "sleeve": "n/a",
       "fit": "high-waist",
       "sourceUrl": "https://www.owayo.com/custom-yoga-pants.htm",
-      "preview": "/designer/owayo/yoga-pants-highwaist/previews/garment-render.webp",
+      "preview": "",
       "previewDesign": "flight",
       "syncStatus": "READY",
       "missingDesigns": []

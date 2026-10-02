@@ -2002,16 +2002,16 @@
       "sha256": "80a4b641a0bd11c19439a5b082996d4660adb853aa0ee6dd9d234909fed1b4e8"
     },
     "/designer/owayo/cycling-c3/designs/etape/Etape_Bag.png": {
-      "bytes": 14561,
-      "sha256": "9b9e2c75957b6f1f14af022279bc7a5485983453d92dca61d07ea94a91a22d19"
+      "bytes": 6253,
+      "sha256": "df1869dbe5a0256981d4d351d52b1beb470084cd94ccdc10ba04764f28582969"
     },
     "/designer/owayo/cycling-c3/designs/etape/Etape_Collar.png": {
       "bytes": 5287,
       "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
     },
     "/designer/owayo/cycling-c3/designs/etape/Etape_FrontLeftPart.png": {
-      "bytes": 24870,
-      "sha256": "3f0f03f1e7b8cc721aa9ebc49095a05398e5bb480ee4fb602b6d4f0c75166a65"
+      "bytes": 12556,
+      "sha256": "be349933968afc86275069c9e47b0994b47d3afb37c45ac3df6ecb62b46357ac"
     },
     "/designer/owayo/cycling-c3/designs/etape/Etape_FrontRightPart.png": {
       "bytes": 8385,
@@ -2050,8 +2050,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/velocity/Velocity_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/velocity/Velocity_Collar.png": {
       "bytes": 5287,
@@ -2062,8 +2062,8 @@
       "sha256": "998f3e59666c0ba872815f6541d89c7cfaf789313900914260974d0c618d5e11"
     },
     "/designer/owayo/cycling-c3/designs/velocity/Velocity_FrontRightPart.png": {
-      "bytes": 7079,
-      "sha256": "032bc8d67621d044b2cbe299c95b436e2adf92d5b1a6579ed1577428261a0c84"
+      "bytes": 6614,
+      "sha256": "ba124fc83f3c6369584bb7f98ba1d4d24a8e7e0da2332150000b2e9d70d22db2"
     },
     "/designer/owayo/cycling-c3/designs/velocity/Velocity_LeftArm.png": {
       "bytes": 11051,
@@ -2098,8 +2098,8 @@
       "sha256": "141fc0303d3fcab9fdbbb00c8794d32a6f6b31ccea82f2ba6b785b1d82a65726"
     },
     "/designer/owayo/cycling-c3/designs/attack/Attack_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/attack/Attack_Collar.png": {
       "bytes": 5287,
@@ -2110,8 +2110,8 @@
       "sha256": "df9a11a18ae87d07cc4de2d0cb4ab20b0f2740aae59a8441d613f019d6079028"
     },
     "/designer/owayo/cycling-c3/designs/attack/Attack_FrontRightPart.png": {
-      "bytes": 19695,
-      "sha256": "9e0677aede71713a5d1a07db8605a212be6008a14fb4f5b774ad53a068979094"
+      "bytes": 10549,
+      "sha256": "30709d3cfea95fdfe9799e77db8f69c384f246680c5e40d2a120de9b2ac25ac5"
     },
     "/designer/owayo/cycling-c3/designs/attack/Attack_LeftArm.png": {
       "bytes": 29817,
@@ -2146,8 +2146,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/break/Break_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/break/Break_Collar.png": {
       "bytes": 5287,
@@ -2158,8 +2158,8 @@
       "sha256": "7c53b97d8187d7511e07db1e12956b149829c0d0b4424f53b419506d58d3e3bb"
     },
     "/designer/owayo/cycling-c3/designs/break/Break_FrontRightPart.png": {
-      "bytes": 17541,
-      "sha256": "c7cc402daddc3ee8cba58c333452fdf4405d7c88e9abfa152b973fc91e6a3892"
+      "bytes": 8677,
+      "sha256": "85d1e91615014cd7b706111b6a925b522fd2475ca774a8c21a0bc40dd722e67e"
     },
     "/designer/owayo/cycling-c3/designs/break/Break_LeftArm.png": {
       "bytes": 33692,
@@ -2194,8 +2194,8 @@
       "sha256": "736c1b2bd15603a101738f1e486b633189b02bfd3a255baf5b6dad30c022cdc7"
     },
     "/designer/owayo/cycling-c3/designs/shield/Shield_Bag.png": {
-      "bytes": 13992,
-      "sha256": "6e30aa39e0e2bcb99ac56a282a4c031128f73f652265a06ce091fdbaff5d960d"
+      "bytes": 8121,
+      "sha256": "504d099e690595b47fb7c0f5eae2f84962153149b4b06a6f52913803e682532c"
     },
     "/designer/owayo/cycling-c3/designs/shield/Shield_Collar.png": {
       "bytes": 5287,
@@ -2206,8 +2206,8 @@
       "sha256": "9366d7f45511e76bdddded3bad6dce0fcc551a4edec51ea53c8cda72ec873ef7"
     },
     "/designer/owayo/cycling-c3/designs/shield/Shield_FrontRightPart.png": {
-      "bytes": 18918,
-      "sha256": "c67d2693713daa8c7017568b65c822857baa4c68f5f1baa56032136520981272"
+      "bytes": 10285,
+      "sha256": "509d8ebdddb5dbc39fec1a82badbae008f290ecd836b3def0253c3dbda0fde29"
     },
     "/designer/owayo/cycling-c3/designs/shield/Shield_LeftArm.png": {
       "bytes": 29702,
@@ -2242,8 +2242,8 @@
       "sha256": "98783c7885f8aa9e884f82e39906b093abf0bfcbd2c4b3de1583b8f0f2916c42"
     },
     "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Bag.png": {
-      "bytes": 10820,
-      "sha256": "04832d6ccca46a6c2b445e9a5adbbf0c04020c24eb3427e3d27ad0cf0e308105"
+      "bytes": 4451,
+      "sha256": "3b26154d523b9dc4af9e7bddd0a66674ddcda623b2e46f4bca25b7d202716b6f"
     },
     "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_Collar.png": {
       "bytes": 5287,
@@ -2254,8 +2254,8 @@
       "sha256": "d449f920155f30dee00496281fa91a66b472c243d2887f6f45c20433a057a59c"
     },
     "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_FrontRightPart.png": {
-      "bytes": 8415,
-      "sha256": "2b1569ea4e3c385fde07648ad31ab68a92dabeda9edc5bfa305fba117d548af4"
+      "bytes": 7938,
+      "sha256": "db27ac31c2da721c3313c038586f0f142aafae06edb55f7dd7fb7ec658c4731f"
     },
     "/designer/owayo/cycling-c3/designs/gruppetto/Gruppetto_LeftArm.png": {
       "bytes": 10941,
@@ -2290,8 +2290,8 @@
       "sha256": "dc7ac986dc8f80592b72b75abaa34b33d31a679d7e3b327549a1ed8711315829"
     },
     "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Bag.png": {
-      "bytes": 10821,
-      "sha256": "8dd09fd7ed8cd24294e600bb33d282d787f011aa31c5b3f172079e531e1a1afc"
+      "bytes": 7521,
+      "sha256": "0271ff7bb5be8062e844b62403f3193af143437e2e1943ff62f21391710427da"
     },
     "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_Collar.png": {
       "bytes": 5287,
@@ -2302,8 +2302,8 @@
       "sha256": "392c4edca773ac24f7c9e820c232d86c599bb55b89d0318fd85316b27472979d"
     },
     "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_FrontRightPart.png": {
-      "bytes": 14989,
-      "sha256": "0c0f7c0337021857363a621c6976f4b61bf9bbf41935e4b173e6d6765c39a356"
+      "bytes": 8655,
+      "sha256": "d73672ff6031dc911de085df337d312094c0e408becd3d1e11345305d6c18ebf"
     },
     "/designer/owayo/cycling-c3/designs/galibier-2/Galibier 2_LeftArm.png": {
       "bytes": 24527,
@@ -2338,8 +2338,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/sprint/Sprint_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/sprint/Sprint_Collar.png": {
       "bytes": 5287,
@@ -2350,8 +2350,8 @@
       "sha256": "cd2bab3b72a21ec4ad7e0a100bb87d812d4add0b5fd93c87c89c737718441114"
     },
     "/designer/owayo/cycling-c3/designs/sprint/Sprint_FrontRightPart.png": {
-      "bytes": 17432,
-      "sha256": "71a5e6067e98a0ea5101e2e4d08b7db9803cc0380861d112e89fa5543cfb7d0d"
+      "bytes": 8844,
+      "sha256": "0bd3759cd3002e9c46fee65927684ac1368325225b4c09077e32b29f2d64d4fb"
     },
     "/designer/owayo/cycling-c3/designs/sprint/Sprint_LeftArm.png": {
       "bytes": 28613,
@@ -2386,8 +2386,8 @@
       "sha256": "54797c18cf5d06c8ab7de4a94cba544fb7ddfbc2ea95b1d202c9922042dca4a9"
     },
     "/designer/owayo/cycling-c3/designs/zone/Zone_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/zone/Zone_Collar.png": {
       "bytes": 5287,
@@ -2398,8 +2398,8 @@
       "sha256": "9d83732410544094bd2604bf20853091e54e67a5aba2934cd531dcc4a21920ec"
     },
     "/designer/owayo/cycling-c3/designs/zone/Zone_FrontRightPart.png": {
-      "bytes": 15152,
-      "sha256": "ce540cf070d0ce56b0d51df257074aadc55d663a516c7cfc94d1fea9480c81c3"
+      "bytes": 6717,
+      "sha256": "994fd022cb059a43c58d30fd5ce9cb432317ea67dce78ab71631ecf390e14473"
     },
     "/designer/owayo/cycling-c3/designs/zone/Zone_LeftArm.png": {
       "bytes": 27909,
@@ -2434,8 +2434,8 @@
       "sha256": "7173e87051d29a4520a524e84b34eb33d90476a110b07e03fcf70a3244f68284"
     },
     "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Bag.png": {
-      "bytes": 11118,
-      "sha256": "db2e62a78a53158c774f020d7c17e43c73251c615a7ef56523d00d9fc31c1175"
+      "bytes": 4717,
+      "sha256": "f24e820c3c705ece53160f0c16b50372faa0bc5301897033af217a76467fb86a"
     },
     "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_Collar.png": {
       "bytes": 5287,
@@ -2446,8 +2446,8 @@
       "sha256": "6335e262304e5fedd1c93aae0b26fecbc02b3e967d9792f4c1a71d4efe0e50fa"
     },
     "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_FrontRightPart.png": {
-      "bytes": 15530,
-      "sha256": "ca3df258bb4150c4f784eb20471e7512606850af49a175bcf54955e4a3ad1794"
+      "bytes": 6900,
+      "sha256": "23f0a2cdb2df9f3ef657c2a526ad40805bf8db6cf89fd945573ea3c230352038"
     },
     "/designer/owayo/cycling-c3/designs/sunrise/Sunrise_LeftArm.png": {
       "bytes": 24318,
@@ -2482,8 +2482,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/pace/Pace_Bag.png": {
-      "bytes": 10840,
-      "sha256": "0cd47e55845d46bc7b95d8532671eb35fc98be01396959072520e91e079987e1"
+      "bytes": 5253,
+      "sha256": "cfca43a60944a16b5a3f508c43e25aad8bac106dd9247519c52aaeb5d3bf176d"
     },
     "/designer/owayo/cycling-c3/designs/pace/Pace_Collar.png": {
       "bytes": 5287,
@@ -2494,8 +2494,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/pace/Pace_FrontRightPart.png": {
-      "bytes": 14938,
-      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+      "bytes": 6559,
+      "sha256": "29597a2644165bac21f3f1200c5d761279f7815587a649cf8489a7a204f73309"
     },
     "/designer/owayo/cycling-c3/designs/pace/Pace_LeftArm.png": {
       "bytes": 25556,
@@ -2530,8 +2530,8 @@
       "sha256": "10f6c77095495f3d62c0c6b657b1139b85ff5f63b8e04c07ce2cd7514903e43f"
     },
     "/designer/owayo/cycling-c3/designs/champion/Champion_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/champion/Champion_Collar.png": {
       "bytes": 5287,
@@ -2542,8 +2542,8 @@
       "sha256": "21abdf2477db7bfcbf1589e31e15fa7404525a8b702f2aef29b70248095d7126"
     },
     "/designer/owayo/cycling-c3/designs/champion/Champion_FrontRightPart.png": {
-      "bytes": 15454,
-      "sha256": "23f644c4bdb35dfda4ed4d678d6a1792ac7a1dec8f1932ff2e250327c1291227"
+      "bytes": 6810,
+      "sha256": "2865aa583f2dd2a253555bef10d52e72dc725810a7940cb3162f32f12288ad7b"
     },
     "/designer/owayo/cycling-c3/designs/champion/Champion_LeftArm.png": {
       "bytes": 24318,
@@ -2578,8 +2578,8 @@
       "sha256": "f6b0284e5785f1be5f353c0c38d413f4a359a620635988a4d1e57e4d4d98e48b"
     },
     "/designer/owayo/cycling-c3/designs/aero/Aero_Bag.png": {
-      "bytes": 10773,
-      "sha256": "9d57f718168d6153078c945fefbdce3c465443a206f75ceec0ea08b07c1099b4"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/aero/Aero_Collar.png": {
       "bytes": 5287,
@@ -2590,8 +2590,8 @@
       "sha256": "3a6a0457ea3bd07d808de724a9f2d485b3aec04a29cc5ef85b447c50dc4a61a9"
     },
     "/designer/owayo/cycling-c3/designs/aero/Aero_FrontRightPart.png": {
-      "bytes": 8016,
-      "sha256": "12d434a8184c13118d9e5ed011f21d8d24f3019d02cae0bde80c0557da242e0a"
+      "bytes": 7576,
+      "sha256": "40addef4ebea79a2b7ee8db553ac5e0eb6e95ecdf8c752cf36b1fa703b4f5de3"
     },
     "/designer/owayo/cycling-c3/designs/aero/Aero_LeftArm.png": {
       "bytes": 10104,
@@ -2626,8 +2626,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/stage/Stage_Bag.png": {
-      "bytes": 11267,
-      "sha256": "f8f210aca92c674c454aba44fcf3cbe724d7bf9dfc2a9fdee2994d4b0e6a4807"
+      "bytes": 5498,
+      "sha256": "6717c8cc9445b9b8cd186baaec897adb558f75d2c1f3a05d83033615f743d102"
     },
     "/designer/owayo/cycling-c3/designs/stage/Stage_Collar.png": {
       "bytes": 5287,
@@ -2638,8 +2638,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/stage/Stage_FrontRightPart.png": {
-      "bytes": 15031,
-      "sha256": "f7a1f30b0a38f197f0f0fd2687f88051a43accd206469d516681ed97a9b2dbc8"
+      "bytes": 6981,
+      "sha256": "b02df5fa59300c9c61c1d3bc5ad134605464691a2f6eb29e790f3a1005ab6270"
     },
     "/designer/owayo/cycling-c3/designs/stage/Stage_LeftArm.png": {
       "bytes": 25198,
@@ -2674,8 +2674,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/brevet/Brevet_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/brevet/Brevet_Collar.png": {
       "bytes": 5287,
@@ -2686,8 +2686,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/brevet/Brevet_FrontRightPart.png": {
-      "bytes": 15000,
-      "sha256": "e04a5b5ff03519ffdcad8c1a71cd43eedf4990ffec6b3be333f46f39234f9d65"
+      "bytes": 8668,
+      "sha256": "a261dcecfac90a2669245377db26937d095f7ddec3a49dc6661bd5deb874a50f"
     },
     "/designer/owayo/cycling-c3/designs/brevet/Brevet_LeftArm.png": {
       "bytes": 25776,
@@ -2722,8 +2722,8 @@
       "sha256": "588eadeb301f8e1721e71130ef20a3cbf429f09fd60bdacedb7719fb18a5ecd3"
     },
     "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Bag.png": {
-      "bytes": 12310,
-      "sha256": "5369f640175570cfade1917e32e67d8067c30fdcf63f75933e5c44987d453b15"
+      "bytes": 7748,
+      "sha256": "55df5b9c63ee4ff053dac2974859f14883caaf4137f10c1e884eba8ce676b7b2"
     },
     "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_Collar.png": {
       "bytes": 6009,
@@ -2734,8 +2734,8 @@
       "sha256": "0c9636660ded1fda431b0c38509c63d7541fabac53ccc672af20d58851f85649"
     },
     "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_FrontRightPart.png": {
-      "bytes": 20244,
-      "sha256": "10e76185a21255881413d42391e126c8409aeb9432695a151019401d5b167584"
+      "bytes": 11879,
+      "sha256": "791c0fde3324beabf1f7914dd8a7d9e8b94c504d98d47b309784f22fd4163137"
     },
     "/designer/owayo/cycling-c3/designs/velo-2/Velo 2_LeftArm.png": {
       "bytes": 28408,
@@ -2770,8 +2770,8 @@
       "sha256": "e62fbc41aa6b456a3d469628dc1ad1a17a4afac725d5cacc7ce4ddcc201ebdb1"
     },
     "/designer/owayo/cycling-c3/designs/leader/Leader_Bag.png": {
-      "bytes": 10801,
-      "sha256": "fcd942e991e9592f823d3f1aca69df794470912169605d858af93d927846520c"
+      "bytes": 4451,
+      "sha256": "d4b76145ee61a73d58710cabfb97053fb3635b73b383d214ff635d67bd143584"
     },
     "/designer/owayo/cycling-c3/designs/leader/Leader_Collar.png": {
       "bytes": 5287,
@@ -2782,8 +2782,8 @@
       "sha256": "2abf08c1ec4d24119e1363d8017f4e70a17ba389f5ee54a30f69bf8c018cdfb7"
     },
     "/designer/owayo/cycling-c3/designs/leader/Leader_FrontRightPart.png": {
-      "bytes": 8686,
-      "sha256": "56a5e7fb6ccba0f6920942e016b60d73ccc48ac1859e802e5a006e9b3d5a976a"
+      "bytes": 8216,
+      "sha256": "4a7016d4785e35aedce7076e8fb4b43d517022642b7701f75b007e8ee5c1740f"
     },
     "/designer/owayo/cycling-c3/designs/leader/Leader_LeftArm.png": {
       "bytes": 24318,
@@ -2818,8 +2818,8 @@
       "sha256": "5fcec56a40f6d953fa6d00e53e377446e28d13be59b4bba7b921dd1f2f3779f8"
     },
     "/designer/owayo/cycling-c3/designs/paceline/Paceline_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/paceline/Paceline_Collar.png": {
       "bytes": 5287,
@@ -2830,8 +2830,8 @@
       "sha256": "d9197d442b50929ef6f1cfe833b8d9e5979acdd9b219c63f4b1af6e400d70db6"
     },
     "/designer/owayo/cycling-c3/designs/paceline/Paceline_FrontRightPart.png": {
-      "bytes": 17398,
-      "sha256": "4f6c137de120e714ea92aa8cebe3b5a8f755bcce560bf52416b0a205d28a4221"
+      "bytes": 8118,
+      "sha256": "c24a0d3ea2c4e65decbda8fb259fc3b6b887a61e3a5a26413789b0373e8b8bed"
     },
     "/designer/owayo/cycling-c3/designs/paceline/Paceline_LeftArm.png": {
       "bytes": 27520,
@@ -2866,8 +2866,8 @@
       "sha256": "22c5d9b4c307b4aa73bcfb3e9b660c4b1547390705c013455b3e109e0849a0c2"
     },
     "/designer/owayo/cycling-c3/designs/allez/Allez_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/allez/Allez_Collar.png": {
       "bytes": 5287,
@@ -2878,8 +2878,8 @@
       "sha256": "cc86407e13123220476f776a01accd65f46afe5c9fae8aaa72a353e46df0729d"
     },
     "/designer/owayo/cycling-c3/designs/allez/Allez_FrontRightPart.png": {
-      "bytes": 17468,
-      "sha256": "896121a4a08409fd600dadb1d64136ca47138d63c0cccc98955760761d5c5ab8"
+      "bytes": 8202,
+      "sha256": "d8bb76d5836efbf263d50aff12f595c4e7b5b9c54317dc295fe6111ca2fc53b0"
     },
     "/designer/owayo/cycling-c3/designs/allez/Allez_LeftArm.png": {
       "bytes": 24318,
@@ -2914,8 +2914,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_Collar.png": {
       "bytes": 5287,
@@ -2926,8 +2926,8 @@
       "sha256": "a4e620485842659acb828283211d28b40b67691a0640c744f0ae9bfba6f7ad6f"
     },
     "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_FrontRightPart.png": {
-      "bytes": 19073,
-      "sha256": "6959449f1e95ae4056f9afc0490b3a898c8b34dc86fcc0b4f555af5693cd252b"
+      "bytes": 10271,
+      "sha256": "588680cacff3fcba7904a7de2a38b20624c718766a768608d28d90b9212c9d3e"
     },
     "/designer/owayo/cycling-c3/designs/granfondo/Granfondo_LeftArm.png": {
       "bytes": 32113,
@@ -2962,8 +2962,8 @@
       "sha256": "78b7867948181fd932c6ca407278730d5c5e79c20ae49622042289e03c78d020"
     },
     "/designer/owayo/cycling-c3/designs/montagne/Montagne_Bag.png": {
-      "bytes": 17949,
-      "sha256": "5f7074ba5ffc1473d7901130d5e557229fa91bb084981a4906c698dfce4e3ad5"
+      "bytes": 8542,
+      "sha256": "1731912824376bae0830e8be4575da51c8a55212d5232dd5ba496f99e4bd3ea4"
     },
     "/designer/owayo/cycling-c3/designs/montagne/Montagne_Collar.png": {
       "bytes": 5287,
@@ -2974,8 +2974,8 @@
       "sha256": "4a041f5b24b300346bc78af000530495c3dd0ffd62d8e09ecd823107d514a58c"
     },
     "/designer/owayo/cycling-c3/designs/montagne/Montagne_FrontRightPart.png": {
-      "bytes": 11338,
-      "sha256": "cc1a1f9c21f9526e6ea8589662891252832a6a3d7329e99f27fae68d47c4e1db"
+      "bytes": 10691,
+      "sha256": "76c7203826a18d6c48346498e47bcfab38fa64dbf6c8ae4e36521292fad9511e"
     },
     "/designer/owayo/cycling-c3/designs/montagne/Montagne_LeftArm.png": {
       "bytes": 24318,
@@ -3010,8 +3010,8 @@
       "sha256": "7886286882b311e8aa53a075b350c6066fe87c6857ee1b4499860baaf3276712"
     },
     "/designer/owayo/cycling-c3/designs/trail/Trail_Bag.png": {
-      "bytes": 10820,
-      "sha256": "04832d6ccca46a6c2b445e9a5adbbf0c04020c24eb3427e3d27ad0cf0e308105"
+      "bytes": 4451,
+      "sha256": "3b26154d523b9dc4af9e7bddd0a66674ddcda623b2e46f4bca25b7d202716b6f"
     },
     "/designer/owayo/cycling-c3/designs/trail/Trail_Collar.png": {
       "bytes": 5287,
@@ -3022,8 +3022,8 @@
       "sha256": "e52a8a32a3bc890a7594bd182ca4344834ed79d17f02b01311441b6260c3ab5c"
     },
     "/designer/owayo/cycling-c3/designs/trail/Trail_FrontRightPart.png": {
-      "bytes": 19318,
-      "sha256": "8535907cf13a779cd08370ef21d174faf06ec603aaaa91385d7bf7a3ce291895"
+      "bytes": 9893,
+      "sha256": "c8af1e0cd8ee1c9b9d2a1dcf1c178693eebd6eb584b8370d552c8336e1dec339"
     },
     "/designer/owayo/cycling-c3/designs/trail/Trail_LeftArm.png": {
       "bytes": 24318,
@@ -3058,8 +3058,8 @@
       "sha256": "3381b9079005d261a8a540040f39aa488ac1a08cb31bde6cec7b52d92e1c3a86"
     },
     "/designer/owayo/cycling-c3/designs/dirt/Dirt_Bag.png": {
-      "bytes": 32265,
-      "sha256": "cab8d959b2534ee246d89b0da86fbd645b4f5322fd1da3598a4ec9d55888a42e"
+      "bytes": 18871,
+      "sha256": "02dbf6a036411578c6a2162471217a3ede4a22bc400b8b783fcd11695264917d"
     },
     "/designer/owayo/cycling-c3/designs/dirt/Dirt_Collar.png": {
       "bytes": 5287,
@@ -3070,8 +3070,8 @@
       "sha256": "ed65ed7515280b4489009316b5de952469c98e8da745fd84b5b48346a14ea097"
     },
     "/designer/owayo/cycling-c3/designs/dirt/Dirt_FrontRightPart.png": {
-      "bytes": 82812,
-      "sha256": "9bd64434c28fd2ebf372b5f2840adf651fe2f100a45a171d9b62641c4a37a054"
+      "bytes": 49220,
+      "sha256": "1e0631ef4ab8dfe550a35d668e893070af8abda51912d10d363daf59182bfe78"
     },
     "/designer/owayo/cycling-c3/designs/dirt/Dirt_LeftArm.png": {
       "bytes": 79247,
@@ -3106,16 +3106,16 @@
       "sha256": "1c5882b1b2bb129efd51b90a3ed0c6b206c170d47127ee30fe7c05ceb16b6755"
     },
     "/designer/owayo/cycling-c3/designs/trouble/Trouble_Bag.png": {
-      "bytes": 17613,
-      "sha256": "a72393c56be66b6a8187fb422f9b171d78a9befa2463e3d38ca48d59ff9ae10b"
+      "bytes": 11689,
+      "sha256": "de5b41959bb111e3d01fa29949251101bac010b2d76d909b38a85e5fa6eb30d8"
     },
     "/designer/owayo/cycling-c3/designs/trouble/Trouble_Collar.png": {
       "bytes": 5287,
       "sha256": "f5930a97d5d310f71e0e199bd19f51a0a3b6d58f915e8fb8ce74fbe595a846cb"
     },
     "/designer/owayo/cycling-c3/designs/trouble/Trouble_FrontLeftPart.png": {
-      "bytes": 20315,
-      "sha256": "1fec64ea509bebd670ed95c478526c3f8c8b1882ef6f777d869735fd5a289434"
+      "bytes": 11531,
+      "sha256": "8041182c0f25411104bb655c35b6002c48ea94ed5ff258e38e4207ad96dce58a"
     },
     "/designer/owayo/cycling-c3/designs/trouble/Trouble_FrontRightPart.png": {
       "bytes": 12878,
@@ -3154,8 +3154,8 @@
       "sha256": "a7d077cd20c3b53913ff138437fa30d9d0c929ca53327164b70da7c79382abc4"
     },
     "/designer/owayo/cycling-c3/designs/loop/Loop_Bag.png": {
-      "bytes": 13034,
-      "sha256": "f9c55c985b980e9c1dd5da412b8c1182eabb0fae9205fca954a0d2785f26f9f7"
+      "bytes": 6096,
+      "sha256": "8ef3176abbb34b1c8b4b08c78ba960039f781433018cbd8cd55e08081a8dcf5d"
     },
     "/designer/owayo/cycling-c3/designs/loop/Loop_Collar.png": {
       "bytes": 5287,
@@ -3166,8 +3166,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/loop/Loop_FrontRightPart.png": {
-      "bytes": 20622,
-      "sha256": "444c13ff3c18bfd874c69100dc6c27a53a98203f2a9325918a7b73aef9240dc1"
+      "bytes": 10728,
+      "sha256": "8b14e511b9a4006afa4a8648bd84394123ab0e8d5c03e720265bd9e0aed8f1e0"
     },
     "/designer/owayo/cycling-c3/designs/loop/Loop_LeftArm.png": {
       "bytes": 24318,
@@ -3202,8 +3202,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/chaser/Chaser_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/chaser/Chaser_Collar.png": {
       "bytes": 5287,
@@ -3214,8 +3214,8 @@
       "sha256": "a2a5a83e71857c76ccf05749675e38cc6a732e3eff3aca627ddf775b64685a78"
     },
     "/designer/owayo/cycling-c3/designs/chaser/Chaser_FrontRightPart.png": {
-      "bytes": 22655,
-      "sha256": "e2f5123486dc331deb43316b808d962ca3e46b88bbd6fd5c776d4e045174caa9"
+      "bytes": 13466,
+      "sha256": "13a8c24dbb403712f86eaf13ffa2a51473dde760ac88e998e64b7090166920dc"
     },
     "/designer/owayo/cycling-c3/designs/chaser/Chaser_LeftArm.png": {
       "bytes": 29528,
@@ -3250,8 +3250,8 @@
       "sha256": "493f5999eea750132d2634137b22d6dee2ec67b386757baa0c2475b12bd68682"
     },
     "/designer/owayo/cycling-c3/designs/prolog/Prolog_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/prolog/Prolog_Collar.png": {
       "bytes": 5287,
@@ -3262,8 +3262,8 @@
       "sha256": "deb751291f765b65a3408dede0cdf3a459ac71c41802ef4963bedb52cac7a673"
     },
     "/designer/owayo/cycling-c3/designs/prolog/Prolog_FrontRightPart.png": {
-      "bytes": 19440,
-      "sha256": "edf54e93da124196f380669fea03647c4a80b851c0d83e7731cfb6f23f2703fe"
+      "bytes": 9679,
+      "sha256": "6b267c354c0d66e66975021d16856a1428735876de063e99b60a77e5a5356348"
     },
     "/designer/owayo/cycling-c3/designs/prolog/Prolog_LeftArm.png": {
       "bytes": 27322,
@@ -3298,8 +3298,8 @@
       "sha256": "cc603b3e2ed776b2e18e4877ab6bfef6d18a00b96504458b3173a6031632b6b5"
     },
     "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Bag.png": {
-      "bytes": 17600,
-      "sha256": "547ae0551ca3095e207b4386454dafc8a2343e5bd0d0c3d1f6e2e35a83cf3b08"
+      "bytes": 11151,
+      "sha256": "3345073ffb2358d5cfb33ad90534079b09ba8ae6b5c550541d79bacdc5db2422"
     },
     "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_Collar.png": {
       "bytes": 5287,
@@ -3310,8 +3310,8 @@
       "sha256": "b3990c8bed6790cffbdfc6ccb4cc54b520a9f3f4d42bcae146b5ca4835e3c345"
     },
     "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_FrontRightPart.png": {
-      "bytes": 22853,
-      "sha256": "e049560a36941f35cd57a9f8bf7bf3d3e095807f23f77230d5e5e1ad320c768d"
+      "bytes": 13716,
+      "sha256": "f52bc184e3d42ee6321486076cab78ff4f88138b6ace47fbc235789644e13408"
     },
     "/designer/owayo/cycling-c3/designs/scorpion-2/Scorpion 2_LeftArm.png": {
       "bytes": 30632,
@@ -3346,8 +3346,8 @@
       "sha256": "64d57c0d51ffbd115c8068fe7c998237b3c6ddb70eb90918a0b3e0c07717fe00"
     },
     "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Bag.png": {
-      "bytes": 37149,
-      "sha256": "ab1483fdff5c0441b104d5e5b4831f340e31e5d6c762b3011daabe79385d5b2d"
+      "bytes": 19157,
+      "sha256": "daefcc1d69043a2cddf5db63634bcd994cb80ea3a3026325c0552019813b4a0e"
     },
     "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_Collar.png": {
       "bytes": 5287,
@@ -3358,8 +3358,8 @@
       "sha256": "c35bd3f9a69e371ef8a4977708cbb5e92221373940a41961917f2f2ecbcd1f4b"
     },
     "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_FrontRightPart.png": {
-      "bytes": 30537,
-      "sha256": "54aa5543d21ca3077710fbd3cd52b35215245d9093e153ee446b2d021bbe57e1"
+      "bytes": 15235,
+      "sha256": "6f2760b53b8b206cd0786396554e8f860dde1b3249f5bc951af3a4e774ccd6e4"
     },
     "/designer/owayo/cycling-c3/designs/sanremo/Sanremo_LeftArm.png": {
       "bytes": 24320,
@@ -3394,8 +3394,8 @@
       "sha256": "f3a4fbfb8ac35f97f3f26814facc45741dcf4e5596897c34dbb7a61611d1de2b"
     },
     "/designer/owayo/cycling-c3/designs/piet/Piet_Bag.png": {
-      "bytes": 10959,
-      "sha256": "02d869bfc9b80f2ff12db24f671a2f595d3c0707096fa9663901db4a1e4af3e4"
+      "bytes": 6613,
+      "sha256": "7fbf091341cb8a31af0602af350127ae448ab280da23ac0326591152745dec4b"
     },
     "/designer/owayo/cycling-c3/designs/piet/Piet_Collar.png": {
       "bytes": 5287,
@@ -3406,8 +3406,8 @@
       "sha256": "645c88d27ba19a6f5865b4196e9e11d842f92077996fd8e51f8cea531de77457"
     },
     "/designer/owayo/cycling-c3/designs/piet/Piet_FrontRightPart.png": {
-      "bytes": 16938,
-      "sha256": "9cb43adf0d07c40c30ab324573db088ebb0ba602eea5c245348064fbeb16b1d3"
+      "bytes": 11024,
+      "sha256": "b2c015453cce66ba7f7fd9c2fc7c8e31e92a60c4626b3b3c4eec5f81e15b1a7f"
     },
     "/designer/owayo/cycling-c3/designs/piet/Piet_LeftArm.png": {
       "bytes": 24318,
@@ -3442,8 +3442,8 @@
       "sha256": "70361b6bb7e4cc0f6ba6a79008b944438d61960512eef1e48172b8d63876690b"
     },
     "/designer/owayo/cycling-c3/designs/spirit/Spirit_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/spirit/Spirit_Collar.png": {
       "bytes": 6214,
@@ -3454,8 +3454,8 @@
       "sha256": "9514ef0dcd3882d0941cda54a2abace10065a618dd72c774b502450c13ddf846"
     },
     "/designer/owayo/cycling-c3/designs/spirit/Spirit_FrontRightPart.png": {
-      "bytes": 32963,
-      "sha256": "c4120b29c263367cefe8662292e84362456a5d3f84723f312b9ab7e2340d420e"
+      "bytes": 16281,
+      "sha256": "04024c1fcf62e7e250540322894f68771e4413b68b1a5311eb97dc56a5037622"
     },
     "/designer/owayo/cycling-c3/designs/spirit/Spirit_LeftArm.png": {
       "bytes": 24320,
@@ -3490,8 +3490,8 @@
       "sha256": "4b359aa4a8a90337831a0dbee8c51763a448da658360b2fdf9a244a00b026aba"
     },
     "/designer/owayo/cycling-c3/designs/animal/Animal_Bag.png": {
-      "bytes": 14531,
-      "sha256": "99885fec0136565ec7d7ddf7654719398b29ecea5797cb9bba32495e44c84e76"
+      "bytes": 6833,
+      "sha256": "d4a18ab0b380b66874f10e94f047d1b8714cb109fa4ccfcd3d5f454f784faa3e"
     },
     "/designer/owayo/cycling-c3/designs/animal/Animal_Collar.png": {
       "bytes": 5287,
@@ -3502,8 +3502,8 @@
       "sha256": "acf3713c96286fe76f276129c8923adc674f76eb0454f45e524b28782228f7b3"
     },
     "/designer/owayo/cycling-c3/designs/animal/Animal_FrontRightPart.png": {
-      "bytes": 22495,
-      "sha256": "931ff72ad7b1cd6ccc7747e94634487fbac75d599e2f69d882def36714b90e98"
+      "bytes": 11032,
+      "sha256": "437314af4dae3239bd103d3d36f10f2132a598dcb7b7463b440234aad9f43990"
     },
     "/designer/owayo/cycling-c3/designs/animal/Animal_LeftArm.png": {
       "bytes": 26888,
@@ -3538,8 +3538,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/pure/Pure_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/pure/Pure_Collar.png": {
       "bytes": 5287,
@@ -3550,8 +3550,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/pure/Pure_FrontRightPart.png": {
-      "bytes": 14938,
-      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+      "bytes": 6559,
+      "sha256": "29597a2644165bac21f3f1200c5d761279f7815587a649cf8489a7a204f73309"
     },
     "/designer/owayo/cycling-c3/designs/pure/Pure_LeftArm.png": {
       "bytes": 24318,
@@ -3586,8 +3586,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/derny/Derny_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/derny/Derny_Collar.png": {
       "bytes": 5287,
@@ -3598,8 +3598,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/derny/Derny_FrontRightPart.png": {
-      "bytes": 14938,
-      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+      "bytes": 6559,
+      "sha256": "29597a2644165bac21f3f1200c5d761279f7815587a649cf8489a7a204f73309"
     },
     "/designer/owayo/cycling-c3/designs/derny/Derny_LeftArm.png": {
       "bytes": 24320,
@@ -3634,8 +3634,8 @@
       "sha256": "8c23f8569be546cdbaf158cc4172177152c28b196dbd81d32f894d39244547b2"
     },
     "/designer/owayo/cycling-c3/designs/burn/Burn_Bag.png": {
-      "bytes": 19866,
-      "sha256": "bcc94552c138c607b0e1df44241a14266de73440c7e2573eb10afcd767088db5"
+      "bytes": 10743,
+      "sha256": "e6f0b7fffa8c7960d6e7a35ae62291a879c7a3a376f9671bdf860533d448b085"
     },
     "/designer/owayo/cycling-c3/designs/burn/Burn_Collar.png": {
       "bytes": 5287,
@@ -3646,8 +3646,8 @@
       "sha256": "8a1fd65b4014b291b585976c40767030f0643f3e332af431dd61afca5bb67d1f"
     },
     "/designer/owayo/cycling-c3/designs/burn/Burn_FrontRightPart.png": {
-      "bytes": 25374,
-      "sha256": "53251c7d1e84d1c84e0dae518cb406adde10e96f04d6f6d41ef44ac77ff1311c"
+      "bytes": 13398,
+      "sha256": "0ff8cc462c9702de6e6a0018818a87edcfecf2d2d75da797e635216dc822cd63"
     },
     "/designer/owayo/cycling-c3/designs/burn/Burn_LeftArm.png": {
       "bytes": 36147,
@@ -3682,8 +3682,8 @@
       "sha256": "3331b8da768237712f50f0eb5144afe4386049658eebb58b2f4d0462884d3f3d"
     },
     "/designer/owayo/cycling-c3/designs/campeon/Campeon_Bag.png": {
-      "bytes": 13493,
-      "sha256": "ce1e33ea8cd8501299f85ae27ce811f21a490d69164e750782d98ac7e65fbf07"
+      "bytes": 6945,
+      "sha256": "831534fbe2893f51b8d8a5c2b6954975b013ee0237a755ca05588cfd595af5f9"
     },
     "/designer/owayo/cycling-c3/designs/campeon/Campeon_Collar.png": {
       "bytes": 5287,
@@ -3694,8 +3694,8 @@
       "sha256": "e3f2f256933dde0c945624f5656bef67252f4039a9edb60f8e062c017b6eba2a"
     },
     "/designer/owayo/cycling-c3/designs/campeon/Campeon_FrontRightPart.png": {
-      "bytes": 20804,
-      "sha256": "c1353943dda390f82e10c6700d468cb3d06224a8cd5e0adf2e01af5c63db188a"
+      "bytes": 9668,
+      "sha256": "1ba11dc1572bbc9f2e17c433d7fa5332a0a0fa234b376ae823820d4ac401f440"
     },
     "/designer/owayo/cycling-c3/designs/campeon/Campeon_LeftArm.png": {
       "bytes": 27177,
@@ -3730,8 +3730,8 @@
       "sha256": "d3b2d2818dcc78176905c8d961d9e583851dcb33e5e2a80b05b1e3b467574570"
     },
     "/designer/owayo/cycling-c3/designs/celtic/Celtic_Bag.png": {
-      "bytes": 10820,
-      "sha256": "04832d6ccca46a6c2b445e9a5adbbf0c04020c24eb3427e3d27ad0cf0e308105"
+      "bytes": 4451,
+      "sha256": "3b26154d523b9dc4af9e7bddd0a66674ddcda623b2e46f4bca25b7d202716b6f"
     },
     "/designer/owayo/cycling-c3/designs/celtic/Celtic_Collar.png": {
       "bytes": 5287,
@@ -3742,8 +3742,8 @@
       "sha256": "c1042b38e2014d34feb0c7afde769f2411f13a6cde9b3480af7c4ed869d13f61"
     },
     "/designer/owayo/cycling-c3/designs/celtic/Celtic_FrontRightPart.png": {
-      "bytes": 19244,
-      "sha256": "f02d4020479e2e07d3278ae9cc896588bfd86a98cc6b2e3d7cd78476ae515617"
+      "bytes": 9319,
+      "sha256": "ef861f8c1e708736d8877150d0c142e4abeb058e3d63632c3ee76f2e152e01f3"
     },
     "/designer/owayo/cycling-c3/designs/celtic/Celtic_LeftArm.png": {
       "bytes": 32061,
@@ -3778,8 +3778,8 @@
       "sha256": "36e03142ff1ebe7cf14d90da510d90b946c6115d73b67135e6f10aecb2855fbd"
     },
     "/designer/owayo/cycling-c3/designs/dominator/Dominator_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/dominator/Dominator_Collar.png": {
       "bytes": 5287,
@@ -3790,8 +3790,8 @@
       "sha256": "ef38ae431b54ae8d6370d86a7f93dfab2b914bdbb9e6473a38c8c556bbe5e434"
     },
     "/designer/owayo/cycling-c3/designs/dominator/Dominator_FrontRightPart.png": {
-      "bytes": 16026,
-      "sha256": "53236876176940d03b526d02947f2e75c6179339a7fbe3b51df4915e0ea6cb29"
+      "bytes": 7931,
+      "sha256": "ff3fda2a4824af582ea0bd2a8ee10956d0a72b53b718e286b19ac1d9ccde9d91"
     },
     "/designer/owayo/cycling-c3/designs/dominator/Dominator_LeftArm.png": {
       "bytes": 26606,
@@ -3826,8 +3826,8 @@
       "sha256": "fcb3324c0d814111a30d92066052ccdcca98709b9647da012c4f8a0b62893903"
     },
     "/designer/owayo/cycling-c3/designs/fire/Fire_Bag.png": {
-      "bytes": 15124,
-      "sha256": "0d0182fbc645878cd223e39a02a92c6e35091d5812ca85d2e498c5f856f98a21"
+      "bytes": 8271,
+      "sha256": "33b267d203402534a4a72f33ba14d1d5ba8f9163a28b5342d4f5c39088c12e51"
     },
     "/designer/owayo/cycling-c3/designs/fire/Fire_Collar.png": {
       "bytes": 5287,
@@ -3838,8 +3838,8 @@
       "sha256": "e8cd95e7c1b99af865c00c433f9ceefa525f07bfb8661334706dd25628b1ee96"
     },
     "/designer/owayo/cycling-c3/designs/fire/Fire_FrontRightPart.png": {
-      "bytes": 23583,
-      "sha256": "c6c1920ef5edbefc750daf7c90349d70d0f74728456734424de57bfc99125fab"
+      "bytes": 12930,
+      "sha256": "f532b4f2209ca412dd9eb25fb6f74ffd36ca2cf8caea32a7fd53f975d8a78ceb"
     },
     "/designer/owayo/cycling-c3/designs/fire/Fire_LeftArm.png": {
       "bytes": 33696,
@@ -3874,8 +3874,8 @@
       "sha256": "cd05acd501ec46c3f4e298024fb5c81d3aec6c4fc4c06fb3a23d2dbe49b4d0d4"
     },
     "/designer/owayo/cycling-c3/designs/giro/Giro_Bag.png": {
-      "bytes": 10830,
-      "sha256": "ea06b5bc3d7822131451946a3dad6099e0a14328dbc1a1d11f37b9ddec485cf2"
+      "bytes": 8092,
+      "sha256": "4b6d54aa5c55bdaf56c11a92458b4d5ee2d37541f6d90c2171dca8bd4ce82c73"
     },
     "/designer/owayo/cycling-c3/designs/giro/Giro_Collar.png": {
       "bytes": 5287,
@@ -3886,8 +3886,8 @@
       "sha256": "f050b684fa623f44912e0471f5fd90dd52abae1f7bcc566f918cae57b14fa34a"
     },
     "/designer/owayo/cycling-c3/designs/giro/Giro_FrontRightPart.png": {
-      "bytes": 15365,
-      "sha256": "453540a69d4ab88b8651c1cf836b2f0f58aa0970a5791f432cf686e7d3607510"
+      "bytes": 8983,
+      "sha256": "6e6633c210d119b5c1f0cadb5bc7606b5303467bcca94cd11f9c5c89fb48d6d7"
     },
     "/designer/owayo/cycling-c3/designs/giro/Giro_LeftArm.png": {
       "bytes": 24318,
@@ -3922,8 +3922,8 @@
       "sha256": "0048f71a406cec5529e889e982ca9dab96c66c812f1cea5b37cc74b0eb6ef827"
     },
     "/designer/owayo/cycling-c3/designs/mountain/Mountain_Bag.png": {
-      "bytes": 14900,
-      "sha256": "7a6eeff540687248402f11d3b2f8a9518b08cd355ea4e4d37b5c40a266d5cc9e"
+      "bytes": 7746,
+      "sha256": "aa65ebcb00457b0a51bfd4cd5dfe86d5e0ecef590e453e1015e2e927f95aaf86"
     },
     "/designer/owayo/cycling-c3/designs/mountain/Mountain_Collar.png": {
       "bytes": 5287,
@@ -3934,8 +3934,8 @@
       "sha256": "522df651e8c03231cc5009083cb98ae7d5087684efe5154e72a58ae6aef1ba48"
     },
     "/designer/owayo/cycling-c3/designs/mountain/Mountain_FrontRightPart.png": {
-      "bytes": 21176,
-      "sha256": "31efb8afe31d073b9c98a0f3bf57b72974977fd645396c302176ee636d927732"
+      "bytes": 11524,
+      "sha256": "c0df3bb10984874ec2a88b638995c065a9f3b241f38151bcc5b7ce9d275617fb"
     },
     "/designer/owayo/cycling-c3/designs/mountain/Mountain_LeftArm.png": {
       "bytes": 28705,
@@ -3970,8 +3970,8 @@
       "sha256": "29422e67c51a1de277619249a0ca9fc707dc24423f27d122a64df8e39e6a9d00"
     },
     "/designer/owayo/cycling-c3/designs/move/Move_Bag.png": {
-      "bytes": 13731,
-      "sha256": "e0050299c89aeb28b9f1aaf3ced171ff12d18fd99a855b8fd2e697802987cc11"
+      "bytes": 6089,
+      "sha256": "5ad293c02e1a4e6cfb569dc0049f4a9ea8e4e7008cf5851caa6ca8b12925d4b7"
     },
     "/designer/owayo/cycling-c3/designs/move/Move_Collar.png": {
       "bytes": 5287,
@@ -3982,8 +3982,8 @@
       "sha256": "cf7a3f6b6b681656e6ae0d543fc962222473e846182e2109ed25949d2a7bfdf0"
     },
     "/designer/owayo/cycling-c3/designs/move/Move_FrontRightPart.png": {
-      "bytes": 18389,
-      "sha256": "93bfda205b27b01be4f52d56762c680a0348569136c2787970b8c412023e395a"
+      "bytes": 9597,
+      "sha256": "82485f0a31a3036efa89c4fb7795536a16a93182e73e08f57ef91ce6a90e9252"
     },
     "/designer/owayo/cycling-c3/designs/move/Move_LeftArm.png": {
       "bytes": 24318,
@@ -4018,8 +4018,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/parcours/Parcours_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/parcours/Parcours_Collar.png": {
       "bytes": 5287,
@@ -4030,8 +4030,8 @@
       "sha256": "48c0540dfb36b259dfada7dbf642a2aef0785e419e1d94dc67f96fd79bb6f6f2"
     },
     "/designer/owayo/cycling-c3/designs/parcours/Parcours_FrontRightPart.png": {
-      "bytes": 15213,
-      "sha256": "c69145fc070625e76d049d25573077e0e7eaf5b11700de66c6cf930fab55140a"
+      "bytes": 6559,
+      "sha256": "29597a2644165bac21f3f1200c5d761279f7815587a649cf8489a7a204f73309"
     },
     "/designer/owayo/cycling-c3/designs/parcours/Parcours_LeftArm.png": {
       "bytes": 28263,
@@ -4066,8 +4066,8 @@
       "sha256": "acf96949bf68838bd0a3ea4a29b431ae05998d9b026b0f5ec973c3310c7dd6b2"
     },
     "/designer/owayo/cycling-c3/designs/peloton/Peloton_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/peloton/Peloton_Collar.png": {
       "bytes": 5287,
@@ -4078,8 +4078,8 @@
       "sha256": "23c9db13b6bf418a78a69de8856f00cf815e3a7c5887dc8b5f92129c7bf674b5"
     },
     "/designer/owayo/cycling-c3/designs/peloton/Peloton_FrontRightPart.png": {
-      "bytes": 17060,
-      "sha256": "68440886a377721bc8c4ece03149693c68915e1c9b7e34264ebb2abd43a877b7"
+      "bytes": 8757,
+      "sha256": "6eb18fa14565309bd48ff5d6b29dc6172d291f1113df7810c9054e8a0973592c"
     },
     "/designer/owayo/cycling-c3/designs/peloton/Peloton_LeftArm.png": {
       "bytes": 30891,
@@ -4114,8 +4114,8 @@
       "sha256": "b3eaf2379c5e29d7d301b5c2f23636c995159d37d7f8c41ce963e6b2f0b5296e"
     },
     "/designer/owayo/cycling-c3/designs/rally/Rally_Bag.png": {
-      "bytes": 10904,
-      "sha256": "e6c2927dcf8bb837f0a79d716d99d9374fe6966d60bd39f1e6f251a0ef1d2e5e"
+      "bytes": 10202,
+      "sha256": "3f328cbccd420d56a0bb62481b33cdaba544f1e140e23155d0ea81b47f3a0d2e"
     },
     "/designer/owayo/cycling-c3/designs/rally/Rally_Collar.png": {
       "bytes": 5287,
@@ -4126,8 +4126,8 @@
       "sha256": "88bcb8a88e66f94e0f0e34384d8e8ab09388f235b6644c8ce8b27cd34a4f1e0f"
     },
     "/designer/owayo/cycling-c3/designs/rally/Rally_FrontRightPart.png": {
-      "bytes": 15668,
-      "sha256": "a411076f7a5002c1bff5fd217308d0539fc205f563147d4b7fc2b19dafe070db"
+      "bytes": 11501,
+      "sha256": "aa11e6d161c1ecb716cd4fc793a8a68c6709440ce8cb3acbcda46f11c721aace"
     },
     "/designer/owayo/cycling-c3/designs/rally/Rally_LeftArm.png": {
       "bytes": 24553,
@@ -4162,8 +4162,8 @@
       "sha256": "43bee2fb5ffa1f2fea88d1de0d9bc96fa64928c5a8acd625b403ae943e6c7a7f"
     },
     "/designer/owayo/cycling-c3/designs/salida/Salida_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/salida/Salida_Collar.png": {
       "bytes": 5287,
@@ -4174,8 +4174,8 @@
       "sha256": "539a1211425ba662f11a5e0595191b4b225b394c8883de39071a36716694bea2"
     },
     "/designer/owayo/cycling-c3/designs/salida/Salida_FrontRightPart.png": {
-      "bytes": 17553,
-      "sha256": "5f608fe1f36f60105733cfc93750c4cdf5f33fdf16b2f031c327e219cb1db694"
+      "bytes": 8658,
+      "sha256": "08d227d8e110cf356db0aec8c3f215ebbbdfbb0b7feb2d8d443a71974b70f86f"
     },
     "/designer/owayo/cycling-c3/designs/salida/Salida_LeftArm.png": {
       "bytes": 27638,
@@ -4210,8 +4210,8 @@
       "sha256": "5d21ca4267bfb3dc36f3246f14690fce53f4fa4960d56bd442695a4baaf774ef"
     },
     "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Bag.png": {
-      "bytes": 14997,
-      "sha256": "806ba4812f672422e4a538e0f62d9542b771702ba7ee391a16159e1be1fcbb9c"
+      "bytes": 6783,
+      "sha256": "8c811a478dc9a4bcba7179aa6a7037ac14ee208873a72fa01ad79de2e5c6ec48"
     },
     "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_Collar.png": {
       "bytes": 5287,
@@ -4222,8 +4222,8 @@
       "sha256": "5b2200c29f933d544dd48ef5d58d1782eff7b4860ecbd277b20a52e2903deb8d"
     },
     "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_FrontRightPart.png": {
-      "bytes": 20575,
-      "sha256": "53f6214268516b241ecc426a3eb9a348919efdf3c04f433c5ee8fdb93a8ccce5"
+      "bytes": 9690,
+      "sha256": "9d1a4c90b72d25dda46fb254f6789e39f0dc9171c469c93a0f669afec6e7559b"
     },
     "/designer/owayo/cycling-c3/designs/serpentine/Serpentine_LeftArm.png": {
       "bytes": 26433,
@@ -4258,8 +4258,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/spice/Spice_Bag.png": {
-      "bytes": 13808,
-      "sha256": "413d1f24550a0de60b114e3737580d47b99d3cc2c17468004f4db40ed6796c38"
+      "bytes": 5942,
+      "sha256": "0d671d8cbbe4008f0dba4a83316087f0ebb09cdb3c1d13c6c6e44e89c682557f"
     },
     "/designer/owayo/cycling-c3/designs/spice/Spice_Collar.png": {
       "bytes": 5287,
@@ -4270,8 +4270,8 @@
       "sha256": "bf3efcd4d39efae5bdf6ad0c0bbdbcaaed00b0c62f882406a6ea97207e80ac3a"
     },
     "/designer/owayo/cycling-c3/designs/spice/Spice_FrontRightPart.png": {
-      "bytes": 18913,
-      "sha256": "cb0acb97b17f50ecd9b44511f21bd4619c2ac161b35e9a0f8f41ea622d5f44b8"
+      "bytes": 10488,
+      "sha256": "593b36a4ca4cf872c60ee9db5ffca6b6a7437c60e5ae7fb654667b944d36266b"
     },
     "/designer/owayo/cycling-c3/designs/spice/Spice_LeftArm.png": {
       "bytes": 27721,
@@ -4306,8 +4306,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_Collar.png": {
       "bytes": 5287,
@@ -4318,8 +4318,8 @@
       "sha256": "c82f7eb3f273d564b7692e9d6ce08e4ff56cad9771532761c576c8ca235ad938"
     },
     "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_FrontRightPart.png": {
-      "bytes": 16201,
-      "sha256": "39502670d25a317b97e2ef81f36bec5428351b6961842fd9807d8a7930b84acd"
+      "bytes": 8474,
+      "sha256": "7b50b4eec7d23c1c72b4180c16b0e59e7c0a64208d0391b10d479e4f7df97273"
     },
     "/designer/owayo/cycling-c3/designs/sprinter/Sprinter_LeftArm.png": {
       "bytes": 32287,
@@ -4354,8 +4354,8 @@
       "sha256": "3390ee0e9a045d6f0f43c3cad0c86a9ea3bf61fc343b85730f758d5430c4d251"
     },
     "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Bag.png": {
-      "bytes": 10839,
-      "sha256": "4775964de70894fbe9133c3b2b5daebdb8c3eb9a601c0da30bc008346888efa0"
+      "bytes": 7593,
+      "sha256": "68125256ef1aa7822581e1be7dadaa7d26c09c3c5a5636835e1e5c6769083c2e"
     },
     "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_Collar.png": {
       "bytes": 5287,
@@ -4366,8 +4366,8 @@
       "sha256": "1262e7690ed236fcf07979a508510d61f328ea594527d4414dddd29cf167e0f9"
     },
     "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_FrontRightPart.png": {
-      "bytes": 15213,
-      "sha256": "c69145fc070625e76d049d25573077e0e7eaf5b11700de66c6cf930fab55140a"
+      "bytes": 6559,
+      "sha256": "29597a2644165bac21f3f1200c5d761279f7815587a649cf8489a7a204f73309"
     },
     "/designer/owayo/cycling-c3/designs/tourmalet/Tourmalet_LeftArm.png": {
       "bytes": 10644,
@@ -4390,8 +4390,8 @@
       "sha256": "0f108181e8c71e87b0a16a694b32a97053c2267fa30328401be17c672dbd3aa7"
     },
     "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Bag.png": {
-      "bytes": 12179,
-      "sha256": "0d23b47464683f0d8d9db12c0bc1bd35c7cc66820f4f871fb93e70cabb40f9d0"
+      "bytes": 7894,
+      "sha256": "add6ca3e6f8f4dd28006a4832f19fed0667edc26cb5e8de6d90464bcec71c4e0"
     },
     "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_Collar.png": {
       "bytes": 5992,
@@ -4402,8 +4402,8 @@
       "sha256": "eb07400af5cde59a15414536aada8323526b307db036b6a2425d407bf3fa9b0d"
     },
     "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_FrontRightPart.png": {
-      "bytes": 20046,
-      "sha256": "ef8bf0072812699d0efaf7ed999305910bd2ad6c3b7d91758f61635cfca266e7"
+      "bytes": 12013,
+      "sha256": "acabbf79d37ffd3690c5af061e0e834a6aba42fd12e3533c07d85d2347516751"
     },
     "/designer/owayo/cycling-c3/designs/velo-alt/Velo alt_LeftArm.png": {
       "bytes": 29078,
@@ -4438,8 +4438,8 @@
       "sha256": "702b892cbe1ce557cc8ad5c1d9bce62f9375b8dbc0339852015d2e490a549793"
     },
     "/designer/owayo/cycling-c3/designs/route/Route_Bag.png": {
-      "bytes": 10796,
-      "sha256": "a3e9904e2558290421d3cd803dbc4fed4e7170ad4722fad21fe457d1e508a707"
+      "bytes": 4451,
+      "sha256": "a6680c5e3d7e5eb0c9da39db2351d1142f488f2b3001aaf2c83e57b4531dd077"
     },
     "/designer/owayo/cycling-c3/designs/route/Route_Collar.png": {
       "bytes": 5287,
@@ -4450,8 +4450,8 @@
       "sha256": "79e40233c79684383f49fb39ea47dfe7e92a48fe255719246f307c9c74ee61de"
     },
     "/designer/owayo/cycling-c3/designs/route/Route_FrontRightPart.png": {
-      "bytes": 14938,
-      "sha256": "9c800b3ae45860c2d749b22389e1987214ef832eb86a00c04284664477a70cb9"
+      "bytes": 6559,
+      "sha256": "29597a2644165bac21f3f1200c5d761279f7815587a649cf8489a7a204f73309"
     },
     "/designer/owayo/cycling-c3/designs/route/Route_LeftArm.png": {
       "bytes": 24318,
@@ -5291,7 +5291,7 @@
     }
   },
   "branding": {
-    "removed": "Owayo vendor marks from synchronized mask textures",
+    "removed": "Owayo vendor marks and technical source labels from synchronized mask textures",
     "colorCodes": [
       "OOF",
       "OOFK",
@@ -5304,7 +5304,11 @@
       "HLA",
       "OOR",
       "OORK",
-      "HRA"
+      "HRA",
+      "TEC",
+      "TECO",
+      "3D_3D",
+      "3D_DSGN"
     ],
     "colorIndices": [
       216,
@@ -5318,7 +5322,11 @@
       197,
       203,
       198,
-      196
+      196,
+      240,
+      241,
+      195,
+      194
     ]
   },
   "patterns": [
