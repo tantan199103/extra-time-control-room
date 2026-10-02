@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
+import { isMirlSupplierPartName, matchMirlTexture, parseMirl } from '../src/lib/mirl-loader.js'
 import { STOREFRONT_STATIC_ROUTES } from '../src/lib/storefront-model.js'
 import { normalizeDesignerSpec, validateDesignerAssetRefs } from '../api/customization-order.js'
 import { brandColorIndices } from '../scripts/strip-owayo-branding.mjs'
@@ -125,6 +125,29 @@ test('MIRL parser produces centered render geometry and resolves synchronized pa
   const design = manifest.designs[0]
   const printable = model.parts.filter(part => /back|front|arm|collar|bag/i.test(part.name))
   assert.ok(printable.every(part => matchMirlTexture(part.name, design.textures)), 'every printable mesh needs a local texture')
+})
+
+test('MIRL preview excludes supplier label meshes but keeps garment construction parts', () => {
+  assert.equal(isMirlSupplierPartName('Etikett'), true)
+  assert.equal(isMirlSupplierPartName('EtikettFahne'), true)
+  assert.equal(isMirlSupplierPartName('supplier-label'), true)
+  assert.equal(isMirlSupplierPartName('RVS-B'), false)
+  assert.equal(isMirlSupplierPartName('FrontRightPart'), false)
+})
+
+test('designer normalizes decimal source palette values before rendering or display', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+  assert.equal(manifest.product.defaultColors.A, '3032413')
+  assert.match(source, /function normalizeColorValue\(value, fallback = '#F8F8F4'\)/)
+  assert.match(source, /seed\.colors = \{ \.\.\.initialDesignerState\(\)\.colors, \.\.\.normalizeColorMap\(seed\.colors\) \}/)
+  assert.match(source, /const currentColor = code => normalizeColorValue\(state\.colors\[code\]\)/)
+})
+
+test('mobile 3D controls stay inside the compact stage', async () => {
+  const css = await readFile(resolve(root, 'src/custom-designer.css'), 'utf8')
+  assert.match(css, /\.designer-stage__tools\s*\{[^}]*top:\s*auto;[^}]*grid-auto-flow:\s*column/s)
+  assert.match(css, /\.designer-stage__hint\s*\{[^}]*bottom:\s*58px;/s)
 })
 
 test('the 3D builder has a public lazy route and a generated SEO fallback', async () => {

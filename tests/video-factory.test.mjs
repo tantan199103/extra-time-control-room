@@ -1,11 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildCaptionSrt, buildVideoCampaign, campaignManifest, productTitleFromUrl } from '../src/lib/video-factory.js'
+import { buildCaptionSrt, buildVideoCampaign, campaignManifest, productTitleFromUrl, resolveVideoProductProfile } from '../src/lib/video-factory.js'
 
 test('derives a readable product title from a product URL', () => {
   assert.equal(
     productTitleFromUrl('https://www.jersevo.com/product/new-era-new-york-yankees-performance-navy-edition-9seventy-stretch-snapback-hat-tz-adc37c'),
     'New Era New York Yankees Performance Navy Edition 9seventy Stretch Snapback Hat Tz Adc37c'
+  )
+  assert.equal(
+    productTitleFromUrl('https://kinhmatanna.com/san-pham/gong-kinh-thoi-trang-ma-hang-s01010'),
+    'Gọng kính thời trang S01010'
   )
 })
 
@@ -41,4 +45,19 @@ test('keeps the scene timeline aligned when a 30 second cut is selected', () => 
   assert.match(campaign.scenes[0].prompt, /5-second vertical 9:16/)
   assert.match(campaign.musicDirection, /final hit at 30s/)
   assert.match(buildCaptionSrt(campaign), /00:00:25,000 --> 00:00:30,000/)
+})
+
+test('builds a product-specific six-scene eyewear campaign from the Anna product URL', () => {
+  const productUrl = 'https://kinhmatanna.com/san-pham/gong-kinh-thoi-trang-ma-hang-s01010'
+  const profile = resolveVideoProductProfile({ productUrl })
+  const campaign = buildVideoCampaign({ productUrl, duration: 60, model: 'Omni 1.1 Flash' })
+  assert.equal(profile.type, 'eyewear')
+  assert.equal(campaign.product.title, 'Gọng kính thời trang S01010')
+  assert.equal(campaign.product.category, 'Eyewear')
+  assert.equal(campaign.concept, 'See Your Everyday Differently')
+  assert.equal(campaign.scenes.length, 6)
+  assert.equal(campaign.scenes[0].time, '00–10s')
+  assert.match(campaign.scenes[0].prompt, /same modern minimalist S01010 frame/)
+  assert.match(campaign.scenes[3].prompt, /blue-light lens options/)
+  assert.ok(campaign.scenes.every(scene => !/\bcap\b|snapback|embroidered NY/i.test(scene.prompt)))
 })

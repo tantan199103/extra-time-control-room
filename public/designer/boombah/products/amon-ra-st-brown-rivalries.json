@@ -4,9 +4,9 @@
   "source": {
     "ownerConfirmedByOperator": true,
     "site": "https://www.jersevo.com/product/amon-ra-st-brown-14-detroit-lions-2026-rivalries-stitched-limited-nfl-jersey-gray-806394",
-    "syncedAt": "2026-10-01T00:00:00.000Z",
+    "syncedAt": "2026-10-02T08:39:42.000Z",
     "listingId": "listing-fe628fbfa3f1ba174fe9",
-    "note": "Listing-specific presentation manifest. The base mesh and UV atlas are mirrored teamwear assets; the artwork palette and personalization defaults are derived from the published listing photos."
+    "note": "Listing-specific presentation manifest. Tripo multiview plus a texture-edit pass used the clean listing views so the active baked model is one listing-matched jersey with the carbon shoulder yokes restored; Jersevo personalization is layered above the baked garment at runtime."
   },
   "storage": {
     "bucket": "product-media",
@@ -96,9 +96,15 @@
         "#1E3363": "C4"
       },
       "model": {
-        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/boombah/models/fd-5421-17941472a9b6.glb",
-        "path": "designer/boombah/models/fd-5421-17941472a9b6.glb",
-        "format": "glb-draco"
+        "uri": "https://ofetusgarxcwloxxkhnr.supabase.co/storage/v1/object/public/product-media/designer/tripo/amon-ra-detroit-lions-jersey-3d-texture-20261002.glb",
+        "path": "designer/tripo/amon-ra-detroit-lions-jersey-3d-texture-20261002.glb",
+        "format": "glb-meshopt",
+        "source": "tripo",
+        "texturePolicy": "baked",
+        "defaultRotationY": -3.141592653589793,
+        "taskId": "0368d3a9-2ac9-42ce-9e62-1331160f0d32",
+        "textureEditAssetId": "81e928e7-9665-458f-b407-1c6086befceb",
+        "inputViews": ["front", "left", "back", "right"]
       },
       "template": {
         "uri": "/designer/boombah/templates/football3d/top/fd-foot-100rs-1000-0e71638e8ce9.svg",

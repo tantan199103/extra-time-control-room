@@ -2,3 +2,10 @@
 @media (max-width:900px){.vf-hero{grid-template-columns:1fr}.vf-hero__copy{border-right:0;border-bottom:1px solid #343634;padding:54px 20px 42px}.vf-hero__visual{min-height:390px}.vf-workspace,.vf-detail{grid-template-columns:1fr;gap:44px}.vf-board__head{display:block}.vf-board__actions{justify-content:flex-start;margin-top:20px}.vf-detail__rail{max-width:520px}}
 @media (max-width:600px){.vf-hero h1{font-size:67px}.vf-hero__meta{gap:15px}.vf-hero__meta strong{font-size:26px}.vf-workspace{padding:38px 16px}.vf-scene-list{grid-template-columns:1fr}.vf-scene{min-height:125px}.vf-detail{padding:0 16px 38px}.vf-footer{display:grid;grid-template-columns:1fr;padding:16px}.vf-field-grid{grid-template-columns:1fr}.vf-product-art{width:82%}.vf-board__actions button,.vf-board__actions a{flex:1;justify-content:center}}
 @media (prefers-reduced-motion:reduce){.vf-progress__track i,.vf-scene{transition:none}}
+.vf-product-art--eyewear{width:min(440px,78%);aspect-ratio:1.4/.92;transform:rotate(-4deg)}
+.vf-product-art__glasses{position:absolute;inset:24% 7% 31%;filter:drop-shadow(0 17px 13px #0009)}
+.vf-product-art__lens{position:absolute;top:12%;width:38%;height:64%;border:8px solid #dfe3dc;border-radius:36% 36% 43% 43%;background:linear-gradient(145deg,#f2f4ee1f,#9ba9b71a);box-shadow:inset 0 0 18px #ffffff20,0 0 0 2px #68707855}
+.vf-product-art__lens--left{left:6%}.vf-product-art__lens--right{right:6%}
+.vf-product-art__bridge{position:absolute;left:41%;top:25%;width:18%;height:16px;border-top:8px solid #dfe3dc;border-radius:50%}
+.vf-product-art__temple{position:absolute;top:16%;width:24%;height:8px;background:#cbd1cb;border-radius:10px}.vf-product-art__temple--left{left:-10%;transform:rotate(-9deg)}.vf-product-art__temple--right{right:-10%;transform:rotate(9deg)}
+.vf-product-art--eyewear .vf-product-art__stamp{right:1%;bottom:7%;color:#d9dcd2}

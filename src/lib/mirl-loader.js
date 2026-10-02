@@ -156,3 +156,16 @@ export function matchMirlTexture(partName, textures = {}) {
     || Object.entries(textures).find(([name]) => target.startsWith(compact(name)) || compact(name).startsWith(target))
   return match?.[1] || ''
 }
+
+/**
+ * MIRL includes a small number of construction/label meshes alongside the
+ * printable garment panels. They are not represented by a synchronized
+ * design texture and therefore would otherwise render with the neutral
+ * fallback material (as a dark supplier label) in the 3D stage. Keep this
+ * matcher deliberately narrow: `RVS-B`/zippers and customer artwork remain
+ * part of the garment, while only the known label/brand parts are excluded.
+ */
+export function isMirlSupplierPartName(partName) {
+  const value = String(partName || '').trim().toLowerCase()
+  return /^(?:etikett(?:fahne)?|supplier[-_. ]?(?:label|logo|mark)|(?:vendor|manufacturer)[-_. ]?(?:label|logo|mark))$/i.test(value)
+}

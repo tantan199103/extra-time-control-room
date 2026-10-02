@@ -16,7 +16,7 @@ import {
   Sparkles,
   WandSparkles
 } from 'lucide-react'
-import { buildCaptionSrt, buildVideoCampaign, campaignManifest, VIDEO_FACTORY_DEFAULTS } from './lib/video-factory'
+import { buildCaptionSrt, buildVideoCampaign, campaignManifest, resolveVideoProductProfile, VIDEO_FACTORY_DEFAULTS } from './lib/video-factory'
 import './video-factory.css'
 
 const FLOW_SCENE_URL = 'https://flow.google.com/project/41b27fd7-bc46-439c-8e82-8cabbbd0b90b/scene/02408c4b-c546-404e-843f-c1bd23e4c772'
@@ -50,7 +50,18 @@ function StatusPill({ status }) {
   return <span className={`vf-status vf-status--${status}`}><i />{statusLabel(status)}</span>
 }
 
-function ProductArt() {
+function ProductArt({ profile }) {
+  if (profile?.type === 'eyewear') return <div className="vf-product-art vf-product-art--eyewear" aria-label="Modern S01010 eyewear visual">
+    <div className="vf-product-art__glow" />
+    <div className="vf-product-art__glasses">
+      <span className="vf-product-art__lens vf-product-art__lens--left" />
+      <span className="vf-product-art__bridge" />
+      <span className="vf-product-art__lens vf-product-art__lens--right" />
+      <span className="vf-product-art__temple vf-product-art__temple--left" />
+      <span className="vf-product-art__temple vf-product-art__temple--right" />
+    </div>
+    <span className="vf-product-art__stamp">S01010 / EYEWEAR</span>
+  </div>
   return <div className="vf-product-art" aria-label="Navy New York Yankees cap visual">
     <div className="vf-product-art__glow" />
     <div className="vf-product-art__cap">
@@ -86,6 +97,10 @@ export default function VideoFactory() {
   const progress = campaign ? Math.round((readyCount / campaign.scenes.length) * 100) : 0
   const selectedScene = campaign?.scenes?.find(scene => scene.id === activeScene) || campaign?.scenes?.[0]
   const beatDuration = Math.round((Number(duration) || VIDEO_FACTORY_DEFAULTS.duration) / 6)
+  const activeProfile = resolveVideoProductProfile({
+    productUrl: campaign?.product?.url || productUrl,
+    productTitle: campaign?.product?.title || ''
+  })
 
   const generateCampaign = () => {
     setBusy(true)
@@ -142,7 +157,7 @@ export default function VideoFactory() {
         <p>A compact production desk for 9:16 campaigns. Feed it a product page, get a six-scene Omni prompt pack and an edit map ready for Flow.</p>
         <div className="vf-hero__meta"><span><strong>06</strong> scenes</span><span><strong>{beatDuration}s</strong> per beat</span><span><strong>{aspectRatio}</strong> native</span></div>
       </div>
-      <div className="vf-hero__visual"><ProductArt/><span className="vf-hero__visual-note">CURRENT TEMPLATE / NY YANKEES NAVY 9SEVENTY</span></div>
+      <div className="vf-hero__visual"><ProductArt profile={activeProfile}/><span className="vf-hero__visual-note">CURRENT TEMPLATE / {activeProfile.type === 'eyewear' ? 'ANNA S01010 EYEWEAR' : 'NY YANKEES NAVY 9SEVENTY'}</span></div>
     </section>
 
     <section className="vf-workspace">
@@ -157,7 +172,7 @@ export default function VideoFactory() {
           <label className="vf-field"><span>Generation model</span><select value={model} onChange={event => setModel(event.target.value)}><option>Omni 1.1 Flash</option><option>Veo 3.1 - Fast</option></select></label>
           <label className="vf-field"><span>Visual language</span><select value={style} onChange={event => setStyle(event.target.value)}><option>Cinematic streetwear</option><option>Clean product studio</option><option>Raw handheld city</option></select></label>
         </div>
-        <div className="vf-brief-note"><Sparkles size={16}/><span><strong>Brand lock</strong><small>Navy, white, chrome. Product silhouette and embroidered NY logo stay stable across every prompt.</small></span></div>
+        <div className="vf-brief-note"><Sparkles size={16}/><span><strong>Product lock / {activeProfile.category}</strong><small>{activeProfile.brandLock}</small></span></div>
         <button className="vf-primary-button" onClick={generateCampaign} disabled={busy}><WandSparkles size={16}/>{busy ? 'BUILDING CAMPAIGN…' : campaign ? 'REBUILD CAMPAIGN' : 'BUILD CAMPAIGN'}<ChevronRight size={16}/></button>
         {campaign && <button className="vf-quiet-button" onClick={resetCampaign}><RefreshCw size={14}/> Start a different product</button>}
       </aside>

@@ -62,6 +62,7 @@ test('closed panels are inert to keyboard and screen-reader interactions', () =>
 test('routing observes query changes and isolates different product state', () => {
   assert.match(source, /setRoute\(window\.location\.pathname \+ window\.location\.search \+ window\.location\.hash\)/)
   assert.match(source, /<ProductPage key=\{routeProduct\.id\}/)
+  assert.match(source, /<CustomDesignerPage key=\{route\}/)
   assert.match(source, /startPersonalized=\{new URLSearchParams\(search\)\.get\('custom'\) === '1'\}/)
   assert.match(source, /useEffect\(\(\) => \{ if \(startPersonalized && customFields\.length\) setPersonalized\(true\) \}, \[startPersonalized,customFields\.length\]\)/)
 })

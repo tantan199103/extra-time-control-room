@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { consumeQuota, customerSession, enforceSameOrigin, handleApiError, readBody, requestIdentity, safeText, sendJson, serverSupabase } from './_security.js'
 import { assertCustomerAsset } from './_logo-request.js'
 import { normalizeOwayoLayers, normalizeOwayoLogo, normalizeOwayoPersonalization } from '../src/lib/owayo-personalization.js'
+import { findBoombahPattern } from '../src/lib/designer-options.js'
 
 const fieldValue = (field, raw) => {
   if (raw == null || raw === '') return ''
@@ -36,6 +37,14 @@ export function normalizeDesignerSpec(value) {
   const textSource = value.text && typeof value.text === 'object' && !Array.isArray(value.text) ? value.text : {}
   const logoSource = value.logo && typeof value.logo === 'object' && !Array.isArray(value.logo) ? value.logo : {}
   const patternSource = value.pattern && typeof value.pattern === 'object' && !Array.isArray(value.pattern) ? value.pattern : {}
+  const patternColorsSource = patternSource.colors && typeof patternSource.colors === 'object' && !Array.isArray(patternSource.colors) ? patternSource.colors : {}
+  const patternColors = Object.fromEntries(Object.entries(patternColorsSource).slice(0, 12).map(([key, raw]) => [safeText(key, 20), /^#[0-9a-f]{6}$/i.test(String(raw || '')) ? String(raw).toUpperCase() : '']).filter(([key, raw]) => key && raw))
+  const patternSlug = safeText(patternSource.slug, 100).toLowerCase()
+  const patternId = safeText(patternSource.id, 40)
+  const patternZoneCode = safeText(patternSource.zoneCode, 20).toUpperCase()
+  const validPattern = provider === 'boombah'
+    ? Boolean(findBoombahPattern(patternSlug))
+    : /^[a-z0-9][a-z0-9-]{0,99}$/.test(patternSlug)
   const rosterSource = Array.isArray(value.roster) ? value.roster : []
   const roster = rosterSource.slice(0, 99).map(player => ({
     name:safeText(player?.name, 80),
@@ -65,12 +74,16 @@ export function normalizeDesignerSpec(value) {
     designName:safeText(value.designName, 120),
     assetPolicy:safeText(value.assetPolicy, 80) || 'private-customer-assets',
     colors,
-    pattern:patternSource.slug ? {
-      id:safeText(patternSource.id, 40),
-      slug:safeText(patternSource.slug, 100),
+    pattern:patternSource.slug && validPattern ? {
+      id:patternId,
+      slug:patternSlug,
       colorCode:safeText(patternSource.colorCode, 20).toUpperCase() || 'A',
+      zoneCode:/^[A-Z0-9_-]{1,20}$/.test(patternZoneCode) ? patternZoneCode : '',
+      versionId:safeText(patternSource.versionId, 40),
       scale:clamp(patternSource.scale, .4, 2.4, 1),
-      opacity:clamp(patternSource.opacity, .2, 1, .82)
+      opacity:clamp(patternSource.opacity, .2, 1, .82),
+      accent:/^#[0-9a-f]{6}$/i.test(String(patternSource.accent || '')) ? String(patternSource.accent).toUpperCase() : '',
+      colors:patternColors
     } : null,
     text,
     logo:normalizeOwayoLogo(logoSource),
