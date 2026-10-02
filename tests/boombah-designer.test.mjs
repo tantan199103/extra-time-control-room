@@ -68,6 +68,16 @@ test('Boombah GLB branding matcher targets logo parts and vendor texture names w
   assert.equal(isBoombahLogoPartName('FD-163W-main'), false)
 })
 
+test('listing-specific Tripo jersey opens on the photographed front without duplicate default layers', async () => {
+  const manifest = JSON.parse(await readFile(resolve(publicRoot, 'designer/boombah/products/amon-ra-st-brown-rivalries.json'), 'utf8'))
+  const design = manifest.designs.find(item => item.id === 'retail-amon-ra-st-brown-rivalries')
+  assert.equal(manifest.source?.listingId, 'listing-fe628fbfa3f1ba174fe9')
+  assert.equal(design.model.source, 'tripo')
+  assert.equal(design.model.texturePolicy, 'baked')
+  assert.equal(design.model.defaultRotationY, 0)
+  assert.deepEqual(design.model.inputViews, ['front', 'left', 'back', 'right'])
+})
+
 test('designer never renders upstream Boombah raster previews with vendor marks', async () => {
   const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
   assert.match(source, /function designerPreviewUrl\(uri, manifest\)/)

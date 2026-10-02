@@ -48,7 +48,7 @@ import './custom-designer.css'
 const OWAYO_MANIFEST_URL = '/designer/owayo/cycling-c3/manifest.json'
 const OWAYO_CATALOG_URL = '/designer/owayo/catalog.json'
 const BOOMBAH_CATALOG_URL = '/designer/boombah/catalog.json'
-const ASSET_CACHE_BUSTER = 'retail-tripo-texture-frontfix4-20261002'
+const ASSET_CACHE_BUSTER = 'retail-tripo-listing-front-v1-20261002'
 const BRANDING_CACHE_VERSION = 'branding-clean-v2-20261002'
 // The listing-specific Boombah manifest introduced a new layer contract. Use
 // a new draft namespace so a pre-manifest draft such as JERSEVO / YOUR NAME /
@@ -57,7 +57,7 @@ const BRANDING_CACHE_VERSION = 'branding-clean-v2-20261002'
 // listing-specific retail defaults were tuned to the photographed jersey;
 // bumping the namespace prevents the earlier compact text draft from masking
 // those defaults on the next visit.
-const DRAFT_KEY = 'jersevo-3d-designer-draft-v5'
+const DRAFT_KEY = 'jersevo-3d-designer-draft-v6'
 const TABS = [
   { id:'design', label:'Design', icon:Shirt },
   { id:'colors', label:'Colors', icon:Palette },
@@ -1283,7 +1283,7 @@ const JerseyStage = forwardRef(function JerseyStage({ manifest, design, colors, 
     }
   }, [manifest, design, text, layers, readyRevision])
 
-  return <div className="designer-stage__canvas" ref={hostRef} role="img" aria-label="Interactive 3D preview of the custom jersey" />
+  return <div className="designer-stage__canvas" ref={hostRef} role="img" aria-label={manifestUsesBakedGlb(manifest) ? 'Interactive Tripo 3D preview of the listing-matched jersey' : 'Interactive 3D preview of the custom jersey'} />
 })
 
 function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProductChange, onOwayoProductChange, designerConfig }) {
@@ -1356,7 +1356,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProduct
       </div>
       <div className="designer-library-models" aria-label="Available garment models">
         {visibleLibraryProducts.map(product => <button type="button" key={`${product.provider}-${product.id}`} disabled={Boolean(state.listingId) || !product.ready} className={`${product.ready ? 'is-live' : ''}${currentLibraryProduct?.provider === product.provider && currentLibraryProduct?.id === product.id ? ' is-active' : ''}`} title={stripBoombahBrandingText(`${product.providerLabel} · ${product.cut}`)} onClick={() => product.provider === 'owayo' ? onOwayoProductChange?.(product.id) : onProductChange?.(product.id)}>
-          <span className="designer-library-models__art">{designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest) ? <img src={designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest)} alt="" loading="lazy" decoding="async"/> : <span className="designer-library-models__placeholder">Jersevo 3D</span>}</span>
+          <span className="designer-library-models__art">{designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest) ? <img src={designerPreviewUrl(product.preview, product.provider === 'boombah' ? { provider:'boombah' } : manifest)} alt="" loading="lazy" decoding="async"/> : <span className="designer-library-models__placeholder" aria-label="Garment preview"><Shirt size={22} strokeWidth={1.5}/></span>}</span>
           <span className="designer-library-models__meta"><strong>{stripBoombahBrandingText(product.title)}</strong><small><b>{stripBoombahBrandingText(product.providerLabel)}</b> · {stripBoombahBrandingText(product.cut)}{product.detail ? ` · ${stripBoombahBrandingText(product.detail)}` : ''}</small><small>{product.designs} designs · {product.sizes} sizes</small></span>
           {currentLibraryProduct?.provider === product.provider && currentLibraryProduct?.id === product.id && <Check size={15}/>}
         </button>)}
@@ -1375,7 +1375,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, state, update, onProduct
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">
       {designs.map(item => <button type="button" className={state.design === item.slug || state.design === item.id ? 'is-active' : ''} key={item.slug || item.id} onClick={() => update(current => ({ ...current, design:item.slug || item.id, styleCode:item.styleCode || current.styleCode, colors:{ ...current.colors, ...normalizeColorMap(item.defaultColors) } }))}>
-        <span className="designer-design-grid__art">{designerPreviewUrl(item.preview, manifest) ? <img src={designerPreviewUrl(item.preview, manifest)} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder">Jersevo 3D</span>}</span>
+        <span className="designer-design-grid__art">{designerPreviewUrl(item.preview, manifest) ? <img src={designerPreviewUrl(item.preview, manifest)} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder" aria-label="Garment preview"><Shirt size={24} strokeWidth={1.5}/></span>}</span>
         <span>{item.name}</span>{(state.design === item.slug || state.design === item.id) && <Check size={15}/>}
       </button>)}
     </div>
@@ -1508,7 +1508,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
         <div className="designer-pattern-grid">
           {visibleTemplates.map(item => {
             const preview = designerPreviewUrl(item.preview, manifest)
-            return <button type="button" key={item.id || item.slug} className={(state.design === item.id || state.design === item.slug) ? 'is-active' : ''} onClick={() => chooseTemplate(item)}><span>{preview ? <img src={preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder">Jersevo 3D</span>}</span><strong>{stripBoombahBrandingText(item.name)}</strong><small>{stripBoombahBrandingText(item.styleName || item.garment || '')}</small>{(state.design === item.id || state.design === item.slug) && <Check size={14}/>}</button>
+            return <button type="button" key={item.id || item.slug} className={(state.design === item.id || state.design === item.slug) ? 'is-active' : ''} onClick={() => chooseTemplate(item)}><span>{preview ? <img src={preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder" aria-label="Garment preview"><Shirt size={24} strokeWidth={1.5}/></span>}</span><strong>{stripBoombahBrandingText(item.name)}</strong><small>{stripBoombahBrandingText(item.styleName || item.garment || '')}</small>{(state.design === item.id || state.design === item.slug) && <Check size={14}/>}</button>
           })}
         </div>
         {!templates.length && <p className="designer-library-empty">No synchronized artwork templates match this garment cut.</p>}
@@ -1552,11 +1552,11 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
       <label className="designer-library-switch__field"><span>Apply to garment color</span><select value={state.pattern?.colorCode || colorCodes[0] || 'A'} onChange={event => setPattern({ colorCode:event.target.value })}>{colorCodes.map(code => <option key={code} value={code}>{manifest.product.colorCodes.find(item => item.colorCode === code)?.Farbname || `Color ${code}`}</option>)}</select></label>
     </div>
     <label className="designer-library-switch__search designer-pattern-search"><span>Search patterns</span><input type="search" value={query} onChange={event => { setQuery(event.target.value); setShowAll(false) }} placeholder="Search geometry, mesh, hand drawn…"/></label>
-    {selected && <div className="designer-pattern-selected">{designerPreviewUrl(selected.preview, manifest) ? <img src={designerPreviewUrl(selected.preview, manifest)} alt=""/> : <span className="designer-design-grid__placeholder">Jersevo 3D</span>}<div><strong>{selected.name}</strong><small>{selected.categoryNames?.join(' · ')}</small></div><button type="button" onClick={resetPattern}>Clear</button></div>}
+    {selected && <div className="designer-pattern-selected">{designerPreviewUrl(selected.preview, manifest) ? <img src={designerPreviewUrl(selected.preview, manifest)} alt=""/> : <span className="designer-design-grid__placeholder" aria-label="Pattern preview"><Grid3X3 size={20} strokeWidth={1.5}/></span>}<div><strong>{selected.name}</strong><small>{selected.categoryNames?.join(' · ')}</small></div><button type="button" onClick={resetPattern}>Clear</button></div>}
     <div className="designer-pattern-grid">
       {visible.map(item => {
         const preview = designerPreviewUrl(item.preview, manifest)
-        return <button type="button" key={item.id} className={(state.pattern?.slug === item.slug || state.pattern?.id === item.id) ? 'is-active' : ''} onClick={() => chooseOwayoPattern(item)}><span>{preview ? <img src={preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder">Jersevo 3D</span>}</span><strong>{item.name}</strong><small>{item.categoryNames?.[0] || 'Pattern'}</small>{(state.pattern?.slug === item.slug || state.pattern?.id === item.id) && <Check size={14}/>}</button>
+        return <button type="button" key={item.id} className={(state.pattern?.slug === item.slug || state.pattern?.id === item.id) ? 'is-active' : ''} onClick={() => chooseOwayoPattern(item)}><span>{preview ? <img src={preview} alt="" loading="lazy" decoding="async"/> : <span className="designer-design-grid__placeholder" aria-label="Pattern preview"><Grid3X3 size={20} strokeWidth={1.5}/></span>}</span><strong>{item.name}</strong><small>{item.categoryNames?.[0] || 'Pattern'}</small>{(state.pattern?.slug === item.slug || state.pattern?.id === item.id) && <Check size={14}/>}</button>
       })}
     </div>
     {!filtered.length && <p className="designer-library-empty">No patterns match that search.</p>}
@@ -2341,13 +2341,27 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
         throw new Error(`The synchronized teamwear garment ${productId || 'requested product'} could not be loaded.`)
       }
       if (cancelled) return
-       setManifest(productResponse)
-       setManifestUrl(productManifest)
+      const listingUsesBakedGlb = manifestUsesBakedGlb(productResponse)
+      setManifest(productResponse)
+      setManifestUrl(productManifest)
       const allowedDesigns = designer?.allowedDesignIds?.length ? productResponse.designs?.filter(item => designer.allowedDesignIds.includes(item.id) || designer.allowedDesignIds.includes(item.slug)) : productResponse.designs
       const first = allowedDesigns?.[0] || productResponse.designs?.[0]
       const designMatch = allowedDesigns?.find(item => item.id === seed.design || item.slug === seed.design)
       const styleMatch = designer?.allowedStyleCodes?.length && !designer.allowedStyleCodes.includes(seed.styleCode) ? first?.styleCode : (seed.styleCode || first?.styleCode || '')
-       history.update(current => ({ ...current, provider:'boombah', productId:product?.id || productId, styleCode:styleMatch, design:designMatch?.id || first?.id || '', colors:activeDraft ? normalizeColorMap(current.colors) : { ...normalizeColorMap(current.colors), ...normalizeColorMap(first?.defaultColors), ...normalizeColorMap(designer?.defaultColors) } }))
+      history.update(current => ({
+        ...current,
+        provider:'boombah',
+        productId:product?.id || productId,
+        styleCode:styleMatch,
+        design:designMatch?.id || first?.id || '',
+        // A Tripo baked atlas already contains the listing's photographed
+        // DETROIT / ST BROWN / 14 artwork. Do not seed a second set of
+        // personalization planes on top of it: that was the source of the
+        // detached duplicate glyphs visible beside the sleeves. Customers
+        // can still add independent name/number/logo layers from the tabs.
+        ...(listingUsesBakedGlb && !activeDraft ? { layers:[], layerVersion:1 } : {}),
+        colors:activeDraft ? normalizeColorMap(current.colors) : { ...normalizeColorMap(current.colors), ...normalizeColorMap(first?.defaultColors), ...normalizeColorMap(designer?.defaultColors) }
+      }))
     }
     bootstrap().catch(error => {
       if (cancelled) return
@@ -2593,16 +2607,18 @@ export default function CustomDesignerPage({ products = [], onAdd, onNavigate })
   const backTarget = listingProduct?.handle ? `/product/${listingProduct.handle}` : '/custom'
   const headerTitle = isRetailListing ? listingProduct.title : stripBoombahBrandingText(manifest.product.name)
   const headerLabel = isRetailListing ? 'Customize this jersey in 3D' : 'Jersevo 3D kit builder'
+  const listingMatchedTripo = manifestUsesBakedGlb(manifest)
   const Panel = activeTab === 'design' ? DesignPanel : activeTab === 'colors' ? ColorPanel : activeTab === 'patterns' ? PatternPanel : activeTab === 'text' ? TextPanel : activeTab === 'logos' ? LogoPanel : ArtworkPanel
   return <main className="custom-designer">
     <header className="custom-designer__header">
       <button type="button" className="custom-designer__back" onClick={() => onNavigate?.(backTarget)}><ArrowLeft size={17}/> {isRetailListing ? 'Back to product' : 'Custom lab'}</button>
       <div><span>{headerLabel}</span><strong>{headerTitle}</strong></div>
-      <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? `${isRetailListing ? 'Retail jersey' : (manifestIsBoombah(manifest) ? 'Teamwear' : (manifest?.product?.sportLabel || manifest?.product?.catalogGroupLabel || 'Sportswear'))} 3D · mirrored assets` : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
+      <p><span className={`custom-designer__status is-${stageStatus}`}/>{stageStatus === 'ready' ? (listingMatchedTripo ? 'Tripo 3D · listing matched' : `${isRetailListing ? 'Retail jersey' : (manifestIsBoombah(manifest) ? 'Teamwear' : (manifest?.product?.sportLabel || manifest?.product?.catalogGroupLabel || 'Sportswear'))} 3D · mirrored assets`) : stageStatus === 'error' ? 'Preview unavailable' : 'Loading model'}</p>
     </header>
     <div className="custom-designer__workspace">
       <section className="designer-stage" aria-label="3D jersey workspace" style={activeScene.background === 'transparent' ? undefined : { background:activeScene.background }}>
-        <div className="designer-stage__meta"><span>{selectedDesign?.name || 'Custom design'}</span><strong>{history.state.text.team || 'Your team'}</strong><label className="designer-stage__scene"><span>Scene</span><select value={scenePreset} onChange={event => setScenePreset(event.target.value)} aria-label="Mockup scene">{MOCKUP_SCENE_PRESETS.map(scene => <option key={scene.id} value={scene.id}>{scene.label}</option>)}</select></label></div>
+        <div className="designer-stage__meta"><span>{selectedDesign?.name || 'Custom design'}</span><strong>{history.state.text.team || 'Your team'}</strong></div>
+        <label className="designer-stage__scene"><span>Scene</span><select value={scenePreset} onChange={event => setScenePreset(event.target.value)} aria-label="Mockup scene">{MOCKUP_SCENE_PRESETS.map(scene => <option key={scene.id} value={scene.id}>{scene.label}</option>)}</select></label>
          <JerseyStage ref={stageRef} manifest={manifest} design={history.state.design} colors={history.state.colors} pattern={history.state.pattern} text={previewText} layers={history.state.layers} onStatus={setStageStatus}/>
         {stageStatus === 'loading' && <div className="designer-stage__loading"><span>90+</span><p>Stitching the 3D preview…</p></div>}
         {stageStatus === 'error' && <div className="designer-stage__loading is-error"><span>!</span><p>The design is saved. Reload to restore the 3D preview.</p></div>}

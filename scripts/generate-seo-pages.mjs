@@ -222,7 +222,16 @@ async function ensurePageDirectory(directory) {
 async function writePage(path, html) {
   const target = join(DIST, path === '/' ? 'index.html' : path.replace(/^\//, '').replace(/\/$/, ''), 'index.html')
   await ensurePageDirectory(dirname(target))
-  await writeFile(target, html)
+  // A large parallel PDP batch can briefly race a recursive mkdir on hosted
+  // filesystems. Re-create only the exact target directory and retry once so
+  // an unrelated ENOENT cannot abort an otherwise valid deployment.
+  try {
+    await writeFile(target, html)
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error
+    await mkdir(dirname(target), { recursive:true })
+    await writeFile(target, html)
+  }
   if (/<meta name="robots" content="noindex/i.test(html)) return null
   const entry = { path }
   sitemapEntries.push(entry)

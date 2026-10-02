@@ -147,7 +147,15 @@ test('designer normalizes decimal source palette values before rendering or disp
 test('mobile 3D controls stay inside the compact stage', async () => {
   const css = await readFile(resolve(root, 'src/custom-designer.css'), 'utf8')
   assert.match(css, /\.designer-stage__tools\s*\{[^}]*top:\s*auto;[^}]*grid-auto-flow:\s*column/s)
-  assert.match(css, /\.designer-stage__hint\s*\{[^}]*bottom:\s*58px;/s)
+  assert.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*?\.designer-stage__hint\s*\{[^}]*display:\s*none;/s)
+  assert.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*?\.designer-stage\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;/s)
+})
+
+test('designer fallbacks never present a supplier or Jersevo-branded thumbnail', async () => {
+  const source = await readFile(resolve(root, 'src/CustomDesignerPage.jsx'), 'utf8')
+  assert.doesNotMatch(source, /designer-(?:library-models|design-grid)__placeholder[^<]*>Jersevo\s+3D/i)
+  assert.match(source, /designer-library-models__placeholder[^>]*aria-label="Garment preview"/)
+  assert.match(source, /designer-design-grid__placeholder[^>]*aria-label="Garment preview"/)
 })
 
 test('the 3D builder has a public lazy route and a generated SEO fallback', async () => {

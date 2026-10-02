@@ -101,7 +101,7 @@
         "format": "glb-meshopt",
         "source": "tripo",
         "texturePolicy": "baked",
-        "defaultRotationY": 1.5707963267948966,
+        "defaultRotationY": 0,
         "taskId": "0368d3a9-2ac9-42ce-9e62-1331160f0d32",
         "textureEditAssetId": "81e928e7-9665-458f-b407-1c6086befceb",
         "inputViews": ["front", "left", "back", "right"]
