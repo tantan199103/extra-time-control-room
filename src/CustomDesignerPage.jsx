@@ -1412,6 +1412,47 @@ function patternVersionColors(version) {
   return Object.fromEntries((version?.colors || []).map(item => [String(item.farbnummerNachFarbanteil || item.slot || ''), normalizeColorValue(item.color || item.colorIntValue)]).filter(([key]) => key))
 }
 
+// Keep team-inspired selections consistent regardless of which panel applies
+// them. The same state patch powers the colorway cards and the dedicated
+// Patterns tab, so the 3D stage always receives the palette + procedural
+// family id together.
+function teamFamilyStatePatch(current, family, manifest, active, codes = []) {
+  if (!family) return current
+  const targetCodes = codes.length
+    ? codes
+    : [...new Set((manifestIsBoombah(manifest)
+      ? (active?.colorZones || []).filter(zone => zone.editable !== false).map(zone => zone.code)
+      : [...(active?.baseColors?.length ? active.baseColors : ['A', 'B', 'C']), 'K', 'RV'])
+    )].slice(0, 6)
+  const nextColors = targetCodes.reduce((next, code, index) => ({ ...next, [code]:family.colors[index % family.colors.length] }), { ...current.colors })
+  const patternColorSlots = Object.fromEntries(family.colors.slice(0, 6).map((color, index) => [String(index + 1), color]))
+  const targetZone = manifestIsBoombah(manifest)
+    ? (active?.colorZones || []).find(zone => zone.editable !== false && !zone.removed && zone.patterns !== false)?.code || targetCodes[0] || ''
+    : ''
+  const pattern = manifestIsBoombah(manifest)
+    ? { ...(current.pattern || {}), id:family.pattern.boombahPattern, slug:family.pattern.boombahPattern, familyId:family.id, colorCode:targetCodes[0] || 'A', zoneCode:targetZone, versionId:'family', accent:family.colors[1] || family.colors[0], scale:1, opacity:.82, colors:{ accent:family.colors[1] || family.colors[0] } }
+    : { ...(current.pattern || {}), id:'', slug:family.pattern.owayoPattern, familyId:family.id, colorCode:targetCodes[0] || 'A', zoneCode:'', versionId:'', accent:'', scale:1, opacity:.82, colors:patternColorSlots }
+  return { ...current, colors:nextColors, colorFamilyId:family.id, pattern }
+}
+
+function TeamFamilyPatternPicker({ manifest, active, state, update, codes = [] }) {
+  const [teamLeague, setTeamLeague] = useState('NFL')
+  const [teamQuery, setTeamQuery] = useState('')
+  const [teamShowAll, setTeamShowAll] = useState(false)
+  const normalizedQuery = teamQuery.trim().toLowerCase()
+  const families = US_SPORTS_TEAM_FAMILIES.filter(family => family.league === teamLeague && (!normalizedQuery || `${family.label} ${family.id} ${family.pattern.label} ${family.colors.join(' ')}`.toLowerCase().includes(normalizedQuery)))
+  const visibleFamilies = teamShowAll ? families : families.slice(0, 8)
+  return <section className="designer-team-families designer-team-families--patterns" aria-label="US team-inspired patterns">
+    <div className="designer-color-presets__head"><span>Team-inspired patterns</span><small>40 palette + pattern recipes</small></div>
+    <p className="designer-team-families__hint">Choose a US league color language and its matching stripe, rail or band recipe. No official marks are included.</p>
+    <label className="designer-library-switch__search"><span>Search teams</span><input type="search" value={teamQuery} onChange={event => { setTeamQuery(event.target.value); setTeamShowAll(false) }} placeholder="Search navy, Lakers, pinstripe…" /></label>
+    <div className="designer-color-groups designer-team-families__leagues" role="tablist" aria-label="US sports leagues">{US_SPORTS_LEAGUES.map(league => <button type="button" role="tab" aria-selected={teamLeague === league} className={teamLeague === league ? 'is-active' : ''} key={league} onClick={() => { setTeamLeague(league); setTeamShowAll(false) }}>{league}<small>10</small></button>)}</div>
+    <div className="designer-team-family-grid">{visibleFamilies.map(family => <button type="button" key={family.id} className={state.colorFamilyId === family.id ? 'is-active' : ''} onClick={() => update(current => teamFamilyStatePatch(current, family, manifest, active, codes))} aria-label={`Apply ${family.label} inspired ${family.pattern.label} pattern`}><span className="designer-team-family-card__preview" style={{ background:teamFamilyPreview(family) }}/><span className="designer-team-family-card__swatches">{family.colors.map(color => <i key={color} style={{ backgroundColor:color }}/>)}</span><strong>{family.label}</strong><small>{family.pattern.label}</small></button>)}</div>
+    {!families.length && <p className="designer-library-empty">No team-inspired family matches that search.</p>}
+    {families.length > 8 && <button type="button" className="designer-design-more" onClick={() => setTeamShowAll(value => !value)}>{teamShowAll ? `Show featured ${teamLeague} families` : `Show all ${families.length} ${teamLeague} families`}</button>}
+  </section>
+}
+
 function ColorPanel({ manifest, state, update }) {
   const [group, setGroup] = useState('all')
   const [query, setQuery] = useState('')
@@ -1442,17 +1483,7 @@ function ColorPanel({ manifest, state, update }) {
   const normalizedTeamQuery = teamQuery.trim().toLowerCase()
   const teamFamilies = US_SPORTS_TEAM_FAMILIES.filter(family => family.league === teamLeague && (!normalizedTeamQuery || `${family.label} ${family.id} ${family.pattern.label} ${family.colors.join(' ')}`.toLowerCase().includes(normalizedTeamQuery)))
   const visibleTeamFamilies = teamShowAll ? teamFamilies : teamFamilies.slice(0, 8)
-  const applyTeamFamily = family => update(current => {
-    const nextColors = codes.reduce((next, code, index) => ({ ...next, [code]:family.colors[index % family.colors.length] }), { ...current.colors })
-    const patternColorSlots = Object.fromEntries(family.colors.slice(0, 6).map((color, index) => [String(index + 1), color]))
-    const targetZone = manifestIsBoombah(manifest)
-      ? (active?.colorZones || []).find(zone => zone.editable !== false && !zone.removed && zone.patterns !== false)?.code || codes[0] || ''
-      : ''
-    const pattern = manifestIsBoombah(manifest)
-      ? { ...(current.pattern || {}), id:family.pattern.boombahPattern, slug:family.pattern.boombahPattern, familyId:family.id, colorCode:codes[0] || 'A', zoneCode:targetZone, versionId:'family', accent:family.colors[1] || family.colors[0], scale:1, opacity:.82, colors:{ accent:family.colors[1] || family.colors[0] } }
-      : { ...(current.pattern || {}), id:'', slug:family.pattern.owayoPattern, familyId:family.id, colorCode:codes[0] || 'A', zoneCode:'', versionId:'', accent:'', scale:1, opacity:.82, colors:patternColorSlots }
-    return { ...current, colors:nextColors, colorFamilyId:family.id, pattern }
-  })
+  const applyTeamFamily = family => update(current => teamFamilyStatePatch(current, family, manifest, active, codes))
   return <div className="designer-panel designer-panel--colors">
     <div className="designer-panel__intro"><h2>Build your color story</h2><p>{manifestIsBoombah(manifest) ? 'Tune every editable color zone on the mirrored teamwear template.' : 'Start with a teamwear preset, then fine-tune each material zone on the live garment.'}</p></div>
     {manifestUsesBakedGlb(manifest) && <p className="designer-pattern-warning" role="status"><strong>Garment artwork is locked for this listing.</strong> Color controls are saved as design intent, but the approved baked texture remains unchanged in the 3D preview.</p>}
@@ -1494,7 +1525,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
   const selectedFamily = findUsSportsTeamFamily(state.colorFamilyId)
   const colorCodes = (active?.baseColors?.length ? active.baseColors : ['A', 'B', 'C']).filter(code => manifest?.product?.colorCodes?.some(item => item.colorCode === code))
   const patternColors = state.pattern?.colors && typeof state.pattern.colors === 'object' ? state.pattern.colors : {}
-  const setPattern = patch => update(current => ({ ...current, pattern:{ ...(current.pattern || {}), ...patch } }))
+  const setPattern = patch => update(current => ({ ...current, ...(patch.familyId === '' ? { colorFamilyId:'' } : {}), pattern:{ ...(current.pattern || {}), ...patch } }))
   const resetPattern = () => setPattern({ id:'', slug:'', familyId:'', zoneCode:'', versionId:'', accent:'', colors:{} })
 
   // Boombah fill patterns are generated from a small, owned vector recipe
@@ -1519,6 +1550,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
       design:item.id || item.slug,
       styleCode:item.styleCode || current.styleCode,
       colors:{ ...normalizeColorMap(current.colors), ...normalizeColorMap(item.defaultColors) },
+      colorFamilyId:'',
       pattern:{ ...current.pattern, id:'', slug:'', familyId:'', zoneCode:'', versionId:'', accent:'', colors:{} }
     }))
     const chooseFillPattern = preset => {
@@ -1531,6 +1563,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
       setPattern({
         id:preset.id,
         slug:preset.slug,
+        familyId:'',
         zoneCode:activeZone.code,
         versionId:'procedural',
         accent:normalizeColorValue(patternColors.accent, contrastColor(base)),
@@ -1547,6 +1580,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
       <div className="designer-panel__intro"><h2>Choose an artwork pattern</h2><p>Start with an approved uniform template, then add an athletic fill to one editable color zone when the garment atlas supports it.</p></div>
       {selectedFamily && <div className="designer-pattern-family-note"><strong>{selectedFamily.label}</strong><span>{selectedFamily.league} inspired · {selectedFamily.pattern.label}</span><small>Fine-tune the zone and accent below; team marks are never included.</small></div>}
       {baked && <p className="designer-pattern-warning" role="status"><strong>Listing artwork is locked.</strong> This photographed jersey uses a baked production texture, so fill patterns and garment recolors are disabled. Name, number and logo personalization remain available.</p>}
+      <TeamFamilyPatternPicker manifest={manifest} active={active} state={state} update={update} codes={zones.map(zone => zone.code)} />
       <div className="designer-pattern-section">
         <div className="designer-pattern-section__head"><span>Base artwork</span><small>{templates.length} mirrored templates</small></div>
         <div className="designer-pattern-grid">
@@ -1592,6 +1626,7 @@ function PatternPanel({ manifest, state, update, designerConfig }) {
   return <div className="designer-panel designer-panel--patterns">
     <div className="designer-panel__intro"><h2>Add a garment pattern</h2><p>Choose a mirrored pattern, preview a featured color combination, then tune each pattern slot with the same Jersevo palette used by the garment.</p></div>
     {selectedFamily && <div className="designer-pattern-family-note"><strong>{selectedFamily.label}</strong><span>{selectedFamily.league} inspired · {selectedFamily.pattern.label}</span><small>Pattern colors were seeded from the selected family and remain fully editable.</small></div>}
+    <TeamFamilyPatternPicker manifest={manifest} active={active} state={state} update={update} codes={colorCodes} />
     <div className="designer-pattern-controls">
       <label className="designer-library-switch__field"><span>Pattern family</span><select value={category} onChange={event => { setCategory(event.target.value); setShowAll(false) }}><option value="all">All pattern families</option>{categories.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}</select></label>
       <label className="designer-library-switch__field"><span>Apply to garment color</span><select value={state.pattern?.colorCode || colorCodes[0] || 'A'} onChange={event => setPattern({ colorCode:event.target.value })}>{colorCodes.map(code => <option key={code} value={code}>{manifest.product.colorCodes.find(item => item.colorCode === code)?.Farbname || `Color ${code}`}</option>)}</select></label>
