@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { artworkIdentity, assertId, findJob, handleApiError, JOB_TYPES, normalizeJobRow, protect, readBody, safeText, sendJson, variantCount } from './_artwork.js'
+import { artworkAssetExpired, artworkIdentity, assertId, findJob, handleApiError, JOB_TYPES, normalizeJobRow, protect, readBody, safeText, sendJson, variantCount } from './_artwork.js'
 
 const MAX_ATTEMPTS = 3
 
@@ -19,12 +19,13 @@ function boundedParams(value) {
 
 async function ownedSourceAssets(client, ids, identityHash) {
   if (!ids.length) return []
-  const { data, error } = await client.from('pod_artwork_assets').select('id, verified, consent, storage_key, mime, width_px, height_px, dpi, source').in('id', ids).eq('session_hash', identityHash).eq('verified', true)
+  const { data, error } = await client.from('pod_artwork_assets').select('id, verified, consent, storage_key, mime, width_px, height_px, dpi, source, expires_at').in('id', ids).eq('session_hash', identityHash).eq('verified', true)
   if (error) throw error
   const byId = new Map((data || []).map(item => [item.id, item]))
   const rows = ids.map(id => byId.get(id)).filter(Boolean)
   if (rows.length !== ids.length || rows.some(row => !row.verified)) throw Object.assign(new Error('One or more reference assets are not verified for this session.'), { status: 422 })
   if (rows.some(row => row.consent !== true)) throw Object.assign(new Error('Confirm that you own or have permission to use every reference image.'), { status: 422 })
+  if (rows.some(row => artworkAssetExpired(row.expires_at))) throw Object.assign(new Error('One or more reference assets have expired. Upload them again before generating artwork.'), { status: 422 })
   return rows
 }
 

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import sharp from 'sharp'
 import { sanitizeImagePrivacyMetadata } from '../../src/lib/image-privacy.js'
-import { malwareScan, checksum, extensionForMime } from '../../api/_artwork.js'
+import { artworkAssetExpired, malwareScan, checksum, extensionForMime } from '../../api/_artwork.js'
 
 const MAX_ATTEMPTS = 3
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024
@@ -120,7 +120,10 @@ async function normalizeGenerated(bytes) {
 
 async function failJob(client, job, error) {
   const attempts = Number(job.attempts || 0)
-  const retryable = !['MODERATION_REJECTED', 'MALWARE_DETECTED'].includes(error?.code) && attempts < Number(job.max_attempts || MAX_ATTEMPTS)
+  // These failures are tied to immutable input or policy and will not be
+  // fixed by replaying the same job. Keep provider/moderation outages
+  // retryable, but do not waste worker capacity on expired/unconsented input.
+  const retryable = !['MODERATION_REJECTED', 'MALWARE_DETECTED', 'SOURCE_NOT_VERIFIED'].includes(error?.code) && attempts < Number(job.max_attempts || MAX_ATTEMPTS)
   const retryAfter = retryable ? new Date(Date.now() + Math.min(60 * 60 * 1000, 30_000 * (2 ** Math.max(0, attempts - 1)))).toISOString() : null
   await client.from('pod_artwork_jobs').update({ status: 'failed', error: text(error?.message || 'Artwork job failed.', 500), retry_after: retryAfter, updated_at: new Date().toISOString(), worker_id: null, locked_at: null }).eq('id', job.id).eq('status', 'running')
   return { retryable, retryAfter }
@@ -144,12 +147,12 @@ export async function processArtworkJob(client, job) {
   let sources = []
   let sourceError = null
   if (sourceIds.length) {
-    const result = await client.from('pod_artwork_assets').select('id, storage_key, mime, consent, verified').in('id', sourceIds).eq('session_hash', job.session_hash)
+    const result = await client.from('pod_artwork_assets').select('id, storage_key, mime, consent, verified, expires_at').in('id', sourceIds).eq('session_hash', job.session_hash)
     sources = result.data || []
     sourceError = result.error
   }
   if (sourceError) throw sourceError
-  if (sources?.some(row => row.verified !== true || row.consent !== true)) throw Object.assign(new Error('A source artwork asset is not verified or consented.'), { code: 'SOURCE_NOT_VERIFIED' })
+  if (sources?.some(row => row.verified !== true || row.consent !== true || artworkAssetExpired(row.expires_at))) throw Object.assign(new Error('A source artwork asset is not verified, consented or is expired.'), { code: 'SOURCE_NOT_VERIFIED' })
   const variants = []
   const source = sources?.[0] ? await downloadAsset(client, sources[0]) : null
   await moderateInput(basePrompt(job), sources || [], source ? [source] : [])

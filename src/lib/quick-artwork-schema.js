@@ -97,7 +97,7 @@ export function normalizeQuickDraft(input = {}) {
     variantId:String(input.variantId || ''), surfaceId:String(input.surfaceId || 'front'),
     assetId:String(input.assetId || ''), assetUrl:String(input.assetUrl || ''),
     assetName:String(input.assetName || 'Artwork').slice(0, 160), assetVerified:Boolean(input.assetVerified), assetPreviewOnly:Boolean(input.assetPreviewOnly),
-    jobId:String(input.jobId || ''), jobStatus:ARTWORK_JOB_STATUSES.includes(input.jobStatus) ? input.jobStatus : 'idle', step:QUICK_STEPS.includes(input.step) ? input.step : 'source',
+    jobId:String(input.jobId || ''), jobKind:ARTWORK_JOB_TYPES.includes(input.jobKind) ? input.jobKind : 'generate', jobStatus:ARTWORK_JOB_STATUSES.includes(input.jobStatus) ? input.jobStatus : 'idle', step:QUICK_STEPS.includes(input.step) ? input.step : 'source',
     variants, selectedVariantId:String(input.selectedVariantId || ''),
     transform:normalizeTransform(input.transform), adjustments:normalizeAdjustments(input.adjustments),
     preflight:input.preflight && typeof input.preflight === 'object' ? input.preflight : null,

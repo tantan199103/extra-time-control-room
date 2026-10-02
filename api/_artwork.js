@@ -40,6 +40,11 @@ export function normalizeSource(value, fallback = 'upload') {
   return ASSET_SOURCES.has(source) ? source : fallback
 }
 
+export function artworkAssetExpired(value, now = Date.now()) {
+  const timestamp = Date.parse(value || '')
+  return Number.isFinite(timestamp) && timestamp <= Number(now)
+}
+
 /** Download the object again and validate bytes, not browser metadata. */
 export async function verifyUploadedArtwork(client, row, { claimedSha256 = '', claimedMime = '', claimedSize = null } = {}) {
   if (!row || row.session_hash == null || !row.storage_key) throw Object.assign(new Error('The artwork upload could not be found.'), { status: 404 })
@@ -135,7 +140,7 @@ export async function assertQuickArtworkAsset(client, assetId, identityHash) {
   }
   if (row.verified !== true) throw Object.assign(new Error('The Quick AI artwork is not verified yet.'), { status:422 })
   if (row.consent !== true) throw Object.assign(new Error('Confirm that you own or have permission to use the Quick AI artwork.'), { status:422 })
-  if (row.expires_at && Number.isFinite(Date.parse(row.expires_at)) && Date.parse(row.expires_at) <= Date.now()) {
+  if (artworkAssetExpired(row.expires_at)) {
     throw Object.assign(new Error('The Quick AI artwork has expired. Reopen the saved draft to generate a fresh asset.'), { status:422 })
   }
   return { bucket:ASSET_BUCKET, path:String(row.storage_key), assetId:row.id, sha256:row.sha256 || null, source:row.source || 'ai-generated' }

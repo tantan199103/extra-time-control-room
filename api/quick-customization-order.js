@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
-import { handleApiError, protect, readBody, safeText, sendJson } from './_artwork.js'
+import { artworkAssetExpired, handleApiError, protect, readBody, safeText, sendJson } from './_artwork.js'
 import { enforceSameOrigin } from './_security.js'
+import { normalizeAdjustments } from '../src/lib/quick-artwork-schema.js'
 
 const clamp = (value, min, max, fallback) => {
   const number = Number(value)
@@ -75,11 +76,13 @@ export default async function handler(request, response) {
     if (existingError && existingError.code !== 'PGRST116') throw existingError
     if (existing) return sendJson(response, 200, { order:existing, replayed:true })
 
-    const assetResult = await client.from('pod_artwork_assets').select('id,storage_key,verified,consent,sha256,mime,width_px,height_px,dpi,source').eq('id', assetId).eq('session_hash', identityHash).maybeSingle()
+    const assetResult = await client.from('pod_artwork_assets').select('id,storage_key,verified,consent,sha256,mime,width_px,height_px,dpi,source,expires_at').eq('id', assetId).eq('session_hash', identityHash).maybeSingle()
     if (assetResult.error) throw assetResult.error
     const asset = assetResult.data
     if (!asset?.verified) throw Object.assign(new Error('The artwork asset is not verified for this session.'), { status: 422 })
     if (asset.consent !== true) throw Object.assign(new Error('Asset consent confirmation is required.'), { status: 422 })
+    if (artworkAssetExpired(asset.expires_at)) throw Object.assign(new Error('The artwork asset has expired. Generate or upload it again before ordering.'), { status: 422 })
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(String(asset.mime || '').toLowerCase())) throw Object.assign(new Error('The artwork asset file type is not supported.'), { status: 422 })
 
     const product = await publishedProduct(client, productId)
     if (!product) throw Object.assign(new Error('This product is no longer published.'), { status: 404 })
@@ -104,7 +107,7 @@ export default async function handler(request, response) {
       ai_preview_id:null,
       idempotency_key:idempotencyKey,
       session_hash:identityHash,
-      payload:{ source:'quick-ai', productId:product.id, variantId:variant.id, surfaceId, printArea:{ id:surfaceId, widthMm:Number(area.widthMm || area.width_mm), heightMm:Number(area.heightMm || area.height_mm), bleedMm:Number(area.bleedMm || area.bleed_mm || 5), safeAreaMm:Number(area.safeAreaMm || area.safe_area_mm || 12) }, assetId:asset.id, transform, adjustments:body.adjustments && typeof body.adjustments === 'object' ? body.adjustments : {}, lineage:body.lineage && typeof body.lineage === 'object' ? body.lineage : {}, consent:true, prompt:safeText(body.lineage?.prompt, 1200), style:safeText(body.lineage?.style, 80) },
+      payload:{ source:'quick-ai', productId:product.id, variantId:variant.id, surfaceId, printArea:{ id:surfaceId, widthMm:Number(area.widthMm || area.width_mm), heightMm:Number(area.heightMm || area.height_mm), bleedMm:Number(area.bleedMm || area.bleed_mm || 5), safeAreaMm:Number(area.safeAreaMm || area.safe_area_mm || 12) }, assetId:asset.id, transform, adjustments:normalizeAdjustments(body.adjustments), lineage:body.lineage && typeof body.lineage === 'object' ? body.lineage : {}, consent:true, prompt:safeText(body.lineage?.prompt, 1200), style:safeText(body.lineage?.style, 80) },
       preview_front_url:null,
       status:'PREVIEW'
     }

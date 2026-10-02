@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Crop, FlipHorizontal2, FlipVertical2, ImagePlus, Layers3, Lock, Minus, Move, Palette, RefreshCw, RotateCw, Save, ScanLine, Sparkles, Trash2, Type, Upload, WandSparkles, ZoomIn } from 'lucide-react'
 import { trackStorefrontEvent } from './lib/storefront-analytics'
 import { getCustomerSessionId } from './lib/storefront-api'
-import { completeArtworkAsset, createArtworkJob, createQuickOrder, getArtworkJob, preflightArtwork, presignArtworkAsset } from './lib/artwork-api'
-import { QUICK_DEFAULTS, QUICK_STEPS, QUICK_STYLES, normalizeArtworkAsset, normalizeQuickDraft, normalizeTransform, readQuickDraft, saveQuickDraft } from './lib/quick-artwork-schema'
+import { completeArtworkAsset, createArtworkJob, createQuickOrder, getArtworkJob, preflightArtwork, presignArtworkAsset, retryArtworkJob } from './lib/artwork-api'
+import { QUICK_DEFAULTS, QUICK_STEPS, QUICK_STYLES, normalizeAdjustments, normalizeArtworkAsset, normalizeQuickDraft, normalizeTransform, readQuickDraft, saveQuickDraft } from './lib/quick-artwork-schema'
 import { QUICK_PRINT_AREAS, normalizePrintAreas } from './lib/print-areas'
 
 const STEP_LABELS = { source:'Source', direction:'Direction', variants:'Variants', polish:'Polish', product:'Product', review:'Review' }
@@ -77,6 +77,7 @@ function ArtworkCanvas({ asset, transform, adjustments, onTransform, onAdjustmen
   const dragRef = useRef(null)
   const patch = update => onTransform(normalizeTransform({ ...transform, ...update }))
   const filter = `brightness(${100 + adjustments.brightness}%) contrast(${100 + adjustments.contrast}%) saturate(${100 + adjustments.saturation}%)`
+  const crop = adjustments.crop
   const startDrag = event => {
     if (event.button !== undefined && event.button !== 0) return
     const canvas = event.currentTarget.parentElement
@@ -103,7 +104,7 @@ function ArtworkCanvas({ asset, transform, adjustments, onTransform, onAdjustmen
     event.preventDefault()
     patch(moves[event.key])
   }
-  return <div className="quick-canvas-shell"><div className="quick-canvas-toolbar"><span><ScanLine size={15}/> Safe area · 320 × 400 mm</span><span>Front / 300 DPI target</span></div><div className="quick-canvas" style={{ aspectRatio:'1 / 1' }}><div className="quick-safe-area"/><div className="quick-canvas-art" role="img" aria-label="Artwork on print canvas; drag to reposition" tabIndex="0" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag} onKeyDown={moveWithKeyboard} style={{ left:`${transform.x * 100}%`, top:`${transform.y * 100}%`, width:`${transform.width * 100}%`, height:`${transform.height * 100}%`, transform:`translate(-50%, -50%) rotate(${transform.rotation}deg) scale(${transform.scale * (transform.flipX ? -1 : 1)}, ${transform.scale * (transform.flipY ? -1 : 1)})`, opacity:transform.opacity, filter }}><img src={asset?.url} alt="" draggable="false"/></div><span className="quick-canvas-hint"><Move size={13}/> Drag, then refine in the inspector</span></div><div className="quick-transform-strip" aria-label="Artwork transform tools"><button type="button" aria-label="Scale artwork down" title="Scale artwork down" onClick={() => patch({ scale:transform.scale - .05 })}><Minus size={14}/></button><span aria-live="polite">{Math.round(transform.scale * 100)}%</span><button type="button" aria-label="Scale artwork up" title="Scale artwork up" onClick={() => patch({ scale:transform.scale + .05 })}><ZoomIn size={14}/></button><button type="button" aria-label="Rotate artwork left 5 degrees" title="Rotate artwork left 5 degrees" onClick={() => patch({ rotation:transform.rotation - 5 })}><RotateCw size={14}/></button><button type="button" aria-label="Flip artwork horizontally" title="Flip artwork horizontally" onClick={() => patch({ flipX:!transform.flipX })}><FlipHorizontal2 size={14}/></button><button type="button" aria-label="Flip artwork vertically" title="Flip artwork vertically" onClick={() => patch({ flipY:!transform.flipY })}><FlipVertical2 size={14}/></button></div></div>
+  return <div className="quick-canvas-shell"><div className="quick-canvas-toolbar"><span><ScanLine size={15}/> Safe area · 320 × 400 mm</span><span>Front / 300 DPI target</span></div><div className="quick-canvas" style={{ aspectRatio:'1 / 1' }}><div className="quick-safe-area"/><div className="quick-canvas-art" role="img" aria-label="Artwork on print canvas; drag to reposition" tabIndex="0" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag} onKeyDown={moveWithKeyboard} style={{ left:`${transform.x * 100}%`, top:`${transform.y * 100}%`, width:`${transform.width * 100}%`, height:`${transform.height * 100}%`, transform:`translate(-50%, -50%) rotate(${transform.rotation}deg) scale(${transform.scale * (transform.flipX ? -1 : 1)}, ${transform.scale * (transform.flipY ? -1 : 1)})`, opacity:transform.opacity, filter }}><img src={asset?.url} alt="" draggable="false" style={crop ? { objectFit:'cover', objectPosition:`${crop.x * 100}% ${crop.y * 100}%` } : undefined}/></div><span className="quick-canvas-hint"><Move size={13}/> Drag, then refine in the inspector</span></div><div className="quick-transform-strip" aria-label="Artwork transform tools"><button type="button" aria-label="Scale artwork down" title="Scale artwork down" onClick={() => patch({ scale:transform.scale - .05 })}><Minus size={14}/></button><span aria-live="polite">{Math.round(transform.scale * 100)}%</span><button type="button" aria-label="Scale artwork up" title="Scale artwork up" onClick={() => patch({ scale:transform.scale + .05 })}><ZoomIn size={14}/></button><button type="button" aria-label="Rotate artwork left 5 degrees" title="Rotate artwork left 5 degrees" onClick={() => patch({ rotation:transform.rotation - 5 })}><RotateCw size={14}/></button><button type="button" aria-label="Flip artwork horizontally" title="Flip artwork horizontally" onClick={() => patch({ flipX:!transform.flipX })}><FlipHorizontal2 size={14}/></button><button type="button" aria-label="Flip artwork vertically" title="Flip artwork vertically" onClick={() => patch({ flipY:!transform.flipY })}><FlipVertical2 size={14}/></button></div></div>
 }
 
 function Inspector({ transform, adjustments, onTransform, onAdjustment, onAction }) {
@@ -149,6 +150,8 @@ export default function QuickCustomPage({ products = [], onNavigate, onAdd }) {
   const [variantId, setVariantId] = useState(persisted?.variantId || '')
   const [jobStatus, setJobStatus] = useState(persisted?.jobStatus === 'queued' || persisted?.jobStatus === 'running' ? persisted.jobStatus : 'idle')
   const [jobId, setJobId] = useState(persisted?.jobId || '')
+  const [jobKind, setJobKind] = useState(persisted?.jobKind || 'generate')
+  const [lastAction, setLastAction] = useState('')
   const [jobError, setJobError] = useState('')
   const [preflight, setPreflight] = useState(null)
   const [preflightRunning, setPreflightRunning] = useState(false)
@@ -175,8 +178,8 @@ export default function QuickCustomPage({ products = [], onNavigate, onAdd }) {
   }, [products, product])
   useEffect(() => {
     if (!asset && !jobId) return
-    saveQuickDraft(normalizeQuickDraft({ assetId:asset?.id || persisted?.assetId, assetUrl:asset?.url || persisted?.assetUrl, assetName:asset?.name || persisted?.assetName, assetVerified:Boolean(asset?.verified), assetPreviewOnly:Boolean(asset?.previewOnly), jobId, jobStatus, step, variants, selectedVariantId:selectedVariant?.id || '', transform, adjustments, surfaceId:surface, productId:product?.id, variantId, consent, settings, lineage:{ prompt, style:settings.style } }))
-  }, [asset, jobId, jobStatus, step, variants, selectedVariant, transform, adjustments, surface, product, variantId, consent, settings, prompt, persisted])
+    saveQuickDraft(normalizeQuickDraft({ assetId:asset?.id || persisted?.assetId, assetUrl:asset?.url || persisted?.assetUrl, assetName:asset?.name || persisted?.assetName, assetVerified:Boolean(asset?.verified), assetPreviewOnly:Boolean(asset?.previewOnly), jobId, jobKind, jobStatus, step, variants, selectedVariantId:selectedVariant?.id || '', transform, adjustments, surfaceId:surface, productId:product?.id, variantId, consent, settings, lineage:{ prompt, style:settings.style } }))
+  }, [asset, jobId, jobKind, jobStatus, step, variants, selectedVariant, transform, adjustments, surface, product, variantId, consent, settings, prompt, persisted])
   useEffect(() => {
     // A refresh can interrupt the client-side polling loop. Reattach to the
     // durable server job so a completed result remains recoverable.
@@ -193,7 +196,14 @@ export default function QuickCustomPage({ products = [], onNavigate, onAdd }) {
         const recovered = normalizeRemoteVariants(current)
         if (recovered.length) {
           const first = recovered[0]
-          setVariants(recovered); setSelectedVariant(first); setAsset(assetFromVariant(first, { consent, jobId })); setJobStatus('succeeded'); setJobError(''); setStep('variants'); activeJobRef.current = jobId
+          const recoveredAsset = assetFromVariant(first, { consent, jobId })
+          if (jobKind === 'generate' || jobKind === 'remix' || jobKind === 'redesign') {
+            setVariants(recovered); setSelectedVariant(first); setAsset(recoveredAsset); setStep('variants')
+          } else {
+            setAsset(recoveredAsset)
+            setNotice(`${jobKind === 'removeBackground' ? 'Background removed' : jobKind === 'upscale' ? 'Artwork upscaled' : 'Artwork cleaned up'} and saved as a new verified asset.`)
+          }
+          setJobStatus('succeeded'); setJobError(''); activeJobRef.current = jobId
         } else { setJobStatus('failed'); setJobError('The artwork job completed without a usable preview.') }
       } else if (current.status === 'failed' || current.status === 'cancelled') {
         setJobStatus('failed'); setJobError(current.error || (current.status === 'cancelled' ? 'The artwork job was cancelled.' : 'The artwork job failed. Retry when the provider is available.'))
@@ -201,7 +211,7 @@ export default function QuickCustomPage({ products = [], onNavigate, onAdd }) {
     }
     recover()
     return () => { active = false }
-  }, [jobId, jobStatus, consent])
+  }, [jobId, jobKind, jobStatus, consent])
 
   useEffect(() => {
     if (!consent || !pendingUpload) return undefined
@@ -239,37 +249,110 @@ export default function QuickCustomPage({ products = [], onNavigate, onAdd }) {
     reader.readAsDataURL(file)
   }
 
+  const waitForArtworkJob = async remoteJob => {
+    if (!remoteJob?.id) return null
+    const id = remoteJob.id
+    activeJobRef.current = id
+    setJobId(id)
+    let current = remoteJob
+    for (let attempt = 0; attempt < 20 && ['queued', 'running'].includes(current.status); attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 900))
+      try { current = await getArtworkJob(id) } catch {
+        setJobStatus('running')
+        setJobError('The artwork job is still running. Refresh this draft to check it again.')
+        return null
+      }
+    }
+    if (current.status === 'succeeded') return current
+    if (current.status === 'failed' || current.status === 'cancelled') {
+      setJobStatus('failed')
+      setJobError(current.error || (current.status === 'cancelled' ? 'The artwork job was cancelled.' : 'The artwork job failed. Retry when the provider is available.'))
+      return null
+    }
+    setJobStatus('running')
+    setJobError(current.error || 'The artwork job is still running. Refresh this draft to check it again.')
+    return null
+  }
+
+  const adoptJobResult = (current, kind = 'generate') => {
+    const remoteVariants = normalizeRemoteVariants(current)
+    if (!remoteVariants.length) {
+      setJobStatus('failed')
+      setJobError('The artwork job completed without a usable verified asset.')
+      return false
+    }
+    const first = remoteVariants[0]
+    const nextAsset = assetFromVariant(first, { consent, source:kind === 'remix' ? 'remix' : kind === 'generate' ? 'ai-generated' : 'cleanup', jobId:current.id })
+    if (kind === 'generate' || kind === 'remix' || kind === 'redesign') {
+      setVariants(remoteVariants)
+      setSelectedVariant(first)
+      setStep('variants')
+    } else {
+      setNotice(`${kind === 'removeBackground' ? 'Background removed' : kind === 'upscale' ? 'Artwork upscaled' : 'Artwork cleaned up'} and saved as a new verified asset.`)
+    }
+    setAsset(nextAsset)
+    setJobStatus('succeeded')
+    setJobError('')
+    activeJobRef.current = current.id
+    return true
+  }
+
   const generate = async (type = 'generate', remixVariant = null) => {
     if (!prompt.trim() && !sourceAsset) { setNotice('Add a prompt, upload an image, or do both.'); setStep('source'); return }
     if (sourceAsset && !consent) { setNotice('Confirm you have permission to use the uploaded image.'); setStep('source'); return }
     if (sourceAsset && !sourceAsset.verified) { setNotice('Finish verifying the private upload before using it as an AI reference.'); setStep('source'); return }
-    setJobStatus('running'); setJobError(''); setNotice('')
+    setJobKind(type); setJobStatus('running'); setJobError(''); setNotice('')
     let remoteJob = null
-    let remoteVariants = null
-    let remoteFailure = ''
-    try { remoteJob = await createArtworkJob({ sessionId:getCustomerSessionId(), type, prompt, style:settings.style, sourceAssetIds:sourceAsset ? [sourceAsset.id] : [], params:settings, variants:settings.variants, lineage:remixVariant ? { parentVariantId:remixVariant.id } : undefined }) } catch { /* Local preview keeps the prompt-only flow usable while the worker is unavailable. */ }
-    if (remoteJob?.id) { activeJobRef.current = remoteJob.id; setJobId(remoteJob.id) }
-    else { activeJobRef.current = ''; setJobId('') }
-    if (remoteJob?.status === 'queued' || remoteJob?.status === 'running') {
-      let current = remoteJob
-      for (let attempt = 0; attempt < 20 && ['queued','running'].includes(current.status); attempt += 1) { await new Promise(resolve => setTimeout(resolve, 900)); try { current = await getArtworkJob(remoteJob.id) } catch { remoteFailure = 'The artwork job is still running. Refresh this draft to check it again.'; break } }
-      if (current.status === 'succeeded') remoteVariants = normalizeRemoteVariants(current)
-      else if (current.status === 'failed') remoteFailure = current.error || 'The artwork job failed. Retry when the provider is available.'
-      else if (current.status === 'cancelled') remoteFailure = 'The artwork job was cancelled.'
-      else if (!remoteFailure) remoteFailure = 'The artwork job is still running. Refresh this draft to check it again.'
-    }
-    if (remoteJob && !remoteVariants) {
-      setJobStatus(remoteFailure.startsWith('The artwork job failed') ? 'failed' : 'running')
-      setJobError(remoteFailure)
+    try {
+      remoteJob = await createArtworkJob({ sessionId:getCustomerSessionId(), type, prompt, style:settings.style, sourceAssetIds:sourceAsset ? [sourceAsset.id] : [], params:settings, variants:settings.variants, idempotencyKey:uid('artwork_job'), lineage:remixVariant ? { parentVariantId:remixVariant.id } : undefined })
+    } catch (error) {
+      // Keep the local preview explicitly non-orderable when the worker/API is
+      // unavailable. A demo image must never be mistaken for a verified asset.
+      const nextVariants = Array.from({ length:settings.variants }, (_, index) => localPreviewVariant(prompt, settings.style, index, sourceAsset?.url || ''))
+      const firstVariant = nextVariants[0]
+      setVariants(nextVariants); setSelectedVariant(firstVariant); setAsset(assetFromVariant({ ...firstVariant, name:`${settings.style} preview` }, { source:type === 'remix' ? 'remix' : 'ai-generated', consent }))
+      setJobStatus('succeeded'); setJobId(''); setJobError(''); setStep('variants')
+      setNotice(error?.message ? `Preview only: ${error.message}` : 'Preview only: the artwork worker is unavailable. Connect it to create a verified print asset.')
+      trackStorefrontEvent('quick_ai_variants_ready', { count:settings.variants, style:settings.style, has_reference:Boolean(sourceAsset), preview_only:true })
       return
     }
-    const nextVariants = remoteVariants || Array.from({ length:settings.variants }, (_, index) => localPreviewVariant(prompt, settings.style, index, sourceAsset?.url || ''))
-    const firstVariant = nextVariants[0]
-    setVariants(nextVariants); setSelectedVariant(firstVariant); setAsset(assetFromVariant({ ...firstVariant, name:`${settings.style} artwork` }, { source:type === 'remix' ? 'remix' : 'ai-generated', consent, jobId:remoteJob?.id || '' })); setJobStatus('succeeded'); setStep('variants'); if (!remoteJob) setNotice('Preview mode: connect the artwork worker to create a verified print asset.'); trackStorefrontEvent('quick_ai_variants_ready', { count:settings.variants, style:settings.style, has_reference:Boolean(sourceAsset) })
+    const current = await waitForArtworkJob(remoteJob)
+    if (!current) return
+    adoptJobResult(current, type)
+    trackStorefrontEvent('quick_ai_variants_ready', { count:current.variants?.length || settings.variants, style:settings.style, has_reference:Boolean(sourceAsset) })
   }
 
   const selectVariant = variant => { setSelectedVariant(variant); setAsset(assetFromVariant(variant, { source:variant.source || 'ai-generated', consent, jobId:jobId || '' })) }
-  const polish = action => { setNotice(`${action === 'removeBackground' ? 'Background removal' : action === 'upscale' ? '2× upscale' : action === 'cleanup' ? 'Edge cleanup' : 'Crop'} queued for this artwork.`); setAdjustments(current => action === 'removeBackground' ? { ...current, backgroundRemoved:true } : current) }
+
+  const polish = async action => {
+    if (action === 'crop') {
+      setAdjustments(current => normalizeAdjustments({ ...current, crop:current.crop ? null : { x:.08, y:.08, width:.84, height:.84 } }))
+      setNotice(adjustments.crop ? 'Crop cleared. The full artwork is visible again.' : 'Crop preview applied. Run preflight after you finish positioning the artwork.')
+      return
+    }
+    if (!asset?.id || asset.previewOnly || !asset.verified) {
+      setNotice('This action needs a verified artwork asset. Generate it with the artwork worker first.')
+      return
+    }
+    setLastAction(action); setJobKind(action); setJobStatus('running'); setJobError(''); setNotice('')
+    try {
+      const remoteJob = await createArtworkJob({ sessionId:getCustomerSessionId(), type:action, prompt, style:settings.style, sourceAssetIds:[asset.id], params:{ ...settings, ...adjustments, variants:1 }, variants:1, idempotencyKey:uid('artwork_polish') })
+      const current = await waitForArtworkJob(remoteJob)
+      if (current) adoptJobResult(current, action)
+    } catch (error) {
+      setJobStatus('failed'); setJobError(error?.message || 'This artwork action could not be started.')
+    }
+  }
+
+  const retryActiveJob = async () => {
+    if (!jobId) return jobKind === 'generate' || jobKind === 'remix' || jobKind === 'redesign' ? generate(jobKind) : polish(lastAction || jobKind)
+    setJobStatus('running'); setJobError('')
+    try {
+      const retried = await retryArtworkJob(jobId)
+      const current = await waitForArtworkJob(retried)
+      if (current) adoptJobResult(current, jobKind)
+    } catch (error) { setJobStatus('failed'); setJobError(error?.message || 'This artwork job cannot be retried.') }
+  }
   const runPreflight = async () => {
     if (!asset) { setNotice('Select an artwork variant first.'); return }
     setPreflightRunning(true); setNotice('')
@@ -322,5 +405,5 @@ export default function QuickCustomPage({ products = [], onNavigate, onAdd }) {
   const advance = () => { if (step === 'source') setStep('direction'); else if (step === 'direction') generate(); else if (step === 'variants') setStep('polish'); else if (step === 'polish') setStep('product'); else if (step === 'product') setStep('review'); else runPreflight() }
   const back = () => { const index = QUICK_STEPS.indexOf(step); if (index > 0) setStep(QUICK_STEPS[index - 1]) }
 
-  return <main className="quick-custom-page"><header className="quick-page-header"><button type="button" className="quick-back-link" onClick={() => onNavigate?.('/custom')}><ArrowLeft size={15}/> Custom studio</button><div><span className="quick-brand-mark">JERSEVO / QUICK AI</span><strong>Artwork workbench</strong></div><button type="button" className="quick-save-link" onClick={() => { if (asset) saveQuickDraft({ assetId:asset.id, assetUrl:asset.url, transform, adjustments, surfaceId:surface, productId:product?.id, variantId, consent, settings, lineage:{ prompt, style:settings.style } }); setNotice('Draft saved on this device.') }}><Save size={15}/> Save draft</button></header><QuickProgress step={step} onStep={setStep}/><div className="quick-page-body">{step === 'source' && <ArtworkSourcePanel prompt={prompt} setPrompt={setPrompt} sourceAsset={sourceAsset} onUpload={upload} consent={consent} setConsent={setConsent}/>} {step === 'direction' && <DirectionPanel settings={settings} setSettings={setSettings}/>} {step === 'variants' && <VariantGrid variants={variants} selected={selectedVariant} onSelect={selectVariant} onRemix={variant => generate('remix', variant)} onRegenerate={() => generate('generate')}/>} {step === 'polish' && asset && <PolishPanel asset={asset} transform={transform} setTransform={setTransform} adjustments={adjustments} setAdjustments={setAdjustments} onAction={polish}/>} {step === 'product' && <ProductSurfacePicker products={products} product={product} setProduct={setProduct} surface={surface} setSurface={setSurface} variantId={variantId} setVariantId={setVariantId}/>} {step === 'review' && <PreflightPanel result={preflight} running={preflightRunning} onRun={runPreflight} onContinue={addToBag} />} {jobStatus === 'running' && <div className="quick-job-status" role="status"><Sparkles size={15}/> Generating variants… this draft survives a refresh.</div>} {jobError && <div className="quick-job-error" role="alert">{jobError} <button type="button" onClick={() => generate('generate')}>Retry</button></div>} {notice && <div className="quick-notice" role="status">{notice}</div>}</div><footer className="quick-sticky-footer"><button type="button" className="button-link" onClick={back} disabled={step === 'source'}><ArrowLeft size={15}/> Back</button>{step === 'polish' && <button type="button" className="quick-handoff-button" onClick={handoff}>Continue in 3D Designer <ArrowRight size={15}/></button>}<button type="button" className="button button--acid" onClick={advance} disabled={!canContinue || jobStatus === 'running'}>{step === 'review' ? 'CHECK PREFLIGHT' : step === 'direction' ? 'GENERATE ARTWORK' : step === 'variants' ? 'POLISH ARTWORK' : step === 'polish' ? 'CHOOSE PRODUCT' : step === 'product' ? 'REVIEW ORDER' : 'CONTINUE'} <ArrowRight size={15}/></button></footer></main>
+  return <main className="quick-custom-page"><header className="quick-page-header"><button type="button" className="quick-back-link" onClick={() => onNavigate?.('/custom')}><ArrowLeft size={15}/> Custom studio</button><div><span className="quick-brand-mark">JERSEVO / QUICK AI</span><strong>Artwork workbench</strong></div><button type="button" className="quick-save-link" onClick={() => { if (asset) saveQuickDraft({ assetId:asset.id, assetUrl:asset.url, transform, adjustments, surfaceId:surface, productId:product?.id, variantId, consent, settings, jobKind, lineage:{ prompt, style:settings.style } }); setNotice('Draft saved on this device.') }}><Save size={15}/> Save draft</button></header><QuickProgress step={step} onStep={setStep}/><div className="quick-page-body">{step === 'source' && <ArtworkSourcePanel prompt={prompt} setPrompt={setPrompt} sourceAsset={sourceAsset} onUpload={upload} consent={consent} setConsent={setConsent}/>} {step === 'direction' && <DirectionPanel settings={settings} setSettings={setSettings}/>} {step === 'variants' && <VariantGrid variants={variants} selected={selectedVariant} onSelect={selectVariant} onRemix={variant => generate('remix', variant)} onRegenerate={() => generate('generate')}/>} {step === 'polish' && asset && <PolishPanel asset={asset} transform={transform} setTransform={setTransform} adjustments={adjustments} setAdjustments={setAdjustments} onAction={polish}/>} {step === 'product' && <ProductSurfacePicker products={products} product={product} setProduct={setProduct} surface={surface} setSurface={setSurface} variantId={variantId} setVariantId={setVariantId}/>} {step === 'review' && <PreflightPanel result={preflight} running={preflightRunning} onRun={runPreflight} onContinue={addToBag} />} {jobStatus === 'running' && <div className="quick-job-status" role="status"><Sparkles size={15}/> {jobKind === 'generate' || jobKind === 'remix' || jobKind === 'redesign' ? 'Generating variants' : jobKind === 'removeBackground' ? 'Removing the background' : jobKind === 'upscale' ? 'Upscaling artwork' : 'Cleaning artwork'}… this draft survives a refresh.</div>} {jobError && <div className="quick-job-error" role="alert">{jobError} <button type="button" onClick={retryActiveJob}>Retry</button></div>} {notice && <div className="quick-notice" role="status">{notice}</div>}</div><footer className="quick-sticky-footer"><button type="button" className="button-link" onClick={back} disabled={step === 'source'}><ArrowLeft size={15}/> Back</button>{step === 'polish' && <button type="button" className="quick-handoff-button" onClick={handoff}>Continue in 3D Designer <ArrowRight size={15}/></button>}<button type="button" className="button button--acid" onClick={advance} disabled={!canContinue || jobStatus === 'running'}>{step === 'review' ? 'CHECK PREFLIGHT' : step === 'direction' ? 'GENERATE ARTWORK' : step === 'variants' ? 'POLISH ARTWORK' : step === 'polish' ? 'CHOOSE PRODUCT' : step === 'product' ? 'REVIEW ORDER' : 'CONTINUE'} <ArrowRight size={15}/></button></footer></main>
 }

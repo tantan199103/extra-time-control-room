@@ -19,6 +19,7 @@ import {
   Plus,
   Ruler,
   Search,
+  Save,
   Share2,
   ShoppingBag,
   Sparkles,
@@ -1244,6 +1245,7 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   const [teamwearCatalog, setTeamwearCatalog] = useState(null)
   const [catalogError, setCatalogError] = useState('')
   const [activeFamily, setActiveFamily] = useState('ALL')
+  const [quickDraft] = useState(() => readLocal('jersevo-quick-draft-v1'))
   const copy = pageConfig?.content || {}
   const blocks = new Set((pageConfig?.blocks || []).filter(block => block.enabled !== false).map(block => block.id))
   const hasBlockConfig = Boolean(pageConfig?.blocks?.length)
@@ -1344,6 +1346,21 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
         </div>
       </section>
       <section className="custom-recent-strip" aria-label="Quick AI guidance"><div><span className="custom-flow-eyebrow">START WHERE YOU ARE</span><strong>AI nhanh cho artwork.</strong><span>3D chi tiết cho cả bộ teamwear.</span></div><div className="custom-recent-strip__samples"><span>RETRO MASCOT</span><span>SOFT CHIBI PET</span><span>COLLEGIATE SPORTS</span><span>HALFTONE POSTER</span></div></section>
+      <section className="custom-recent-workbench" aria-labelledby="custom-recent-title">
+        <div className="custom-recent-workbench__head"><div><p className="custom-flow-eyebrow">CONTINUE WITHOUT STARTING OVER</p><h2 id="custom-recent-title">Recent artwork<br/><em>and a few directions.</em></h2></div><button type="button" className="button-link" onClick={() => go('/custom/quick')}>OPEN QUICK AI <ArrowRight size={15}/></button></div>
+        <div className="custom-recent-workbench__grid">
+          <button type="button" className={`custom-recent-draft${quickDraft?.assetUrl ? ' has-artwork' : ''}`} onClick={() => go('/custom/quick')}>
+            {quickDraft?.assetUrl ? <img src={quickDraft.assetUrl} alt="Saved Quick AI artwork" /> : <span className="custom-recent-draft__empty"><Save size={18}/><strong>No saved artwork yet</strong><small>Your next Quick AI draft will appear here.</small></span>}
+            <span className="custom-recent-draft__meta"><b>{quickDraft?.assetName || 'Quick AI draft'}</b><small>{quickDraft?.updatedAt ? `Saved ${new Date(quickDraft.updatedAt).toLocaleDateString()}` : 'Prompt, photo or pet artwork'}</small></span>
+          </button>
+          {[
+            ['retro-mascot','Retro mascot','Varsity energy'],
+            ['soft-chibi-pet','Soft chibi pet','Keep the character warm'],
+            ['gothic-ink','Gothic ink','Blackwork for a dark tee'],
+            ['collegiate-sports','Collegiate sports','Poster energy, editable type']
+          ].map(([id,label,detail]) => <button type="button" className="custom-style-sample" key={id} onClick={() => go('/custom/quick')}><span className={`custom-style-sample__swatch custom-style-sample__swatch--${id}`} aria-hidden="true"/><span><b>{label}</b><small>{detail}</small></span><ArrowRight size={14}/></button>)}
+        </div>
+      </section>
       {show('custom-hero') && <section className="custom-flow-hero" aria-labelledby="custom-hub-title">
         <div className="custom-flow-hero__copy">
           <nav className="custom-flow-crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom studio</strong></nav>

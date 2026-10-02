@@ -1,4 +1,4 @@
-import { handleApiError } from './_artwork.js'
+import { artworkAssetExpired, handleApiError } from './_artwork.js'
 import { consumeQuota, enforceSameOrigin, readBody, requestIdentity, customerSession, safeText, sendJson, serverSupabase } from './_security.js'
 
 const clamp = (value, min, max, fallback) => { const number = Number(value); return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback }
@@ -30,7 +30,7 @@ export default async function handler(request, response) {
     let asset = null
     if (!assetId) issues.push(issue('error', 'asset-missing', 'Artwork asset is missing', 'Select artwork that has completed secure upload.'))
     else {
-      const { data, error } = await client.from('pod_artwork_assets').select('id, verified, consent, dpi, width_px, height_px, mime, source, sha256').eq('id', assetId).eq('session_hash', identityHash).maybeSingle()
+      const { data, error } = await client.from('pod_artwork_assets').select('id, verified, consent, dpi, width_px, height_px, mime, source, sha256, expires_at').eq('id', assetId).eq('session_hash', identityHash).maybeSingle()
       if (error) throw error
       asset = data
       if (!asset) issues.push(issue('error', 'asset-owner', 'Artwork asset is not available', 'This artwork does not belong to the current session.'))
@@ -38,6 +38,7 @@ export default async function handler(request, response) {
         if (asset.verified !== true) issues.push(issue('error', 'asset-unverified', 'Artwork asset is not verified', 'Secure upload verification must finish before this artwork can be sent to print.'))
         if (body.consent !== true && asset.consent !== true) issues.push(issue('error', 'consent', 'Image permission is missing', 'Confirm that you own or may use the uploaded artwork.'))
         if (!asset.sha256) issues.push(issue('error', 'asset-checksum', 'Artwork checksum is missing', 'Upload the artwork again so its verified checksum can be recorded.'))
+        if (artworkAssetExpired(asset.expires_at)) issues.push(issue('error', 'asset-expired', 'Artwork asset has expired', 'Generate or upload the artwork again before sending it to print.'))
       }
     }
     const productId = safeText(body.productId, 160)
