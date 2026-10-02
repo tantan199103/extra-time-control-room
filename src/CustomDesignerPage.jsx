@@ -1097,6 +1097,7 @@ function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, u
   const allowedStyle = style => !allowedStyleCodes.length || allowedStyleCodes.includes(style.code)
   const filteredDesigns = (manifest.designs || []).filter(allowedDesign).filter(item => !manifestIsBoombah(manifest) || !state.styleCode || item.styleCode === state.styleCode)
   const designs = showAll ? filteredDesigns : filteredDesigns.slice(0, 12)
+  const isTeamwear = manifestIsBoombah(manifest)
   const currentProduct = catalog?.products?.find(item => item.id === state.productId)
   const currentOwayoProduct = owayoCatalog?.products?.find(item => item.id === state.productId)
   const availableOwayoGroups = (owayoCatalog?.groups?.length
@@ -1104,44 +1105,86 @@ function DesignPanel({ manifest, catalog, owayoCatalog, owayoAvailable, state, u
     : [...new Map((owayoCatalog?.products || []).map(product => [product.group || product.sport || 'catalog', { id:product.group || product.sport || 'catalog', label:product.groupLabel || product.sportLabel || 'Catalog' }])).values()]
   )
   const [owayoGroup, setOwayoGroup] = useState(currentOwayoProduct?.group || availableOwayoGroups[0]?.id || 'cycling')
+  const teamwearSports = [...new Set((catalog?.products || []).map(product => product.sport).filter(Boolean))]
+  const [teamSport, setTeamSport] = useState(currentProduct?.sport || teamwearSports[0] || '')
   useEffect(() => {
     if (currentOwayoProduct?.group) setOwayoGroup(currentOwayoProduct.group)
   }, [currentOwayoProduct?.group])
+  useEffect(() => {
+    if (currentProduct?.sport) setTeamSport(currentProduct.sport)
+    else if (!teamSport && teamwearSports[0]) setTeamSport(teamwearSports[0])
+  }, [currentProduct?.sport, teamwearSports.join('|')])
   const normalizedFamilyQuery = familyQuery.trim().toLowerCase()
   const visibleOwayoProducts = (owayoCatalog?.products || [])
     .filter(product => (product.group || product.sport) === owayoGroup)
-    .filter(product => !normalizedFamilyQuery || [product.title, product.sportLabel, product.groupLabel, product.id].filter(Boolean).join(' ').toLowerCase().includes(normalizedFamilyQuery))
-  const activeOwayoGroup = availableOwayoGroups.find(group => group.id === owayoGroup)
-  const styles = manifestIsBoombah(manifest) ? (manifest.product.styles || []) : []
+    .filter(product => !normalizedFamilyQuery || [product.title, product.sportLabel, product.groupLabel, product.model, product.cut, product.fit, product.sleeve, product.id].filter(Boolean).join(' ').toLowerCase().includes(normalizedFamilyQuery))
+  const visibleTeamwearProducts = (catalog?.products || [])
+    .filter(product => !teamSport || product.sport === teamSport)
+    .filter(product => !normalizedFamilyQuery || [product.name, product.sport, product.defaultStyleName, product.defaultGarment, product.defaultModelId, product.id].filter(Boolean).join(' ').toLowerCase().includes(normalizedFamilyQuery))
+  const modelOptions = [...new Map([
+    ...(isTeamwear ? visibleTeamwearProducts : visibleOwayoProducts),
+    ...(isTeamwear ? [currentProduct] : [currentOwayoProduct])
+  ].filter(Boolean).map(product => [product.id, product])).values()]
+  const styles = isTeamwear ? (manifest.product.styles || []) : []
+  const owayoCutOptions = [...new Map([...(owayoCatalog?.products || [])
+    .filter(product => (product.group || product.sport) === owayoGroup && product.cut), currentOwayoProduct]
+    .filter(product => product?.cut)
+    .map(product => [product.cut, product])).values()]
+  const handleOwayoGroupChange = value => {
+    setOwayoGroup(value)
+    const first = (owayoCatalog?.products || []).find(product => (product.group || product.sport) === value && product.assetsReady)
+    if (first && first.id !== state.productId) onOwayoProductChange?.(first.id)
+  }
+  const handleTeamSportChange = value => {
+    setTeamSport(value)
+    const first = (catalog?.products || []).find(product => product.sport === value)
+    if (first && first.id !== state.productId) onProductChange?.(first.id)
+  }
+  const handleModelChange = value => {
+    if (isTeamwear) onProductChange?.(value)
+    else onOwayoProductChange?.(value)
+  }
+  const handleCutChange = value => {
+    if (isTeamwear) {
+      update(current => ({ ...current, styleCode:value, design:manifest.designs.find(item => allowedDesign(item) && item.styleCode === value)?.id || current.design }))
+      return
+    }
+    const product = owayoCutOptions.find(item => item.cut === value)
+    if (product && product.id !== state.productId) onOwayoProductChange?.(product.id)
+  }
   return <div className="designer-panel designer-panel--design">
     <div className="designer-library-switch" aria-label="Designer library">
-      <div className="designer-library-switch__head"><span>Design library</span><small>{manifestIsBoombah(manifest) ? 'Teamwear 3D' : `${currentOwayoProduct?.groupLabel || currentOwayoProduct?.sportLabel || 'Sportswear'} 3D`}</small></div>
+      <div className="designer-library-switch__head"><span>Design library</span><small>{isTeamwear ? 'Teamwear 3D' : `${currentOwayoProduct?.groupLabel || currentOwayoProduct?.sportLabel || 'Sportswear'} 3D`}</small></div>
       <div className="designer-library-switch__providers">
         <button type="button" disabled={!owayoAvailable || Boolean(state.listingId)} className={!manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('owayo')}>Sportswear</button>
         <button type="button" disabled={!catalog?.products?.length || Boolean(state.listingId)} className={manifestIsBoombah(manifest) ? 'is-active' : ''} onClick={() => onProviderChange?.('boombah')}>Teamwear</button>
       </div>
       <div className="designer-library-switch__body">
-      {manifestIsBoombah(manifest) && catalog?.products?.length > 0 && <>
-        <label className="designer-library-switch__field"><span>Garment model {state.listingId && <small>· listing locked</small>}</span><select disabled={Boolean(state.listingId)} value={state.productId} onChange={event => onProductChange?.(event.target.value)}>{catalog.products.map(product => <option key={product.id} value={product.id}>{product.sport} · {stripBoombahBrandingText(product.name)}</option>)}</select></label>
-        {styles.length > 0 && <label className="designer-library-switch__field"><span>Garment cut</span><select value={state.styleCode || styles.find(allowedStyle)?.code || styles[0].code} onChange={event => update(current => ({ ...current, styleCode:event.target.value, design:manifest.designs.find(item => allowedDesign(item) && item.styleCode === event.target.value)?.id || current.design }))}>{styles.filter(allowedStyle).map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select></label>}
-      </>}
-      {!manifestIsBoombah(manifest) && owayoCatalog?.products?.length > 0 && <div className="designer-owayo-families" aria-label="Sportswear garment families">
-        <span className="designer-library-switch__field-label">Garment model</span>
-        <div className="designer-owayo-families__groups" role="tablist" aria-label="Sport catalogue">
-          {availableOwayoGroups.map(group => <button type="button" role="tab" aria-selected={group.id === owayoGroup} key={group.id} className={group.id === owayoGroup ? 'is-active' : ''} onClick={() => setOwayoGroup(group.id)}><span>{group.label}</span><small>{group.live ?? (owayoCatalog.products || []).filter(product => product.group === group.id && product.assetsReady).length}/{group.products ?? (owayoCatalog.products || []).filter(product => product.group === group.id).length}</small></button>)}
-        </div>
-        <span className="designer-library-switch__field-label">{activeOwayoGroup?.label || 'Garment'} collection</span>
-        <label className="designer-library-switch__search">
-          <span className="sr-only">Search garment models</span>
-          <input type="search" value={familyQuery} onChange={event => setFamilyQuery(event.target.value)} placeholder="Search model or fit…" aria-label="Search garment models" />
+        <label className="designer-library-switch__field">
+          <span>Collection</span>
+          {isTeamwear
+            ? <select disabled={Boolean(state.listingId)} value={teamSport} onChange={event => handleTeamSportChange(event.target.value)}>{teamwearSports.map(sport => <option key={sport} value={sport}>{sport}</option>)}</select>
+            : <select disabled={Boolean(state.listingId)} value={owayoGroup} onChange={event => handleOwayoGroupChange(event.target.value)}>{availableOwayoGroups.map(group => <option key={group.id} value={group.id}>{group.label} · {group.live ?? group.products ?? 0} models</option>)}</select>}
         </label>
-        <div className="designer-owayo-families__list">
-          {visibleOwayoProducts.map(product => <button type="button" key={product.id} disabled={!product.assetsReady || Boolean(state.listingId)} className={`${product.assetsReady ? 'is-live' : ''}${state.productId === product.id ? ' is-active' : ''}`} title={product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Exact model assets are being synchronized'} onClick={() => product.assetsReady && onOwayoProductChange?.(product.id)}><span>{product.title.replace(/^Jersevo\s+Custom\s+/i, '')}</span><small>{product.assetsReady ? `${product.designCount} designs · ${product.sizeCount} sizes` : 'Syncing exact model'}</small></button>)}
-          {!visibleOwayoProducts.length && <p className="designer-library-empty">No garment models match that search.</p>}
-        </div>
-      </div>}
+        <label className="designer-library-switch__field">
+          <span>Garment model {state.listingId && <small>· listing locked</small>}</span>
+          <select disabled={Boolean(state.listingId) || !modelOptions.length} value={state.productId} onChange={event => handleModelChange(event.target.value)}>
+            {modelOptions.map(product => <option key={product.id} value={product.id}>{isTeamwear ? stripBoombahBrandingText(product.name) : product.title.replace(/^Jersevo\s+Custom\s+/i, '')}</option>)}
+          </select>
+        </label>
+        <label className="designer-library-switch__field">
+          <span>Garment cut</span>
+          {isTeamwear
+            ? <select disabled={Boolean(state.listingId) || !styles.length} value={state.styleCode || styles.find(allowedStyle)?.code || styles[0]?.code || ''} onChange={event => handleCutChange(event.target.value)}>{styles.filter(allowedStyle).map(style => <option key={`${style.section}-${style.code}`} value={style.code}>{stripBoombahBrandingText(style.name)}</option>)}</select>
+            : <select disabled={Boolean(state.listingId) || !owayoCutOptions.length} value={currentOwayoProduct?.cut || owayoCutOptions[0]?.cut || ''} onChange={event => handleCutChange(event.target.value)}>{owayoCutOptions.map(product => <option key={product.cut} value={product.cut}>{product.cut} · {product.fit || product.sleeve || 'Standard fit'}</option>)}</select>}
+        </label>
+        <label className="designer-library-switch__search">
+          <span>Search garment models</span>
+          <input type="search" value={familyQuery} onChange={event => setFamilyQuery(event.target.value)} placeholder="Search by model, sport or fit…" aria-label="Search garment models" />
+        </label>
+        {!modelOptions.length && <p className="designer-library-empty">No garment models match that search.</p>}
       </div>
-      {(currentProduct || currentOwayoProduct) && <p className="designer-library-switch__note">{manifestIsBoombah(manifest) ? currentProduct?.designs : currentOwayoProduct?.designCount} mirrored templates · exact model loads on selection</p>}
+      {(currentProduct || currentOwayoProduct) && <p className="designer-library-switch__note">{isTeamwear ? currentProduct?.designs : currentOwayoProduct?.designCount} mirrored templates · exact model loads on selection</p>}
     </div>
     <div className="designer-panel__intro"><h2>Choose a base design</h2><p>{manifestIsBoombah(manifest) ? 'Pick a mirrored uniform template. Your colors, name, number and logo stay in the Jersevo handoff.' : 'The garment cut stays fixed. Switch artwork without reloading the 3D stage.'}</p></div>
     <div className="designer-design-grid">

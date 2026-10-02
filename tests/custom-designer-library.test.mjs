@@ -28,7 +28,11 @@ test('custom designer keeps native artwork, scenes and exports while removing th
 test('sportswear and teamwear share the same design-library control frame', async () => {
   const [designer, styles] = await Promise.all([read('src/CustomDesignerPage.jsx'), read('src/custom-designer.css')])
   assert.match(designer, /designer-library-switch__body/)
-  assert.match(designer, /Garment model/)
-  assert.match(designer, /Garment cut/)
+  assert.match(designer, /<span>Collection<\/span>/)
+  assert.equal((designer.match(/<span>Garment model/g) || []).length, 1)
+  assert.equal((designer.match(/<span>Garment cut/g) || []).length, 1)
+  assert.match(designer, /Search garment models/)
+  assert.doesNotMatch(designer, /designer-owayo-families|designer-owayo-families__list/)
   assert.match(styles, /\.designer-library-switch__body/)
+  assert.match(styles, /\.designer-library-switch__search > span/)
 })

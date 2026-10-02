@@ -126,26 +126,15 @@
 .designer-library-switch__body { display: grid; gap: 10px; padding-top: 2px; }
 .designer-library-switch__body > * { min-width: 0; }
 .designer-library-switch__field { display: grid; gap: 5px; margin-top: 8px; }
+.designer-library-switch__body > .designer-library-switch__field { margin-top: 0; }
 .designer-library-switch__field span { color: #697169; font-size: 9px; font-weight: 800; }
 .designer-library-switch__field select { width: 100%; min-height: 38px; padding: 0 9px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 10px var(--body); }
 .designer-library-switch__field-label { display: block; margin-top: 10px; color: #697169; font-size: 9px; font-weight: 800; }
-.designer-library-switch__search { display: block; margin-top: 6px; }
+.designer-library-switch__search { display: grid; gap: 5px; margin-top: 0; }
+.designer-library-switch__search > span { color: #697169; font-size: 9px; font-weight: 800; }
 .designer-library-switch__search input { width: 100%; min-height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--designer-line); border-radius: 0; background: #fff; color: var(--designer-ink); font: 700 10px var(--body); }
 .designer-library-switch__search input:focus { outline: 2px solid var(--designer-yellow); outline-offset: 1px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.designer-owayo-families__groups { display: flex; gap: 4px; margin: 6px -2px 0; padding: 2px; overflow-x: auto; scrollbar-width: thin; }
-.designer-owayo-families__groups button { flex: 0 0 auto; min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border: 1px solid var(--designer-line); background: #fff; color: var(--designer-ink); font: 800 9px var(--body); cursor: pointer; }
-.designer-owayo-families__groups button small { color: #7b827a; font-size: 7px; }
-.designer-owayo-families__groups button.is-active { border-color: var(--designer-ink); background: var(--designer-yellow); }
-.designer-owayo-families__groups button.is-active small { color: var(--designer-ink); }
-.designer-owayo-families__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-top: 6px; max-height: 164px; overflow: auto; }
-.designer-owayo-families__list button { min-width: 0; min-height: 42px; display: grid; gap: 3px; padding: 7px 8px; border: 1px solid var(--designer-line); background: #fff; color: var(--designer-ink); text-align: left; cursor: default; }
-.designer-owayo-families__list button.is-live { border-color: var(--designer-ink); box-shadow: inset 3px 0 0 var(--designer-yellow); }
-.designer-owayo-families__list button.is-active { background: var(--designer-ink); color: #fff; box-shadow: inset 3px 0 0 var(--designer-yellow); }
-.designer-owayo-families__list button.is-active small { color: #d8ddd6; }
-.designer-owayo-families__list button:disabled { opacity: .58; }
-.designer-owayo-families__list button span { overflow: hidden; font-size: 9px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
-.designer-owayo-families__list button small { color: #737a72; font-size: 8px; font-weight: 700; }
 .designer-library-switch__note { margin: 9px 0 0; color: #7b827a; font-size: 8px; line-height: 1.4; }
 .designer-library-empty { margin: 20px 0 0; padding: 15px; background: #f4f5f2; color: #727970; font-size: 10px; }
 .designer-panel__intro { padding-bottom: 22px; border-bottom: 1px solid var(--designer-line); }
@@ -369,8 +358,6 @@
   .designer-tabs button.is-active::after { right: 9px; bottom: 5px; left: 9px; }
   .designer-panel { padding: 24px 16px 30px; }
   .designer-library-switch { margin-right: 0; margin-left: 0; padding: 12px; }
-  .designer-owayo-families__groups { max-width: 100%; margin-right: 0; padding-right: 2px; }
-  .designer-owayo-families__list { max-height: 150px; }
   .designer-panel__intro h2 { font-size: 28px; }
   .designer-layers { margin-top: 20px; }
   .designer-layer-list { max-height: 196px; overflow: auto; }
