@@ -1,7 +1,7 @@
 // Bump the shell cache whenever the storefront runtime changes materially.
 // This makes returning browsers discard a stale bundle instead of preserving
 // the old catalogue-unavailable message after a successful deployment.
-const CACHE_NAME = 'extra-time-shell-v8'
+const CACHE_NAME = 'extra-time-shell-v9'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
 
 self.addEventListener('install', event => {
