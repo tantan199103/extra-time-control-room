@@ -1246,7 +1246,6 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   const [catalogError, setCatalogError] = useState('')
   const [activeFamily, setActiveFamily] = useState('ALL')
   const [quickDraft] = useState(() => readLocal('jersevo-quick-draft-v1'))
-  const copy = pageConfig?.content || {}
   const blocks = new Set((pageConfig?.blocks || []).filter(block => block.enabled !== false).map(block => block.id))
   const hasBlockConfig = Boolean(pageConfig?.blocks?.length)
   const show = id => !hasBlockConfig || blocks.has(id)
@@ -1294,7 +1293,6 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
   })), [liveCustomProducts])
   const commerceReady = liveCustomProducts.length > 0
   const featuredFamily = filteredFamilies[0] || families[0]
-  const templateCount = families.reduce((total, family) => total + Number(family.designCount || 0), 0)
   // The preview belongs to the synchronized family manifest. Road cuts and
   // MTB cuts use different first designs (Etape vs Derny), and guessing a
   // single filename made every missing asset fall back to the same white
@@ -1319,7 +1317,11 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
     event.currentTarget.hidden = true
     event.currentTarget.parentElement?.classList.add('is-missing')
   }
-  const familyLabel = family => String(family?.title || family?.name || 'Custom garment').replace(/^Jersevo\s+Custom\s+/i, '')
+  const familyLabel = family => String(family?.title || family?.name || 'Custom garment')
+    .replace(/^Jersevo\s+Custom\s+/i, '')
+    .replace(/^Custom\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
   const openFamily = (family, source = 'custom_hub_family') => {
     if (!family?.productId) return
     trackStorefrontEvent('custom_cta_clicked',{ source, provider:family.provider, family:family.productId, commerce_ready:Boolean(listingByFamily.get(family.key)) })
@@ -1337,15 +1339,15 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
         <div className="custom-mode-chooser__intro">
           <nav className="custom-flow-crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom studio</strong></nav>
           <p className="custom-flow-eyebrow">JERSEVO / CUSTOM WORKBENCH</p>
-          <h1 id="custom-mode-title">Từ ý tưởng<br/><em>đến thứ bạn mặc.</em></h1>
-          <p>Chọn cách bắt đầu phù hợp với bạn: tạo hình in nhanh bằng prompt và ảnh, hoặc đi sâu vào màu, pattern và 3D teamwear.</p>
+          <h1 id="custom-mode-title">From an idea<br/><em>to something you wear.</em></h1>
+          <p>Choose a starting point: make artwork with AI, or build a complete team kit in 3D.</p>
         </div>
         <div className="custom-mode-chooser__modes">
-          <article className="custom-mode-card custom-mode-card--ai"><div className="custom-mode-card__index">01 / quick ai</div><Sparkles size={25}/><h2>Tạo hình in<br/><em>bằng AI</em></h2><p>Prompt, ảnh thú cưng, mascot và poster. Tạo variant, tách nền, upscale rồi chọn sản phẩm sau.</p><div className="custom-mode-card__meta"><span>2–5 phút</span><span>Prompt / ảnh / remix</span></div><button type="button" className="button button--acid" onClick={() => { trackStorefrontEvent('custom_mode_selected',{ mode:'quick-ai' }); go('/custom/quick') }}>BẮT ĐẦU VỚI AI <ArrowRight size={15}/></button></article>
-          <article className="custom-mode-card custom-mode-card--pro"><div className="custom-mode-card__index">02 / 3d pro studio</div><Palette size={25}/><h2>Thiết kế<br/><em>3D chi tiết</em></h2><p>Kiểm soát garment, màu, pattern, logo, text, roster và scene trong designer hiện tại.</p><div className="custom-mode-card__meta"><span>10–20 phút</span><span>Colors / patterns / 3D</span></div><button type="button" className="button button--light" onClick={() => { trackStorefrontEvent('custom_mode_selected',{ mode:'3d-pro' }); openDefaultDesigner('custom_mode_chooser') }}>MỞ 3D DESIGNER <ArrowRight size={15}/></button></article>
+          <article className="custom-mode-card custom-mode-card--ai"><div className="custom-mode-card__index">01 / quick ai</div><Sparkles size={25}/><h2>Make artwork<br/><em>with AI</em></h2><p>Use a prompt or image to create artwork, then place it on a product.</p><div className="custom-mode-card__meta"><span>2–5 minutes</span><span>Prompt / image / remix</span></div><button type="button" className="button button--acid" onClick={() => { trackStorefrontEvent('custom_mode_selected',{ mode:'quick-ai' }); go('/custom/quick') }}>START WITH AI <ArrowRight size={15}/></button></article>
+          <article className="custom-mode-card custom-mode-card--pro"><div className="custom-mode-card__index">02 / 3d pro studio</div><Palette size={25}/><h2>Design<br/><em>in 3D</em></h2><p>Choose a garment, set colors and patterns, then add names, numbers and logos.</p><div className="custom-mode-card__meta"><span>10–20 minutes</span><span>Colors / patterns / 3D</span></div><button type="button" className="button button--light" onClick={() => { trackStorefrontEvent('custom_mode_selected',{ mode:'3d-pro' }); openDefaultDesigner('custom_mode_chooser') }}>OPEN 3D DESIGNER <ArrowRight size={15}/></button></article>
         </div>
       </section>
-      <section className="custom-recent-strip" aria-label="Quick AI guidance"><div><span className="custom-flow-eyebrow">START WHERE YOU ARE</span><strong>AI nhanh cho artwork.</strong><span>3D chi tiết cho cả bộ teamwear.</span></div><div className="custom-recent-strip__samples"><span>RETRO MASCOT</span><span>SOFT CHIBI PET</span><span>COLLEGIATE SPORTS</span><span>HALFTONE POSTER</span></div></section>
+      <section className="custom-recent-strip" aria-label="Choose a custom workflow"><div><span className="custom-flow-eyebrow">START WHERE YOU ARE</span><strong>Fast artwork or a full kit.</strong><span>Pick one path and keep the rest simple.</span></div><div className="custom-recent-strip__samples"><span>RETRO MASCOT</span><span>SOFT CHIBI PET</span><span>COLLEGIATE SPORTS</span><span>HALFTONE POSTER</span></div></section>
       <section className="custom-recent-workbench" aria-labelledby="custom-recent-title">
         <div className="custom-recent-workbench__head"><div><p className="custom-flow-eyebrow">CONTINUE WITHOUT STARTING OVER</p><h2 id="custom-recent-title">Recent artwork<br/><em>and a few directions.</em></h2></div><button type="button" className="button-link" onClick={() => go('/custom/quick')}>OPEN QUICK AI <ArrowRight size={15}/></button></div>
         <div className="custom-recent-workbench__grid">
@@ -1361,30 +1363,6 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
           ].map(([id,label,detail]) => <button type="button" className="custom-style-sample" key={id} onClick={() => go('/custom/quick')}><span className={`custom-style-sample__swatch custom-style-sample__swatch--${id}`} aria-hidden="true"/><span><b>{label}</b><small>{detail}</small></span><ArrowRight size={14}/></button>)}
         </div>
       </section>
-      {show('custom-hero') && <section className="custom-flow-hero" aria-labelledby="custom-hub-title">
-        <div className="custom-flow-hero__copy">
-          <nav className="custom-flow-crumb" aria-label="Breadcrumb"><a href="/shop" onClick={event => { event.preventDefault(); go('/shop') }}>Shop</a><span>/</span><strong>Custom studio</strong></nav>
-          <p className="custom-flow-eyebrow">{copy.eyebrow || 'CUSTOM STUDIO / 3D PREVIEW'}</p>
-          <h1 id="custom-hub-title">{String(copy.headline || 'DESIGN IT.\nWEAR IT.').split(/\r?\n/).map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br/>}{index === 1 ? <em>{line}</em> : line}</React.Fragment>)}</h1>
-          <p className="custom-flow-hero__lede">{copy.supporting || 'Choose a performance cut, start from a proven template, then put your colors, name, number and logo exactly where they belong.'}</p>
-          <div className="custom-flow-hero__actions"><button className="button button--acid" onClick={() => featuredFamily ? openFamily(featuredFamily) : openDefaultDesigner('custom_hub_hero')}>{commerceReady ? (copy.button || 'START YOUR DESIGN') : 'PREVIEW IN 3D'} <ArrowRight size={16}/></button><button className="button-link" onClick={() => document.getElementById('custom-families')?.scrollIntoView({ behavior:'smooth' })}>CHOOSE A BASE <ArrowDown size={15}/></button></div>
-          <div className="custom-flow-hero__facts"><span><strong>{templateCount || '50+'}</strong><small>verified templates</small></span><span><strong>{families.length || '16'}</strong><small>3D garment families</small></span><span><strong>{commerceReady ? 'LIVE' : 'PREVIEW'}</strong><small>ordering status</small></span></div>
-        </div>
-        <div className="custom-flow-hero__visual">
-          <img src={SHOP_COVER.src} alt="Jersey artwork ready for custom team details" width="2048" height="683" loading="eager" fetchPriority="high" decoding="async" />
-          <div className="custom-flow-hero__model"><img src="/assets/jersey-white.webp" alt="White jersey preview" width="720" height="960" loading="eager" decoding="async" /></div>
-          <div className="custom-flow-hero__stamp" aria-hidden="true"><span>NAME</span><strong>YOUR</strong><span>NUMBER</span><strong>90+</strong><i>STUDIO REVIEW</i></div>
-          <span className="custom-flow-hero__mark">JERSEVO / CUSTOM LAB</span>
-        </div>
-      </section>}
-
-      {show('custom-steps') && <section className="custom-flow-intro" aria-labelledby="custom-flow-title">
-        <div><p className="custom-flow-eyebrow">THE SIMPLE HAND-OFF</p><h2 id="custom-flow-title">Start with the<br /><em>right base.</em></h2></div>
-        <p>The clearest configurator starts with the right product decision: choose a sport and cut first, then open the designer. Jersevo keeps that clarity and adds a reviewed production hand-off at the end.</p>
-      </section>}
-
-      {!commerceReady && <CustomStudioWaitlist/>}
-
       {show('custom-catalog') && <section className="custom-families" id="custom-families" aria-labelledby="custom-families-title">
         <div className="custom-section-head"><div><p className="custom-flow-eyebrow">1 / CHOOSE YOUR GARMENT</p><h2 id="custom-families-title">Pick a cut.<br /><em>Then make it yours.</em></h2></div><span>{families.length ? `${families.length} ready-to-design cuts` : 'Loading garment library…'}</span></div>
         <div className="custom-family-tabs" role="tablist" aria-label="Custom garment categories"><button type="button" role="tab" aria-selected={activeFamily === 'ALL'} className={activeFamily === 'ALL' ? 'is-active' : ''} onClick={() => setActiveFamily('ALL')}>ALL CUTS</button>{familyGroups.map(group => <button type="button" role="tab" aria-selected={activeFamily === group.id} className={activeFamily === group.id ? 'is-active' : ''} key={group.id} onClick={() => setActiveFamily(group.id)}>{group.label}</button>)}</div>
@@ -1406,6 +1384,8 @@ function CustomHub({ products = [], onQuickView, pageConfig = null, commerceVeri
         })}</div>
         {!filteredFamilies.length && <div className="custom-flow-empty"><Sparkles size={21}/><strong>Garment library is loading.</strong><span>Open the C3 designer to start with the default production-ready cut.</span><button type="button" className="button button--dark" onClick={() => openDefaultDesigner('custom_hub_empty')}>OPEN C3 DESIGNER <ArrowRight size={15}/></button></div>}
       </section>}
+
+      {!commerceReady && <CustomStudioWaitlist/>}
 
       <section className="custom-process" aria-labelledby="custom-process-title">
         <div className="custom-section-head"><div><p className="custom-flow-eyebrow">2 / MAKE THE PIECE YOURS</p><h2 id="custom-process-title">From blank canvas<br /><em>to team identity.</em></h2></div><p>Names, numbers, colors and customer-supplied logos stay bounded to the approved garment zones. The studio checks the hand-off before production.</p></div>
