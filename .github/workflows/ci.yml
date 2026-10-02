@@ -9,6 +9,11 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # The shared CI runner has no live catalogue credentials. Keep build
+      # verification deterministic while Vercel can opt into the live SEO
+      # snapshot when its production secrets are available.
+      POSTBUILD_ALLOW_PARTIAL: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
