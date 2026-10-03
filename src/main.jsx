@@ -41,6 +41,7 @@ import {
 import { products as fallbackProducts, storyPoints } from './data'
 import { availableOptionValue, buildFallbackCatalog, cartLineKey, findStorefrontProduct, isSellableVariant, menuAtLocation, optionNameLike, reconcileCart, resolveMenuImages, sellableVariants, sortCollectionProducts, storefrontImageSrcSet } from './lib/storefront-model'
 import { custom3DDesignerConfig, hasCustom3DDesigner, isCustom3DOnlyProduct } from './lib/custom-3d'
+import { canonicalDesignerPath } from './lib/public-designer-path'
 import { customDesignerRoute, customFamilyKey, normalizeCustomHubCatalogs } from './lib/custom-hub-catalog'
 import { ALL_LEAGUE_TAXONOMY, LEAGUE_TAXONOMY, findLeague, findTeam, leaguePath, productMatchesTaxonomy, productTaxonomyValues, teamPath } from './lib/league-taxonomy'
 import { SHOP_COVER, leagueCover } from './lib/league-covers'
@@ -137,7 +138,8 @@ const productBootstrap = readProductBootstrap()
 function readFeaturedCustomProduct() {
   try {
     const product = JSON.parse(document.getElementById('jersevo-custom-product')?.textContent || 'null')
-    return product?.custom3d === true && /^[a-z0-9-]+$/i.test(product?.handle || '') ? product : null
+    if (product?.custom3d !== true || !/^[a-z0-9-]+$/i.test(product?.handle || '')) return null
+    return { ...product, image:canonicalDesignerPath(product.image) }
   } catch { return null }
 }
 const featuredCustomProduct = readFeaturedCustomProduct()

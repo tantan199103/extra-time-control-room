@@ -16,6 +16,7 @@ import { TRUST_PAGES } from '../src/lib/trust-pages.js'
 import { catalogPageOverrideFor, normalizeCatalogPageOverrides } from '../src/lib/catalog-page-overrides.js'
 import { renderProductContent, renderSitemap, renderSitemapIndex } from './seo-render.mjs'
 import { fetchPublishedProductRows, fetchSeoRows } from './seo-catalog-snapshot.mjs'
+import { canonicalDesignerPath, canonicalDesignerProvider } from '../src/lib/public-designer-path.js'
 
 const PUBLIC_ORIGIN = new URL(process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.jersevo.com').origin
 const DIST = join(process.cwd(), 'dist')
@@ -29,6 +30,7 @@ const absolute = value => {
   try { return new URL(String(value || ''), PUBLIC_ORIGIN).toString() } catch { return `${PUBLIC_ORIGIN}/assets/hero-tunnel.webp` }
 }
 const slug = value => encodeURIComponent(String(value || '').trim())
+const publicDesignerPath = value => canonicalDesignerPath(value)
 
 function normalizeProduct(row) {
   const product = prepareStorefrontProduct(row)
@@ -197,7 +199,7 @@ function pageHtml(shell, { path, title, description, image, noindex = false, noi
   html = html.replace(/<link\s+rel=["']alternate["'][^>]*hreflang=["'](?:en-US|x-default)["'][^>]*>\s*/gi, '')
   const structured = schema ? `    <script type="application/ld+json" id="route-structured-data">${safeJson(schema)}</script>\n` : ''
   html = html.replace('</head>', `    <link rel="alternate" hreflang="en-US" href="${escapeHtml(canonical)}" />\n    <link rel="alternate" hreflang="x-default" href="${escapeHtml(canonical)}" />\n${structured}  </head>`)
-  if (featuredCustomProduct && !html.includes('id="jersevo-custom-product"')) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:featuredCustomProduct.image, custom3d:true })}</script>\n  </head>`)
+  if (featuredCustomProduct && !html.includes('id="jersevo-custom-product"')) html = html.replace('</head>', `    <script type="application/json" id="jersevo-custom-product">${safeJson({ id:featuredCustomProduct.id, handle:featuredCustomProduct.handle, image:publicDesignerPath(featuredCustomProduct.image), custom3d:true })}</script>\n  </head>`)
   if (fallback) {
     const marked = `<!-- SEO_FALLBACK_START -->${fallback}<!-- SEO_FALLBACK_END -->`
     html = html.includes('<!-- SEO_FALLBACK_START -->')
@@ -353,7 +355,7 @@ const home = pageHtml(shell, {
   title:'Custom Jerseys & Personalized Fan Gear | Jersevo',
   description:'Design custom jerseys and personalized fan gear with your name, number and approved listing options. Browse football, baseball, basketball and soccer-inspired styles at Jersevo.',
   image:absolute('/assets/hero-tunnel.webp'),
-  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct?.designerConfig?.productId ? `/custom/design?provider=${featuredCustomProduct.designerConfig.provider}&product=${featuredCustomProduct.designerConfig.productId}` : '/custom/design'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${ALL_LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
+  fallback:`<main class="seo-fallback"><h1>Your name. Your number. Your jersey.</h1><p>Jersevo makes designer-led custom jerseys and personalized fan gear. Choose a design, add your name and number, and preview your piece before checkout.</p><p><a href="/shop">Shop personalized jerseys</a> · <a href="${featuredCustomProduct?.designerConfig?.productId ? `/custom/design?provider=${encodeURIComponent(canonicalDesignerProvider(featuredCustomProduct.designerConfig.provider))}&product=${encodeURIComponent(featuredCustomProduct.designerConfig.productId)}` : '/custom/design'}">Create your jersey</a> · <a href="/about">Meet the studio</a></p><nav aria-label="Shop by league">${ALL_LEAGUE_TAXONOMY.map(league => `<a href="${leaguePath(league)}">${escapeHtml(league.name)} custom fan gear</a>`).join(' · ')}</nav><nav aria-label="Shop by category">${CATALOG_CATEGORY_PAGES.map(category => `<a href="/category/${category.handle}">${escapeHtml(category.label)}</a>`).join(' · ')}</nav></main>`
 })
 await writeFile(join(DIST, 'index.html'), home)
 sitemapEntries.push({path:'/'})
@@ -408,7 +410,7 @@ await writePage('/shop', pageHtml(shell, {
 }))
 await writeCatalogPagination('/shop', products, 'All fan gear', 'Shop published Jersevo fan gear across leagues, teams and product categories.', absolute(SHOP_COVER.src))
 
-const customFallbackProducts = customProducts.map(product => `<li><a href="/custom/design?provider=${encodeURIComponent(product.designerConfig?.provider || 'owayo')}&product=${encodeURIComponent(product.designerConfig?.productId || '')}">${escapeHtml(product.title)}</a><span>3D designer garment</span></li>`).join('')
+const customFallbackProducts = customProducts.map(product => `<li><a href="/custom/design?provider=${encodeURIComponent(canonicalDesignerProvider(product.designerConfig?.provider))}&product=${encodeURIComponent(product.designerConfig?.productId || '')}">${escapeHtml(product.title)}</a><span>3D designer garment</span></li>`).join('')
 await writePage('/custom', pageHtml(shell, {
   path:'/custom',
   title:'Custom jerseys and personalized fan gear | Jersevo',

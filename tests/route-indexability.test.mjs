@@ -66,5 +66,23 @@ test('routing middleware declares the catalog matchers and response-level robots
   assert.match(source, /from '@vercel\/functions'/)
   assert.match(source, /X-Robots-Tag/)
   assert.match(source, /status:\s*308/)
+  assert.match(source, /status:\s*410/)
+  assert.match(source, /\/designer\/:path\*/)
+  assert.match(source, /owayo\|boombah/)
   assert.match(source, /'\/shop\/:path\*'/)
+})
+
+test('public designer paths normalize legacy provider aliases', async () => {
+  const { canonicalDesignerPath, canonicalDesignerProvider, isLegacyDesignerPath } = await import('../src/lib/public-designer-path.js')
+  assert.equal(canonicalDesignerPath('/designer/owayo/cycling-c3/previews/etape.webp'), '/designer/studio/cycling-c3/previews/etape.webp')
+  assert.equal(canonicalDesignerPath('/designer/boombah/products/fastpitch3d.json'), '/designer/teamwear/products/fastpitch3d.json')
+  assert.equal(canonicalDesignerProvider('owayo'), 'studio')
+  assert.equal(canonicalDesignerProvider('boombah'), 'teamwear')
+  assert.equal(isLegacyDesignerPath('/designer/owayo/catalog.json'), true)
+  assert.equal(isLegacyDesignerPath('/designer/studio/catalog.json'), false)
+})
+
+test('SEO custom links canonicalize the provider before entering public HTML', async () => {
+  const source = await (await import('node:fs/promises')).readFile(new URL('../scripts/generate-seo-pages.mjs', import.meta.url), 'utf8')
+  assert.match(source, /canonicalDesignerProvider\(featuredCustomProduct\.designerConfig\.provider\)/)
 })
