@@ -139,6 +139,8 @@ test('Merchant feed reuses the verified SEO snapshot and removes the temporary s
   ])
   assert.match(postbuild,/MERCHANT_SOURCE_SNAPSHOT/)
   assert.match(postbuild,/unlinkSync\(merchantSourceSnapshot\)/)
+  assert.match(postbuild,/isVercelBuild/)
+  assert.match(postbuild,/envFiles = isVercelBuild \? \['\.env'\]/)
   assert.match(seoGenerator,/Merchant source snapshot staged/)
   assert.match(merchantGenerator,/Reusing verified SEO snapshot/)
   assert.match(merchantGenerator,/rows\.length !== expected/)

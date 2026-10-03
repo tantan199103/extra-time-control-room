@@ -14,7 +14,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 // build generates SEO/sitemap/feed files from the same live catalogue as the
 // deployed build. Explicit process variables always win; no secret is written
 // into dist or exposed to the client bundle.
-for (const envFile of ['.env.local', '.env']) {
+// Vercel injects the selected production environment before the build starts.
+// Never let an uploaded developer `.env.local` fill a missing server variable
+// with credentials/URLs from an older Supabase project. Local builds still
+// load `.env.local` for the same deterministic workflow as before.
+const isVercelBuild = Boolean(process.env.VERCEL || process.env.VERCEL_ENV || process.env.NOW_BUILDER)
+const envFiles = isVercelBuild ? ['.env'] : ['.env.local', '.env']
+for (const envFile of envFiles) {
   const path = resolve(root, envFile)
   if (!fs.existsSync(path)) continue
   for (const line of fs.readFileSync(path, 'utf8').split(/\r?\n/)) {
